@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "source_run_id": "20260910T094233Z",
+  "representative_assets": 5,
+  "structured_records": 17,
+  "scopes": [
+    {
+      "type": "plans",
+      "track": "PHYSICS",
+      "coverage": "official page 5 only; 5 selected offering rows",
+      "exhaustive": false
+    },
+    {
+      "type": "plans",
+      "track": "HISTORY",
+      "coverage": "official page 5 only; 2 selected offering rows",
+      "exhaustive": false
+    },
+    {
+      "type": "score_distribution",
+      "track": "PHYSICS",
+      "coverage": "685-660 score excerpt; 3 selected rows",
+      "exhaustive": false
+    },
+    {
+      "type": "score_distribution",
+      "track": "HISTORY",
+      "coverage": "662-637 score excerpt; 3 selected rows",
+      "exhaustive": false
+    },
+    {
+      "type": "admission_observation",
+      "track": "PHYSICS/HISTORY",
+      "coverage": "SICAU image, 2025 column, 4 selected rows",
+      "exhaustive": false
+    }
+  ],
+  "explicit_gaps": [
+    "No complete plan publication was downloaded or extracted.",
+    "Score-distribution images after the first image were not sampled; excerpts are not full tables.",
+    "No official group_filing_min sample was obtained.",
+    "Historical batch, admission type and score basis are not stated row-by-row in the sampled SICAU image.",
+    "The two user-provided workbooks are secondary inputs; their producer/provenance has not been independently verified.",
+    "All 17 rows await human comparison approval and are excluded from published releases."
+  ]
+}

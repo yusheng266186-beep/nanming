@@ -1,0 +1,275 @@
+{
+  "format_version": "1.0.0",
+  "province": "SC",
+  "method": "工作簿分数→官方分段表区间；工作簿位次落在 [cum-count+1, cum] 内记为一致。不一致只记录不修改。",
+  "track_mapping": {
+    "physics_sheet": {
+      "2025": "PHYSICS",
+      "2024": "SCIENCE",
+      "2023": "SCIENCE",
+      "note": "2024/2023 四川为文理分科，物理工作表的历史列按理科表核对"
+    },
+    "history_sheet": {
+      "2025": "HISTORY",
+      "2024": "ARTS",
+      "2023": "ARTS",
+      "note": "2024/2023 四川为文理分科，历史工作表的历史列按文科表核对"
+    }
+  },
+  "publication_status": "NOT_PUBLISHED",
+  "summary": [
+    {
+      "year": 2023,
+      "track_key": "ARTS",
+      "curriculum_system": null,
+      "official_track_is_old_system": true,
+      "rows_checked": 0,
+      "rank_in_official_interval": 0,
+      "rank_outside_official_interval": 0,
+      "score_not_listed_in_official_table": 0,
+      "score_out_of_official_coverage": 0,
+      "consistency_rate_of_comparable": null,
+      "mean_abs_distance_when_outside": null,
+      "max_abs_distance": 0
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "curriculum_system": "old_system",
+      "official_track_is_old_system": true,
+      "rows_checked": 57982,
+      "rank_in_official_interval": 57933,
+      "rank_outside_official_interval": 0,
+      "score_not_listed_in_official_table": 49,
+      "score_out_of_official_coverage": 0,
+      "consistency_rate_of_comparable": 1.0,
+      "mean_abs_distance_when_outside": null,
+      "max_abs_distance": 0
+    },
+    {
+      "year": 2024,
+      "track_key": "ARTS",
+      "curriculum_system": "old_system",
+      "official_track_is_old_system": true,
+      "rows_checked": 19527,
+      "rank_in_official_interval": 19503,
+      "rank_outside_official_interval": 0,
+      "score_not_listed_in_official_table": 24,
+      "score_out_of_official_coverage": 0,
+      "consistency_rate_of_comparable": 1.0,
+      "mean_abs_distance_when_outside": null,
+      "max_abs_distance": 0
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "curriculum_system": "old_system",
+      "official_track_is_old_system": true,
+      "rows_checked": 40852,
+      "rank_in_official_interval": 40826,
+      "rank_outside_official_interval": 0,
+      "score_not_listed_in_official_table": 26,
+      "score_out_of_official_coverage": 0,
+      "consistency_rate_of_comparable": 1.0,
+      "mean_abs_distance_when_outside": null,
+      "max_abs_distance": 0
+    },
+    {
+      "year": 2025,
+      "track_key": "HISTORY",
+      "curriculum_system": "new_gaokao",
+      "official_track_is_old_system": false,
+      "rows_checked": 38335,
+      "rank_in_official_interval": 38297,
+      "rank_outside_official_interval": 0,
+      "score_not_listed_in_official_table": 38,
+      "score_out_of_official_coverage": 0,
+      "consistency_rate_of_comparable": 1.0,
+      "mean_abs_distance_when_outside": null,
+      "max_abs_distance": 0
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "curriculum_system": "new_gaokao",
+      "official_track_is_old_system": false,
+      "rows_checked": 81122,
+      "rank_in_official_interval": 81076,
+      "rank_outside_official_interval": 0,
+      "score_not_listed_in_official_table": 46,
+      "score_out_of_official_coverage": 0,
+      "consistency_rate_of_comparable": 1.0,
+      "mean_abs_distance_when_outside": null,
+      "max_abs_distance": 0
+    }
+  ],
+  "excluded_from_crosscheck": [
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 693,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 694,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 695,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 700,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 702,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "score": 701,
+      "rank": 43,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE"
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "score": 705,
+      "rank": 25,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE"
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "score": 711,
+      "rank": 12,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE"
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 694,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 697,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 701,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 709,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 709,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "score": 699,
+      "rank": 55,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE"
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "score": 699,
+      "rank": 55,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE"
+    },
+    {
+      "year": 2023,
+      "track_key": "SCIENCE",
+      "score": 699,
+      "rank": 55,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE"
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 693,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2025,
+      "track_key": "PHYSICS",
+      "score": 698,
+      "rank": 59,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 705,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    },
+    {
+      "year": 2024,
+      "track_key": "SCIENCE",
+      "score": 705,
+      "rank": 63,
+      "verdict": "above_published_range",
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE"
+    }
+  ],
+  "totals": {
+    "rows_checked": 237818,
+    "rank_in_official_interval": 237635,
+    "rank_outside_official_interval": 0,
+    "score_not_listed_in_official_table": 183,
+    "score_out_of_official_coverage": 0
+  }
+}

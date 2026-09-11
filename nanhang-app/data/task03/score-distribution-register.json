@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "scope": "四川普通高考成绩分段统计表（一分一段表）全量图片：2025 起物理类/历史类，2024 及以前理科/文科；非发布数据包",
+  "source_authority": "四川省教育考试院",
+  "runs": {
+    "20260911T025944Z": {
+      "run_id": "20260911T025944Z",
+      "year": 2026,
+      "register_path": "data/task03/source-snapshots/20260911T025944Z/snapshot-register.json",
+      "retrieved_at": "2026-09-11T02:59:44Z",
+      "entry_count": 42,
+      "tracks": {
+        "PHYSICS": {
+          "source_id": "SC-RANK-P-2026",
+          "curriculum_system": "new_gaokao",
+          "images": 20
+        },
+        "HISTORY": {
+          "source_id": "SC-RANK-H-2026",
+          "curriculum_system": "new_gaokao",
+          "images": 20
+        }
+      }
+    },
+    "20260911T073243Z": {
+      "run_id": "20260911T073243Z",
+      "year": 2023,
+      "register_path": "data/task03/source-snapshots/20260911T073243Z/snapshot-register.json",
+      "retrieved_at": "2026-09-11T07:32:43Z",
+      "entry_count": 22,
+      "tracks": {
+        "SCIENCE": {
+          "source_id": "SC-RANK-S-2023",
+          "curriculum_system": "old_system",
+          "images": 21
+        }
+      }
+    },
+    "20260911T073251Z": {
+      "run_id": "20260911T073251Z",
+      "year": 2024,
+      "register_path": "data/task03/source-snapshots/20260911T073251Z/snapshot-register.json",
+      "retrieved_at": "2026-09-11T07:32:51Z",
+      "entry_count": 38,
+      "tracks": {
+        "SCIENCE": {
+          "source_id": "SC-RANK-S-2024",
+          "curriculum_system": "old_system",
+          "images": 19
+        },
+        "ARTS": {
+          "source_id": "SC-RANK-A-2024",
+          "curriculum_system": "old_system",
+          "images": 17
+        }
+      }
+    },
+    "20260911T073304Z": {
+      "run_id": "20260911T073304Z",
+      "year": 2025,
+      "register_path": "data/task03/source-snapshots/20260911T073304Z/snapshot-register.json",
+      "retrieved_at": "2026-09-11T07:33:04Z",
+      "entry_count": 39,
+      "tracks": {
+        "PHYSICS": {
+          "source_id": "SC-RANK-P-2025",
+          "curriculum_system": "new_gaokao",
+          "images": 19
+        },
+        "HISTORY": {
+          "source_id": "SC-RANK-H-2025",
+          "curriculum_system": "new_gaokao",
+          "images": 18
+        }
+      }
+    }
+  }
+}

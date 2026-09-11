@@ -1,0 +1,97 @@
+{
+  "version": "1.1.0",
+  "retrieval_runs": [
+    {
+      "run_id": "20260910T094233Z",
+      "retrieved_at": "2026-09-10T09:42:33Z",
+      "register_path": "../../nanhang-app/data/task03/source-snapshots/20260910T094233Z/snapshot-register.json",
+      "register_sha256": "860f4964d61e2a5cea1a66713854171d2b378ac147a02ffbc9b8005e8370889a",
+      "entry_page_count": 5,
+      "representative_asset_count": 5,
+      "status": "ACQUIRED_VALIDATION_SAMPLE_NOT_PUBLISHED",
+      "human_verified_records": 0,
+      "published_admission_records": 0,
+      "notes": "本次实际重新取得，保留HTML、原图、HTTP元数据、时间和SHA-256；旧登记未被覆盖"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "SC-POLICY-2026",
+      "url": "https://www.sceea.cn/Html/202604/Newsdetail_4767.html",
+      "publisher": "四川省教育考试院",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "855d34601590fe4a27b076ffc186855e1b11172ccdc367cfe623dff8e24b1b2e",
+      "source_type": "policy",
+      "observed_format": "html_text",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "正文已读取，年度规则设计依据；未机器化全篇"
+    },
+    {
+      "source_id": "SC-CONTROL-2026",
+      "url": "https://www.sceea.cn/Html/202606/Newsdetail_4853.html",
+      "publisher": "四川省教育考试院",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "23ed23e15170dfa5088ba2d376660aa1aa5e852f7873d1be4fefc0d1f75831fc",
+      "source_type": "control_lines",
+      "observed_format": "html_text",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "正文可读；尚未编入发布库"
+    },
+    {
+      "source_id": "SC-RANK-P-2026",
+      "url": "https://www.sceea.cn/Html/202606/Newsdetail_4857.html",
+      "publisher": "四川省教育考试院",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "bc3457dfc34ddc7f828e550caf6ac3a197a12d1f72ebc022f1b45f3cbfcf25d7",
+      "source_type": "score_distribution",
+      "observed_format": "image_in_html",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "取得发布页；未核实全表"
+    },
+    {
+      "source_id": "SC-RANK-H-2026",
+      "url": "https://www.sceea.cn/Html/202606/Newsdetail_4858.html",
+      "publisher": "四川省教育考试院",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "b4d559e9273d00d3c07ad63d11c3b2ea0e600c0c31dfd6ca6e2ac3a9a936d2c7",
+      "source_type": "score_distribution",
+      "observed_format": "image_in_html",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "取得发布页；未核实全表"
+    },
+    {
+      "source_id": "SC-PLAN-P-2026",
+      "url": "https://plan.sceea.cn/lkjh.html",
+      "publisher": "四川省教育考试院",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "1314d5c5ecb338cd5d3bcb0d9439b8b6e1eea0bf444ba86aa824cc8ad8fbac88",
+      "source_type": "plans",
+      "observed_format": "paginated_images",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "页面声明248页；未批量取得或验证所有页"
+    },
+    {
+      "source_id": "SC-PLAN-H-2026",
+      "url": "https://plan.sceea.cn/wkjh.html",
+      "publisher": "四川省教育考试院",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "99605dee3a1425bbd33e5ac6884a9aa5ec9dde09d080711af46763a7be5e3f05",
+      "source_type": "plans",
+      "observed_format": "paginated_images",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "页面声明160页；未批量取得或验证所有页"
+    },
+    {
+      "source_id": "SICAU-REFERENCE-2026",
+      "url": "https://zs.sicau.edu.cn/info/1062/7302.htm",
+      "publisher": "四川农业大学",
+      "retrieved_on": "2026-09-09",
+      "artifact_sha256": "81592eacbca4354060a010858345007f6c40dabc7b6abb3a5dd6e498566ec3a8",
+      "source_type": "major_history_candidate",
+      "observed_format": "image_in_html",
+      "status": "SOURCE_INSPECTED_NOT_PUBLISHED",
+      "notes": "页面存在；必须从图片核对历史列年份，尚无行级提取"
+    }
+  ],
+  "published_admission_records": 0
+}

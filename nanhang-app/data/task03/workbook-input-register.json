@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "source_run_id": "20260910T094233Z",
+  "publication_status": "NOT_PUBLISHED",
+  "inputs": [
+    {
+      "path": "历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+      "absolute_location_policy": "resolved relative to --workbook-root; absolute path not persisted",
+      "sheet": "历史",
+      "sha256": "78305a687e166fb3a5788d0f5a680029bb44f79932e8a19691f7fdc0330525eb",
+      "size_bytes": 8000918,
+      "authority": "USER_PROVIDED_SECONDARY_WORKBOOK_NOT_OFFICIAL_SNAPSHOT"
+    },
+    {
+      "path": "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+      "absolute_location_policy": "resolved relative to --workbook-root; absolute path not persisted",
+      "sheet": "物理",
+      "sha256": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+      "size_bytes": 14350431,
+      "authority": "USER_PROVIDED_SECONDARY_WORKBOOK_NOT_OFFICIAL_SNAPSHOT"
+    }
+  ]
+}

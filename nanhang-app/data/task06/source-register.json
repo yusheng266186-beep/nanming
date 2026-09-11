@@ -1,0 +1,43 @@
+{
+  "sources": [
+    {
+      "source_id": "USTB-CS",
+      "publisher": "北京科技大学本科招生网",
+      "url": "https://zhaosheng.ustb.edu.cn/xkzy/zyjs/jsjl_zyjs/fe2d63e31c4b4c058d59f5359c0b1b5f.htm",
+      "retrieved_at": "2026-09-10T13:56:42.506843+00:00",
+      "snapshot_path": "ustb-cs.html",
+      "sha256": "7bbce530c0871df5ab9b3025dae020ac0ade2ca333c8ca571f476c4b1b28e3d1",
+      "locator": "专业简介/主要课程",
+      "review_method": "assistant_read_official_page",
+      "human_review_performed": false,
+      "scope": "institution_specific_program_introduction_not_admission_eligibility",
+      "published_on": "2026-06-18"
+    },
+    {
+      "source_id": "USTB-ME",
+      "publisher": "北京科技大学机械工程学院",
+      "url": "https://me.ustb.edu.cn/jyjx/bks/f08f2ef382b546d7b31e560452fb5c08.htm",
+      "retrieved_at": "2026-09-10T13:56:47.441728+00:00",
+      "snapshot_path": "ustb-me.html",
+      "sha256": "dddbf1d15e00168d2e071c5cd7b80b14cfc6d9cc846bc6f2c595cdb9abc0e542",
+      "locator": "专业简介/主要课程",
+      "review_method": "assistant_read_official_page",
+      "human_review_performed": false,
+      "scope": "institution_specific_program_introduction_not_admission_eligibility",
+      "published_on": "2025-12-01"
+    },
+    {
+      "source_id": "NKU-TRADE",
+      "publisher": "南开大学国际经济贸易系",
+      "url": "https://nkiet.nankai.edu.cn/11797/list.htm",
+      "retrieved_at": "2026-09-10T13:56:48.058025+00:00",
+      "snapshot_path": "nku-trade.html",
+      "sha256": "36ed37bf2a2c3941fa6adc0d4fda6717486fb5f4bcdb13e7ca5950402cb5e417",
+      "locator": "专业简介/国际经济与贸易专业段落",
+      "review_method": "assistant_read_official_page",
+      "human_review_performed": false,
+      "scope": "institution_specific_program_introduction_not_admission_eligibility",
+      "published_on": null
+    }
+  ]
+}

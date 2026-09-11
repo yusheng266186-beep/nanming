@@ -1,0 +1,28 @@
+TASK-03 validation run
+Date: 2026-09-10
+Source run: 20260910T094233Z
+
+Command: py -3.12 pipelines/task03/fetch_official_samples.py --verify-local
+Result:
+{
+  "status": "passed",
+  "run_id": "20260910T094233Z",
+  "checked_files": 10,
+  "failures": []
+}
+
+Command: py -3.12 pipelines/task03/validate_task03_samples.py
+Result:
+{
+  "status": "passed",
+  "semantic_check_groups": 11,
+  "representative_assets": 5,
+  "snapshot_files_checked": 10,
+  "ocr_outputs_checked": 5,
+  "structured_records_checked": 17,
+  "human_verified_records": 0,
+  "published_records": 0,
+  "failures": []
+}
+
+Passing these checks does not constitute human verification or a published data release.

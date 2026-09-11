@@ -1,0 +1,859 @@
+{
+  "version": "1.0.0",
+  "description": "全部为测试规格与合成输入；尚未实现南溟业务测试。expected是工程Agent的验收目标。",
+  "cases": [
+    {
+      "id": "A01",
+      "category": "rank",
+      "synthetic": true,
+      "input": {
+        "count": 100,
+        "cumulative": 1000,
+        "score": 500
+      },
+      "expected": {
+        "rank_interval": [
+          901,
+          1000
+        ]
+      },
+      "forbidden": [
+        "精确个人位次1000"
+      ]
+    },
+    {
+      "id": "A02",
+      "category": "rank",
+      "synthetic": true,
+      "input": {
+        "count": 1,
+        "cumulative": 5,
+        "score": 700
+      },
+      "expected": {
+        "rank_interval": [
+          5,
+          5
+        ]
+      },
+      "forbidden": [
+        "off-by-one"
+      ]
+    },
+    {
+      "id": "A03",
+      "category": "rank",
+      "synthetic": true,
+      "input": {
+        "count": 0,
+        "cumulative": 1000,
+        "score": 499
+      },
+      "expected": {
+        "reason": "NO_OBSERVED_SCORE"
+      },
+      "forbidden": [
+        "插值成官方位次"
+      ]
+    },
+    {
+      "id": "A04",
+      "category": "rank",
+      "synthetic": true,
+      "input": {
+        "requested_score": 149,
+        "published_min_score": 150
+      },
+      "expected": {
+        "reason": "OUT_OF_DISTRIBUTION_COVERAGE"
+      },
+      "forbidden": [
+        "尾部补零或外推"
+      ]
+    },
+    {
+      "id": "A05",
+      "category": "rank",
+      "synthetic": true,
+      "input": {
+        "row_type": "aggregate_bin",
+        "label": "700及以上",
+        "cumulative": 20
+      },
+      "expected": {
+        "precision": "aggregate_bin",
+        "individual_rank": null
+      },
+      "forbidden": [
+        "伪造700单分人数"
+      ]
+    },
+    {
+      "id": "A06",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "count": 100,
+        "cumulative": 80
+      },
+      "expected": {
+        "publish_allowed": false
+      },
+      "forbidden": [
+        "发布负rank_best"
+      ]
+    },
+    {
+      "id": "A07",
+      "category": "academic",
+      "synthetic": true,
+      "input": {
+        "kind": "school_exam",
+        "total": 480,
+        "calibration_enabled": false
+      },
+      "expected": {
+        "academic_basis": "school_context",
+        "relation": "NOT_COMPARABLE"
+      },
+      "forbidden": [
+        "查高考480分得省位次"
+      ]
+    },
+    {
+      "id": "A08",
+      "category": "academic",
+      "synthetic": true,
+      "input": {
+        "kind": "mock",
+        "school_rank": 20,
+        "school_population": 500
+      },
+      "expected": {
+        "reason": "SCHOOL_SCORE_UNCALIBRATED"
+      },
+      "forbidden": [
+        "直接放大全省前4%"
+      ]
+    },
+    {
+      "id": "A09",
+      "category": "academic",
+      "synthetic": true,
+      "input": {
+        "kind": "gaokao",
+        "total_origin": "reconstructed"
+      },
+      "expected": {
+        "reason": "TOTAL_NOT_SOURCE"
+      },
+      "forbidden": [
+        "重建总分用于定位"
+      ]
+    },
+    {
+      "id": "A10",
+      "category": "academic",
+      "synthetic": true,
+      "input": {
+        "score_basis": "gaokao_filing",
+        "table_basis": "gaokao_cultural",
+        "bonus": 10
+      },
+      "expected": {
+        "reason": "BONUS_BASIS_MISMATCH"
+      },
+      "forbidden": [
+        "直接套表"
+      ]
+    },
+    {
+      "id": "A11",
+      "category": "academic",
+      "synthetic": true,
+      "input": {
+        "official_rank": 800,
+        "score_table_interval": [
+          901,
+          1000
+        ]
+      },
+      "expected": {
+        "reason": "RANK_CONFLICT"
+      },
+      "forbidden": [
+        "静默覆盖其中一项"
+      ]
+    },
+    {
+      "id": "A12",
+      "category": "academic",
+      "synthetic": true,
+      "input": {
+        "candidate_track": "PHYSICS",
+        "table_track": "HISTORY"
+      },
+      "expected": {
+        "relation": "NOT_COMPARABLE"
+      },
+      "forbidden": [
+        "物理历史混算"
+      ]
+    },
+    {
+      "id": "A13",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "primary": "PHYSICS",
+        "additional": [
+          "BIOLOGY"
+        ],
+        "required_all": [
+          "CHEMISTRY"
+        ]
+      },
+      "expected": {
+        "status": "UNKNOWN",
+        "reason": "INCOMPLETE_SUBJECTS"
+      },
+      "forbidden": [
+        "未完成选科输入时当作确定不符合"
+      ]
+    },
+    {
+      "id": "A14",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "primary": "PHYSICS",
+        "additional": [
+          "BIOLOGY",
+          "GEOGRAPHY"
+        ],
+        "required_all": [
+          "CHEMISTRY"
+        ]
+      },
+      "expected": {
+        "status": "FAIL"
+      },
+      "forbidden": [
+        "兴趣高覆盖不符合"
+      ]
+    },
+    {
+      "id": "A15",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "additional": [
+          "CHEMISTRY",
+          "BIOLOGY"
+        ],
+        "required_all": [
+          "CHEMISTRY",
+          "BIOLOGY"
+        ]
+      },
+      "expected": {
+        "subject_rule": "PASS"
+      },
+      "forbidden": [
+        "其他条件未核对就全条件PASS"
+      ]
+    },
+    {
+      "id": "A16",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "additional": [
+          "CHEMISTRY",
+          "GEOGRAPHY"
+        ],
+        "required_any": [
+          "CHEMISTRY",
+          "BIOLOGY"
+        ]
+      },
+      "expected": {
+        "subject_rule": "PASS"
+      },
+      "forbidden": [
+        "把any当all"
+      ]
+    },
+    {
+      "id": "A17",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "conditions": [
+          "PASS",
+          "UNKNOWN"
+        ]
+      },
+      "expected": {
+        "status": "UNKNOWN"
+      },
+      "forbidden": [
+        "UNKNOWN默认PASS"
+      ]
+    },
+    {
+      "id": "A18",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "conditions": [
+          "FAIL",
+          "UNKNOWN"
+        ]
+      },
+      "expected": {
+        "status": "FAIL"
+      },
+      "forbidden": [
+        "FAIL被UNKNOWN覆盖"
+      ]
+    },
+    {
+      "id": "A19",
+      "category": "eligibility",
+      "synthetic": true,
+      "input": {
+        "admission_type": "special_program",
+        "supported": [
+          "general"
+        ]
+      },
+      "expected": {
+        "reason": "UNSUPPORTED_SCOPE"
+      },
+      "forbidden": [
+        "混入普通自动匹配"
+      ]
+    },
+    {
+      "id": "A20",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "candidate": [
+          901,
+          1000
+        ],
+        "reference": [
+          1101,
+          1200
+        ]
+      },
+      "expected": {
+        "relation": "AHEAD_OF_REFERENCE"
+      },
+      "forbidden": [
+        "录取保证"
+      ]
+    },
+    {
+      "id": "A21",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "candidate": [
+          901,
+          1000
+        ],
+        "reference": [
+          801,
+          900
+        ]
+      },
+      "expected": {
+        "relation": "BEHIND_REFERENCE"
+      },
+      "forbidden": [
+        "排名数越大越好"
+      ]
+    },
+    {
+      "id": "A22",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "candidate": [
+          901,
+          1000
+        ],
+        "reference": [
+          1000,
+          1100
+        ]
+      },
+      "expected": {
+        "relation": "OVERLAPS_REFERENCE"
+      },
+      "forbidden": [
+        "接触边界仍算有余量"
+      ]
+    },
+    {
+      "id": "A23",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "candidate": [
+          1000,
+          1000
+        ],
+        "reference": [
+          1000,
+          1000
+        ]
+      },
+      "expected": {
+        "relation": "OVERLAPS_REFERENCE"
+      },
+      "forbidden": [
+        "同分保证"
+      ]
+    },
+    {
+      "id": "A24",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "has_group_history": true,
+        "has_major_history": false
+      },
+      "expected": {
+        "major_relation": "NOT_COMPARABLE",
+        "reason": "MAJOR_HISTORY_MISSING"
+      },
+      "forbidden": [
+        "复制组线到专业线"
+      ]
+    },
+    {
+      "id": "A25",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "group_code_equal": true,
+        "members_changed": true
+      },
+      "expected": {
+        "reason": "GROUP_CHANGED"
+      },
+      "forbidden": [
+        "同代码自动可比"
+      ]
+    },
+    {
+      "id": "A26",
+      "category": "reference",
+      "synthetic": true,
+      "input": {
+        "plan_old": 10,
+        "plan_new": 20
+      },
+      "expected": {
+        "display_plan_change": true,
+        "automatic_rank_adjustment": false
+      },
+      "forbidden": [
+        "位次门槛自动放宽一倍"
+      ]
+    },
+    {
+      "id": "A27",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "metric_type": "major_admission_mean"
+      },
+      "expected": {
+        "boundary_comparison_allowed": false
+      },
+      "forbidden": [
+        "均分当最低线"
+      ]
+    },
+    {
+      "id": "A28",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "stage": "collection",
+        "requested_stage": "first"
+      },
+      "expected": {
+        "relation": "NOT_COMPARABLE"
+      },
+      "forbidden": [
+        "征集线混作首次线"
+      ]
+    },
+    {
+      "id": "A29",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "target_year": 2027,
+        "latest_plan_year": 2026
+      },
+      "expected": {
+        "reason": "TARGET_YEAR_PLAN_MISSING",
+        "exploration_allowed": true
+      },
+      "forbidden": [
+        "标为2027已确认招生"
+      ]
+    },
+    {
+      "id": "A30",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "status": "VERIFIED"
+      },
+      "expected": {
+        "formal_result_allowed": false
+      },
+      "forbidden": [
+        "未发布数据进入正式结果"
+      ]
+    },
+    {
+      "id": "A31",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "release_status": "WITHDRAWN"
+      },
+      "expected": {
+        "reason": "DATASET_WITHDRAWN"
+      },
+      "forbidden": [
+        "新计算继续使用撤回版本"
+      ]
+    },
+    {
+      "id": "A32",
+      "category": "preference",
+      "synthetic": true,
+      "input": {
+        "tuition": null,
+        "hard_budget": 6000
+      },
+      "expected": {
+        "preference_status": "UNKNOWN",
+        "reason": "TUITION_UNKNOWN"
+      },
+      "forbidden": [
+        "未知学费按0"
+      ]
+    },
+    {
+      "id": "A33",
+      "category": "preference",
+      "synthetic": true,
+      "input": {
+        "hard_region": [
+          "SC"
+        ],
+        "offering_region": "OTHER"
+      },
+      "expected": {
+        "excluded": true
+      },
+      "forbidden": [
+        "无结果时自动放宽硬地区"
+      ]
+    },
+    {
+      "id": "A34",
+      "category": "school_adapter",
+      "synthetic": true,
+      "input": {
+        "subject_raw": 0
+      },
+      "expected": {
+        "value": 0,
+        "state": "valid"
+      },
+      "forbidden": [
+        "0变缺失"
+      ]
+    },
+    {
+      "id": "A35",
+      "category": "school_adapter",
+      "synthetic": true,
+      "input": {
+        "subject_raw": "缺考"
+      },
+      "expected": {
+        "value": null,
+        "state": "absent"
+      },
+      "forbidden": [
+        "缺考变0"
+      ]
+    },
+    {
+      "id": "A36",
+      "category": "school_adapter",
+      "synthetic": true,
+      "input": {
+        "two_records_same_name": true,
+        "class_changed": true,
+        "stable_id": null
+      },
+      "expected": {
+        "auto_merge": false
+      },
+      "forbidden": [
+        "仅同名跨班合并"
+      ]
+    },
+    {
+      "id": "A37",
+      "category": "school_adapter",
+      "synthetic": true,
+      "input": {
+        "source_exam_label": "51",
+        "date_metadata": null
+      },
+      "expected": {
+        "occurred_at": null
+      },
+      "forbidden": [
+        "自动改为5月1日"
+      ]
+    },
+    {
+      "id": "A38",
+      "category": "school_adapter",
+      "synthetic": true,
+      "input": {
+        "source_quality_confidence": 0.98
+      },
+      "expected": {
+        "admission_probability": null
+      },
+      "forbidden": [
+        "98%录取把握"
+      ]
+    },
+    {
+      "id": "A39",
+      "category": "school_adapter",
+      "synthetic": true,
+      "input": {
+        "imported_origin": "school_verified",
+        "server_binding": false
+      },
+      "expected": {
+        "effective_identity_binding": "local_only"
+      },
+      "forbidden": [
+        "相信文件自称认证"
+      ]
+    },
+    {
+      "id": "A40",
+      "category": "security",
+      "synthetic": true,
+      "input": {
+        "access": "beichen_totp",
+        "student_binding": null
+      },
+      "expected": {
+        "academic_api_allowed": false
+      },
+      "forbidden": [
+        "门禁码换成绩权限"
+      ]
+    },
+    {
+      "id": "A41",
+      "category": "security",
+      "synthetic": true,
+      "input": {
+        "session_subject": "student-A",
+        "requested_subject": "student-B"
+      },
+      "expected": {
+        "allowed": false
+      },
+      "forbidden": [
+        "靠知道ID读取别人"
+      ]
+    },
+    {
+      "id": "A42",
+      "category": "idempotency",
+      "synthetic": true,
+      "input": {
+        "same_request_id": true,
+        "same_payload": true
+      },
+      "expected": {
+        "upstream_calls": 1,
+        "settlements": 1
+      },
+      "forbidden": [
+        "重复付费调用"
+      ]
+    },
+    {
+      "id": "A43",
+      "category": "idempotency",
+      "synthetic": true,
+      "input": {
+        "same_request_id": true,
+        "same_payload": false
+      },
+      "expected": {
+        "http_status": 409
+      },
+      "forbidden": [
+        "复用旧结果或再计费"
+      ]
+    },
+    {
+      "id": "A44",
+      "category": "fault",
+      "synthetic": true,
+      "input": {
+        "redis_available": false
+      },
+      "expected": {
+        "ai_http_status": 503,
+        "public_matching_available": true
+      },
+      "forbidden": [
+        "生产自动回退内存扣费"
+      ]
+    },
+    {
+      "id": "A45",
+      "category": "ai",
+      "synthetic": true,
+      "input": {
+        "client_role": "system"
+      },
+      "expected": {
+        "accepted_as_system": false
+      },
+      "forbidden": [
+        "客户端覆盖规则"
+      ]
+    },
+    {
+      "id": "A46",
+      "category": "ai",
+      "synthetic": true,
+      "input": {
+        "model_text": "<script>alert(1)</script>"
+      },
+      "expected": {
+        "executed": false
+      },
+      "forbidden": [
+        "innerHTML执行脚本"
+      ]
+    },
+    {
+      "id": "A47",
+      "category": "ui",
+      "synthetic": true,
+      "input": {
+        "active_run": "new",
+        "response_run": "old"
+      },
+      "expected": {
+        "response_applied": false
+      },
+      "forbidden": [
+        "旧流污染新航线图"
+      ]
+    },
+    {
+      "id": "A48",
+      "category": "ai",
+      "synthetic": true,
+      "input": {
+        "model_claim": "被录取概率90%",
+        "facts_have_probability": false
+      },
+      "expected": {
+        "claim_displayed_as_fact": false
+      },
+      "forbidden": [
+        "AI虚构录取概率"
+      ]
+    },
+    {
+      "id": "A49",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "evidence_id_missing": true
+      },
+      "expected": {
+        "publish_allowed": false
+      },
+      "forbidden": [
+        "断来源数据发布"
+      ]
+    },
+    {
+      "id": "A50",
+      "category": "scenario",
+      "synthetic": true,
+      "input": {
+        "school_score": 480,
+        "scenario_add": 20
+      },
+      "expected": {
+        "school_score_unchanged": 480,
+        "separate_scenario_required": true
+      },
+      "forbidden": [
+        "把月考500当高考500"
+      ]
+    },
+    {
+      "id": "A51",
+      "category": "data",
+      "synthetic": true,
+      "input": {
+        "last_cumulative": 1000,
+        "tail_omitted": true
+      },
+      "expected": {
+        "population_from_last_row_allowed": false
+      },
+      "forbidden": [
+        "不完整分布当全体人口"
+      ]
+    },
+    {
+      "id": "A52",
+      "category": "privacy",
+      "synthetic": true,
+      "input": {
+        "public_release_contains": "student_names"
+      },
+      "expected": {
+        "publish_allowed": false
+      },
+      "forbidden": [
+        "真实名单进入公开数据"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,286 @@
+{
+  "as_of": "2026-09-11",
+  "revision": "2026-09-12-theme-and-spirit",
+  "stage": "TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过",
+  "completed": [
+    "TASK-01",
+    "TASK-02",
+    "TASK-03",
+    "TASK-04",
+    "TASK-05",
+    "TASK-06",
+    "TASK-07",
+    "TASK-08",
+    "TASK-09",
+    "TASK-10"
+  ],
+  "in_progress": [],
+  "not_started": [
+    "TASK-12",
+    "TASK-13",
+    "TASK-14"
+  ],
+  "gates_passed": [
+    "GATE-LOCAL"
+  ],
+  "tests": {
+    "files": 20,
+    "passed": 269,
+    "failed": 0,
+    "acceptance_ids": "A01—A52",
+    "pending_ids": "无",
+    "note": "A01—A52均有局部可执行断言；测试数与案例数不是一一对应，也不等于完整端到端验收。主题与内核守卫 10 项：图标集、七章航程命名与编号一致、溯源锚点覆盖、方向卡引用本人原话、不伪造情景分、刻度与滑块同源、端点不重叠、留白必须说明原因。航迹柱高 4 项（含缺考不画成 0 分）。"
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "npm": "11.19.0"
+  },
+  "published_admission_records": 51878,
+  "synthetic_only": false,
+  "official_sample_records": 17,
+  "human_verified_sample_records": 36,
+  "next_task": "TASK-11 已按负责人决定跳过。可选的后续：TASK-12 数据扩容、TASK-13 本人身份（增强模式的验证码目前只是本地演示，正式上线需要服务端校验与限流）、TASK-14 部署运维。",
+  "task03_local_db": "built and independently validated locally; publication and human verification still outstanding",
+  "workbook_sample_records": 36,
+  "workbook_data_rows": 52878,
+  "data_ingestion_mode": "XLSX_CELLS_PRIMARY",
+  "python_intake_tests_passed": 5,
+  "admissions_database": {
+    "builder": "pipelines/task03/build_admissions_db.py",
+    "query_entry": "pipelines/task03/query_admissions.py",
+    "validator": "pipelines/task03/validate_admissions_db.py",
+    "artifact": "data/admissions/admissions.sqlite",
+    "artifact_is_regenerable": true,
+    "deterministic_rebuild": true,
+    "publication_status": "PUBLISHED",
+    "human_review_performed": true,
+    "offering_rows": 51878,
+    "institutions": 2308,
+    "groups": 12275,
+    "admission_observations": 264971,
+    "observations_with_rank": 264959,
+    "plan_count_total": 422017,
+    "data_issue_rows": 2113,
+    "independent_validation_checks_passed": 19230,
+    "python_db_tests_passed": 50,
+    "score_distribution": {
+      "status": "VERIFIED",
+      "source": "四川省教育考试院官方发布页",
+      "tracks": {
+        "PHYSICS": {
+          "rows": 534,
+          "score_min": 150,
+          "score_max": 685,
+          "unlisted_scores": [
+            161,
+            153
+          ],
+          "population_at_lowest_score": 292426,
+          "head_group_above_max": 54
+        },
+        "HISTORY": {
+          "rows": 512,
+          "score_min": 151,
+          "score_max": 662,
+          "unlisted_scores": [],
+          "population_at_lowest_score": 177491,
+          "head_group_above_max": 30
+        }
+      },
+      "snapshot_run": "20260911T025944Z",
+      "registered_files": 42,
+      "extraction_validation_checks_passed": 19178,
+      "score_to_rank": "已启用；区间 [cum-count+1, cum]",
+      "years": [
+        2026,
+        2025,
+        2024,
+        2023
+      ],
+      "tables": 7,
+      "rows": 3736,
+      "curriculum_systems": {
+        "new_gaokao": "2025 起 物理类/历史类（3+1+2 首选科目）",
+        "old_system": "2024 及以前 理科/文科（文理分科）；与物理类/历史类不是同一定义"
+      }
+    },
+    "database_validation_checks_passed": 5758,
+    "python_pipeline_tests_passed": 50,
+    "score_distribution_verified": true
+  },
+  "web_build": "passed_main_script_gzip_93.18KB",
+  "browser_journey": "passed_headless_edge_1440_390_320_and_print",
+  "webmcp_contract_tests_passed": 1,
+  "ai_gateway": "implemented_local_only_disabled_by_default",
+  "ai_gateway_store": "memory_development_store_production_refused",
+  "ai_upstream": "fake_local_only_no_paid_model_no_keys",
+  "ai_acceptance_ids": "A40—A48",
+  "ai_http_endpoints": [
+    "GET /healthz",
+    "GET /readyz",
+    "POST /v1/access/exchange",
+    "POST /v1/career/turn",
+    "POST /v1/career/profile",
+    "GET /v1/requests/{request_id}",
+    "DELETE /v1/session"
+  ],
+  "ai_academic_endpoint": "GET /v1/me/academic-profile returns 403 by design; no issuance path exists",
+  "ai_browser_journey": "passed_default_off_optin_sse_stale_marker_degradation",
+  "generation_retries": {
+    "configured": "first-byte 30s / total 90s / 2 pre-upstream retries / no retry after text",
+    "profile_failure_recorded_as": "unknown (conservative bound, not auto-refunded)"
+  },
+  "task09_visual": "passed_contrast_tap_targets_labels_scope",
+  "task10_acceptance": "local_stage_passed_zero_key_errors_open_issues_O01_O07",
+  "open_issues_blocking_pilot": [
+    "O-03 real student workbook unverified",
+    "O-04 no real model cost accounting",
+    "TASK-11 skipped by owner decision; GATE-PILOT remains unpassed"
+  ],
+  "human_verification": {
+    "reviewer": "数据提供方（用户）",
+    "review_date": "2026-09-11",
+    "record": "data/task03/human-verification.json",
+    "machine_crosscheck": {
+      "source": "data/task03/score-distribution/workbook-crosscheck.json",
+      "rows_checked": 237818,
+      "rank_in_official_interval": 237635,
+      "rank_outside_official_interval": 0,
+      "score_above_published_range": 183,
+      "note": "高于官方公布范围的高分段不逐分列出（官方合并为“某分及以上”），不计为不一致"
+    }
+  },
+  "published_release": {
+    "builder": "pipelines/task03/export_release.py",
+    "release_id": "SC-2026-e48a598a1832",
+    "artifact": "data/releases/SC-2026-e48a598a1832/",
+    "manifest": "data/releases/SC-2026-e48a598a1832/manifest.json",
+    "pointer": "data/releases/current.json",
+    "status": "PUBLISHED",
+    "synthetic": false,
+    "shards": 90,
+    "offerings": 51878,
+    "coverage_entries": 74,
+    "files": 93,
+    "bytes": 62709892,
+    "web_integration": "apps/web/src/release-loader.ts 读取发布包；vite.config.ts 在开发期只读提供 data/releases",
+    "not_claimed": [
+      "逐分位次是官方分段区间，不是个人精确名次",
+      "历史年份科类定义未逐行给出，跨年比较按无法比较处理",
+      "不构成录取概率或报考建议"
+    ]
+  },
+  "project_name": "南溟",
+  "rename": {
+    "renamed_on": "2026-09-11",
+    "previous_name": "南航",
+    "reason": "对接项目根目录的前端文件 南溟.html",
+    "scope": {
+      "changed": "受管文本中的中文项目名：32 个文件、94 处",
+      "false_positives_preserved": "院校名「四川西南航空职业学院」含「南航」子串，属真实数据：数据库 69 处、发布包 68 处保持原样",
+      "not_changed": [
+        "拉丁标识符：nanhang-app / nanhang-handoff 目录名、@nanhang/* 包名、Nanhang* 类型名、NANHANG_* 环境变量（约 2,469 处）——改为 nanming 需同步重装依赖与重建，属独立工程决定",
+        "冻结合同中的 Schema 标题（Nanhang ...）——按项目规则改冻结合同需另立 ADR",
+        "archives/ 历史归档（21 处）——保留原样供追溯"
+      ]
+    },
+    "data_impact": "无。两份源工作簿哈希未变；数据库、发布包、分段表、可比性记录均未变化"
+  },
+  "skipped_by_owner": [
+    {
+      "task": "TASK-11",
+      "title": "教师协调的小范围试用（约10—20人）",
+      "decision": "按负责人决定跳过（2026-09-11）",
+      "decided_by": "项目负责人（用户）",
+      "consequence": "GATE-PILOT 未通过；未接触任何真实学生；「学生能否理解系统边界」与「是否出现‘系统预测我能被录取’这类误解」两项均无观察证据。因此不得声称学生已试用，也不得据试用结果调整文案或扩大范围。",
+      "not_claimed": [
+        "不声称学生已试用",
+        "不声称 GATE-PILOT 已通过",
+        "不声称文案已按真实理解做过验证"
+      ]
+    }
+  ],
+  "web_frontend": {
+    "design_baseline": "南溟.html（原文件保留不动）",
+    "chat": "谈心页对话化：打字指示器、逐字打字机、提问起点、进度条；reduced motion 下直接显示全文",
+    "locate": "位次与百分位由官方分段表换算（scorePosition），按参考年选表；分数不在公布范围时保持未知",
+    "axis": "滑块范围与刻度取自官方分段表公布区间（axisMarks）；院校卡显示工作簿原文门类/专业类/招生数/学费/院校标签",
+    "direction": "方向卡显示本次范围内的真实覆盖（专业条数/院校数/命中专业类），不显示适配度",
+    "subject_picker": "补齐起航页的选科设置（首选科目+再选科目+情景分）；此前代码中无处设置首选科目，位次与资格无法产生",
+    "deliberately_not_ported": [
+      "方向适配度 fit%（禁止由兴趣推断专业适合度）",
+      "控制线（发布包未提供，不画线也不算线差）",
+      "示例院校与线性插值位次（一律用发布包真实记录）",
+      "单科提分计划（单科成绩未接入，保持未开放）"
+    ]
+  },
+  "quality_huixi": {
+    "builder": "pipelines/quality-huixi/build_quality_db.py",
+    "exporter": "pipelines/quality-huixi/export_release.py",
+    "verifier": "pipelines/quality-huixi/verify_release.py",
+    "dataset_exporter": "pipelines/quality-huixi/export_dataset.ts",
+    "docs": "docs/QUALITY_HUIXI_PIPELINE.md",
+    "parser_repo": "yusheng266186-beep/zhiliang-huixi-new-",
+    "parser_commit": "6f70eab4e6e9ecadc00149b1387103b45b5d8e2b",
+    "source_workbook": "高2024级51质量复盘（新版）赋分3(1).xlsx",
+    "artifact": "data/quality-huixi/quality-huixi.sqlite",
+    "release": "data/quality-huixi/release/",
+    "artifact_is_regenerable": true,
+    "artifact_excluded_from_source_pack": true,
+    "contains_real_student_data": true,
+    "persons": 880,
+    "observations": 7954,
+    "exams": 12,
+    "questions": 926,
+    "item_responses": 15878,
+    "knowledge_rows": 217301,
+    "shards": 880,
+    "unresolved_conflicts": 23,
+    "rank_source_disagreements": 9,
+    "identity_rule": "姓名+科类+选科组合；美术班（艺术组合）记录并入同名常规班学生",
+    "code_strength": "6 位数字可被离线穷举；仅限本机/校内演示，上线前必须改为服务端校验与限流",
+    "student_trial_performed": false,
+    "browser_verification": {
+      "performed": true,
+      "tool": "Chromium + Playwright（独立于工程测试）",
+      "result": "入口→验证码→成绩页渲染通过；控制台异常 0；页面无录取概率类表述；数字与 SQLite 逐项一致",
+      "screenshots": "private/verification/",
+      "students_named_in_sources": 0
+    },
+    "point_ordering_fix": "知识点排序改为得分率升序→并列时丢分多的优先→再并列时与年级差得多的优先"
+  },
+  "frontends": {
+    "main": "apps/web（React + Vite + TypeScript；深海蓝绿；含 AI 面板与荣县一中增强模式）",
+    "paper": "apps/web-paper（原生 ES 模块 + Vite；纸感配色；备用方案，由负责人比较后决定取舍）",
+    "shared": [
+      "packages/release-loader（发布包线格式 + 位次/刻度/覆盖派生）",
+      "packages/match-input（从发布包构建匹配输入 + 可选批次清单）",
+      "packages/domain（匹配规则本体，原本即为共享包）"
+    ],
+    "rationale": "抽共享包是为了让「哪一年可比、位次取哪张表、組线还是投档线」这类判定只有一份实现；两套前端各写一份迟早会在其中一套里悄悄出错。",
+    "paper_origin": "纸感版前身是内嵌 1.81 MB 数据切片的单文件演示；并入时丢弃内嵌数据、删除本地规则实现，改为读取同一发布包并调用共享规则。",
+    "commands": {
+      "main_dev": "npm run web:dev (5173)",
+      "paper_dev": "npm run paper:dev (5174)",
+      "build_both": "npm run build:all"
+    },
+    "not_shared": "纸感版没有 AI 面板、荣县一中增强模式与单科提分计划；它是备用界面，保留的是看数据/看方向/看位置这条主线。"
+  },
+  "theme": {
+    "icons": "新增 6 枚南溟图标：i-kun（鲲）、i-wing（鹏翼）、i-log（航海日志）、i-ruler（刻度）、i-buoy（浮标）、i-chartmap（海图）",
+    "chapter_legs": "七章各带一个航程阶段名：起航·北冥有鱼 / 定位·测深 / 成绩·录航迹 / 谈心·问心 / 方向·定罗盘 / 分数轴·试风 / 航线图·抟扶摇；并修正了新增成绩章后的章节编号错位",
+    "core_devices": [
+      "Provenance（溯源锚点）：位次、院校卡、航线图分组、成绩来源四处写明依据",
+      "Uncharted（未测绘）：缺失数据显示为「未测绘」并给出原因，取代光秃秃的破折号",
+      "方向卡引用学生本人保存的原话；没有原话就明说没有，不用系统措辞充数",
+      "成绩页新增「航迹」：把历次总分画成轨迹，缺考画虚线空柱而非 0 分柱"
+    ],
+    "fixes": [
+      "分数轴刻度两端与刻度数字重叠（150/公布低段/2025 与 300 叠在一起）",
+      "滑块范围误从「本次位次结果」推导，未填分数时退回 300–700，与刻度（150/691）不一致",
+      "未填分数却显示「尚未载入分段表」，与「分数不在公布范围」混为一谈",
+      "滑块上方同时显示「你的情景分」与旧设计的「现在」标签",
+      "未填分数时大号破折号在 40px 下渲染成粗黑条"
+    ]
+  }
+}

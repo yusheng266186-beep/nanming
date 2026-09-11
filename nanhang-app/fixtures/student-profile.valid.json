@@ -1,0 +1,72 @@
+{
+  "envelope_version": "1.0.0",
+  "subject_id": "local-synthetic-001",
+  "target_exam_year": 2027,
+  "province": "SC",
+  "selection": {
+    "primary": "PHYSICS",
+    "additional": [
+      "CHEMISTRY",
+      "BIOLOGY"
+    ],
+    "confirmed_by_student": true
+  },
+  "observations": [
+    {
+      "exam_id": "synthetic-exam-51",
+      "source_exam_label": "合成月考51",
+      "occurred_at": null,
+      "exam_year": null,
+      "kind": "school_exam",
+      "total": {
+        "value": 480,
+        "max_score": 750,
+        "origin": "source",
+        "score_basis": "unknown"
+      },
+      "subjects": {
+        "CHINESE": {
+          "value": 0,
+          "state": "valid",
+          "max_score": 150,
+          "score_basis": "raw"
+        },
+        "MATH": {
+          "value": null,
+          "state": "absent",
+          "max_score": 150,
+          "score_basis": "raw"
+        }
+      },
+      "ranks": [
+        {
+          "value": 25,
+          "scope": "school",
+          "population": null,
+          "tie_convention": "unknown",
+          "score_basis": "unknown",
+          "source_status": "imported_unverified"
+        }
+      ],
+      "contextual_lines": [],
+      "comparison_group_id": null,
+      "source_refs": [
+        "synthetic-workbook:row34"
+      ],
+      "quality_flags": [
+        "DATE_UNKNOWN",
+        "SCORE_BASIS_UNKNOWN"
+      ]
+    }
+  ],
+  "provenance": {
+    "origin": "synthetic",
+    "identity_binding": "local_only",
+    "source_commit": null,
+    "source_digest": null,
+    "generated_at": "2026-09-09T12:00:00Z",
+    "warnings": [
+      "所有数值与人物标识均为合成；不能用于招生推荐"
+    ]
+  }
+}

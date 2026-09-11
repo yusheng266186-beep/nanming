@@ -1,0 +1,162 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {
+      "const": "1.0.0"
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "rules_version": {
+      "const": "nh-rules-1.0.0"
+    },
+    "status": {
+      "enum": [
+        "PUBLISHED",
+        "WITHDRAWN"
+      ]
+    },
+    "synthetic": {
+      "type": "boolean"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9_./-]+\\.json$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "size_bytes"
+        ]
+      },
+      "minItems": 1
+    },
+    "coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2100
+          },
+          "track": {
+            "enum": [
+              "PHYSICS",
+              "HISTORY"
+            ]
+          },
+          "batch": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "admission_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "published_offerings": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "known_scope_total": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exhaustive": {
+            "type": "boolean"
+          },
+          "missing_notes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          }
+        },
+        "required": [
+          "scope_id",
+          "year",
+          "track",
+          "batch",
+          "stage",
+          "admission_type",
+          "published_offerings",
+          "known_scope_total",
+          "exhaustive",
+          "missing_notes"
+        ]
+      },
+      "minItems": 1
+    },
+    "evidence_index_path": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9_./-]+\\.json$"
+    }
+  },
+  "required": [
+    "manifest_version",
+    "release_id",
+    "created_at",
+    "schema_version",
+    "rules_version",
+    "status",
+    "synthetic",
+    "files",
+    "coverage",
+    "evidence_index_path"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nanhang Public Data Manifest 1.0.0"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@nanhang/web-paper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@nanhang/domain": "0.1.0",
+    "@nanhang/match-input": "0.1.0",
+    "@nanhang/release-loader": "0.1.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}

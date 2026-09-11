@@ -1,0 +1,25 @@
+> nanhang-app@0.1.0 validate
+> npm run generate && npm run typecheck && npm test
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false
+
+> nanhang-app@0.1.0 test
+> vitest run
+
+RUN  v3.2.7 C:/Users/yusheng/Desktop/南溟/nanhang-app
+
+✓ packages/contracts/test/task03-data.test.ts (6 tests)
+✓ packages/domain/test/acceptance.test.ts (37 tests)
+✓ packages/domain/test/matching.test.ts (9 tests)
+✓ packages/contracts/test/contracts.test.ts (10 tests)
+✓ packages/school-adapter/test/school-adapter.test.ts (17 tests)
+
+Test Files  5 passed (5)
+Tests       79 passed (79)
+
+Environment: Node v24.19.0, npm 11.19.0
+Exit code: 0

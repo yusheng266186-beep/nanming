@@ -1,0 +1,161 @@
+{
+  "selected": {
+    "exam": "51",
+    "rawExam": "51物",
+    "school": "合成测试学校",
+    "classNo": 1,
+    "name": "合成同学甲",
+    "track": "物理类",
+    "classType": "合成班型",
+    "combination": "物化生",
+    "total": 480,
+    "totalSource": "source",
+    "source": { "sheet": "学生基础", "row": 34 },
+    "subjectStates": {
+      "语文": "valid",
+      "数学": "absent",
+      "英语": "valid",
+      "物理": "valid",
+      "化学": "valid",
+      "生物": "valid"
+    },
+    "cityRank": 105,
+    "schoolRank": 25,
+    "subjects": {
+      "语文": 0,
+      "英语": 105,
+      "物理": 82,
+      "化学": 78,
+      "生物": 75
+    }
+  },
+  "missingTotal": {
+    "exam": "51",
+    "rawExam": "51物",
+    "school": "合成测试学校",
+    "classNo": 1,
+    "name": "合成同学乙",
+    "track": "物理类",
+    "classType": "合成班型",
+    "combination": "物化生",
+    "source": { "sheet": "学生基础", "row": 36 },
+    "subjectStates": { "语文": "valid", "数学": "valid", "英语": "valid", "物理": "valid" },
+    "cityRank": null,
+    "schoolRank": null,
+    "subjects": { "语文": 100, "数学": 100, "英语": 100, "物理": 100 }
+  },
+  "exactDuplicate": {
+    "key": "51::1::合成同学甲",
+    "resolution": "rank-only",
+    "candidates": [
+      {
+        "exam": "51",
+        "rawExam": "51物",
+        "school": "合成测试学校",
+        "classNo": 1,
+        "name": "合成同学甲",
+        "track": "物理类",
+        "classType": "合成班型",
+        "combination": "物化生",
+        "total": 480,
+        "totalSource": "source",
+        "source": { "sheet": "学生基础", "row": 34 },
+        "subjectStates": { "语文": "valid", "数学": "absent", "英语": "valid", "物理": "valid", "化学": "valid", "生物": "valid" },
+        "cityRank": 106,
+        "schoolRank": 26,
+        "subjects": { "语文": 0, "英语": 105, "物理": 82, "化学": 78, "生物": 75 }
+      },
+      {
+        "exam": "51",
+        "rawExam": "51物",
+        "school": "合成测试学校",
+        "classNo": 1,
+        "name": "合成同学甲",
+        "track": "物理类",
+        "classType": "合成班型",
+        "combination": "物化生",
+        "total": 480,
+        "totalSource": "source",
+        "source": { "sheet": "学生基础", "row": 35 },
+        "subjectStates": { "语文": "valid", "数学": "absent", "英语": "valid", "物理": "valid", "化学": "valid", "生物": "valid" },
+        "cityRank": 105,
+        "schoolRank": 25,
+        "subjects": { "语文": 0, "英语": 105, "物理": 82, "化学": 78, "生物": 75 }
+      }
+    ]
+  },
+  "scoreConflict": {
+    "key": "51::2::合成同学丙",
+    "resolution": "excluded",
+    "candidates": [
+      {
+        "exam": "51",
+        "rawExam": "51物",
+        "school": "合成测试学校",
+        "classNo": 2,
+        "name": "合成同学丙",
+        "track": "物理类",
+        "classType": "合成班型",
+        "combination": "物化生",
+        "total": 480,
+        "totalSource": "source",
+        "source": { "sheet": "学生基础", "row": 40 },
+        "subjectStates": { "语文": "valid" },
+        "cityRank": 105,
+        "schoolRank": 25,
+        "subjects": { "语文": 100 }
+      },
+      {
+        "exam": "51",
+        "rawExam": "51物",
+        "school": "合成测试学校",
+        "classNo": 2,
+        "name": "合成同学丙",
+        "track": "物理类",
+        "classType": "合成班型",
+        "combination": "物化生",
+        "total": 481,
+        "totalSource": "source",
+        "source": { "sheet": "学生基础", "row": 41 },
+        "subjectStates": { "语文": "valid" },
+        "cityRank": 104,
+        "schoolRank": 24,
+        "subjects": { "语文": 101 }
+      }
+    ]
+  },
+  "sameNameAcrossClasses": [
+    {
+      "exam": "51",
+      "rawExam": "51物",
+      "school": "合成测试学校",
+      "classNo": 3,
+      "name": "合成同名学生",
+      "track": "物理类",
+      "classType": "合成班型",
+      "combination": "物化生",
+      "total": 470,
+      "totalSource": "source",
+      "source": { "sheet": "学生基础", "row": 50 },
+      "cityRank": null,
+      "schoolRank": 30,
+      "subjects": { "语文": 95 }
+    },
+    {
+      "exam": "51",
+      "rawExam": "51物",
+      "school": "合成测试学校",
+      "classNo": 4,
+      "name": "合成同名学生",
+      "track": "物理类",
+      "classType": "合成班型",
+      "combination": "物化生",
+      "total": 460,
+      "totalSource": "source",
+      "source": { "sheet": "学生基础", "row": 51 },
+      "cityRank": null,
+      "schoolRank": 40,
+      "subjects": { "语文": 90 }
+    }
+  ]
+}

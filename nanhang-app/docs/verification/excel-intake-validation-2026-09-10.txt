@@ -1,0 +1,7 @@
+{"status": "passed", "inputs": 2, "samples": 36, "data_rows": {"物理": 34686, "历史": 17192}, "publication_status": "NOT_PUBLISHED"}
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.028s
+
+OK
+{"status": "passed", "workbooks_hashed": 2, "samples": 36, "original_cells_compared": 964, "human_verified": 0, "published": 0}

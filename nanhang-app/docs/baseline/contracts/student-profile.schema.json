@@ -1,0 +1,1112 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "envelope_version": {
+      "const": "1.0.0"
+    },
+    "subject_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "target_exam_year": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 2100
+    },
+    "province": {
+      "const": "SC"
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "anyOf": [
+            {
+              "enum": [
+                "PHYSICS",
+                "HISTORY"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "additional": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "CHEMISTRY",
+              "BIOLOGY",
+              "POLITICS",
+              "GEOGRAPHY"
+            ]
+          },
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "confirmed_by_student": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "primary",
+        "additional",
+        "confirmed_by_student"
+      ]
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "exam_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "source_exam_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exam_year": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "enum": [
+              "gaokao",
+              "mock",
+              "school_exam"
+            ]
+          },
+          "total": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "max_score": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "origin": {
+                "enum": [
+                  "source",
+                  "reconstructed",
+                  "unknown"
+                ]
+              },
+              "score_basis": {
+                "enum": [
+                  "raw_total",
+                  "converted_total",
+                  "mixed_total",
+                  "gaokao_cultural",
+                  "gaokao_filing",
+                  "unknown"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "max_score",
+              "origin",
+              "score_basis"
+            ]
+          },
+          "subjects": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CHINESE": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "MATH": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "FOREIGN_LANGUAGE": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "PHYSICS": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "HISTORY": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "CHEMISTRY": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "BIOLOGY": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "POLITICS": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "GEOGRAPHY": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "valid",
+                      "missing",
+                      "absent",
+                      "deferred",
+                      "not_applicable",
+                      "formula_error",
+                      "invalid"
+                    ]
+                  },
+                  "max_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "score_basis": {
+                    "enum": [
+                      "raw",
+                      "converted",
+                      "mixed",
+                      "unknown"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "state",
+                  "max_score",
+                  "score_basis"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "state": {
+                          "const": "valid"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "value": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": []
+          },
+          "ranks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "scope": {
+                  "enum": [
+                    "school",
+                    "city",
+                    "joint_exam",
+                    "province_gaokao"
+                  ]
+                },
+                "population": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "tie_convention": {
+                  "enum": [
+                    "competition",
+                    "dense",
+                    "official_individual",
+                    "cumulative",
+                    "unknown"
+                  ]
+                },
+                "score_basis": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "source_status": {
+                  "enum": [
+                    "imported_unverified",
+                    "user_reported",
+                    "source_confirmed"
+                  ]
+                }
+              },
+              "required": [
+                "value",
+                "scope",
+                "population",
+                "tie_convention",
+                "score_basis",
+                "source_status"
+              ]
+            },
+            "maxItems": 5
+          },
+          "contextual_lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "line_type": {
+                  "enum": [
+                    "mock_undergraduate",
+                    "mock_special_control"
+                  ]
+                },
+                "value": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "track": {
+                  "enum": [
+                    "PHYSICS",
+                    "HISTORY"
+                  ]
+                },
+                "source_ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "population_scope": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "line_type",
+                "value",
+                "track",
+                "source_ref",
+                "population_scope"
+              ]
+            },
+            "maxItems": 4
+          },
+          "comparison_group_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "minItems": 1,
+            "maxItems": 10
+          },
+          "quality_flags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "maxItems": 30
+          }
+        },
+        "required": [
+          "exam_id",
+          "source_exam_label",
+          "occurred_at",
+          "exam_year",
+          "kind",
+          "total",
+          "subjects",
+          "ranks",
+          "contextual_lines",
+          "comparison_group_id",
+          "source_refs",
+          "quality_flags"
+        ]
+      },
+      "maxItems": 100
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "enum": [
+            "local_import",
+            "user_entered",
+            "school_verified",
+            "user_edited",
+            "synthetic"
+          ]
+        },
+        "identity_binding": {
+          "enum": [
+            "none",
+            "local_only",
+            "server_verified"
+          ]
+        },
+        "source_commit": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxItems": 30
+        }
+      },
+      "required": [
+        "origin",
+        "identity_binding",
+        "source_commit",
+        "source_digest",
+        "generated_at",
+        "warnings"
+      ]
+    }
+  },
+  "required": [
+    "envelope_version",
+    "subject_id",
+    "target_exam_year",
+    "province",
+    "selection",
+    "observations",
+    "provenance"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nanhang StudentProfileEnvelope 1.0.0",
+  "description": "结构校验不证明身份、数据来源或语义有效性；school_verified/server_verified必须由服务器认证上下文授予，导入JSON不得自行提升。"
+}

@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "schemas_valid": 4,
+  "positive_negative_fixtures": [
+    "student-profile:valid-accepted",
+    "student-profile:invalid-rejected",
+    "match-result:valid-accepted",
+    "match-result:invalid-rejected",
+    "target-scenario:valid-accepted",
+    "target-scenario:invalid-rejected"
+  ],
+  "additional_structure_assertions": 5,
+  "acceptance_cases_consistent": 52,
+  "repository_file_references": 53,
+  "source_entries": 7,
+  "application_tests_executed": false,
+  "note": "Only handoff contracts and internal consistency were checked; application tests must be run separately in nanhang-app."
+}

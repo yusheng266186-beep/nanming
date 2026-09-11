@@ -1,0 +1,206 @@
+{
+  "version": "1.0.0",
+  "source_run_id": "20260910T094233Z",
+  "human_review_performed": true,
+  "records": [
+    {
+      "sample_id": "plan-history-0308-101-11",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏底部，0308 中国人民公安大学，专业组101第1行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "plan-history-0308-101-13",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏底部，0308 中国人民公安大学，专业组101第2行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "plan-physics-0308-107-1b",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "CONFLICT",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏，0308 中国人民公安大学，专业组107下第1行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "plan-physics-0308-107-1c",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "CONFLICT",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏，0308 中国人民公安大学，专业组107下第2行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "plan-physics-0327-505-1h",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "CONFLICT",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏下部，0327 中国刑事警察学院，专业组505第1行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "plan-physics-0327-505-1j",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "CONFLICT",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏下部，0327 中国刑事警察学院，专业组505第2行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "plan-physics-0327-505-1k",
+      "entity_type": "plan_record",
+      "automated_extraction_status": "CONFLICT",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第5页左栏下部，0327 中国刑事警察学院，专业组505第3行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "rank-physics-685",
+      "entity_type": "score_distribution_point",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第1张正文图片，685分行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "rank-physics-684",
+      "entity_type": "score_distribution_point",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第1张正文图片，684分行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "rank-physics-679",
+      "entity_type": "score_distribution_point",
+      "automated_extraction_status": "MISSING",
+      "source_comparison_status": "MISSING",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [
+        "people_at_score"
+      ],
+      "evidence_locator": "第1张正文图片，679分行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "rank-history-662",
+      "entity_type": "score_distribution_point",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第1张正文图片，662分行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "rank-history-661",
+      "entity_type": "score_distribution_point",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第1张正文图片，661分行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "rank-history-646",
+      "entity_type": "score_distribution_point",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [],
+      "evidence_locator": "第1张正文图片，646分行",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "admission-sicau-seed-2025",
+      "entity_type": "admission_observation",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence_locator": "正文大图，种子科学与工程行，2025年列",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "admission-sicau-plant-group-2025",
+      "entity_type": "admission_observation",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence_locator": "正文大图，植物生产与绿美工程组最低录取分数及位次行，2025年列",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "admission-sicau-accounting-history-2025",
+      "entity_type": "admission_observation",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence_locator": "正文大图，经济管理组（历史）会计学行，2025年列",
+      "superseded_by_full_extraction": true
+    },
+    {
+      "sample_id": "admission-sicau-economics-history-group-2025",
+      "entity_type": "admission_observation",
+      "automated_extraction_status": "MATCH",
+      "source_comparison_status": "PENDING_HUMAN",
+      "human_review_status": "VERIFIED",
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence_locator": "正文大图，经济管理组（历史）最低录取分数及位次行，2025年列",
+      "superseded_by_full_extraction": true
+    }
+  ],
+  "human_review": {
+    "reviewer": "数据提供方（用户）",
+    "review_date": "2026-09-11",
+    "record": "data\\task03\\human-verification.json",
+    "superseded_by": "data/task03/score-distribution/score-distribution.json",
+    "note": "历史 OCR 样本；同一数据已由 2026 全量抽取取代，保留为历史证据"
+  }
+}

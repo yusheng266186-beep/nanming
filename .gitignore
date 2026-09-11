@@ -1,0 +1,29 @@
+# ---- 依赖与构建产物 ----
+node_modules/
+dist/
+coverage/
+__pycache__/
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+
+# ---- 交接合同校验专用 Python 环境（可按 requirements 重建）----
+.venv-contracts/
+
+# ---- 隐私区：真实学生姓名、验证码明码表与推导盐，绝不进仓库 ----
+private/
+
+# ---- 真实学生成绩数据：可由 pipelines/quality-huixi/ 加 private/ 下的盐重建 ----
+nanhang-app/data/quality-huixi/
+nanhang-app/data/admissions/*.sqlite
+nanhang-app/data/admissions/*.sqlite-journal
+nanhang-app/data/admissions/*.sqlite-wal
+
+# ---- 招生发布产物：可由主管线从原始 Excel 重建，完整性见 manifest 内逐文件哈希 ----
+nanhang-app/data/releases/
+
+# ---- 原始招生 Excel：只读主输入，完整性由 MANIFEST.sha256 追踪，不进代码库 ----
+*.xlsx
+
+# ---- 历史快照压缩包：git 历史取代 zip 快照职能 ----
+*.zip

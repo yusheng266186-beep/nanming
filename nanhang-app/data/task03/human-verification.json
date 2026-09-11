@@ -1,0 +1,112 @@
+{
+  "format_version": "1.0.0",
+  "reviewer": "数据提供方（用户）",
+  "review_date": "2026-09-11",
+  "reviewer_statement": "数据提供方确认两份招生工作簿内容与来源；确认后按本记录标记为已核验。",
+  "machine_crosscheck": {
+    "available": true,
+    "source": "data/task03/score-distribution/workbook-crosscheck.json",
+    "method": "工作簿（分数, 位次）对照官方分段表区间 [累计-人数+1, 累计]",
+    "rows_checked": 237818,
+    "rank_in_official_interval": 237635,
+    "rank_outside_official_interval": 0,
+    "score_above_published_range": 183,
+    "note": "高于官方公布范围的高分段不逐分列出（官方合并为“某分及以上”），不计为不一致",
+    "by_year_track": [
+      {
+        "year": 2023,
+        "track_key": "ARTS",
+        "curriculum_system": null,
+        "official_track_is_old_system": true,
+        "rows_checked": 0,
+        "rank_in_official_interval": 0,
+        "rank_outside_official_interval": 0,
+        "score_not_listed_in_official_table": 0,
+        "score_out_of_official_coverage": 0,
+        "consistency_rate_of_comparable": null,
+        "mean_abs_distance_when_outside": null,
+        "max_abs_distance": 0
+      },
+      {
+        "year": 2023,
+        "track_key": "SCIENCE",
+        "curriculum_system": "old_system",
+        "official_track_is_old_system": true,
+        "rows_checked": 57982,
+        "rank_in_official_interval": 57933,
+        "rank_outside_official_interval": 0,
+        "score_not_listed_in_official_table": 49,
+        "score_out_of_official_coverage": 0,
+        "consistency_rate_of_comparable": 1.0,
+        "mean_abs_distance_when_outside": null,
+        "max_abs_distance": 0
+      },
+      {
+        "year": 2024,
+        "track_key": "ARTS",
+        "curriculum_system": "old_system",
+        "official_track_is_old_system": true,
+        "rows_checked": 19527,
+        "rank_in_official_interval": 19503,
+        "rank_outside_official_interval": 0,
+        "score_not_listed_in_official_table": 24,
+        "score_out_of_official_coverage": 0,
+        "consistency_rate_of_comparable": 1.0,
+        "mean_abs_distance_when_outside": null,
+        "max_abs_distance": 0
+      },
+      {
+        "year": 2024,
+        "track_key": "SCIENCE",
+        "curriculum_system": "old_system",
+        "official_track_is_old_system": true,
+        "rows_checked": 40852,
+        "rank_in_official_interval": 40826,
+        "rank_outside_official_interval": 0,
+        "score_not_listed_in_official_table": 26,
+        "score_out_of_official_coverage": 0,
+        "consistency_rate_of_comparable": 1.0,
+        "mean_abs_distance_when_outside": null,
+        "max_abs_distance": 0
+      },
+      {
+        "year": 2025,
+        "track_key": "HISTORY",
+        "curriculum_system": "new_gaokao",
+        "official_track_is_old_system": false,
+        "rows_checked": 38335,
+        "rank_in_official_interval": 38297,
+        "rank_outside_official_interval": 0,
+        "score_not_listed_in_official_table": 38,
+        "score_out_of_official_coverage": 0,
+        "consistency_rate_of_comparable": 1.0,
+        "mean_abs_distance_when_outside": null,
+        "max_abs_distance": 0
+      },
+      {
+        "year": 2025,
+        "track_key": "PHYSICS",
+        "curriculum_system": "new_gaokao",
+        "official_track_is_old_system": false,
+        "rows_checked": 81122,
+        "rank_in_official_interval": 81076,
+        "rank_outside_official_interval": 0,
+        "score_not_listed_in_official_table": 46,
+        "score_out_of_official_coverage": 0,
+        "consistency_rate_of_comparable": 1.0,
+        "mean_abs_distance_when_outside": null,
+        "max_abs_distance": 0
+      }
+    ]
+  },
+  "scope": {
+    "score_distribution_tables": "四川省教育考试院官方发布的一分一段表 2023-2026 共 7 张（物理类/历史类 2025 起，理科/文科 2024 及以前），逐行可回溯到登记图片与坐标，算术闭合经独立校验",
+    "workbook_records": "两份招生工作簿的全部专业行与历史观察（分数、位次、计划、选科要求）",
+    "legacy_ocr_samples": "历史 OCR 样本；同一数据已由 2026 全量抽取取代，保留为历史证据"
+  },
+  "not_claimed": [
+    "不声称官方发布了工作簿本身：工作簿仍为用户提供的输入，本记录只确认其内容已被核对",
+    "不声称已发布：publication_status 保持 NOT_PUBLISHED",
+    "不声称教师或第三方独立签字：签署方为数据提供方"
+  ]
+}

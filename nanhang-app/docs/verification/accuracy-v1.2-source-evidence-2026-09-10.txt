@@ -1,0 +1,15 @@
+TASK-05 fixed-source evidence
+Repository: yusheng266186-beep/zhiliang-huixi-new-
+Requested commit: 6f70eab4e6e9ecadc00149b1387103b45b5d8e2b
+Resolved FETCH_HEAD: 6f70eab4e6e9ecadc00149b1387103b45b5d8e2b
+Method: git fetch --depth=1 using the exact commit, followed by git rev-parse FETCH_HEAD:<path>
+
+b6979f1e83d35f1a36858c6bb0839fc0a6a81c2f  app/lib/types.ts
+65ea6ca4c596718e1c0bb209b8e6fb54e27fb7c2  app/lib/parser.ts
+529410a4b89ae9e0c4fb534a4af9ed12b13fe4a2  app/lib/score-validation.ts
+696af130e4aebd40f06b27740b7517add777949f  app/lib/class-config.ts
+a2d74619b18c67baf4b68b5c11bb1f16dbf070ef  app/lib/metrics.ts
+2e1f8a45807ae71731fac3b7bc586cc256a9e9a6  scripts/verify-accuracy.ts
+
+All six blob IDs match nanhang-handoff/evidence/repository-files.json.
+The files were read from the fixed commit. main/latest was not used as a substitute.

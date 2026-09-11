@@ -1,0 +1,11 @@
+{
+  "scenario_version": "1.0.0",
+  "scenario_id": "synthetic-scenario-001",
+  "target_exam_year": 2027,
+  "reference_year": 2026,
+  "province": "SC",
+  "track": "PHYSICS",
+  "target_score": 751,
+  "score_basis": "gaokao_cultural",
+  "release_id": "synthetic-release-001"
+}

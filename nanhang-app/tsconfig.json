@@ -1,0 +1,26 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/contracts"
+    },
+    {
+      "path": "./packages/domain"
+    },
+    {
+      "path": "./packages/release-loader"
+    },
+    {
+      "path": "./packages/match-input"
+    },
+    {
+      "path": "./packages/school-adapter"
+    },
+    {
+      "path": "./packages/exploration"
+    },
+    {
+      "path": "./packages/ai-gateway"
+    }
+  ]
+}

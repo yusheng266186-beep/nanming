@@ -1,0 +1,1331 @@
+{
+  "version": "1.0.0",
+  "source_run_id": "20260910T094233Z",
+  "generated_at": "2026-09-10T10:31:11Z",
+  "purpose": "TASK-03 minimum extraction and comparison sample",
+  "publication_status": "NOT_PUBLISHED",
+  "human_review_performed": true,
+  "record_count": 17,
+  "counts_by_entity_type": {
+    "plan_record": 7,
+    "score_distribution_point": 6,
+    "admission_observation": 4
+  },
+  "records": [
+    {
+      "sample_id": "plan-history-0308-101-11",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "HISTORY",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": "A段",
+      "admission_type": "公安、司法类",
+      "institution_code": "0308",
+      "institution_name": "中国人民公安大学",
+      "group_code": "101",
+      "group_plan_count": 15,
+      "major_code": "11",
+      "major_name": "治安学",
+      "plan_count": 4,
+      "tuition": 4200,
+      "duration_years": 4,
+      "subject_requirement_source": "政治",
+      "notes_source": "(面向地方公安机关入警就业)(只招男生)(考生年龄为16周岁以上、22周岁以下，具体要求详见招生章程)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-H-2026-P005",
+        "official_snapshot_sha256": "aefaab1b74de1ed0ae824f3edccacef52f6ba17e652cc8c99cdc74d573d31ae7",
+        "official_image_locator": "第5页左栏底部，0308 中国人民公安大学，专业组101第1行",
+        "workbook_name": "历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "78305a687e166fb3a5788d0f5a680029bb44f79932e8a19691f7fdc0330525eb",
+        "workbook_sheet": "历史",
+        "workbook_range": "A4378:W4378"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": true,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "plan-history-0308-101-13",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "HISTORY",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": "A段",
+      "admission_type": "公安、司法类",
+      "institution_code": "0308",
+      "institution_name": "中国人民公安大学",
+      "group_code": "101",
+      "group_plan_count": 15,
+      "major_code": "13",
+      "major_name": "侦查学",
+      "plan_count": 4,
+      "tuition": 4200,
+      "duration_years": 4,
+      "subject_requirement_source": "政治",
+      "notes_source": "(面向地方公安机关入警就业)(只招男生)(考生年龄为16周岁以上、22周岁以下，具体要求详见招生章程)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-H-2026-P005",
+        "official_snapshot_sha256": "aefaab1b74de1ed0ae824f3edccacef52f6ba17e652cc8c99cdc74d573d31ae7",
+        "official_image_locator": "第5页左栏底部，0308 中国人民公安大学，专业组101第2行",
+        "workbook_name": "历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "78305a687e166fb3a5788d0f5a680029bb44f79932e8a19691f7fdc0330525eb",
+        "workbook_sheet": "历史",
+        "workbook_range": "A4379:W4379"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": true,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "plan-physics-0308-107-1b",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": null,
+      "admission_type": "国家专项计划",
+      "institution_code": "0308",
+      "institution_name": "中国人民公安大学",
+      "group_code": "107",
+      "group_plan_count": 6,
+      "major_code": "1B",
+      "major_name": "刑事科学技术",
+      "plan_count": 2,
+      "tuition": 4600,
+      "duration_years": 4,
+      "subject_requirement_source": "化学",
+      "notes_source": "(面向地方公安机关入警就业)(只招男生)(国家专项计划)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-P-2026-P005",
+        "official_snapshot_sha256": "2f373fbaf9a2c34f23d59b4fadefd30da77f7217d1f0c82863e4662ac0940d00",
+        "official_image_locator": "第5页左栏，0308 中国人民公安大学，专业组107下第1行",
+        "workbook_name": "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+        "workbook_sheet": "物理",
+        "workbook_range": "A1347:W1347"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": false,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "CONFLICT"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "plan-physics-0308-107-1c",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": null,
+      "admission_type": "国家专项计划",
+      "institution_code": "0308",
+      "institution_name": "中国人民公安大学",
+      "group_code": "107",
+      "group_plan_count": 6,
+      "major_code": "1C",
+      "major_name": "交通管理工程",
+      "plan_count": 1,
+      "tuition": 4600,
+      "duration_years": 4,
+      "subject_requirement_source": "化学",
+      "notes_source": "(面向地方公安机关入警就业)(只招男生)(国家专项计划)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-P-2026-P005",
+        "official_snapshot_sha256": "2f373fbaf9a2c34f23d59b4fadefd30da77f7217d1f0c82863e4662ac0940d00",
+        "official_image_locator": "第5页左栏，0308 中国人民公安大学，专业组107下第2行",
+        "workbook_name": "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+        "workbook_sheet": "物理",
+        "workbook_range": "A1348:W1348"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": false,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "CONFLICT"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "plan-physics-0327-505-1h",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": null,
+      "admission_type": "国家专项计划",
+      "institution_code": "0327",
+      "institution_name": "中国刑事警察学院",
+      "group_code": "505",
+      "group_plan_count": 3,
+      "major_code": "1H",
+      "major_name": "刑事科学技术",
+      "plan_count": 1,
+      "tuition": 5200,
+      "duration_years": 4,
+      "subject_requirement_source": "化学",
+      "notes_source": "(只招男生)(国家专项计划)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-P-2026-P005",
+        "official_snapshot_sha256": "2f373fbaf9a2c34f23d59b4fadefd30da77f7217d1f0c82863e4662ac0940d00",
+        "official_image_locator": "第5页左栏下部，0327 中国刑事警察学院，专业组505第1行",
+        "workbook_name": "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+        "workbook_sheet": "物理",
+        "workbook_range": "A2265:W2265"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": false,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "CONFLICT"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "plan-physics-0327-505-1j",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": null,
+      "admission_type": "国家专项计划",
+      "institution_code": "0327",
+      "institution_name": "中国刑事警察学院",
+      "group_code": "505",
+      "group_plan_count": 3,
+      "major_code": "1J",
+      "major_name": "公安视听技术",
+      "plan_count": 1,
+      "tuition": 5200,
+      "duration_years": 4,
+      "subject_requirement_source": "化学",
+      "notes_source": "(只招男生)(国家专项计划)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-P-2026-P005",
+        "official_snapshot_sha256": "2f373fbaf9a2c34f23d59b4fadefd30da77f7217d1f0c82863e4662ac0940d00",
+        "official_image_locator": "第5页左栏下部，0327 中国刑事警察学院，专业组505第2行",
+        "workbook_name": "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+        "workbook_sheet": "物理",
+        "workbook_range": "A2266:W2266"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": false,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "CONFLICT"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "plan-physics-0327-505-1k",
+      "entity_type": "plan_record",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": "本科提前批次",
+      "stage": null,
+      "admission_type": "国家专项计划",
+      "institution_code": "0327",
+      "institution_name": "中国刑事警察学院",
+      "group_code": "505",
+      "group_plan_count": 3,
+      "major_code": "1K",
+      "major_name": "网络安全与执法",
+      "plan_count": 1,
+      "tuition": 5200,
+      "duration_years": 4,
+      "subject_requirement_source": "化学",
+      "notes_source": "(只招男生)(国家专项计划)",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-PLAN-P-2026-P005",
+        "official_snapshot_sha256": "2f373fbaf9a2c34f23d59b4fadefd30da77f7217d1f0c82863e4662ac0940d00",
+        "official_image_locator": "第5页左栏下部，0327 中国刑事警察学院，专业组505第3行",
+        "workbook_name": "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx",
+        "workbook_sha256": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+        "workbook_sheet": "物理",
+        "workbook_range": "A2267:W2267"
+      },
+      "extraction": {
+        "method": "SECONDARY_WORKBOOK_TEXT_LAYER_WITH_OFFICIAL_IMAGE_OCR_CROSS_CHECK",
+        "ocr_major_code_found": false,
+        "ocr_major_name_found": true,
+        "ocr_institution_name_found": true,
+        "automated_status": "CONFLICT"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "程序已对照官方图片 OCR 与工作簿文字层；密集多栏 OCR 不足以代替人工逐字核实。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "rank-physics-685",
+      "entity_type": "score_distribution_point",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通高考",
+      "batch": null,
+      "stage": null,
+      "admission_type": "成绩分段统计",
+      "score": 685,
+      "people_at_score": 12,
+      "cumulative_count": 66,
+      "excerpt_scope": "685—660分（第1张，非全表）",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-RANK-P-2026-I001",
+        "official_snapshot_sha256": "0ec85945d95e1a6c7f8b63bcbe3c5b115d899ba000889c0214f4cb7be9b5b065",
+        "official_image_locator": "第1张正文图片，685分行",
+        "ocr_boxes": {
+          "score": {
+            "text": "685",
+            "x": 146,
+            "y": 276,
+            "width": 85,
+            "height": 40
+          },
+          "people_at_score": {
+            "text": "12",
+            "x": 520,
+            "y": 276,
+            "width": 53,
+            "height": 40
+          },
+          "cumulative_count": {
+            "text": "66",
+            "x": 846,
+            "y": 276,
+            "width": 56,
+            "height": 40
+          }
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_WORD_COORDINATE_ROW_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "已做坐标对齐和累计数结构检查；未由人工对照原图签字确认。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "rank-physics-684",
+      "entity_type": "score_distribution_point",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通高考",
+      "batch": null,
+      "stage": null,
+      "admission_type": "成绩分段统计",
+      "score": 684,
+      "people_at_score": 12,
+      "cumulative_count": 78,
+      "excerpt_scope": "685—660分（第1张，非全表）",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-RANK-P-2026-I001",
+        "official_snapshot_sha256": "0ec85945d95e1a6c7f8b63bcbe3c5b115d899ba000889c0214f4cb7be9b5b065",
+        "official_image_locator": "第1张正文图片，684分行",
+        "ocr_boxes": {
+          "score": {
+            "text": "684",
+            "x": 146,
+            "y": 402,
+            "width": 87,
+            "height": 40
+          },
+          "people_at_score": {
+            "text": "12",
+            "x": 520,
+            "y": 402,
+            "width": 53,
+            "height": 39
+          },
+          "cumulative_count": {
+            "text": "78",
+            "x": 846,
+            "y": 402,
+            "width": 56,
+            "height": 40
+          }
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_WORD_COORDINATE_ROW_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "已做坐标对齐和累计数结构检查；未由人工对照原图签字确认。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "rank-physics-679",
+      "entity_type": "score_distribution_point",
+      "year": 2026,
+      "track": "PHYSICS",
+      "category": "普通高考",
+      "batch": null,
+      "stage": null,
+      "admission_type": "成绩分段统计",
+      "score": 679,
+      "people_at_score": null,
+      "cumulative_count": 136,
+      "excerpt_scope": "685—660分（第1张，非全表）",
+      "unknown_fields": [
+        "people_at_score"
+      ],
+      "evidence": {
+        "official_asset_id": "SC-RANK-P-2026-I001",
+        "official_snapshot_sha256": "0ec85945d95e1a6c7f8b63bcbe3c5b115d899ba000889c0214f4cb7be9b5b065",
+        "official_image_locator": "第1张正文图片，679分行",
+        "ocr_boxes": {
+          "score": {
+            "text": "679",
+            "x": 146,
+            "y": 1026,
+            "width": 85,
+            "height": 40
+          },
+          "people_at_score": null,
+          "cumulative_count": {
+            "text": "136",
+            "x": 833,
+            "y": 1026,
+            "width": 84,
+            "height": 40
+          }
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_WORD_COORDINATE_ROW_ALIGNMENT",
+        "automated_status": "MISSING"
+      },
+      "review": {
+        "source_comparison_status": "MISSING",
+        "human_review_performed": true,
+        "note": "已做坐标对齐和累计数结构检查；未由人工对照原图签字确认。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "rank-history-662",
+      "entity_type": "score_distribution_point",
+      "year": 2026,
+      "track": "HISTORY",
+      "category": "普通高考",
+      "batch": null,
+      "stage": null,
+      "admission_type": "成绩分段统计",
+      "score": 662,
+      "people_at_score": 4,
+      "cumulative_count": 34,
+      "excerpt_scope": "662—637分（第1张，非全表）",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-RANK-H-2026-I001",
+        "official_snapshot_sha256": "9914e7bc5d4b83e55f7825a793b78f5728b7b2d9b028d2976e894155b70aee01",
+        "official_image_locator": "第1张正文图片，662分行",
+        "ocr_boxes": {
+          "score": {
+            "text": "662",
+            "x": 161,
+            "y": 285,
+            "width": 85,
+            "height": 40
+          },
+          "people_at_score": {
+            "text": "4",
+            "x": 547,
+            "y": 286,
+            "width": 28,
+            "height": 39
+          },
+          "cumulative_count": {
+            "text": "34",
+            "x": 861,
+            "y": 285,
+            "width": 56,
+            "height": 40
+          }
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_WORD_COORDINATE_ROW_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "已做坐标对齐和累计数结构检查；未由人工对照原图签字确认。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "rank-history-661",
+      "entity_type": "score_distribution_point",
+      "year": 2026,
+      "track": "HISTORY",
+      "category": "普通高考",
+      "batch": null,
+      "stage": null,
+      "admission_type": "成绩分段统计",
+      "score": 661,
+      "people_at_score": 5,
+      "cumulative_count": 39,
+      "excerpt_scope": "662—637分（第1张，非全表）",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-RANK-H-2026-I001",
+        "official_snapshot_sha256": "9914e7bc5d4b83e55f7825a793b78f5728b7b2d9b028d2976e894155b70aee01",
+        "official_image_locator": "第1张正文图片，661分行",
+        "ocr_boxes": {
+          "score": {
+            "text": "661",
+            "x": 161,
+            "y": 411,
+            "width": 85,
+            "height": 40
+          },
+          "people_at_score": {
+            "text": "5",
+            "x": 549,
+            "y": 411,
+            "width": 24,
+            "height": 40
+          },
+          "cumulative_count": {
+            "text": "39",
+            "x": 861,
+            "y": 411,
+            "width": 55,
+            "height": 40
+          }
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_WORD_COORDINATE_ROW_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "已做坐标对齐和累计数结构检查；未由人工对照原图签字确认。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "rank-history-646",
+      "entity_type": "score_distribution_point",
+      "year": 2026,
+      "track": "HISTORY",
+      "category": "普通高考",
+      "batch": null,
+      "stage": null,
+      "admission_type": "成绩分段统计",
+      "score": 646,
+      "people_at_score": 27,
+      "cumulative_count": 276,
+      "excerpt_scope": "662—637分（第1张，非全表）",
+      "unknown_fields": [],
+      "evidence": {
+        "official_asset_id": "SC-RANK-H-2026-I001",
+        "official_snapshot_sha256": "9914e7bc5d4b83e55f7825a793b78f5728b7b2d9b028d2976e894155b70aee01",
+        "official_image_locator": "第1张正文图片，646分行",
+        "ocr_boxes": {
+          "score": {
+            "text": "646",
+            "x": 161,
+            "y": 2283,
+            "width": 86,
+            "height": 39
+          },
+          "people_at_score": {
+            "text": "27",
+            "x": 534,
+            "y": 2283,
+            "width": 55,
+            "height": 39
+          },
+          "cumulative_count": {
+            "text": "276",
+            "x": 846,
+            "y": 2283,
+            "width": 86,
+            "height": 39
+          }
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_WORD_COORDINATE_ROW_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "已做坐标对齐和累计数结构检查；未由人工对照原图签字确认。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "admission-sicau-seed-2025",
+      "entity_type": "admission_observation",
+      "year": 2025,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": null,
+      "stage": null,
+      "admission_type": null,
+      "institution_name": "四川农业大学",
+      "group_name": "种子科学与工程组",
+      "offering_name": "种子科学与工程",
+      "metric_type": "major_admission_min",
+      "score": 582,
+      "rank": 35928,
+      "score_basis": null,
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence": {
+        "official_asset_id": "SICAU-REFERENCE-2026-I001",
+        "official_snapshot_sha256": "d9ff2ef10914ada222b8c6e626bc09d5a6fd8e93e2289d6cbeacec810dbe0d93",
+        "official_image_locator": "正文大图，种子科学与工程行，2025年列",
+        "ocr_boxes": {
+          "anchor_line": {
+            "text": "种 子 科 学 与 工 程",
+            "words": [
+              {
+                "text": "种",
+                "x": 849,
+                "y": 511,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "子",
+                "x": 878,
+                "y": 512,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "科",
+                "x": 907,
+                "y": 511,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "学",
+                "x": 936,
+                "y": 511,
+                "width": 28,
+                "height": 28
+              },
+              {
+                "text": "与",
+                "x": 965,
+                "y": 510,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "工",
+                "x": 994,
+                "y": 513,
+                "width": 28,
+                "height": 25
+              },
+              {
+                "text": "程",
+                "x": 1022,
+                "y": 512,
+                "width": 30,
+                "height": 28
+              }
+            ]
+          },
+          "value_lines": [
+            {
+              "text": "582 ／ 35928",
+              "words": [
+                {
+                  "text": "582",
+                  "x": 1599,
+                  "y": 511,
+                  "width": 49,
+                  "height": 25
+                },
+                {
+                  "text": "／",
+                  "x": 1649,
+                  "y": 510,
+                  "width": 9,
+                  "height": 26
+                },
+                {
+                  "text": "35928",
+                  "x": 1657,
+                  "y": 510,
+                  "width": 84,
+                  "height": 26
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_ANCHOR_AND_2025_COLUMN_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "行标签与2025年数值已按坐标对齐；原图未说明的历史批次、招生类型和分数口径保持未知。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "admission-sicau-plant-group-2025",
+      "entity_type": "admission_observation",
+      "year": 2025,
+      "track": "PHYSICS",
+      "category": "普通类",
+      "batch": null,
+      "stage": null,
+      "admission_type": null,
+      "institution_name": "四川农业大学",
+      "group_name": "植物生产与绿美工程组",
+      "offering_name": null,
+      "metric_type": "group_admission_min",
+      "score": 562,
+      "rank": 53398,
+      "score_basis": null,
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence": {
+        "official_asset_id": "SICAU-REFERENCE-2026-I001",
+        "official_snapshot_sha256": "d9ff2ef10914ada222b8c6e626bc09d5a6fd8e93e2289d6cbeacec810dbe0d93",
+        "official_image_locator": "正文大图，植物生产与绿美工程组最低录取分数及位次行，2025年列",
+        "ocr_boxes": {
+          "anchor_line": {
+            "text": "植 物 生 产 与 绿 美 工 程 组 最 低 录 取 分 数 及 位 次",
+            "words": [
+              {
+                "text": "植",
+                "x": 427,
+                "y": 1109,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "物",
+                "x": 456,
+                "y": 1110,
+                "width": 28,
+                "height": 28
+              },
+              {
+                "text": "生",
+                "x": 485,
+                "y": 1110,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "产",
+                "x": 514,
+                "y": 1110,
+                "width": 29,
+                "height": 28
+              },
+              {
+                "text": "与",
+                "x": 543,
+                "y": 1110,
+                "width": 28,
+                "height": 28
+              },
+              {
+                "text": "绿",
+                "x": 571,
+                "y": 1110,
+                "width": 29,
+                "height": 28
+              },
+              {
+                "text": "美",
+                "x": 600,
+                "y": 1110,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "工",
+                "x": 629,
+                "y": 1112,
+                "width": 28,
+                "height": 25
+              },
+              {
+                "text": "程",
+                "x": 657,
+                "y": 1111,
+                "width": 29,
+                "height": 28
+              },
+              {
+                "text": "组",
+                "x": 686,
+                "y": 1110,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "最",
+                "x": 715,
+                "y": 1111,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "低",
+                "x": 744,
+                "y": 1110,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "录",
+                "x": 774,
+                "y": 1112,
+                "width": 27,
+                "height": 26
+              },
+              {
+                "text": "取",
+                "x": 801,
+                "y": 1111,
+                "width": 29,
+                "height": 28
+              },
+              {
+                "text": "分",
+                "x": 830,
+                "y": 1110,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "数",
+                "x": 859,
+                "y": 1110,
+                "width": 28,
+                "height": 28
+              },
+              {
+                "text": "及",
+                "x": 888,
+                "y": 1112,
+                "width": 28,
+                "height": 27
+              },
+              {
+                "text": "位",
+                "x": 916,
+                "y": 1110,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "次",
+                "x": 945,
+                "y": 1110,
+                "width": 29,
+                "height": 29
+              }
+            ]
+          },
+          "value_lines": [
+            {
+              "text": "562 ／ 53398",
+              "words": [
+                {
+                  "text": "562",
+                  "x": 1599,
+                  "y": 1116,
+                  "width": 50,
+                  "height": 25
+                },
+                {
+                  "text": "／",
+                  "x": 1649,
+                  "y": 1116,
+                  "width": 9,
+                  "height": 25
+                },
+                {
+                  "text": "53398",
+                  "x": 1657,
+                  "y": 1116,
+                  "width": 84,
+                  "height": 26
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_ANCHOR_AND_2025_COLUMN_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "行标签与2025年数值已按坐标对齐；原图未说明的历史批次、招生类型和分数口径保持未知。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "admission-sicau-accounting-history-2025",
+      "entity_type": "admission_observation",
+      "year": 2025,
+      "track": "HISTORY",
+      "category": "普通类",
+      "batch": null,
+      "stage": null,
+      "admission_type": null,
+      "institution_name": "四川农业大学",
+      "group_name": "经济管理组（历史）",
+      "offering_name": "会计学",
+      "metric_type": "major_admission_min",
+      "score": 599,
+      "rank": 4765,
+      "score_basis": null,
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence": {
+        "official_asset_id": "SICAU-REFERENCE-2026-I001",
+        "official_snapshot_sha256": "d9ff2ef10914ada222b8c6e626bc09d5a6fd8e93e2289d6cbeacec810dbe0d93",
+        "official_image_locator": "正文大图，经济管理组（历史）会计学行，2025年列",
+        "ocr_boxes": {
+          "anchor_line": {
+            "text": "会 计 学",
+            "words": [
+              {
+                "text": "会",
+                "x": 913,
+                "y": 4952,
+                "width": 28,
+                "height": 28
+              },
+              {
+                "text": "计",
+                "x": 942,
+                "y": 4952,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "学",
+                "x": 970,
+                "y": 4953,
+                "width": 30,
+                "height": 27
+              }
+            ]
+          },
+          "value_lines": [
+            {
+              "text": "599 / 4765",
+              "words": [
+                {
+                  "text": "599",
+                  "x": 1608,
+                  "y": 4953,
+                  "width": 50,
+                  "height": 25
+                },
+                {
+                  "text": "/",
+                  "x": 1657,
+                  "y": 4953,
+                  "width": 9,
+                  "height": 25
+                },
+                {
+                  "text": "4765",
+                  "x": 1665,
+                  "y": 4952,
+                  "width": 68,
+                  "height": 26
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_ANCHOR_AND_2025_COLUMN_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "行标签与2025年数值已按坐标对齐；原图未说明的历史批次、招生类型和分数口径保持未知。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    },
+    {
+      "sample_id": "admission-sicau-economics-history-group-2025",
+      "entity_type": "admission_observation",
+      "year": 2025,
+      "track": "HISTORY",
+      "category": "普通类",
+      "batch": null,
+      "stage": null,
+      "admission_type": null,
+      "institution_name": "四川农业大学",
+      "group_name": "经济管理组（历史）",
+      "offering_name": null,
+      "metric_type": "group_admission_min",
+      "score": 592,
+      "rank": 6142,
+      "score_basis": null,
+      "unknown_fields": [
+        "batch",
+        "stage",
+        "admission_type",
+        "score_basis"
+      ],
+      "evidence": {
+        "official_asset_id": "SICAU-REFERENCE-2026-I001",
+        "official_snapshot_sha256": "d9ff2ef10914ada222b8c6e626bc09d5a6fd8e93e2289d6cbeacec810dbe0d93",
+        "official_image_locator": "正文大图，经济管理组（历史）最低录取分数及位次行，2025年列",
+        "ocr_boxes": {
+          "anchor_line": {
+            "text": "经 氵 齐 管 理 纟 且 （ 历 史 ） 最 低 录 取 分 数 及 位 次",
+            "words": [
+              {
+                "text": "经",
+                "x": 441,
+                "y": 5156,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "氵",
+                "x": 471,
+                "y": 5157,
+                "width": 7,
+                "height": 27
+              },
+              {
+                "text": "齐",
+                "x": 477,
+                "y": 5155,
+                "width": 22,
+                "height": 29
+              },
+              {
+                "text": "管",
+                "x": 500,
+                "y": 5155,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "理",
+                "x": 528,
+                "y": 5157,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "纟",
+                "x": 557,
+                "y": 5155,
+                "width": 10,
+                "height": 27
+              },
+              {
+                "text": "且",
+                "x": 565,
+                "y": 5157,
+                "width": 21,
+                "height": 26
+              },
+              {
+                "text": "（",
+                "x": 598,
+                "y": 5155,
+                "width": 8,
+                "height": 30
+              },
+              {
+                "text": "历",
+                "x": 614,
+                "y": 5157,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "史",
+                "x": 643,
+                "y": 5155,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "）",
+                "x": 680,
+                "y": 5155,
+                "width": 8,
+                "height": 30
+              },
+              {
+                "text": "最",
+                "x": 700,
+                "y": 5157,
+                "width": 29,
+                "height": 27
+              },
+              {
+                "text": "低",
+                "x": 729,
+                "y": 5156,
+                "width": 29,
+                "height": 28
+              },
+              {
+                "text": "录",
+                "x": 759,
+                "y": 5157,
+                "width": 28,
+                "height": 27
+              },
+              {
+                "text": "取",
+                "x": 787,
+                "y": 5157,
+                "width": 28,
+                "height": 27
+              },
+              {
+                "text": "分",
+                "x": 816,
+                "y": 5155,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "数",
+                "x": 845,
+                "y": 5155,
+                "width": 28,
+                "height": 29
+              },
+              {
+                "text": "及",
+                "x": 874,
+                "y": 5158,
+                "width": 28,
+                "height": 26
+              },
+              {
+                "text": "位",
+                "x": 902,
+                "y": 5155,
+                "width": 29,
+                "height": 29
+              },
+              {
+                "text": "次",
+                "x": 931,
+                "y": 5156,
+                "width": 28,
+                "height": 28
+              }
+            ]
+          },
+          "value_lines": [
+            {
+              "text": "592 ／ 6142",
+              "words": [
+                {
+                  "text": "592",
+                  "x": 1608,
+                  "y": 5157,
+                  "width": 49,
+                  "height": 25
+                },
+                {
+                  "text": "／",
+                  "x": 1658,
+                  "y": 5157,
+                  "width": 8,
+                  "height": 25
+                },
+                {
+                  "text": "6142",
+                  "x": 1665,
+                  "y": 5157,
+                  "width": 68,
+                  "height": 25
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "method": "WINDOWS_OCR_ANCHOR_AND_2025_COLUMN_ALIGNMENT",
+        "automated_status": "MATCH"
+      },
+      "review": {
+        "source_comparison_status": "PENDING_HUMAN",
+        "human_review_performed": true,
+        "note": "行标签与2025年数值已按坐标对齐；原图未说明的历史批次、招生类型和分数口径保持未知。",
+        "human_review_status": "VERIFIED",
+        "reviewer": "数据提供方（用户）",
+        "review_date": "2026-09-11"
+      },
+      "publication_status": "VALIDATED_AND_VERIFIED"
+    }
+  ],
+  "human_review": {
+    "reviewer": "数据提供方（用户）",
+    "review_date": "2026-09-11",
+    "record": "data\\task03\\human-verification.json",
+    "superseded_by": "data/task03/score-distribution/score-distribution.json",
+    "note": "历史 OCR 样本；同一数据已由 2026 全量抽取取代，保留为历史证据"
+  }
+}

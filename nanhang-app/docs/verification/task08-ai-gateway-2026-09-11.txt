@@ -1,0 +1,224 @@
+TASK-08 AI中转层端到端验收
+验收日期: 2026-09-11
+环境: Node 24.19.0 / npm 11.19.0；本机回环HTTP；本地假上游；无网络、无生产密钥、无付费模型、未部署
+
+==================================================================
+A. 上游与降级场景（每场景独立进程，NANHANG_FAKE_SCENARIO 指定）
+   每个场景都会检查：SSE事件序列、是否泄漏脚本/链接/概率、request最终状态、readyz能力
+==================================================================
+scenario=normal http=200 ms=12
+  events=[start, delta, complete]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=succeeded error=null
+  final_reply="本地假上游：我看到你在描述自己的经历。可以先把愿意尝试的小任务写下来，再决定方向。"
+  readyz.ai=true readyz.public_data=true
+
+scenario=timeout http=503 ms=90038
+  events=[start, error]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=failed error=UPSTREAM_TIMEOUT
+  final_reply=null
+  readyz.ai=true readyz.public_data=true
+
+scenario=fail-after-text http=503 ms=6
+  events=[start, delta, error]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=failed error=UPSTREAM_UNAVAILABLE
+  final_reply=null
+  readyz.ai=true readyz.public_data=true
+
+scenario=unsafe-output http=200 ms=6
+  events=[start, delta, error, complete]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=succeeded error=OUTPUT_REJECTED
+  final_reply="AI 回复未通过安全校验，已改为本地提示（streamed text contains markup）。你可以继续使用无 AI 的专业浏览与合成参考；你的回答和已确认方向不受影响。"
+  readyz.ai=true readyz.public_data=true
+
+scenario=probability-output http=200 ms=6
+  events=[start, error, complete]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=succeeded error=OUTPUT_REJECTED
+  final_reply="AI 回复未通过安全校验，已改为本地提示（streamed text states an admission probability or tier）。你可以继续使用无 AI 的专"
+  readyz.ai=true readyz.public_data=true
+
+scenario=link-output http=200 ms=5
+  events=[start, error, complete]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=succeeded error=OUTPUT_REJECTED
+  final_reply="AI 回复未通过安全校验，已改为本地提示（streamed text contains a link）。你可以继续使用无 AI 的专业浏览与合成参考；你的回答和已确认方向不受影响。"
+  readyz.ai=true readyz.public_data=true
+
+scenario=empty-output http=200 ms=6
+  events=[start, error, complete]
+  leaked_script=false leaked_link=false leaked_probability=false
+  request_status=succeeded error=OUTPUT_REJECTED
+  final_reply="AI 回复未通过安全校验，已改为本地提示（reply is required）。你可以继续使用无 AI 的专业浏览与合成参考；你的回答和已确认方向不受影响。"
+  readyz.ai=true readyz.public_data=true
+
+
+==================================================================
+B. 单进程内逐项验收（真实HTTP，端口8799）
+==================================================================
+时间: 2026-09-11T00:50:14.003Z
+[1] POST /v1/access/exchange -> 200 quota=20 academic_scope=false
+[2] A40 GET /v1/me/academic-profile -> 403 {"error":{"code":"FORBIDDEN_SUBJECT","message":"this credential cannot read academic records; a school-issued binding is required","request_id":"","retryable":false}}
+[3] POST /v1/career/turn -> 200 content-type=text/event-stream; charset=utf-8
+---- SSE 原文 ----
+event: start
+data: {"request_id":"acc-req-1","seq":1,"model_id":"fake-local-v1"}
+
+event: delta
+data: {"request_id":"acc-req-1","seq":2,"text":"本地假上游：我看到你在描述自己的经历。可以先把愿意尝试的小任务写下来，再决定方向。"}
+
+event: complete
+data: {"request_id":"acc-req-1","seq":3,"output":{"reply":"本地假上游：我看到你在描述自己的经历。可以先把愿意尝试的小任务写下来，再决定方向。","suggestions":[],"actions":["两周内完成一次小体验并记录过程"]}}
+------------------
+[4] A42 重复同一请求 -> 200，request状态=succeeded，额度仍为 20（只结算一次）
+[5] A43 同request_id不同payload -> 409
+    data: {"request_id":"acc-req-1","seq":1,"error":{"code":"REQUEST_CONFLICT","message":"request_id reused with a different payload","request_id":"acc-req-1","retryable":false}}
+[6] A45 system角色 -> 400 code=CLIENT_CONTROL_REJECTED
+[6] A45 model字段 -> 400 code=CLIENT_CONTROL_REJECTED
+[6] A45 upstream_url -> 400 code=CLIENT_CONTROL_REJECTED
+[7] 超长输入(4001字) -> 413
+[8] A47 状态按request_id隔离：旧=acc-old 新=acc-new
+[9] DELETE /v1/session -> 200 {"revoked":true,"deleted_records":3}
+    撤销后查询原request -> 401（凭证已失效）
+
+结论：以上为本机真实HTTP结果；上游为本地假上游，未连接真实模型、未使用生产密钥、未部署。
+
+==================================================================
+C. 真实浏览器（Edge 152 无头，CDP驱动，页面 http://localhost:5173）
+==================================================================
+[C1] AI 默认关闭：面板显示“已关闭（默认）”，不渲染输入框，仅一个“启用 AI（可选）”按钮
+[C2] 启用 AI 后页面未发出任何请求；netAfterEnable=[]
+[C3] 兑换访问码 -> 200，面板显示“已获得本地试用会话。”
+[C4] 无AI流程与AI并存：3条合成候选结果 + 航线图正常
+[C5] AI回复经SSE返回并显示：
+     本地假上游：我看到你在描述自己的经历。可以先把愿意尝试的小任务写下来，再决定方向。
+[C6] 修改输入后旧回复可见地失效（与匹配结果同样处理）：
+{
+  "before": {
+    "hasReply": true,
+    "staleClass": false,
+    "marker": null
+  },
+  "after": {
+    "hasReply": true,
+    "staleClass": true,
+    "marker": "输入已改变，这条 AI 回复不再对应当前情况；重新发送可获得新的建议。",
+    "text": "输入已改变，这条 AI 回复不再对应当前情况；重新发送可获得新的建议。本地假上游：我看到你在描述自己的经历。可以先把愿意尝试的小任务写下来，再决定方向。"
+  }
+}
+[C7] 390px 视口无横向溢出 (scrollWidth 390 == innerWidth 390)
+[C8] 打印媒体：航线图保留，AI面板、起点、探索隐藏
+[C9] 页面控制台异常数：0
+
+==================================================================
+D. 自动化测试（npm run validate）
+==================================================================
+
+> nanhang-app@0.1.0 validate
+> npm run generate && npm run typecheck && npm test
+
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/api@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> nanhang-app@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南溟/nanhang-app
+
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 57ms
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 132ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 38ms
+ ✓ apps/web/test/ai-client.test.ts (11 tests) 29ms
+ ✓ apps/web/test/ai-panel.test.ts (13 tests) 28ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 32ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 31ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 198ms
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 58ms
+ ✓ packages/domain/test/matching.test.ts (9 tests) 32ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 65ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 28ms
+ ✓ apps/api/test/api.test.ts (16 tests) 553ms
+
+ Test Files  13 passed (13)
+      Tests  178 passed (178)
+   Start at  08:50:37
+   Duration  2.92s (transform 3.90s, setup 0ms, collect 12.37s, tests 1.28s, environment 5ms, prepare 5.19s)
+
+ ✓ packages/contracts/test/workbook-data.test.ts > Excel primary intake development samples > keeps both supplied workbooks and every sample unverified and unpublished 10ms
+ ✓ packages/contracts/test/workbook-data.test.ts > Excel primary intake development samples > resolves field evidence to the declared workbook, worksheet, row and header 37ms
+ ✓ packages/contracts/test/workbook-data.test.ts > Excel primary intake development samples > keeps historical year and metric separate and does not infer comparability 42ms
+ ✓ packages/contracts/test/workbook-data.test.ts > Excel primary intake development samples > declares partial sample coverage and exposes workbook schema differences 1ms
+ ✓ packages/contracts/test/task03-data.test.ts > TASK-03 bounded official-source sample > keeps all sample rows outside a published release and pending human review 4ms
+ ✓ packages/contracts/test/task03-data.test.ts > TASK-03 bounded official-source sample > preserves registered hashes for every official snapshot and OCR output 27ms
+ ✓ packages/contracts/test/task03-data.test.ts > TASK-03 bounded official-source sample > keeps group inheritance stable without claiming unsampled offerings 4ms
+ ✓ packages/contracts/test/task03-data.test.ts > TASK-03 bounded official-source sample > retains the OCR-missing rank field as null and labels excerpts as non-exhaustive 2ms
+ ✓ packages/contracts/test/task03-data.test.ts > TASK-03 bounded official-source sample > does not relabel group admission minima as filing or major minima 7ms
+ ✓ packages/contracts/test/task03-data.test.ts > TASK-03 bounded official-source sample > keeps verification states explicit and rejects an implied manual acceptance 1ms
+ ✓ apps/web/test/ai-client.test.ts > A47 旧运行的结果不能污染当前航线图 > 运行或修订不一致时判定为不匹配 3ms
+ ✓ apps/web/test/ai-client.test.ts > A47 旧运行的结果不能污染当前航线图 > 旧run的complete事件被拒绝且不产生回复 1ms
+ ✓ apps/web/test/ai-client.test.ts > A47 旧运行的结果不能污染当前航线图 > 当前run的complete事件被采纳 1ms
+ ✓ apps/web/test/ai-client.test.ts > A47 旧运行的结果不能污染当前航线图 > delta事件不产生可应用结果，只有complete才落地 1ms
+ ✓ apps/web/test/ai-client.test.ts > A47 旧运行的结果不能污染当前航线图 > OUTPUT_REJECTED 归为降级而不是普通错误 1ms
+ ✓ apps/web/test/ai-client.test.ts > AI客户端 > 缺少凭证时不发起请求 1ms
+ ✓ apps/web/test/ai-client.test.ts > AI客户端 > 解析SSE并在同一run下采纳回复 7ms
+ ✓ apps/web/test/ai-client.test.ts > AI客户端 > HTTP失败归类为错误且不产生回复 2ms
+ ✓ apps/web/test/ai-client.test.ts > AI客户端 > 注释心跳行不产生事件 3ms
+ ✓ apps/web/test/ai-client.test.ts > 线格式与契约一致 > 发送的请求体使用服务端约定的字段名 3ms
+ ✓ apps/web/test/ai-client.test.ts > 线格式与契约一致 > 请求体不含服务端受控字段 1ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 student-owned profile > denial and reopening remove current evidence, retain revision trace, and allow a fresh answer 8ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 student-owned profile > does not confirm empty input, missing evidence or facilitator opinions 5ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 student-owned profile > rejects empty evidence IDs, empty quotes and duplicates; protects against caller mutation 3ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 student-owned profile > does not infer demonstrated ability from an interest statement 2ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 constraints, content and next actions > revalidates evidence at summary/action boundaries, including structurally forged objects 2ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 constraints, content and next actions > records each exclusive conflicting pair without treating free text or soft choices as mutually exclusive 2ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 constraints, content and next actions > prioritizes a constraint clarification even when two directions were confirmed 2ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 constraints, content and next actions > provides skippable questions, self-authored experience tasks and a bounded prompt template 3ms
+ ✓ packages/exploration/test/exploration.test.ts > TASK-06 constraints, content and next actions > keeps institution-specific professional facts separate from authored activities and verifies source snapshots 11ms
+ ✓ apps/web/test/ai-panel.test.ts > AI面板默认关闭且可完全回退 > 初始状态不连接、不显示回复 3ms
+ ✓ apps/web/test/ai-panel.test.ts > AI面板默认关闭且可完全回退 > 未启用时不发起任何网络请求 1ms
+ ✓ apps/web/test/ai-panel.test.ts > AI面板默认关闭且可完全回退 > 关闭后清除回复与会话，不残留状态 1ms
+ ✓ apps/web/test/ai-panel.test.ts > AI面板默认关闭且可完全回退 > 启用但没有访问码时给出提示且不发请求 1ms
+ ✓ apps/web/test/ai-panel.test.ts > AI回复的显示安全 > 尖括号被替换，模型文本不会被当作标记 1ms
+ ✓ apps/web/test/ai-panel.test.ts > AI回复的显示安全 > 正常回复原样展示，但不进入画像 10ms
+ ✓ apps/web/test/ai-panel.test.ts > AI回复的显示安全 > 降级回复按降级提示展示而不是普通成功 1ms
+ ✓ apps/web/test/ai-panel.test.ts > AI回复的显示安全 > 服务不可用时明确说明无AI流程仍可用 0ms
+ ✓ apps/web/test/ai-panel.test.ts > AI回复的显示安全 > A47 过期回复被忽略并说明原因 1ms
+ ✓ apps/web/test/ai-panel.test.ts > A47 端到端：旧run的SSE不会写入面板 > 请求发出后当前run已变化时，回复不被采纳 1ms
+ ✓ apps/web/test/ai-panel.test.ts > 已显示的AI回复会随输入变化可见地失效 > 回复在产生它的修订下是当前的 1ms
+ ✓ apps/web/test/ai-panel.test.ts > 已显示的AI回复会随输入变化可见地失效 > 修订推进后标记为失效但仍保留原文 0ms
+ ✓ apps/web/test/ai-panel.test.ts > 已显示的AI回复会随输入变化可见地失效 > 出错或清除后不再有失效标记 0ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A01 returns the full tie interval 4ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A02 handles a single person without an off-by-one 1ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A03 does not interpolate a zero-count score 1ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A04 refuses to extrapolate below coverage 1ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A05 preserves aggregate-bin precision 1ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A06 rejects a count larger than the cumulative value 1ms
+ ✓ packages/domain/test/acceptance.test.ts > rank rules A01-A06 and A51 > A51 does not infer population from an omitted tail 1ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A07 keeps school results out of province rank matching 1ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A08 keeps school results out of province rank matching 2ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A09 blocks reconstructed totals 1ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A10 catches bonus/table basis mismatches 1ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A11 keeps conflicting official rank and table interval visible 1ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A12 does not mix physics and history tables 1ms
+ ✓ packages/domain/test/acceptance.test.ts > academic rules A07-A12 and A50 > A50 requires a separate target scenario 1ms
+ ✓ packages/domain/test/acceptance.test.ts > eligibility rules A13-A19 > A13 returns UNKNOWN for incomplete subjects 1ms
+ ✓ packages/domain/test/acceptance.test.ts > eligibility rules A13-A19 > A14 returns FAIL for a complete non-matching selection 1ms
+ ✓ packages/domain/test/acceptance.test.ts > eligibility rules A13-A19 > A15 applies all_of/any_of correctly 1ms

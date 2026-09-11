@@ -1,0 +1,686 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "result_version": {
+      "const": "1.0.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "input_revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "rules_version": {
+      "const": "nh-rules-1.0.0"
+    },
+    "mode": {
+      "enum": [
+        "exploration",
+        "application_support"
+      ]
+    },
+    "academic_basis": {
+      "enum": [
+        "official_score",
+        "official_rank",
+        "target_scenario",
+        "school_context",
+        "no_academic_data"
+      ]
+    },
+    "coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2100
+          },
+          "track": {
+            "enum": [
+              "PHYSICS",
+              "HISTORY"
+            ]
+          },
+          "batch": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "admission_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "published_offerings": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "known_scope_total": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exhaustive": {
+            "type": "boolean"
+          },
+          "missing_notes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          }
+        },
+        "required": [
+          "scope_id",
+          "year",
+          "track",
+          "batch",
+          "stage",
+          "admission_type",
+          "published_offerings",
+          "known_scope_total",
+          "exhaustive",
+          "missing_notes"
+        ]
+      },
+      "minItems": 1
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "offering_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "eligibility": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "enum": [
+                  "PASS",
+                  "UNKNOWN"
+                ]
+              },
+              "checked_requirements": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                }
+              },
+              "pending_requirements": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                }
+              },
+              "reason_codes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "INCOMPLETE_SUBJECTS",
+                    "SUBJECT_REQUIREMENT_FAILED",
+                    "UNKNOWN_REQUIREMENT",
+                    "UNSUPPORTED_SCOPE",
+                    "SCHOOL_SCORE_UNCALIBRATED",
+                    "TOTAL_NOT_SOURCE",
+                    "UNKNOWN_SCORE_BASIS",
+                    "BONUS_BASIS_MISMATCH",
+                    "RANK_CONFLICT",
+                    "NO_OBSERVED_SCORE",
+                    "OUT_OF_DISTRIBUTION_COVERAGE",
+                    "MAJOR_HISTORY_MISSING",
+                    "GROUP_HISTORY_MISSING",
+                    "GROUP_CHANGED",
+                    "SOURCE_CONFLICT",
+                    "TARGET_YEAR_PLAN_MISSING",
+                    "DATASET_WITHDRAWN",
+                    "TUITION_UNKNOWN",
+                    "HARD_PREFERENCE_EXCLUDED",
+                    "NO_ACADEMIC_INPUT",
+                    "NO_CALIBRATION_MODEL"
+                  ]
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "status",
+              "checked_requirements",
+              "pending_requirements",
+              "reason_codes"
+            ]
+          },
+          "group_reference": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "relation": {
+                "enum": [
+                  "AHEAD_OF_REFERENCE",
+                  "BEHIND_REFERENCE",
+                  "OVERLAPS_REFERENCE",
+                  "NOT_COMPARABLE"
+                ]
+              },
+              "source_year": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 2000,
+                    "maximum": 2100
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "metric_type": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "group_filing_min",
+                      "group_admission_min",
+                      "major_admission_min",
+                      "major_admission_mean",
+                      "major_admission_max",
+                      "institution_admission_min"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "candidate_rank_interval": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reference_rank_interval": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason_codes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "INCOMPLETE_SUBJECTS",
+                    "SUBJECT_REQUIREMENT_FAILED",
+                    "UNKNOWN_REQUIREMENT",
+                    "UNSUPPORTED_SCOPE",
+                    "SCHOOL_SCORE_UNCALIBRATED",
+                    "TOTAL_NOT_SOURCE",
+                    "UNKNOWN_SCORE_BASIS",
+                    "BONUS_BASIS_MISMATCH",
+                    "RANK_CONFLICT",
+                    "NO_OBSERVED_SCORE",
+                    "OUT_OF_DISTRIBUTION_COVERAGE",
+                    "MAJOR_HISTORY_MISSING",
+                    "GROUP_HISTORY_MISSING",
+                    "GROUP_CHANGED",
+                    "SOURCE_CONFLICT",
+                    "TARGET_YEAR_PLAN_MISSING",
+                    "DATASET_WITHDRAWN",
+                    "TUITION_UNKNOWN",
+                    "HARD_PREFERENCE_EXCLUDED",
+                    "NO_ACADEMIC_INPUT",
+                    "NO_CALIBRATION_MODEL"
+                  ]
+                },
+                "uniqueItems": true
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "relation",
+              "source_year",
+              "metric_type",
+              "candidate_rank_interval",
+              "reference_rank_interval",
+              "reason_codes",
+              "evidence_ids"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "relation": {
+                      "const": "NOT_COMPARABLE"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "candidate_rank_interval": {
+                      "type": "null"
+                    },
+                    "reference_rank_interval": {
+                      "type": "null"
+                    },
+                    "reason_codes": {
+                      "minItems": 1
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "source_year": {
+                      "type": "integer",
+                      "minimum": 2000,
+                      "maximum": 2100
+                    },
+                    "metric_type": {
+                      "enum": [
+                        "group_filing_min",
+                        "group_admission_min",
+                        "major_admission_min",
+                        "major_admission_mean",
+                        "major_admission_max",
+                        "institution_admission_min"
+                      ]
+                    },
+                    "candidate_rank_interval": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "reference_rank_interval": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "evidence_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "major_reference": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "relation": {
+                "enum": [
+                  "AHEAD_OF_REFERENCE",
+                  "BEHIND_REFERENCE",
+                  "OVERLAPS_REFERENCE",
+                  "NOT_COMPARABLE"
+                ]
+              },
+              "source_year": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 2000,
+                    "maximum": 2100
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "metric_type": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "group_filing_min",
+                      "group_admission_min",
+                      "major_admission_min",
+                      "major_admission_mean",
+                      "major_admission_max",
+                      "institution_admission_min"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "candidate_rank_interval": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reference_rank_interval": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason_codes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "INCOMPLETE_SUBJECTS",
+                    "SUBJECT_REQUIREMENT_FAILED",
+                    "UNKNOWN_REQUIREMENT",
+                    "UNSUPPORTED_SCOPE",
+                    "SCHOOL_SCORE_UNCALIBRATED",
+                    "TOTAL_NOT_SOURCE",
+                    "UNKNOWN_SCORE_BASIS",
+                    "BONUS_BASIS_MISMATCH",
+                    "RANK_CONFLICT",
+                    "NO_OBSERVED_SCORE",
+                    "OUT_OF_DISTRIBUTION_COVERAGE",
+                    "MAJOR_HISTORY_MISSING",
+                    "GROUP_HISTORY_MISSING",
+                    "GROUP_CHANGED",
+                    "SOURCE_CONFLICT",
+                    "TARGET_YEAR_PLAN_MISSING",
+                    "DATASET_WITHDRAWN",
+                    "TUITION_UNKNOWN",
+                    "HARD_PREFERENCE_EXCLUDED",
+                    "NO_ACADEMIC_INPUT",
+                    "NO_CALIBRATION_MODEL"
+                  ]
+                },
+                "uniqueItems": true
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "relation",
+              "source_year",
+              "metric_type",
+              "candidate_rank_interval",
+              "reference_rank_interval",
+              "reason_codes",
+              "evidence_ids"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "relation": {
+                      "const": "NOT_COMPARABLE"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "candidate_rank_interval": {
+                      "type": "null"
+                    },
+                    "reference_rank_interval": {
+                      "type": "null"
+                    },
+                    "reason_codes": {
+                      "minItems": 1
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "source_year": {
+                      "type": "integer",
+                      "minimum": 2000,
+                      "maximum": 2100
+                    },
+                    "metric_type": {
+                      "enum": [
+                        "group_filing_min",
+                        "group_admission_min",
+                        "major_admission_min",
+                        "major_admission_mean",
+                        "major_admission_max",
+                        "institution_admission_min"
+                      ]
+                    },
+                    "candidate_rank_interval": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "reference_rank_interval": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "evidence_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "interest_reason_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            }
+          },
+          "preference_status": {
+            "enum": [
+              "PASS",
+              "UNKNOWN"
+            ]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "offering_id",
+          "eligibility",
+          "group_reference",
+          "major_reference",
+          "interest_reason_refs",
+          "preference_status",
+          "evidence_ids"
+        ]
+      }
+    },
+    "excluded_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason_code": {
+            "enum": [
+              "INCOMPLETE_SUBJECTS",
+              "SUBJECT_REQUIREMENT_FAILED",
+              "UNKNOWN_REQUIREMENT",
+              "UNSUPPORTED_SCOPE",
+              "SCHOOL_SCORE_UNCALIBRATED",
+              "TOTAL_NOT_SOURCE",
+              "UNKNOWN_SCORE_BASIS",
+              "BONUS_BASIS_MISMATCH",
+              "RANK_CONFLICT",
+              "NO_OBSERVED_SCORE",
+              "OUT_OF_DISTRIBUTION_COVERAGE",
+              "MAJOR_HISTORY_MISSING",
+              "GROUP_HISTORY_MISSING",
+              "GROUP_CHANGED",
+              "SOURCE_CONFLICT",
+              "TARGET_YEAR_PLAN_MISSING",
+              "DATASET_WITHDRAWN",
+              "TUITION_UNKNOWN",
+              "HARD_PREFERENCE_EXCLUDED",
+              "NO_ACADEMIC_INPUT",
+              "NO_CALIBRATION_MODEL"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "reason_code",
+          "count"
+        ]
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "INCOMPLETE_SUBJECTS",
+          "SUBJECT_REQUIREMENT_FAILED",
+          "UNKNOWN_REQUIREMENT",
+          "UNSUPPORTED_SCOPE",
+          "SCHOOL_SCORE_UNCALIBRATED",
+          "TOTAL_NOT_SOURCE",
+          "UNKNOWN_SCORE_BASIS",
+          "BONUS_BASIS_MISMATCH",
+          "RANK_CONFLICT",
+          "NO_OBSERVED_SCORE",
+          "OUT_OF_DISTRIBUTION_COVERAGE",
+          "MAJOR_HISTORY_MISSING",
+          "GROUP_HISTORY_MISSING",
+          "GROUP_CHANGED",
+          "SOURCE_CONFLICT",
+          "TARGET_YEAR_PLAN_MISSING",
+          "DATASET_WITHDRAWN",
+          "TUITION_UNKNOWN",
+          "HARD_PREFERENCE_EXCLUDED",
+          "NO_ACADEMIC_INPUT",
+          "NO_CALIBRATION_MODEL"
+        ]
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "result_version",
+    "run_id",
+    "input_revision",
+    "release_id",
+    "rules_version",
+    "mode",
+    "academic_basis",
+    "coverage",
+    "candidates",
+    "excluded_summary",
+    "warnings"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nanhang MatchResult 1.0.0",
+  "description": "首版结构合同；禁止probability/admission_chance等未定义字段。区间方向、证据存在性与发布范围须业务验证。"
+}

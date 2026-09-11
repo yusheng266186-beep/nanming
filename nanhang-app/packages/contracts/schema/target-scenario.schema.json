@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nanhang TargetScenario 1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_version",
+    "scenario_id",
+    "target_exam_year",
+    "reference_year",
+    "province",
+    "track",
+    "target_score",
+    "score_basis",
+    "release_id"
+  ],
+  "properties": {
+    "scenario_version": {
+      "const": "1.0.0"
+    },
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "target_exam_year": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 2100
+    },
+    "reference_year": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 2100
+    },
+    "province": {
+      "const": "SC"
+    },
+    "track": {
+      "enum": [
+        "PHYSICS",
+        "HISTORY"
+      ]
+    },
+    "target_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 750
+    },
+    "score_basis": {
+      "enum": [
+        "gaokao_cultural",
+        "gaokao_filing"
+      ]
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    }
+  },
+  "description": "与真实考试档案分开存储；实际表的计分口径和可用范围由业务验证。首版不含加分情景，gaokao_filing仅在明确无加分且口径兼容时可用。"
+}

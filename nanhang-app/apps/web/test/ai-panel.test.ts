@@ -1,0 +1,117 @@
+import { describe, expect, it } from "vitest";
+import {
+  AI_NOTICE, applyOutcome, askAi, disableAi, enableAi, initialAiPanel, isReplyStale, safeText, withSession
+} from "../src/ai-panel.js";
+
+const stamp = { runId: "run-new", inputRevision: 2 };
+
+const sse = (reply: string) => [
+  'event: start\ndata: {"request_id":"req","seq":1}\n\n',
+  `event: complete\ndata: ${JSON.stringify({ request_id: "req", seq: 2, output: { reply } })}\n\n`
+].join("");
+
+describe("AI面板默认关闭且可完全回退", () => {
+  it("初始状态不连接、不显示回复", () => {
+    expect(initialAiPanel.enabled).toBe(false);
+    expect(initialAiPanel.token).toBeNull();
+    expect(initialAiPanel.reply).toBeNull();
+    expect(AI_NOTICE).toContain("不能修改资格");
+  });
+
+  it("未启用时不发起任何网络请求", async () => {
+    let called = false;
+    const next = await askAi(initialAiPanel, stamp, stamp, "你好", "req", {
+      fetchImpl: (async () => { called = true; return new Response(); }) as typeof fetch
+    });
+    expect(called).toBe(false);
+    expect(next.reply).toBeNull();
+  });
+
+  it("关闭后清除回复与会话，不残留状态", () => {
+    const on = withSession(enableAi(initialAiPanel), "token");
+    const off = disableAi({ ...on, reply: "之前的话" });
+    expect(off.enabled).toBe(false);
+    expect(off.token).toBeNull();
+    expect(off.reply).toBeNull();
+    expect(off.status).toContain("不受影响");
+  });
+
+  it("启用但没有访问码时给出提示且不发请求", async () => {
+    const next = await askAi(enableAi(initialAiPanel), stamp, stamp, "你好", "req");
+    expect(next.status).toContain("访问码");
+  });
+});
+
+describe("AI回复的显示安全", () => {
+  it("尖括号被替换，模型文本不会被当作标记", () => {
+    expect(safeText("<script>alert(1)</script>")).toBe("\u003cscript\u003ealert(1)\u003c/script\u003e");
+    expect(safeText(undefined)).toBe("");
+  });
+
+  it("正常回复原样展示，但不进入画像", async () => {
+    const state = withSession(enableAi(initialAiPanel), "token");
+    const next = await askAi(state, stamp, stamp, "我喜欢整理数据", "req", {
+      fetchImpl: (async () => new Response(sse("可以先做一次数据整理的小体验。"), { status: 200 })) as typeof fetch
+    });
+    expect(next.reply).toContain("数据整理");
+    expect(next.suggestions).toHaveLength(0);
+    expect(next.status).toContain("需你本人确认");
+  });
+
+  it("降级回复按降级提示展示而不是普通成功", () => {
+    const state = withSession(enableAi(initialAiPanel), "token");
+    const next = applyOutcome(state, { requestId: "req", status: "degraded", reply: "本地提示", reason: "reply contains markup" });
+    expect(next.status).toContain("未通过安全校验");
+    expect(next.suggestions).toHaveLength(0);
+  });
+
+  it("服务不可用时明确说明无AI流程仍可用", () => {
+    const state = withSession(enableAi(initialAiPanel), "token");
+    const next = applyOutcome(state, { requestId: "req", status: "error", reply: null, reason: "STATE_STORE_UNAVAILABLE" }, 503);
+    expect(next.status).toContain("仍可正常使用");
+  });
+
+  it("A47 过期回复被忽略并说明原因", () => {
+    const state = withSession(enableAi(initialAiPanel), "token");
+    const next = applyOutcome(state, { requestId: "req-old", status: "rejected", reply: null, reason: "STALE_RUN_RESPONSE" });
+    expect(next.status).toContain("过期");
+    expect(next.reply).toBeNull();
+  });
+});
+
+describe("A47 端到端：旧run的SSE不会写入面板", () => {
+  it("请求发出后当前run已变化时，回复不被采纳", async () => {
+    const oldStamp = { runId: "run-old", inputRevision: 1 };
+    // The student changed an input while the request was in flight, so the active stamp moved on.
+    const movedOn = { runId: "run-new", inputRevision: 2 };
+    const state = withSession(enableAi(initialAiPanel), "token");
+    const next = await askAi(state, oldStamp, movedOn, "旧的一轮", "req-old", {
+      fetchImpl: (async () => new Response(sse("这是旧运行的结果"), { status: 200 })) as typeof fetch
+    });
+    expect(next.reply).toBeNull();
+    expect(next.status).toContain("过期");
+  });
+});
+
+describe("已显示的AI回复会随输入变化可见地失效", () => {
+  const connected = () => withSession(enableAi(initialAiPanel), "token");
+
+  it("回复在产生它的修订下是当前的", () => {
+    const state = applyOutcome(connected(), { requestId: "r", status: "applied", reply: "建议内容", reason: null }, 200, 5);
+    expect(isReplyStale(state, 5)).toBe(false);
+  });
+
+  it("修订推进后标记为失效但仍保留原文", () => {
+    const state = applyOutcome(connected(), { requestId: "r", status: "applied", reply: "建议内容", reason: null }, 200, 5);
+    const later = { ...state };
+    expect(isReplyStale(later, 6)).toBe(true);
+    expect(later.reply).toBe("建议内容");
+  });
+
+  it("出错或清除后不再有失效标记", () => {
+    const failed = applyOutcome(connected(), { requestId: "r", status: "error", reply: null, reason: "X" }, 503, 5);
+    expect(isReplyStale(failed, 9)).toBe(false);
+    const off = disableAi(applyOutcome(connected(), { requestId: "r", status: "applied", reply: "x", reason: null }, 200, 5));
+    expect(isReplyStale(off, 9)).toBe(false);
+  });
+});

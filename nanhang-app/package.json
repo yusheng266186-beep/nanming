@@ -1,0 +1,35 @@
+{
+  "name": "nanhang-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "tsc -b --watch --preserveWatchOutput",
+    "generate": "node scripts/generate-contract-types.mjs",
+    "build": "npm run generate && tsc -b",
+    "typecheck": "tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "npm run generate && npm run typecheck && npm test",
+    "clean": "tsc -b --clean",
+    "web:dev": "npm --workspace @nanhang/web run dev",
+    "web:build": "npm --workspace @nanhang/web run build",
+    "api:start": "npm --workspace @nanhang/api run start",
+    "paper:dev": "npm --workspace @nanhang/web-paper run dev",
+    "paper:build": "npm --workspace @nanhang/web-paper run build",
+    "build:all": "npm run generate && tsc -b && npm run web:build && npm run paper:build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "json-schema-to-typescript": "^15.0.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

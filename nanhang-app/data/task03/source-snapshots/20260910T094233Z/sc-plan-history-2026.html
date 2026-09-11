@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>招生考试报计划合订本</title>
+		<script src="./js/jquery-3.4.1.min.js"></script>
+		<style type="text/css">
+			* {
+				margin: 0px;
+				padding: 0px;
+			}
+
+			li {
+				list-style-type: none;
+			}
+
+			a {
+				text-decoration: none;
+				color: #000000;
+			}
+
+			.bor {
+				margin: 4px auto;
+				width: 1200px;
+			}
+
+			.fl {
+				background: #75b5e6;
+			}
+
+			.fl .kong {
+				display: inline-block;
+				height: 50px;
+				line-height: 50px;
+				float: left;
+				width: 18px;
+			}
+
+			.fl .lei {
+				display: block;
+				height: 50px;
+				line-height: 50px;
+				background: #2082ce;
+				color: white;
+				font-size: 18px;
+				padding: 0px 12px;
+				text-align: center;
+			}
+
+			.fl li {
+				position: relative;
+				float: left;
+				margin-right: 36px;
+				font-size: 20px;
+				cursor: pointer;
+				height: 50px;
+				line-height: 50px;
+				color: white;
+				text-align: center;
+
+			}
+
+			.fl li span {
+				position: absolute;
+				display: inline-block;
+				width: 1px;
+				height: 30px;
+				background: white;
+				margin-top: 10px;
+				margin-left: 18px;
+			}
+
+			.fl .nav {
+				color: black;
+			}
+
+			.fan {
+				width: 200px;
+				height: 40px;
+				line-height: 40px;
+				float: right;
+				margin-top: 10px;
+				margin-bottom: 10px;
+			}
+
+			.prev {
+				float: left;
+				font-size: 20px;
+				padding: 0px 12px;
+				border: 1px solid #cccccc;
+			}
+
+			.next {
+				float: right;
+				font-size: 20px;
+				padding: 0px 12px;
+				border: 1px solid #cccccc;
+			}
+
+			.tu {
+				width: 1200px;
+				border: 1px solid #9ccfee;
+			}
+
+			.tu img {
+				max-width: 100%;
+			}
+
+			.top {
+				position: fixed;
+				bottom: 9%;
+				right: 1%;
+				cursor: pointer;
+			}
+
+			.banner {
+				margin: 0 auto;
+				width: 1200px;
+			}
+
+			/* 清除浮动 */
+			.clearfix:after {
+				content: ".";
+				display: block;
+				height: 0;
+				visibility: hidden;
+				clear: both;
+			}
+
+			.clearfix {
+				*zoom: 1;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- <div class="banner" style="height:140px;">
+			<object width="1200" height="140" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/
+pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0">
+				<param name="SRC" value="http://img.sceea.cn/images2018/flash/banner.swf" />
+				<embed src="http://img.sceea.cn/images2018/flash/banner.swf" width="1200" height="140" />
+			</object>
+		</div> -->
+		<div class="bor">
+			<div class="controls">
+				<ul class="fl">
+					<p class='lei'>2026年普通高校在川招生专业及名额介绍（历史类）</p>
+					<p class='kong'>
+					<p>
+						<li data="1" class="d1 nav" style="margin-left: 13%;">前言<span></span></li>
+						<li data="4" class="d4">目录<span></span></li>
+						<li data="5" class="d5">本科<span></span></li>
+						<li data="65" class="d65">高职（专科）<span></span></li>
+						<li data="114" class="d114">艺术类<span></span></li>
+						<li data="152" class="d152">体育类</li>
+						<li data="160" class="d160" style="margin-left: 13%;">&nbsp;&nbsp;&nbsp;2026年高职院校面向涉藏州县试办高中起点“1+2”模式高职教育招生专业目录(历史类)</li>
+					<div class="clearfix"></div>
+				</ul>
+				<div class="fan">
+					<a class="prev" href="javascript:void(0);">上一页</a>
+					<a class="next" href="javascript:void(0);">下一页</a>
+				</div>
+				<div class="clearfix"></div>
+
+			</div>
+			<div class="tu">
+
+			</div>
+			<img class='top' src="http://img.sceea.cn/images2018/top.png">
+		</div>
+
+	</body>
+</html>
+<script>
+	$(function() {
+		var min = 1;
+		var max = 160; //总页数
+		var list = [1, 4, 5, 65, 114, 152, 160]
+		var tuarr = [];
+		for (var i = 1; i <= max; i++) {
+			tuarr[i] = i;
+		}
+		var index = 1; //当前所在页码默认第一页
+		var ImgObj = new Image(); //初始化第一张图片
+		var src = "./img/ls/tu/ls (" + index + ").png";
+		ImgObj.src = src;
+		$(".tu").html(ImgObj);
+		$(".prev").click(function() {
+			if (index == 1) {
+				alert("当前已经是第一页");
+				return;
+			} else {
+				index = index - 1;
+				if (tuarr[index] != undefined) {
+					// dian(index);
+					CreateImg(index);
+				} else {
+					while (tuarr[index] == undefined) {
+						index = index - 1;
+						tuarr[index];
+					}
+					// dian(index);
+					CreateImg(index);
+				}
+			}
+		});
+		$(".fl li").click(function() {
+			$(".fl li").removeClass('nav');
+			$(this).addClass('nav');
+			var ji = $(this).attr("data");
+			index = parseInt(ji);
+			// dian(ji);
+			CreateImg(ji);
+		});
+		$(".next").click(function() {
+			if (index == max) {
+				alert("当前已经是最后一页");
+				return;
+			} else {
+				index = index + 1;
+				if (tuarr[index] != undefined) {
+					//  dian(index);
+					CreateImg(index);
+				} else {
+					while (tuarr[index] == undefined) {
+						index = index + 1;
+						tuarr[index];
+					}
+					// dian(index);
+					CreateImg(index);
+				}
+			}
+
+		});
+		$(".top").click(function() {
+			$('html,body').animate({
+				scrollTop: 0
+			}, 300);
+		});
+
+		function CreateImg(imgindex) {
+			var ImgObj = new Image(); //创建图片
+			var imgurl = "./img/ls/tu/ls (" + imgindex + ").png";
+			ImgObj.src = imgurl;
+			$(".tu").html(ImgObj);
+			$(".fl li").removeClass('nav');
+			for (var i = 0; i < list.length; i++) {
+				if (i == list.length - 1 || (imgindex >= list[i] && imgindex < list[i + 1])) {
+					if (i == 4 && imgindex != list[i]) {
+						$("#yk").addClass('nav');
+					} else {
+						$(".d" + list[i]).addClass('nav');
+					}
+					break
+				}
+			}
+		}
+		
+		function dian(i) {
+			var s = ".d" + i;
+			if ($(s).length > 0) {
+				$(".fl li").removeClass("nav");
+				$(s).addClass("nav");
+			}
+		}
+	});
+	document.oncontextmenu = function() {
+		return false;
+	}
+	document.onkeydown = function(event) {
+		if (event.ctrlKey && window.event.keyCode == 67) {
+			return false;
+		}
+		e = event ? event : (window.event ? window.event : null); //兼容火狐浏览
+		if (e.keyCode == 123) {
+			return false;
+		}
+
+	}
+	document.body.oncopy = function() {
+		return false;
+	}
+	document.onselectstart = function() {
+		return false;
+	}
+</script>

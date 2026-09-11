@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "source_run_id": "20260910T094233Z",
+  "completed_at": "2026-09-10T09:49:12Z",
+  "engine": "Windows.Media.Ocr.OcrEngine",
+  "language": "zh-Hans",
+  "human_review_performed": false,
+  "publication_status": "NOT_PUBLISHED",
+  "outputs": [
+    {
+      "asset_id": "SC-PLAN-P-2026-P005",
+      "source_snapshot_path": "data/task03/source-snapshots/20260910T094233Z/sc-plan-physics-2026-p005.png",
+      "source_sha256": "2f373fbaf9a2c34f23d59b4fadefd30da77f7217d1f0c82863e4662ac0940d00",
+      "ocr_output_path": "data/task03/extraction/20260910T094233Z/SC-PLAN-P-2026-P005.ocr.json",
+      "ocr_output_sha256": "c13b74befa0be73a27302ff209ed4ddef3e349d9d92b1d4152d81d18ac46989c",
+      "ocr_language": "zh-Hans",
+      "ocr_text_angle": 0,
+      "ocr_line_count": 348
+    },
+    {
+      "asset_id": "SC-PLAN-H-2026-P005",
+      "source_snapshot_path": "data/task03/source-snapshots/20260910T094233Z/sc-plan-history-2026-p005.png",
+      "source_sha256": "aefaab1b74de1ed0ae824f3edccacef52f6ba17e652cc8c99cdc74d573d31ae7",
+      "ocr_output_path": "data/task03/extraction/20260910T094233Z/SC-PLAN-H-2026-P005.ocr.json",
+      "ocr_output_sha256": "f7eb481ac1d4e2e5ba02128434992ad750c90c284e247eab2a63920aed809d61",
+      "ocr_language": "zh-Hans",
+      "ocr_text_angle": 0,
+      "ocr_line_count": 429
+    },
+    {
+      "asset_id": "SC-RANK-P-2026-I001",
+      "source_snapshot_path": "data/task03/source-snapshots/20260910T094233Z/sc-rank-physics-2026-i001.jpg",
+      "source_sha256": "0ec85945d95e1a6c7f8b63bcbe3c5b115d899ba000889c0214f4cb7be9b5b065",
+      "ocr_output_path": "data/task03/extraction/20260910T094233Z/SC-RANK-P-2026-I001.ocr.json",
+      "ocr_output_sha256": "9d37a963a6c3a283635e2fb254d2e3070f97c9141194811605c55396a30a96af",
+      "ocr_language": "zh-Hans",
+      "ocr_text_angle": 0,
+      "ocr_line_count": 79
+    },
+    {
+      "asset_id": "SC-RANK-H-2026-I001",
+      "source_snapshot_path": "data/task03/source-snapshots/20260910T094233Z/sc-rank-history-2026-i001.jpg",
+      "source_sha256": "9914e7bc5d4b83e55f7825a793b78f5728b7b2d9b028d2976e894155b70aee01",
+      "ocr_output_path": "data/task03/extraction/20260910T094233Z/SC-RANK-H-2026-I001.ocr.json",
+      "ocr_output_sha256": "f06eb3a829c48ef69843386a5bc6c9bd3deb7f8c489629e5ef636a5aa9f3ed3e",
+      "ocr_language": "zh-Hans",
+      "ocr_text_angle": 0,
+      "ocr_line_count": 82
+    },
+    {
+      "asset_id": "SICAU-REFERENCE-2026-I001",
+      "source_snapshot_path": "data/task03/source-snapshots/20260910T094233Z/sicau-plan-history-2026-i001.jpg",
+      "source_sha256": "d9ff2ef10914ada222b8c6e626bc09d5a6fd8e93e2289d6cbeacec810dbe0d93",
+      "ocr_output_path": "data/task03/extraction/20260910T094233Z/SICAU-REFERENCE-2026-I001.ocr.json",
+      "ocr_output_sha256": "f2b7068dc87fbfeda6031c810fa856b16c88688a4a1cb4fce4d95385e5d5bd26",
+      "ocr_language": "zh-Hans",
+      "ocr_text_angle": 0,
+      "ocr_line_count": 710
+    }
+  ]
+}

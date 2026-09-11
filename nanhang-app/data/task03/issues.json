@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "source_run_id": "20260910T094233Z",
+  "issues": [
+    {
+      "issue_id": "T03-I01",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "description": "Dense three-column plan-page OCR interleaves columns and misreads some alphanumeric major codes; workbook text-layer values require human image comparison."
+    },
+    {
+      "issue_id": "T03-I02",
+      "status": "OPEN",
+      "severity": "MEDIUM",
+      "description": "Physics score-distribution OCR missed people_at_score for 679; the structured field remains null."
+    },
+    {
+      "issue_id": "T03-I03",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "description": "The SICAU image does not establish historical batch/admission type/score basis for each selected 2025 value."
+    },
+    {
+      "issue_id": "T03-I04",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "description": "No official group_filing_min evidence was sampled; group admission minima must not be relabeled as filing minima."
+    },
+    {
+      "issue_id": "T03-I05",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "description": "No human reviewer has signed off any extracted row; none may enter a PUBLISHED release."
+    }
+  ]
+}

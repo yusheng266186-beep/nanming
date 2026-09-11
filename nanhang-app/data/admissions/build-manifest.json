@@ -1,0 +1,243 @@
+{
+  "format_version": "1.0.0",
+  "builder": "pipelines/task03/build_admissions_db.py",
+  "source_sha256": {
+    "物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx": "bc2e03abbc6870c7bc30b6325c6839fa783e17ed19aac6dc31b0342cebaf1974",
+    "历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx": "78305a687e166fb3a5788d0f5a680029bb44f79932e8a19691f7fdc0330525eb"
+  },
+  "combined_source_sha256": "e48a598a18328fac6d68590537705a333a0113e252815c88252dcff8cd175be0",
+  "sources": 2,
+  "institutions": 2308,
+  "groups": 12275,
+  "offerings": 51878,
+  "requirements": 12275,
+  "plan_records": 51878,
+  "observations": 264971,
+  "issues": 134852,
+  "rows": 51878,
+  "tuition_unresolved": 797,
+  "requirement_unresolved": 82,
+  "plan_count_sum": 422017,
+  "group_requirement_varies": 0,
+  "duplicate_offering_keys": 0,
+  "repeated_group_observations": 36848,
+  "source_conflicts": 0,
+  "score_distribution_loaded": true,
+  "score_distribution_rows": 3736,
+  "score_distribution_tables": {
+    "SCORE-DIST-SC-2023-SCIENCE": {
+      "distribution_id": "SCORE-DIST-SC-2023-SCIENCE",
+      "year": 2023,
+      "track": "SCIENCE",
+      "curriculum_system": "old_system",
+      "rows": 596,
+      "score_min": 100,
+      "score_max": 698,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 295512,
+      "head_group_above_max": 55
+    },
+    "SCORE-DIST-SC-2024-ARTS": {
+      "distribution_id": "SCORE-DIST-SC-2024-ARTS",
+      "year": 2024,
+      "track": "ARTS",
+      "curriculum_system": "old_system",
+      "rows": 490,
+      "score_min": 150,
+      "score_max": 639,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 201953,
+      "head_group_above_max": 30
+    },
+    "SCORE-DIST-SC-2024-SCIENCE": {
+      "distribution_id": "SCORE-DIST-SC-2024-SCIENCE",
+      "year": 2024,
+      "track": "SCIENCE",
+      "curriculum_system": "old_system",
+      "rows": 549,
+      "score_min": 150,
+      "score_max": 698,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 301825,
+      "head_group_above_max": 51
+    },
+    "SCORE-DIST-SC-2025-HISTORY": {
+      "distribution_id": "SCORE-DIST-SC-2025-HISTORY",
+      "year": 2025,
+      "track": "HISTORY",
+      "curriculum_system": "new_gaokao",
+      "rows": 514,
+      "score_min": 150,
+      "score_max": 663,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 177978,
+      "head_group_above_max": 30
+    },
+    "SCORE-DIST-SC-2025-PHYSICS": {
+      "distribution_id": "SCORE-DIST-SC-2025-PHYSICS",
+      "year": 2025,
+      "track": "PHYSICS",
+      "curriculum_system": "new_gaokao",
+      "rows": 541,
+      "score_min": 150,
+      "score_max": 691,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 284789,
+      "head_group_above_max": 60
+    },
+    "SCORE-DIST-SC-2026-HISTORY": {
+      "distribution_id": "SCORE-DIST-SC-2026-HISTORY",
+      "year": 2026,
+      "track": "HISTORY",
+      "curriculum_system": "new_gaokao",
+      "rows": 512,
+      "score_min": 151,
+      "score_max": 662,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 177491,
+      "head_group_above_max": 30
+    },
+    "SCORE-DIST-SC-2026-PHYSICS": {
+      "distribution_id": "SCORE-DIST-SC-2026-PHYSICS",
+      "year": 2026,
+      "track": "PHYSICS",
+      "curriculum_system": "new_gaokao",
+      "rows": 534,
+      "score_min": 150,
+      "score_max": 685,
+      "counts_derived": 0,
+      "cumulative_at_lowest": 292426,
+      "head_group_above_max": 54
+    }
+  },
+  "score_distribution_years": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "score_distribution": {
+    "loaded": true,
+    "tables": {
+      "SCORE-DIST-SC-2023-SCIENCE": {
+        "distribution_id": "SCORE-DIST-SC-2023-SCIENCE",
+        "year": 2023,
+        "track": "SCIENCE",
+        "curriculum_system": "old_system",
+        "rows": 596,
+        "score_min": 100,
+        "score_max": 698,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 295512,
+        "head_group_above_max": 55
+      },
+      "SCORE-DIST-SC-2024-ARTS": {
+        "distribution_id": "SCORE-DIST-SC-2024-ARTS",
+        "year": 2024,
+        "track": "ARTS",
+        "curriculum_system": "old_system",
+        "rows": 490,
+        "score_min": 150,
+        "score_max": 639,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 201953,
+        "head_group_above_max": 30
+      },
+      "SCORE-DIST-SC-2024-SCIENCE": {
+        "distribution_id": "SCORE-DIST-SC-2024-SCIENCE",
+        "year": 2024,
+        "track": "SCIENCE",
+        "curriculum_system": "old_system",
+        "rows": 549,
+        "score_min": 150,
+        "score_max": 698,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 301825,
+        "head_group_above_max": 51
+      },
+      "SCORE-DIST-SC-2025-HISTORY": {
+        "distribution_id": "SCORE-DIST-SC-2025-HISTORY",
+        "year": 2025,
+        "track": "HISTORY",
+        "curriculum_system": "new_gaokao",
+        "rows": 514,
+        "score_min": 150,
+        "score_max": 663,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 177978,
+        "head_group_above_max": 30
+      },
+      "SCORE-DIST-SC-2025-PHYSICS": {
+        "distribution_id": "SCORE-DIST-SC-2025-PHYSICS",
+        "year": 2025,
+        "track": "PHYSICS",
+        "curriculum_system": "new_gaokao",
+        "rows": 541,
+        "score_min": 150,
+        "score_max": 691,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 284789,
+        "head_group_above_max": 60
+      },
+      "SCORE-DIST-SC-2026-HISTORY": {
+        "distribution_id": "SCORE-DIST-SC-2026-HISTORY",
+        "year": 2026,
+        "track": "HISTORY",
+        "curriculum_system": "new_gaokao",
+        "rows": 512,
+        "score_min": 151,
+        "score_max": 662,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 177491,
+        "head_group_above_max": 30
+      },
+      "SCORE-DIST-SC-2026-PHYSICS": {
+        "distribution_id": "SCORE-DIST-SC-2026-PHYSICS",
+        "year": 2026,
+        "track": "PHYSICS",
+        "curriculum_system": "new_gaokao",
+        "rows": 534,
+        "score_min": 150,
+        "score_max": 685,
+        "counts_derived": 0,
+        "cumulative_at_lowest": 292426,
+        "head_group_above_max": 54
+      }
+    }
+  },
+  "comparability_links": 5,
+  "comparability_verified": 2,
+  "comparability": {
+    "links": 5,
+    "verified": 2
+  },
+  "issues_collapsed": 132739,
+  "match_pool_rows": 51878,
+  "observation_metrics": {
+    "group_admission_min": 9820,
+    "major_admission_max": 64690,
+    "major_admission_mean": 94113,
+    "major_admission_min": 96348
+  },
+  "observations_with_rank": 264959,
+  "reference_year_capacity": {
+    "2025": 36762,
+    "2024": 30737,
+    "2023": 28849
+  },
+  "issue_codes": {
+    "ADMISSION_TYPE_BLANK_TREATED_AS_ORDINARY": 2,
+    "REQUIREMENT_UNRESOLVED": 84,
+    "TRACK_FROM_EXPLICIT_SHEET_MAPPING": 1,
+    "TUITION_CURRENCY_PERIOD_UNKNOWN": 2,
+    "TUITION_MARKED_FREE": 1215,
+    "TUITION_PENDING": 797,
+    "ZERO_RANK_INVALID": 12
+  },
+  "issue_detail_status": "source-wide repeated notes are aggregated; per-value issues stay per row",
+  "database": "data/admissions/admissions.sqlite",
+  "database_bytes": 123445248,
+  "database_sha256": "9ef324c22d0d854e5a2f23d948b0fbc8fa505928c12ebe07b0081ff02c151265",
+  "release_id": "LOCAL-OFFLINE-2026-e48a598a1832",
+  "integrity_check": "ok"
+}

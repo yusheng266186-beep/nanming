@@ -1,0 +1,82 @@
+{
+  "result_version": "1.0.0",
+  "run_id": "synthetic-run-001",
+  "input_revision": 1,
+  "release_id": "synthetic-release-001",
+  "rules_version": "nh-rules-1.0.0",
+  "mode": "exploration",
+  "academic_basis": "target_scenario",
+  "coverage": [
+    {
+      "scope_id": "synthetic-sc-physics-undergrad",
+      "year": 2026,
+      "track": "PHYSICS",
+      "batch": "undergraduate",
+      "stage": "B",
+      "admission_type": "general",
+      "published_offerings": 1,
+      "known_scope_total": null,
+      "exhaustive": false,
+      "missing_notes": [
+        "仅为合成测试样本，不代表真实招生范围"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "offering_id": "synthetic-offering-001",
+      "eligibility": {
+        "status": "UNKNOWN",
+        "checked_requirements": [
+          "synthetic-subject-rule"
+        ],
+        "pending_requirements": [
+          "synthetic-charter-rule"
+        ],
+        "reason_codes": [
+          "UNKNOWN_REQUIREMENT"
+        ]
+      },
+      "group_reference": {
+        "relation": "AHEAD_OF_REFERENCE",
+        "source_year": 2026,
+        "metric_type": "group_filing_min",
+        "candidate_rank_interval": [
+          901,
+          1000
+        ],
+        "reference_rank_interval": [
+          1101,
+          1200
+        ],
+        "reason_codes": [],
+        "evidence_ids": [
+          "synthetic-evidence-001"
+        ]
+      },
+      "major_reference": {
+        "relation": "NOT_COMPARABLE",
+        "source_year": 2026,
+        "metric_type": null,
+        "candidate_rank_interval": null,
+        "reference_rank_interval": null,
+        "reason_codes": [
+          "MAJOR_HISTORY_MISSING"
+        ],
+        "evidence_ids": []
+      },
+      "interest_reason_refs": [
+        "synthetic-interest-001"
+      ],
+      "preference_status": "PASS",
+      "evidence_ids": [
+        "synthetic-evidence-001"
+      ],
+      "admission_probability": 0.9
+    }
+  ],
+  "excluded_summary": [],
+  "warnings": [
+    "TARGET_YEAR_PLAN_MISSING"
+  ]
+}

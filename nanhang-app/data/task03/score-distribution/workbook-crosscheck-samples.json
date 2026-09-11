@@ -1,0 +1,692 @@
+{
+  "2023|SCIENCE|in_interval": [
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "电子信息类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 62,
+      "official_rank_interval": [
+        56,
+        62
+      ],
+      "official_count": 7,
+      "official_cumulative": 62
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "临床医学类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 62,
+      "official_rank_interval": [
+        56,
+        62
+      ],
+      "official_count": 7,
+      "official_cumulative": 62
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "理科试验班",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 62,
+      "official_rank_interval": [
+        56,
+        62
+      ],
+      "official_count": 7,
+      "official_cumulative": 62
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "工科试验班",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 62,
+      "official_rank_interval": [
+        56,
+        62
+      ],
+      "official_count": 7,
+      "official_cumulative": 62
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "工科试验班",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 62,
+      "official_rank_interval": [
+        56,
+        62
+      ],
+      "official_count": 7,
+      "official_cumulative": 62
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "人工智能",
+      "group_code": null,
+      "score": 695,
+      "workbook_rank": 91,
+      "official_rank_interval": [
+        79,
+        91
+      ],
+      "official_count": 13,
+      "official_cumulative": 91
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_mean",
+      "subject_type": "major",
+      "institution": null,
+      "major": "人工智能",
+      "group_code": null,
+      "score": 696,
+      "workbook_rank": 78,
+      "official_rank_interval": [
+        68,
+        78
+      ],
+      "official_count": 11,
+      "official_cumulative": 78
+    },
+    {
+      "source_year": 2023,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_max",
+      "subject_type": "major",
+      "institution": null,
+      "major": "人工智能",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 62,
+      "official_rank_interval": [
+        56,
+        62
+      ],
+      "official_count": 7,
+      "official_cumulative": 62
+    }
+  ],
+  "2024|ARTS|in_interval": [
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "社会学类",
+      "group_code": null,
+      "score": 639,
+      "workbook_rank": 34,
+      "official_rank_interval": [
+        31,
+        34
+      ],
+      "official_count": 4,
+      "official_cumulative": 34
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "公共管理类",
+      "group_code": null,
+      "score": 639,
+      "workbook_rank": 34,
+      "official_rank_interval": [
+        31,
+        34
+      ],
+      "official_count": 4,
+      "official_cumulative": 34
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "艺术史论",
+      "group_code": null,
+      "score": 638,
+      "workbook_rank": 38,
+      "official_rank_interval": [
+        35,
+        38
+      ],
+      "official_count": 4,
+      "official_cumulative": 38
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "德语",
+      "group_code": null,
+      "score": 638,
+      "workbook_rank": 38,
+      "official_rank_interval": [
+        35,
+        38
+      ],
+      "official_count": 4,
+      "official_cumulative": 38
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "阿拉伯语",
+      "group_code": null,
+      "score": 638,
+      "workbook_rank": 38,
+      "official_rank_interval": [
+        35,
+        38
+      ],
+      "official_count": 4,
+      "official_cumulative": 38
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "葡萄牙语",
+      "group_code": null,
+      "score": 638,
+      "workbook_rank": 38,
+      "official_rank_interval": [
+        35,
+        38
+      ],
+      "official_count": 4,
+      "official_cumulative": 38
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "马克思主义理论",
+      "group_code": null,
+      "score": 630,
+      "workbook_rank": 109,
+      "official_rank_interval": [
+        99,
+        109
+      ],
+      "official_count": 11,
+      "official_cumulative": 109
+    },
+    {
+      "source_year": 2024,
+      "official_track": "ARTS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "经济学类",
+      "group_code": null,
+      "score": 635,
+      "workbook_rank": 61,
+      "official_rank_interval": [
+        50,
+        61
+      ],
+      "official_count": 12,
+      "official_cumulative": 61
+    }
+  ],
+  "2024|SCIENCE|in_interval": [
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "物理学类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "电子信息类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "计算机类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "自动化类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "临床医学类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_mean",
+      "subject_type": "major",
+      "institution": null,
+      "major": "临床医学类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "临床医学类",
+      "group_code": null,
+      "score": 698,
+      "workbook_rank": 63,
+      "official_rank_interval": [
+        52,
+        63
+      ],
+      "official_count": 12,
+      "official_cumulative": 63
+    },
+    {
+      "source_year": 2024,
+      "official_track": "SCIENCE",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "理科试验班",
+      "group_code": null,
+      "score": 696,
+      "workbook_rank": 85,
+      "official_rank_interval": [
+        78,
+        85
+      ],
+      "official_count": 8,
+      "official_cumulative": 85
+    }
+  ],
+  "2025|HISTORY|in_interval": [
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "group_admission_min",
+      "subject_type": "group",
+      "institution": "北京大学",
+      "major": null,
+      "group_code": "102",
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "马克思主义理论类",
+      "group_code": null,
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "major_admission_mean",
+      "subject_type": "major",
+      "institution": null,
+      "major": "马克思主义理论类",
+      "group_code": null,
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "major_admission_max",
+      "subject_type": "major",
+      "institution": null,
+      "major": "马克思主义理论类",
+      "group_code": null,
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "group_admission_min",
+      "subject_type": "group",
+      "institution": "北京大学",
+      "major": null,
+      "group_code": "101",
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "历史学类",
+      "group_code": null,
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "考古学",
+      "group_code": null,
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    },
+    {
+      "source_year": 2025,
+      "official_track": "HISTORY",
+      "metric_type": "group_admission_min",
+      "subject_type": "group",
+      "institution": "清华大学",
+      "major": null,
+      "group_code": "101",
+      "score": 663,
+      "workbook_rank": 37,
+      "official_rank_interval": [
+        31,
+        37
+      ],
+      "official_count": 7,
+      "official_cumulative": 37
+    }
+  ],
+  "2025|PHYSICS|in_interval": [
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "group_admission_min",
+      "subject_type": "group",
+      "institution": "北京大学",
+      "major": null,
+      "group_code": "101",
+      "score": 690,
+      "workbook_rank": 80,
+      "official_rank_interval": [
+        69,
+        80
+      ],
+      "official_count": 12,
+      "official_cumulative": 80
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "物理学类",
+      "group_code": null,
+      "score": 691,
+      "workbook_rank": 68,
+      "official_rank_interval": [
+        61,
+        68
+      ],
+      "official_count": 8,
+      "official_cumulative": 68
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "生物科学类",
+      "group_code": null,
+      "score": 690,
+      "workbook_rank": 80,
+      "official_rank_interval": [
+        69,
+        80
+      ],
+      "official_count": 12,
+      "official_cumulative": 80
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "工科试验班类",
+      "group_code": null,
+      "score": 690,
+      "workbook_rank": 80,
+      "official_rank_interval": [
+        69,
+        80
+      ],
+      "official_count": 12,
+      "official_cumulative": 80
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "major_admission_mean",
+      "subject_type": "major",
+      "institution": null,
+      "major": "工科试验班类",
+      "group_code": null,
+      "score": 690,
+      "workbook_rank": 80,
+      "official_rank_interval": [
+        69,
+        80
+      ],
+      "official_count": 12,
+      "official_cumulative": 80
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "major_admission_max",
+      "subject_type": "major",
+      "institution": null,
+      "major": "工科试验班类",
+      "group_code": null,
+      "score": 690,
+      "workbook_rank": 80,
+      "official_rank_interval": [
+        69,
+        80
+      ],
+      "official_count": 12,
+      "official_cumulative": 80
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "group_admission_min",
+      "subject_type": "group",
+      "institution": "上海交通大学",
+      "major": null,
+      "group_code": "101",
+      "score": 689,
+      "workbook_rank": 88,
+      "official_rank_interval": [
+        81,
+        88
+      ],
+      "official_count": 8,
+      "official_cumulative": 88
+    },
+    {
+      "source_year": 2025,
+      "official_track": "PHYSICS",
+      "metric_type": "major_admission_min",
+      "subject_type": "major",
+      "institution": null,
+      "major": "电子信息类",
+      "group_code": null,
+      "score": 689,
+      "workbook_rank": 88,
+      "official_rank_interval": [
+        81,
+        88
+      ],
+      "official_count": 8,
+      "official_cumulative": 88
+    }
+  ]
+}
