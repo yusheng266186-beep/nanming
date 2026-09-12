@@ -35,6 +35,9 @@ const formatRatio = (ratio: number) => `${ratio >= 0 ? "+" : ""}${(ratio * 100).
 const formatPercentile = (percentile: number) =>
   `前 ${percentile < 1 ? percentile.toFixed(2) : percentile.toFixed(1)}%`;
 
+/** 小字用的字体栈：与 style.css 的 --song 同一串（SVG 的 presentation attribute 不认 var()，只能写死）。 */
+const SONG_FAMILY = "'Noto Serif SC','Songti SC','STSong','SimSun',serif";
+
 export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange,
   quality, qualityCode, setQualityCode, schoolName, setSchoolName, identifySchool, route }: LocateProps) {
   const exams = state.form.exams;
@@ -392,13 +395,13 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           style={{ display: "block", maxWidth: 560 }}>
           {chart.grid.map((tick) => <g key={`grid-${tick.value}`}>
             <line x1={chart.padLeft} y1={tick.y} x2={chart.width - 6} y2={tick.y} stroke="#ece5d4" strokeWidth={1} />
-            <text x={chart.padLeft - 4} y={tick.y + 3} textAnchor="end" fontSize="8" fill="#a89f88">{tick.value}</text>
+            <text x={chart.padLeft - 4} y={tick.y + 3} textAnchor="end" fontSize="8" fontFamily={SONG_FAMILY} fill="#a89f88">{tick.value}</text>
           </g>)}
           <line x1={chart.padLeft} y1={chart.baseline} x2={chart.width - 6} y2={chart.baseline} stroke="#dcd6c6" strokeWidth={1} />
           {chart.lines.map((line, index) => <g key={`${line.kind}-${index}`}>
             <line x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
               stroke={line.kind === "top" ? "#a97b34" : "#7d9a86"} strokeWidth={1.2} strokeDasharray="5 3" />
-            {line.label ? <text x={chart.width - 6} y={line.labelY} textAnchor="end" fontSize="9"
+            {line.label ? <text x={chart.width - 6} y={line.labelY} textAnchor="end" fontSize="9" fontFamily={SONG_FAMILY}
               fill={line.kind === "top" ? "#a97b34" : "#7d9a86"}>{line.label}</text> : null}
           </g>)}
           {chart.bars.map((bar) => <g key={bar.key}>
@@ -407,7 +410,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
                 <rect x={bar.x} y={bar.y} width={bar.w} height={Math.max(2, bar.h)} rx={3} fill="#12454f" opacity={0.88}>
                   <title>{`${bar.full}：${formatScore(bar.total)} 分`}</title>
                 </rect>
-                <text x={bar.x + bar.w / 2} textAnchor="middle" fontSize="8.5" fontWeight={600}
+                <text x={bar.x + bar.w / 2} textAnchor="middle" fontSize="8.5" fontFamily={SONG_FAMILY} fontWeight={600}
                   fill={bar.h >= 14 ? "#f4efe2" : "#12454f"} y={bar.h >= 14 ? bar.y + 12 : bar.y - 4}>
                   {Math.round(bar.total)}</text>
               </>
@@ -415,7 +418,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
                 stroke="#cbc4b0" strokeWidth={2} strokeDasharray="2 2">
                 <title>{`${bar.full}：缺考/无来源总分，留空不补零`}</title>
               </line>}
-            <text x={bar.x + bar.w / 2} y={chart.height - 8} textAnchor="middle" fontSize="9" fill="#6d7f83">{bar.short}</text>
+            <text x={bar.x + bar.w / 2} y={chart.height - 8} textAnchor="middle" fontSize="9" fontFamily={SONG_FAMILY} fill="#6d7f83">{bar.short}</text>
           </g>)}
         </svg>;
       })()}

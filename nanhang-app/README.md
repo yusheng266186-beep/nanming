@@ -1,21 +1,23 @@
 # 南溟目标探索工程
 
+> [在线体验 Pages](https://yusheng266186-beep.github.io/nanming/) · [完整项目介绍与仓库导航](../README.md)
+
 <!-- PROJECT-STATUS:START -->
 > 统一进度（2026-09-13，2026-09-13-latest-frontend-final-turn）：API版本10收尾轮在线核验通过；最新前端Pages发布中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：43 个测试文件、532 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：44 个测试文件、540 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
-主入口是章节版 `apps/web/src/App.tsx`，`JourneyApp` 保留作流程参考。当前主入口通过 `POST /v1/school/identify` 核对姓名＋6 位验证码；本轮补齐响应中的匿名考试汇总，移除核验后对本机静态成绩目录的依赖。新增汇总密文必须先上传，再更新 API 与 Pages；当前后端为包含该能力与 TOTP 的 API 版本9。详见 [后端对齐与发布顺序](docs/BACKEND_FRONTEND_ALIGNMENT.md)。
+主入口是章节版 `apps/web/src/App.tsx`，`JourneyApp` 保留作流程参考。学生端连接公开招生发布包与当前 API 版本 10：学校入口通过 `POST /v1/school/identify` 核对姓名＋6 位查询码后取本人密文分片与匿名考试汇总；AI 入口使用 TOTP，谈心自动收尾轮复用 `/v1/career/turn`。部署先核对密文和函数环境，再发布 Pages，见 [后端对齐与发布顺序](docs/BACKEND_FRONTEND_ALIGNMENT.md)。
 
 
 先读 [当前进度](docs/PROJECT_STATUS.md) 与 [文档同步与接手规范](docs/DOCUMENTATION_POLICY.md)。招生数据 51,878 条已发布并接入网页，学校成绩管线已完成；千帆、学生原话链路和部署脚本已提交。TASK-14 进行中；本地姓名＋码识别已接通；正式身份生命周期与新流程线上验收尚未完成；共享会话存储已接上（云函数跑 Redis，多实例并发不再把学生踢下线）。TASK-11 按负责人决定跳过。
 
 每次修改、暂停和提交都必须同步实施记录、当前状态、验证范围和相关专题正文，不能只刷新顶部摘要。工程内 [AGENTS.md](AGENTS.md) 同样适用于单独源码包接手。
 
-四班查询码已上线：48人使用身份证后六位（X改填0），其余8人保留原码；该能力继续包含在API版本9。重建与上线步骤见[查询码规则](docs/CLASS4_QUERY_CODES.md)。
+四班查询码已上线：48人使用身份证后六位（X改填0），其余8人保留原码；该能力仍包含在当前 API 版本 10。重建与上线步骤见[查询码规则](docs/CLASS4_QUERY_CODES.md)。
 
 ## 线上部署（2026-09-12）
 

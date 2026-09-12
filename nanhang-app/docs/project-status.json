@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 43,
-    "passed": 532,
+    "files": 44,
+    "passed": 540,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 00:35，npm run test）全量 43 文件 532 项通过、0 失败；apps/web/test/route-labels.test.ts 22 项覆盖院校卡的纸张堆叠（钉线、弹簧式翻页、末尾跑道、钩子自愈），apps/api/test/totp-code.test.ts 5 项覆盖动态码脚本与服务端一致性。",
+    "note": "本次（2026-09-13 00:47，npm run test）全量 44 文件 540 项通过、0 失败；apps/web/test/serif-small-text.test.ts 3 项钉住「≤12px 一律宋体」，route-labels.test.ts 22 项覆盖院校卡的纸张堆叠，totp-code.test.ts 5 项覆盖动态码脚本一致性。",
     "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
   },
   "runtime": {
@@ -111,7 +111,7 @@
     "python_pipeline_tests_passed": 50,
     "score_distribution_verified": true
   },
-  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 110.36KB",
+  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 111.08KB",
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
@@ -306,7 +306,7 @@
   "code_baseline": {
     "commit": "aca9b67 + current handed-off worktree",
     "checked_at": "2026-09-13",
-    "note": "本轮不编辑apps/web；发布当前已交还的纸堆、设置、谈心收尾及方向分层增量。"
+    "note": "本轮不编辑apps/web；发布当前纸堆弹簧、起航行装清单、小字衬线、设置、谈心收尾及方向分层增量。"
   },
   "deployment": {
     "status": "API_V10_READY_PAGES_DEPLOYING",
@@ -382,9 +382,9 @@
     "school_response": "shard + index(exams,trend), encrypted index object required before API rollout",
     "ai": "4000 chars per quote;48000 evidence total;32000 context;512KiB HTTP;network/401/503 recovery;session revoke",
     "pages": "DEV-only demo;HTTPS endpoint guard;typecheck and tests before deploy",
-    "verification": "43 files / 532 tests passed; typecheck and official-config web build passed; live synthetic final turn passed",
+    "verification": "44 files / 540 tests passed; typecheck and official-config web build passed; live synthetic final turn passed",
     "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md",
-    "latest_scope": "current card stack, settings and direction layout, automatic final AI turn",
+    "latest_scope": "current spring card stack, sail pack, serif small text, settings and direction layout, automatic final AI turn",
     "latest_contract": "no new endpoint/database/field; final POST /v1/career/turn uses no-question summary and empty options"
   },
   "ai_totp": {
@@ -420,5 +420,11 @@
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
     "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
     "followup": "前端自动收尾轮已对齐 API 版本10；线上合成千帆请求核验通过；Pages等待本次提交发布。"
+  },
+  "repository_presentation": {
+    "readme": "root and app README refreshed for current chapter app/API v10",
+    "github_about": "description and homepage read-back verified",
+    "pages_url": "https://yusheng266186-beep.github.io/nanming/",
+    "source_files_moved": false
   }
 }
