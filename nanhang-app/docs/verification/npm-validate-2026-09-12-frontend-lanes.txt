@@ -1,5 +1,5 @@
-验证记录 · 前端三线并行（线三：设置卡片、起航页、定位两条路与样式）
-时间：2026-09-12 20:4x（本机）
+验证记录 · 前端三线并行（线三：设置卡片、起航页、定位两路、谈心房间、四页动效）
+时间：2026-09-12 21:0x（本机）
 
 $ npm --workspace @nanhang/web run typecheck
 
@@ -9,8 +9,8 @@ $ npm --workspace @nanhang/web run typecheck
 exit=0
 
 $ npx vitest run
-[2m Test Files [22m [1m[32m37 passed[39m[22m[90m (37)[39m
-[2m      Tests [22m [1m[32m466 passed[39m[22m[90m (466)[39m
-[2m   Start at [22m 20:46:08
-[2m   Duration [22m 6.69s[2m (transform 7.86s, setup 0ms, collect 28.07s, tests 8.24s, environment 18ms, prepare 15.15s)[22m
+[2m Test Files [22m [1m[32m39 passed[39m[22m[90m (39)[39m
+[2m      Tests [22m [1m[32m481 passed[39m[22m[90m (481)[39m
+[2m   Start at [22m 21:02:34
+[2m   Duration [22m 7.10s[2m (transform 8.87s, setup 0ms, collect 29.82s, tests 8.21s, environment 20ms, prepare 14.75s)[22m
 

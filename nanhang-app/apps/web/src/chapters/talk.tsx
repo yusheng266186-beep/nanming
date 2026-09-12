@@ -104,14 +104,8 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
               <button type="button" className="send" aria-label="发送" disabled={ai.pending}
                 onClick={() => void sendAi()}><Icon name="arrow" /></button>
             </div>
-            <div className="dock-ctrl">
-              <span className="dc-k">聊法</span>
-              {MODE_CHOICES.map((choice) => <button key={choice.value} type="button"
-                className={`chip${ai.mode === choice.value ? " brass on" : ""}`}
-                aria-pressed={ai.mode === choice.value}
-                onClick={() => setAi(withMode(ai, choice.value))}>{choice.label}</button>)}
-              {tierOf ? <span className="ch-tier" title="思考深度在顶栏「溟」→ 设置里换">深度 {tierOf.label} · {tierOf.eta}</span> : null}
-            </div>
+            {/* 聊法在进对话之前选定（负责人 2026-09-12：进来之后不再给切换按钮）；
+                当前档位仍显示在对话头部，学生知道自己这句话是按哪一档答的。 */}
             {ai.status ? <p className="feedback">{ai.status}</p> : null}
           </>}
         </div>

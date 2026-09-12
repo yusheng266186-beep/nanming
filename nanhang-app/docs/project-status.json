@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 37,
-    "passed": 466,
+    "files": 39,
+    "passed": 481,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本轮最终类型检查通过，全量36文件454通过，另Python查询码4项通过；历史结果保留原日志。 两路定位与浮层锁滚动另有守卫 6 项（apps/web/test/route-split.test.ts）。",
+    "note": "本轮最终类型检查通过，全量36文件454通过，另Python查询码4项通过；历史结果保留原日志。 两路定位与浮层锁滚动另有守卫 6 项（apps/web/test/route-split.test.ts）。 谈心房形态另有守卫 5 项（apps/web/test/talk-room.test.ts）。 四页动画适配另有守卫 7 项（apps/web/test/page-motion.test.ts）。",
     "log": "docs/verification/class4-codes-x0-tests-2026-09-12.txt"
   },
   "runtime": {
@@ -358,7 +358,6 @@
     "rate_limit": "Redis 共享计数：姓名 5 次 / IP 120 次 / 15 分钟窗口",
     "verified_online": "真实学生凭据 HTTP 200、与本地明文一致、公网对象为密文、错名 401、限流 429",
     "not_yet": [
-      "本轮新增汇总密文上传与新API/Pages联合发布",
       "真实班级并发登录",
       "密钥轮换演练",
       "正式身份生命周期"
@@ -408,6 +407,7 @@
     "pages": "f18f21521acc2e932e98e0de5d85f289a2b987a7; workflow34694705981 success; HTML/JS/CSS HTTP200",
     "ciphertext_objects": 881,
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
-    "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested"
+    "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
+    "followup": "负责人继续指示：基线5124e86及当前talk、页面动效测试等在建修改补充发布；API代码无变化，保留版本8"
   }
 }
