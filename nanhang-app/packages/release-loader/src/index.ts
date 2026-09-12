@@ -606,6 +606,7 @@ export function axisMarks(release: LoadedRelease | null, track: "PHYSICS" | "HIS
     { score: table.publishedMinScore, label: `公布低段 ${table.year}`, major: true },
     { score: table.publishedMaxScore, label: `公布高段 ${table.year}`, major: true },
   ];
-  if (score !== null) marks.push({ score, label: "你的情景分", major: false });
+  // 「分数」而不是「目标分/情景分」：这个数可能是学生手填的目标，也可能是学校数据换算的等价分。
+  if (score !== null) marks.push({ score, label: "你的分数", major: false });
   return marks;
 }

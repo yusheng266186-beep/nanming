@@ -244,13 +244,15 @@ describeRelease("发布产物与解析器输出一致", () => {
     expect(latestExam(shard)).toEqual(shard.exams[shard.exams.length - 1]);
     const exams = recentExams(shard);
     expect(exams.length).toBeLessThanOrEqual(5);
-    // 富记录逐字段对应分片：位次与两道切线不再被压扁成纯分数；label 是友好考试名。
+    // 位次与两道切线逐字段对应分片；学校原始记录的长浮点取整到 1 位小数再进表单，
+    // 免得输入框里出现 396.227272727273 这样的数。label 是友好考试名。
+    const round1 = (value: number | null) => value === null ? null : Math.round(value * 10) / 10;
     expect(exams).toEqual(shard.exams.slice(-5).map((exam) => ({
       label: friendlyExamLabel(exam.exam),
-      total: exam.total,
+      total: round1(exam.total),
       rank: exam.gradeRank,
-      topTotal: exam.topTotal,
-      undergraduateTotal: exam.undergraduateTotal
+      topTotal: round1(exam.topTotal),
+      undergraduateTotal: round1(exam.undergraduateTotal)
     })));
   });
 

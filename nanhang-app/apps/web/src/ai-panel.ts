@@ -65,10 +65,15 @@ export function withMode(state: AiPanelState, mode: ChatMode): AiPanelState {
  * 学生可见的档位选项。默认档放最前，标签用学生能懂的话，不用内部代号；
  * 每档一句实话说明等待代价——不写「更快更聪明」这种不可能同时成立的承诺。
  */
-export const THINKING_CHOICES: readonly { readonly value: ThinkingTier; readonly label: string; readonly hint: string }[] = [
-  { value: "deep", label: "深（默认）", hint: "模型先想清楚再回答，等得久一点（可能二三十秒），质量优先。" },
-  { value: "standard", label: "标准", hint: "由服务端决定思考深度，速度与质量居中。" },
-  { value: "speed", label: "快", hint: "不等思考，几秒就回；适合先把话说完、来回多聊几轮。" }
+/**
+ * 学生可见的档位选项。默认档放最前，标签用学生能懂的话，不用内部代号；
+ * 每档给出一次回答的预估等待时间（eta）与一句实话说明，学生自己权衡深浅。
+ */
+export const THINKING_CHOICES: readonly { readonly value: ThinkingTier; readonly label: string;
+  readonly eta: string; readonly hint: string }[] = [
+  { value: "deep", label: "深（默认）", eta: "约 20–40 秒", hint: "模型先想清楚再回答，质量优先，适合聊关键选择。" },
+  { value: "standard", label: "标准", eta: "约 10–20 秒", hint: "由服务端决定思考深度，速度与质量居中。" },
+  { value: "speed", label: "快", eta: "约 3–8 秒", hint: "不等思考直接回；适合先把话说完、来回多聊几轮。" }
 ];
 
 /**

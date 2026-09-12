@@ -121,12 +121,15 @@ export function latestExam(shard: QualityShard): QualityStudentExam | null {
  * 这些记录不进入匹配输入。
  */
 export function recentExams(shard: QualityShard, limit = 5): ExamRecord[] {
+  // 学校原始记录带长浮点（本科线 396.227272…），表单与距线差展示取 1 位小数；
+  // 只影响展示与手填行，分片数据本身不动。
+  const round1 = (value: number | null) => value === null ? null : Math.round(value * 10) / 10;
   return shard.exams.slice(-limit).map((exam) => ({
     label: friendlyExamLabel(exam.exam),
-    total: exam.total,
+    total: round1(exam.total),
     rank: exam.gradeRank,
-    topTotal: exam.topTotal,
-    undergraduateTotal: exam.undergraduateTotal
+    topTotal: round1(exam.topTotal),
+    undergraduateTotal: round1(exam.undergraduateTotal)
   }));
 }
 
@@ -216,7 +219,8 @@ export function trailChart(exams: QualityStudentExam[], width = 340, height = 20
   const padTop = 18;
   const padBottom = 24;
   const padLeft = 30;
-  const padRight = 6;
+  // 右侧留出划线标签栏：两种划线的值标签画在末柱右边，不能被柱子压住或裁出画布。
+  const padRight = 64;
   const innerH = height - padTop - padBottom;
   const innerW = width - padLeft - padRight;
   const yOf = (value: number) => padTop + (ceil - value) / (ceil - floor) * innerH;

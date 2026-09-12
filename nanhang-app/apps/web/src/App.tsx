@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   DIRECTIONS, SELECTABLE_BATCHES, comparabilityNote, initialState, isMatchFresh,
-  loadPublishedRelease, recordAnswer, registerStartTool, resetLocal, routeMap, runMatch, skipAnswer,
+  loadPublishedRelease, registerStartTool, resetLocal, routeMap, runMatch,
   summary, withForm, type ModelContextLike, type WebState
 } from "./model.js";
 import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUserTurn, type AiPanelState } from "./ai-panel.js";
@@ -34,7 +34,7 @@ import { renderChart } from "./chapters/chart.js";
 
 export default function App() {
   const [state, setState] = useState(initialState);
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [, setDrafts] = useState<Record<string, string>>({});
   const [ai, setAi] = useState<AiPanelState>(initialAiPanel);
   const [qualityCode, setQualityCode] = useState("");
   const [schoolName, setSchoolName] = useState("");
@@ -189,17 +189,6 @@ export default function App() {
         : [...SELECTABLE_BATCHES].filter((item) => current.form.batches.includes(item) || item === batch);
       return withForm(current, { batches: next });
     });
-  };
-
-  const saveAnswer = (questionId: string) => {
-    const text = drafts[questionId] ?? "";
-    setState((current) => recordAnswer(current, questionId, text));
-    setDrafts((current) => ({ ...current, [questionId]: "" }));
-    notify("已保存为方向证据");
-  };
-  const skip = (questionId: string) => {
-    setState((current) => skipAnswer(current, questionId));
-    notify("已跳过本题，不会生成任何方向结论");
   };
 
   // Clearing drops the student's own exploration but keeps the loaded release and its catalog
@@ -365,12 +354,8 @@ export default function App() {
     });
   };
 
-  // 谈心对话里的「存为方向证据」：只有学生主动按下，这句原话才写进方向结论的依据。
-  // q-interest 是方向确认的主槽位；重复保存会替换上一条——转录本身始终完整保留。
-  const saveChatEvidence = (text: string) => {
-    setState((current) => recordAnswer(current, "q-interest", text));
-    notify("已把这句存为方向证据");
-  };
+  // 谈心对话里的原话随每轮请求作为「本人的表达」上行（见 sendAi），方向结论由
+  // AI 建议与学生的自选两条线在「方向」页生成，不再需要单独的证据保存动作。
 
   // —— 新主流程：探索区间 → 院校池 → AI 建议 × 自选 → 双线结果 ——
   // 院校池的输入指纹：选科、批次或区间任一变化，旧池就在界面上标记失效（不静默沿用）。
@@ -429,9 +414,6 @@ export default function App() {
   const trackLabel = state.form.primary === "PHYSICS" ? "物理类" : state.form.primary === "HISTORY" ? "历史类" : "尚未选科";
   const contextLabel = `四川 · ${trackLabel} · ${state.form.targetYear}`;
 
-  const questionsDone = state.answers.length;
-  const canConfirmDirections = state.answers.some((item) => item.questionId === "q-interest");
-  // 学生是否已经和 AI 聊过：AI 转录里有发言，或经典问答存过原话，都算「聊过」。
   // 学生是否已经和 AI 聊过：AI 转录里有发言即算；聊过之后才解锁自选专业（流程设计）。
   // 调试模式下直接放行，让「方向」「航线图」不必先走完对话也能验收。
   const hasChatted = userTurns.length > 0 || DEBUG_MODE;
@@ -467,9 +449,9 @@ export default function App() {
   // 每个章节只声明它真正用到的字段（结构性子集），这里一次性把页面状态交给它们。
   const ctx = {
     // 章节里所有跳转都经过 goTo：没解锁的章节点了只会得到提示，不会跳页。
-    state, setState, page, setPage: goTo, drafts, setDrafts, talkStep, setTalkStep, thinking, setThinking,
-    reducedMotion, chatScrollRef, questionsDone, canConfirmDirections, saveAnswer, skip, notify,
-    ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, saveChatEvidence,
+    state, setState, page, setPage: goTo, talkStep, setTalkStep, thinking, setThinking,
+    reducedMotion, chatScrollRef, notify,
+    ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
     quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
     range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, togglePick,
     hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
