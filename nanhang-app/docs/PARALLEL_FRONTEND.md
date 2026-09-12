@@ -1,10 +1,10 @@
 # 前端三线并行：分工、共享文件与认领规则
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
+> 统一进度（2026-09-13，2026-09-13-latest-frontend-final-turn）：API版本10收尾轮在线核验通过；最新前端Pages发布中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：43 个测试文件、531 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：43 个测试文件、532 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -99,8 +99,10 @@
 | 2026-09-12 23:36 | 线一（负责人指派） | `chapters/chart.tsx`、`chapters/axis.tsx`（带宽）、`test/route-labels.test.ts` | 负责人问「跟随滑动为什么没有，还是静态的」：航线图院校卡也拆出 `.sc-detail` 并挂上 IntersectionObserver（容器 `.route-cards`、deps 含抽屉展开状态）；两页的聚焦带由 -42% 收到 -46%，同一时刻通常只剩「当前这张」 | 已交还 |
 | 2026-09-12 23:58 | 线一（负责人指派） | `chapters/shared.ts`（新增 useDeckStack）、`chapters/chart.tsx`、`chapters/axis.tsx`（每类推选张数）、`style.css`（纸堆三段）、`test/route-labels.test.ts` | 负责人：卡片要抽屉式堆叠、滑动像纸张翻页、停在当前卡只显示当前卡内容。改成 sticky 纸堆（一个专业类一摞、三态 class、末尾跑道给最后一张停留位），下线旧的 `.focus` 调暗；分数轴每类由 1 张改回 3 张 | 已交还 |
 | 2026-09-13 00:25 | 线一（负责人指派） | `chapters/shared.ts`（翻页改成滚动驱动的 --ap、MutationObserver 自愈）、`style.css`（末尾跑道 300→116px、去掉 transform 过渡）、`test/route-labels.test.ts` | 负责人：收满后下面的留白太大、动画不够丝滑。跑道收短六成；翘起跟着滚动连续变化（不再用时间过渡），并修掉公式写反与「首次打开抽屉不认领」两个实测问题 | 已交还 |
+| 2026-09-13 00:37 | 线一（负责人指派） | `chapters/shared.ts`（弹簧驱动的 --ap 与 --pile-lag）、`style.css`（跑道 116→60px、过冲与滞后接入 transform）、`test/route-labels.test.ts` | 负责人：上滑时仍有大面积空白、动画是「假流畅」缺阻尼感。跑道再收短；翻页翘起改成欠阻尼弹簧追目标值，整摞按滑动速度加一层滞后；停手后自己收尾 | 已交还 |
 | 2026-09-12 23:47 | 线三（负责人指派） | `ai-panel.ts`（删状态行）、`direction-quota.ts`（素材判据）、`App.tsx`/`chapters/talk.tsx`（入参与缺目录提示）、`test/ai-panel.test.ts`（改一条断言）、两个测试文件 | 删掉每次回复都挂的「待确认」声明；「素材够不够」改前端判（6 轮 + 240 字，或满 12 轮）；缺目录时把原因说出来 | 已交还 |
 | 2026-09-13 00:13 | 线三（负责人指派） | `chapters/direction.tsx`（加三个类名）、`style.css`（方向页两级分层一段）、`test/direction-levels.test.ts`（新） | 方向页大类（海绿·略方·13px）与小类（铜·胶囊·12px）分开，小类区缩进并挂竖线，读得出从属关系 | 已交还 |
+| 2026-09-13 00:40 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（三件事一段与窄屏对应几行）、`test/sail-pack.test.ts` | 负责人：「先定下三件事」和整站设计不匹配，要更有设计感。改成「行装清单」：卡头是深海底带（面板抬头 + 备齐进度 + 铜色细进度线 + aria-live 摘要），三件沿一条竖轨排开，轨上编号印章备好点亮成铜色并挂光环；02 的计数与状态合成一枚状态签；窄屏逐项收一圈 | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 

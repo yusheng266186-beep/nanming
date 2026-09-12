@@ -1,7 +1,7 @@
 {
-  "as_of": "2026-09-12",
-  "revision": "2026-09-12-latest-frontend-backend-alignment",
-  "stage": "最新前端合同已对齐，Pages发布中；API版本9继续在线",
+  "as_of": "2026-09-13",
+  "revision": "2026-09-13-latest-frontend-final-turn",
+  "stage": "API版本10收尾轮在线核验通过；最新前端Pages发布中",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -26,12 +26,12 @@
   ],
   "tests": {
     "files": 43,
-    "passed": 531,
+    "passed": 532,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 00:23，npm run test）全量 43 文件 531 项通过、0 失败；apps/web/test/route-labels.test.ts 22 项覆盖院校卡的纸张堆叠（钉线、滚动驱动的翘起、末尾跑道、钩子自愈），apps/api/test/totp-code.test.ts 5 项覆盖动态码脚本与服务端一致性。",
-    "log": "docs/verification/latest-frontend-tests-2026-09-12.txt"
+    "note": "本次（2026-09-13 00:35，npm run test）全量 43 文件 532 项通过、0 失败；apps/web/test/route-labels.test.ts 22 项覆盖院校卡的纸张堆叠（钉线、弹簧式翻页、末尾跑道、钩子自愈），apps/api/test/totp-code.test.ts 5 项覆盖动态码脚本与服务端一致性。",
+    "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
   },
   "runtime": {
     "node": "26.7.0",
@@ -111,7 +111,7 @@
     "python_pipeline_tests_passed": 50,
     "score_distribution_verified": true
   },
-  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 106.84KB",
+  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 110.36KB",
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
@@ -304,12 +304,12 @@
     "legacy_note": "core_devices 与 fixes 保留此前七章版本的设计/修复记录；当前主入口以 ADR-003 和 apps/web/VISUAL_PROGRESS.md 最新段落为准"
   },
   "code_baseline": {
-    "commit": "77b4b09",
-    "checked_at": "2026-09-12",
-    "note": "纳入77b4b09及随后交还的院校分组、方向收口和谈心增量；本轮只读核对前端，没有修改apps/web。"
+    "commit": "aca9b67 + current handed-off worktree",
+    "checked_at": "2026-09-13",
+    "note": "本轮不编辑apps/web；发布当前已交还的纸堆、设置、谈心收尾及方向分层增量。"
   },
   "deployment": {
-    "status": "LATEST_PAGES_DEPLOYING_API_V9_READY",
+    "status": "API_V10_READY_PAGES_DEPLOYING",
     "implemented": [
       "GitHub Pages workflow",
       "COS public admissions upload",
@@ -333,8 +333,8 @@
   },
   "documentation_policy": "每次修改和每次提交必须同步实施记录、当前状态、相关专题说明及验证范围；未完成工作明确标为进行中；提交前 --package 与 --check；详见 docs/DOCUMENTATION_POLICY.md",
   "documentation_check": {
-    "status": "pending_latest_sync",
-    "date": "2026-09-12",
+    "status": "passed",
+    "date": "2026-09-13",
     "commands": [
       "py -3.12 tools/sync_project_docs.py --package",
       "py -3.12 tools/sync_project_docs.py --check"
@@ -378,14 +378,14 @@
     "module": "apps/web/src/progress.ts（纯逻辑，15 项测试）"
   },
   "backend_alignment": {
-    "status": "LATEST_FRONTEND_CONTRACT_ALIGNED_PAGES_DEPLOYING",
+    "status": "FINAL_TURN_ALIGNED_API_V10_READY_PAGES_DEPLOYING",
     "school_response": "shard + index(exams,trend), encrypted index object required before API rollout",
     "ai": "4000 chars per quote;48000 evidence total;32000 context;512KiB HTTP;network/401/503 recovery;session revoke",
     "pages": "DEV-only demo;HTTPS endpoint guard;typecheck and tests before deploy",
-    "verification": "41 files / 509 tests passed; typecheck and official-config web build passed; live health/ready passed",
+    "verification": "43 files / 532 tests passed; typecheck and official-config web build passed; live synthetic final turn passed",
     "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md",
-    "latest_scope": "sail subject gate, portrait/grouped route poster, talk opening starters, direction quota/freeze, direction summary, employment follow-up and responsive answer-option grid",
-    "latest_contract": "no new endpoint/database/field; employment follow-up uses existing POST /v1/career/turn and reply/options"
+    "latest_scope": "current card stack, settings and direction layout, automatic final AI turn",
+    "latest_contract": "no new endpoint/database/field; final POST /v1/career/turn uses no-question summary and empty options"
   },
   "ai_totp": {
     "status": "API_V9_AND_PAGES_DEPLOYED_ONLINE_VERIFIED",
@@ -414,11 +414,11 @@
     "scope": "all current tracked and untracked project source; private credentials and student files excluded from Git",
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
-    "api": "nanming-api version 9; TOTP active; deployed ZIP verified; environment preserved",
+    "api": "nanming-api version 10; final AI turn and TOTP active; deployed ZIP verified; environment preserved",
     "pages": "latest frontend commit pending; workflow result to be recorded after publish",
     "ciphertext_objects": 881,
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
     "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
-    "followup": "最新前端合同已对齐；API版本9无需重复部署；Pages等待本次提交发布。"
+    "followup": "前端自动收尾轮已对齐 API 版本10；线上合成千帆请求核验通过；Pages等待本次提交发布。"
   }
 }

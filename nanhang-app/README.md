@@ -1,10 +1,10 @@
 # 南溟目标探索工程
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
+> 统一进度（2026-09-13，2026-09-13-latest-frontend-final-turn）：API版本10收尾轮在线核验通过；最新前端Pages发布中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：43 个测试文件、531 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：43 个测试文件、532 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -26,7 +26,7 @@
 | 数据 | COS 桶 `nanming-100051087352-1459223409` | `data/releases/` 招生发布包（`current.json` 指针，前端不重建即可换版）+ `school/objects/` 学校成绩**密文** |
 | 会话存储 | 腾讯云 Redis `crs-bdr4f2z6`（256MB，按量 ≈¥0.0368/小时） | 多实例共享会话；试用结束在控制台销毁，并把函数里的 `NANHANG_REDIS_*` 一并删掉 |
 
-AI 谈心入口已在 API 版本 9 改用 TOTP：SHA-1、30 秒、6 位、允许前后一个时间窗口；同一码经 Redis 原子消费后不能再次兑换。原始 Base32 种子只保存在 `private/nanming-totp-secret.txt` 和云函数 `NANHANG_TOTP_SECRET`，不进入仓库或源码包；旧固定访问码已从云端移除。
+AI 谈心入口自 API 版本 9 起改用 TOTP；当前 API 版本 10 另对齐前端自动收尾轮。TOTP 为 SHA-1、30 秒、6 位、允许前后一个时间窗口；同一码经 Redis 原子消费后不能再次兑换。原始 Base32 种子只保存在 `private/nanming-totp-secret.txt` 和云函数 `NANHANG_TOTP_SECRET`，不进入仓库或源码包；旧固定访问码已从云端移除。
 
 密钥与连接串只走环境变量，本机副本在 `private/`（不进仓库、不进源码包）。部署细节见
 [AI 接入与部署](docs/AI_QIANFAN_SETUP.md)，学校成绩的密文托管见 [质量慧析管线](docs/QUALITY_HUIXI_PIPELINE.md)。
@@ -74,7 +74,7 @@ python scripts/deploy_school_cloud.py      # 上传到 COS school/objects/
 | packages/domain | 纯 TypeScript 规则核心及确定性 MatchResult 构建器 |
 | packages/school-adapter | 固定 accuracy-v1.2 单人摘要适配、冲突拒绝和合成回归；真实学校工作簿已由质量慧析管线接通，鉴权仍待 TASK-13 |
 | packages/ai-gateway | TASK-08 AI中转纯核：幂等、额度、限长、SSE、输出安全校验与降级 |
-| apps/api | 本机/SCF HTTP 入口、千帆与假上游；已部署为 SCF Web 函数（版本 7）：真模型、Redis 共享会话、学校成绩密文托管，线上验证见 docs/AI_QIANFAN_SETUP.md |
+| apps/api | 本机/SCF HTTP 入口、千帆与假上游；当前 SCF Web 函数版本 10：真模型、TOTP、Redis 共享会话、学校成绩密文托管和 AI 收尾轮；线上验证见 docs/VALIDATION_RESULT.md |
 | data/task03 | workbooks下36条已核实Excel证据样本；官方快照、OCR与历史回归样本 |
 | pipelines/quality-huixi | 荣县一中成绩管线：用固定 accuracy-v1.2 解析学校复盘工作簿，建本地成绩库并出按人分片的发布产物；**含真实学生数据，不进源码包**（见 docs/QUALITY_HUIXI_PIPELINE.md） |
 | data/quality-huixi | 成绩库、解析输出与前端发布产物；被 .gitignore 与 tools/sync_project_docs.py 的 UNMANAGED 排除 |

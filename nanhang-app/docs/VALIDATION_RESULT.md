@@ -1,12 +1,20 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
+> 统一进度（2026-09-13，2026-09-13-latest-frontend-final-turn）：API版本10收尾轮在线核验通过；最新前端Pages发布中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：43 个测试文件、531 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：43 个测试文件、532 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-13 当前前端与 AI 收尾轮
+
+并发验证注记：第一次全量 43 文件 532 项通过后，纸堆动画继续变动，之后两次全量各有 1 个前端源码字符串断言未跟上同时写入的常量/样式，故不能把初次结果当成最终源码结果；最终重新执行的命令与日志覆盖下方旧数据。失败未涉及后端收尾功能，千帆专项 35 项通过。
+
+- 本次实测 `npm run typecheck` 通过；`npm test -- --maxWorkers=2` 为 43 文件、532 项通过、0 失败；正式公网 API/COS 地址 `npm run web:build` 通过，主 JS gzip 110.36 kB。日志：`verification/latest-frontend-typecheck-2026-09-13.txt`、`latest-frontend-tests-2026-09-13.txt`、`latest-frontend-build-2026-09-13.txt`。
+- `node scripts/build_function.mjs` 通过。云端 API 版本 10 Active，环境未改，ZIP 内容比对一致，health/ready HTTP 200。合成材料经真实 TOTP 兑换和千帆收尾轮返回 HTTP 200、complete、0 选项、无追问；会话撤销。脱敏报告：`verification/final-turn-cloud-api-2026-09-13.json` 和 `final-turn-online-2026-09-13.json`。未使用真实学生资料。
+- Pages 的本次提交/工作流和公网资产核验尚未完成，不把本机成功写成已发布；浏览器视觉验收由负责人完成。已有学生规模、校园网与回滚限制保持。
 
 ## 2026-09-12 最新前端与后端合同对齐
 

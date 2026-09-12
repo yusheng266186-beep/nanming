@@ -1,0 +1,28 @@
+{
+  "function": "nanming-api",
+  "version": "10",
+  "status": "Active",
+  "environment_preserved": true,
+  "deployed_zip_contents_verified": true,
+  "code_sha256": "6ce2d5dca78b1e61ff9d71a697eb77e1e7cd8832a8c934086568b47be5ff6ea7",
+  "health": {
+    "/healthz": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "ai": true,
+        "store": "redis"
+      }
+    },
+    "/readyz": {
+      "status": 200,
+      "body": {
+        "public_data": true,
+        "ai": true,
+        "state_store": true,
+        "upstream": "qianfan"
+      }
+    }
+  },
+  "rollback_zip_private": true
+}

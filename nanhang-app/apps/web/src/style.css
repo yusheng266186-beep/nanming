@@ -458,20 +458,21 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
    负责人 2026-09-12：要卡片抽屉式的堆叠结构，随着滑动像纸张翻页，停在当前卡片就只显示当前卡的内容。
    一个专业类叠成一摞（.card-stack），每张卡占一个 .stack-slot，用 sticky 钉在
    「--deck-top + i × --deck-peek」这条线上：后一张压住前一张，被压住的只露出抬头那一条（像抽屉里码着的一摞纸），
-   正翻过来的那张微微翘起，落到线上就摊平。只切 class、不动任何布局尺寸，卡片高度恒定，滚动不会被顶动。
-   末尾的 padding-bottom 是留给这一摞最后一张的停留位——没有它，最后一张一贴线就被容器底部推走。 */
+   正翻过来的那张微微翘起，落到线上就摊平。布局尺寸一律不动（卡片高度恒定），滚动不会被顶动。
+   末尾还有一段「跑道」（.stack-tail）留给这一摞最后一张的停留位——没有它，最后一张一贴线就被容器底部推走。 */
 .schools.card-stack{display:block;--deck-top:calc(var(--rail-h) + 8px);--deck-peek:66px;--deck-travel:240px}
 .stack-slot{position:sticky;top:calc(var(--deck-top) + var(--i,0) * var(--deck-peek))}
 .stack-slot+.stack-slot{margin-top:14px}
 /* 这一摞末尾留出的「跑道」：sticky 只能在父元素的内容盒里活动，最后一张要停得住就得有这段空程。
    用真实的空 div 而不是 padding——padding 不在内容盒里，钉不住最后一张。
-   长度只留「够停一下」：跑道越长，收满之后下面那段空白越大（负责人 2026-09-13 指出的留白）。 */
-.stack-tail{height:min(13vh,116px)}
+   长度只留「够停一下」：跑道越长，收满之后下面那段空白越大（负责人两次指出留白：300 → 116 → 60px）。 */
+.stack-tail{height:min(7vh,60px)}
 /* .scard 自带的 msgin 动画是 fill:both，动画来源会压掉 transform——堆叠里让位给翻页。
-   翻页的翘起由 --ap 连续驱动（1 = 已经贴线摊平，0 = 还差一屏行程），**不加 transform 过渡**：
-   过渡是时间驱动，快滑时会落在手指后面；跟着滚动走才不飘。阴影与描边这类离散效果仍走过渡。 */
+   翻页的翘起由 --ap 驱动（1 = 已经贴线摊平，0 = 还差一屏行程），值是 JS 里那根弹簧追出来的连续量，
+   所以带上阻尼与一点点过冲（>1 时纸会压过头再回一丝）；**不加 transform 过渡**——过渡是时间驱动，
+   会和弹簧叠在一起变成「双重缓动」，反而发飘。--pile-lag 是整摞按滑动速度的滞后。 */
 .card-stack .scard{animation:none;transform-origin:50% 100%;
-  transform:perspective(1400px) translateY(calc((1 - var(--ap,1)) * 14px))
+  transform:perspective(1400px) translateY(calc((1 - var(--ap,1)) * 14px + var(--pile-lag,0px)))
     rotateX(calc((1 - var(--ap,1)) * -7deg))
     scale(calc(1 - (1 - var(--ap,1)) * 0.032));
   transition:box-shadow .34s var(--ease),border-color .34s var(--ease)}
@@ -1193,25 +1194,60 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
    以下先把写死在 JSX 里的间距收进类名（桌面数值不变），再在窄屏逐项收紧内边距、
    行距与区块间距——六站的说明和两条选科提示一条不减，只是不再铺开。
    桌面三列布局本来就紧凑，所以这些收紧只在 ≤560px 生效。 */
-.panel.sail-panel{margin-top:22px}
-.grid-2.sail-form{margin-top:4px;gap:22px}
-.field.sail-score{margin-top:20px;max-width:320px}
+.panel.sail-panel{margin-top:22px;padding:0;overflow:hidden}
 .hero-act.sail-act{margin-top:22px}
-/* ── 「先定下三件事」：一件一件备齐 ──────────────────────────────
-   每件事前面一枚印章编号（01/02/03）：没备好是空心，备好变铜色并弹一下。
-   选中的 chip 在按下的那一刻盖一枚向外扩散的光环（一次性，不常驻）。
-   再选满 2 门后其余 chip 变淡，但仍然可点——点了会说明「先取消一门再选」，
-   不假装它们不能点。目标分聚焦时给铜色描边与柔光；三件事逐件入场，
-   备齐时「开始起航」弹一下，作为「可以出发了」的信号。 */
-.panel.sail-panel .flab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.sail-panel .seal{width:26px;height:26px;flex:0 0 auto;border-radius:50%;border:1px solid var(--line-2);color:var(--mut);
+/* ── 「先定下三件事」＝ 行装清单 ────────────────────────────────
+   原来是白卡里摊一组表单，和站上的「卡片」语言对不上。现在把它做成一张清单：
+   ① 卡头是深海底的备航状态带：面板抬头 + 备齐进度 + 一条铜色细进度线 + 当前选择的一句摘要
+      （aria-live，改选科就地再说一遍）。深海底与登船卡的两条入口、航线图的面板同一种语气，
+      右上那枚铜色圆环也是同一支记号笔——不再是孤零零一套配色。
+   ② 三件沿一条竖轨排开：编号印章钉在轨上，没备好是空心，备好点亮成铜色并挂一圈光环
+      （光环与顶栏六站航程轨上「当前站」的点同款）；轨在备好的那一段转成铜色。
+   ③ 每件的状态收成一枚状态签（待定 / 已定 / n 门 / 已满 2 门 / 可不填 / 已填），
+      与状态带里的进度是同一份事实的两种说法，不另造第二套状态。
+   动效：状态带先落，三件与按钮区逐件错峰跟进；进度线走 scaleX（不动布局，改选科不顶页），
+   印章点亮弹一下；备齐两件时「开始起航」弹一下，作为「可以出发了」的信号。
+   选中的 chip 在按下的那一刻盖一枚向外扩散的光环（一次性，不常驻）；
+   再选满 2 门后其余 chip 变淡，但仍然可点——点了会说明「先取消一门再选」，不假装它们不能点。 */
+.pack-head{position:relative;overflow:hidden;padding:22px 26px 20px;background:var(--sea);color:#eaf1ee;
+  animation:fade .5s var(--ease) both}
+.pack-head::after{content:"";position:absolute;right:-64px;top:-58px;width:210px;height:210px;
+  border:1px solid rgba(200,155,82,.2);border-radius:50%;pointer-events:none}
+.pack-head-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.pack-head h3{display:flex;align-items:center;gap:9px;margin:0;font-family:var(--song);font-size:17px;color:#f2f6f3}
+.pack-head h3 .icon{width:18px;height:18px;color:var(--brass-2)}
+.pack-meter{display:flex;align-items:baseline;gap:7px;font-size:11px;letter-spacing:.05em;color:#a9c3bd}
+.pack-meter b{font-family:var(--display);font-size:26px;font-weight:500;line-height:1;color:#f2f6f3}
+.pack-meter i{font-style:normal;color:#7d9a96}
+.pack-meter em{font-style:normal;padding:4px 10px;border-radius:20px;border:1px solid rgba(200,155,82,.28);
+  background:rgba(200,155,82,.12);color:var(--brass-2);transition:background .4s var(--ease),border-color .4s,color .4s}
+.pack-meter em[data-ready="true"]{background:var(--brass);border-color:var(--brass);color:#fff8ec}
+.pack-track{position:relative;z-index:1;display:block;height:1px;margin:16px 0 12px;background:rgba(233,229,216,.2)}
+.pack-track i{display:block;height:100%;transform-origin:left;background:linear-gradient(90deg,var(--brass),var(--brass-2));
+  transition:transform .7s var(--ease-glide)}
+.sail-panel .pack-head .sail-live{position:relative;z-index:1;display:block;color:#a9c3bd}
+.pack-list{padding:6px 26px 2px}
+.pack-row{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:16px;align-items:start;padding:17px 0;
+  animation:arrive .5s var(--ease) both}
+.pack-row:nth-child(2){animation-delay:.08s}
+.pack-row:nth-child(3){animation-delay:.16s}
+.pack-node{position:relative;display:flex;justify-content:center;padding-top:1px}
+/* 竖轨只连到下一件：最后一件下面不再有线，清单到哪儿结束读得出来。 */
+.pack-node::after{content:"";position:absolute;left:50%;top:34px;bottom:-26px;width:1px;background:var(--line-2);
+  transition:background .5s var(--ease)}
+.pack-row:last-child .pack-node::after{content:none}
+.pack-row[data-ready="true"] .pack-node::after{background:linear-gradient(var(--brass-line),var(--line-2))}
+.pack-field{margin-bottom:0}
+.sail-panel .pack-field .flab{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.sail-panel .pack-field .flab-t{flex:1 1 auto;min-width:0}
+.pack-state{flex:0 0 auto;font:500 11px/1 var(--sans);font-style:normal;color:var(--mut);padding:5px 10px;border-radius:20px;
+  border:1px solid var(--line-2);background:var(--paper);transition:background .4s var(--ease),border-color .4s,color .4s}
+.pack-row[data-ready="true"] .pack-state{background:var(--brass-bg);border-color:var(--brass-line);color:var(--brass-3)}
+.sail-panel .seal{width:30px;height:30px;border-radius:50%;border:1px solid var(--line-2);color:var(--mut);
   font:italic 500 11px/1 var(--display);letter-spacing:.02em;display:grid;place-items:center;
   transition:background .45s var(--ease),border-color .45s,color .45s,box-shadow .45s}
-.sail-panel .flab-n{font:500 11px/1 var(--sans);font-style:normal;color:var(--mut);background:var(--paper-2);
-  border-radius:20px;padding:5px 9px;transition:background .4s var(--ease),color .4s}
-.sail-panel .field[data-ready="true"] .seal{background:var(--brass);border-color:var(--brass);color:#fff8ec;
-  box-shadow:0 5px 14px rgba(169,123,52,.26);animation:seal-pop .55s var(--ease-spring)}
-.sail-panel .field[data-ready="true"] .flab-n{background:var(--brass-bg);color:var(--brass-3)}
+.sail-panel .pack-row[data-ready="true"] .seal{background:var(--brass);border-color:var(--brass);color:#fff8ec;
+  box-shadow:0 0 0 5px rgba(169,123,52,.14),0 5px 14px rgba(169,123,52,.24);animation:seal-pop .55s var(--ease-spring)}
 @keyframes seal-pop{from{transform:scale(.7)}to{transform:none}}
 @keyframes seal-ring{from{transform:scale(.97);opacity:.8}to{transform:scale(1.24);opacity:0}}
 .chip{position:relative}
@@ -1220,12 +1256,17 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
 .chip:active{transform:scale(.96)}
 .chips[data-full="true"] .chip:not(.on){opacity:.45}
 .chips[data-full="true"] .chip:not(.on):hover{opacity:.75;border-color:var(--brass-line)}
-.sail-panel .sail-score .inp{transition:border-color .3s,background .3s,box-shadow .4s var(--ease)}
-.sail-panel .sail-score .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
-.sail-panel .sail-form .field{animation:arrive .5s var(--ease) both}
-.sail-panel .sail-form .field:nth-child(2){animation-delay:.07s}
-.sail-panel .sail-score{animation:arrive .5s var(--ease) both .14s}
-.sail-panel .sail-act{animation:arrive .5s var(--ease) both .2s}
+/* 清单上的按键：与面板的圆角对上（胶囊属于方向页的小类），按下有实感。 */
+#page-sail .pack-field .chip{min-height:42px;padding:0 20px;border-radius:10px;font-size:13px}
+.sail-panel .score-wrap{position:relative;display:block;max-width:260px}
+/* 目标分是「一个数字」：用显示衬线、纸底收窄，右边跟一个「分」做单位。 */
+.sail-panel .score-wrap .inp{padding-right:42px;background:var(--paper);font-family:var(--display);font-size:19px;
+  letter-spacing:.03em;transition:border-color .3s,background .3s,box-shadow .4s var(--ease)}
+.sail-panel .score-wrap .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
+.sail-panel .score-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;
+  font-family:var(--song);font-size:12px;color:var(--mut)}
+.pack-foot{padding:18px 26px 24px;border-top:1px solid var(--line);animation:arrive .5s var(--ease) both .24s}
+.sail-panel .pack-foot .sail-act{margin-top:0}
 .panel.sail-panel[data-ready="true"] .sail-act .btn.brass{animation:arm .6s var(--ease-spring)}
 @keyframes arm{0%{transform:none}45%{transform:scale(1.035)}100%{transform:none}}
 .sail-live{animation:msgin .4s var(--ease)}
@@ -1244,19 +1285,21 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
   #page-sail .stop-head h4{font-size:14px}
   #page-sail .stop-body{padding:0}
   #page-sail .stop-inner p{padding:0 13px 13px;font-size:11px;line-height:1.75}
-  /* 先定下三件事：面板、两栏字段与行动按钮之间的间距同步收紧。 */
-  #page-sail .sail-panel{margin-top:14px}
-  #page-sail .panel{padding:18px;border-radius:14px}
-  #page-sail .sail-form{gap:12px}
-  #page-sail .sail-form .field{margin-bottom:0}
-  /* 目标分与上面那条「再选科目」提示留出比字段内更大的间距，才读得出是另一件事。 */
-  #page-sail .sail-score{margin-top:18px;margin-bottom:0;max-width:100%}
+  /* 先定下三件事：清单整体收一圈——状态带内边距、轨道列与印章同步缩，三件的行距不减半。 */
+  #page-sail .sail-panel{margin-top:14px;padding:0;border-radius:14px}
+  #page-sail .pack-head{padding:18px 18px 16px}
+  #page-sail .pack-head h3{font-size:16px}
+  #page-sail .pack-meter b{font-size:22px}
+  #page-sail .pack-track{margin:14px 0 11px}
+  #page-sail .pack-list{padding:4px 18px 0}
+  #page-sail .pack-row{grid-template-columns:28px minmax(0,1fr);column-gap:11px;padding:15px 0}
+  #page-sail .pack-node::after{top:31px;bottom:-24px}
+  #page-sail .seal{width:26px;height:26px;font-size:10px}
+  #page-sail .pack-field .flab{gap:9px;margin-bottom:10px}
+  #page-sail .pack-field .chip{min-height:40px;padding:0 16px}
   #page-sail .fhint{margin-top:7px;line-height:1.7}
-  #page-sail .sail-act{margin-top:16px;gap:14px}
-  /* 三件事：印章与「n/2」计数在窄屏收一圈，标题行不因此换行。 */
-  #page-sail .panel.sail-panel .flab{gap:8px;margin-bottom:9px}
-  #page-sail .seal{width:23px;height:23px;font-size:10px}
-  #page-sail .flab-n{padding:4px 8px}
+  #page-sail .pack-foot{padding:16px 18px 20px}
+  #page-sail .sail-act{margin-top:0;gap:14px}
 }
 
 /* ══════════ 顶栏极限窄屏（≤340px，320px 设备）══════════

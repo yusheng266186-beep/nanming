@@ -280,18 +280,26 @@ describe("参考年最低分与整页海报", () => {
     expect(shared).toContain('setProperty("--ap"');
     // 在线下方时 top > line：ap < 1（翘着）；贴线/越过 ap = 1（摊平）——方向写反过一次
     expect(shared).toContain("1 - (rect.top - line) / travel");
+    // 有阻尼：目标值再进一根欠阻尼弹簧，停下来还能收尾（负责人：要非线性、带阻尼，不要「假流畅」）
+    expect(shared).toContain("const STIFFNESS = 145;");
+    expect(shared).toContain("const DAMPING = 16;");
+    expect(shared).toContain("spring.velocity += (STIFFNESS * (target - spring.value)");
+    expect(shared).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
+    // 整摞按滑动速度滞后（重量感），停下回到 0
+    expect(shared).toContain('setProperty("--pile-lag"');
+    expect(css).toContain("var(--pile-lag,0px)");
     // 抽屉是点开才把卡片放进 DOM 的：找不到就白挂过一次，所以要用 MutationObserver 自己认领
     expect(shared).toContain("new MutationObserver");
     expect(shared).toContain("const refresh = () =>");
     expect(shared).toContain("if (!stacks.length) refresh()");
     expect(css).toContain("--deck-travel:240px");
-    expect(css).toContain("transform:perspective(1400px) translateY(calc((1 - var(--ap,1)) * 14px))");
+    expect(css).toContain("translateY(calc((1 - var(--ap,1)) * 14px + var(--pile-lag,0px)))");
     expect(css).toContain("rotateX(calc((1 - var(--ap,1)) * -7deg))");
     expect(css).toMatch(/\.card-stack \.scard\{[^}]*transition:box-shadow[^}]*\}/);
     // 卡片自带的入场动画是 fill:both，会压掉翻转用的 transform，堆叠里必须关掉
     expect(css).toContain(".card-stack .scard{animation:none");
     // 一摞末尾的跑道只留「够停一下」，太长会在收满之后留一大片空白
-    expect(css).toContain(".stack-tail{height:min(13vh,116px)}");
+    expect(css).toContain(".stack-tail{height:min(7vh,60px)}");
     expect(css).not.toContain("min(42vh,300px)");
     // 旧版「跟随滑动调暗细节」的做法不再回来
     expect(css).not.toContain(".scard.focus .sc-detail{opacity:1");

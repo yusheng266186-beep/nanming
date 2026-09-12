@@ -131,9 +131,11 @@ export function useNarrow(query = "(max-width: 720px)"): boolean {
  * 每张卡占一个 `.stack-slot`，钉在 `--deck-top + i × --deck-peek` 这条线上（CSS 用 sticky 钉住），
  * 所以后一张压在前一张上、前一张只露出抬头那一条——像抽屉里码着的一摞纸。
  *
- * 翻页的翘起**跟着手指走**：这里每帧把「离线上还有多远」写成 `--ap`（1 = 已经贴线，0 = 还差一屏行程），
- * CSS 只用它算 rotateX / 位移 / 缩放。用连续量而不是切 class，是因为时间驱动的过渡会落在滚动后面，
- * 快速滑动时看着发飘；跟着滚动走才是「纸被手推过去」的手感。
+ * 翻页的翘起由**弹簧**驱动：每帧按几何算出「离线上还有多远」作为目标值（1 = 已经贴线，0 = 还差一屏行程），
+ * 再用一个欠阻尼弹簧去追它，追到的连续量写成 `--ap`，CSS 只用它算 rotateX / 位移 / 缩放。
+ * 为什么不是直接等于手指位置：一是直接跟手就变成纯线性、没有重量感（负责人 2026-09-13：
+ * 「感觉是假流畅，不是有阻尼感的那种」）；二是手指停下时弹簧还能自己收尾，落纸那一下是「压下去、回一丝」，
+ * 而不是硬停。簧停住后循环自动停下，不空转。
  * 另有 is-current / is-covered 两个 class 管阴影与描边这类离散效果；布局尺寸一律不动。
  */
 export function useDeckStack(
@@ -148,8 +150,21 @@ export function useDeckStack(
     const peek = Number.parseFloat(style.getPropertyValue("--deck-peek")) || 66;
     const travel = Number.parseFloat(style.getPropertyValue("--deck-travel")) || 240;
     const clamp01 = (value: number) => value < 0 ? 0 : value > 1 ? 1 : value;
+    // 弹簧：ωn ≈ 12 rad/s，阻尼比 ≈ 0.67——欠阻尼，手指停下后自己把最后那点翘起收干净，
+    // 落地时过冲约 7%（`--ap` 到 1.07，纸上抬 1px、反向 0.5°）再落平：这就是那口「阻尼」。
+    // 阻尼比再往下就要抖，往上就变成硬停；这组数是按「慢速跟得准、快滑有重量」折出来的。
+    const STIFFNESS = 145;
+    const DAMPING = 16;
+    const calm = typeof window.matchMedia === "function"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const springs = new Map<HTMLElement, { value: number; velocity: number }>();
+    // 整摞的「滞重感」：滑动越快，纸堆越晚一点跟上（最多 7px），手一停就弹回去。
+    // 这是让整页看起来有重量、而不是「内容像贴在手指上滑动」的那一点点差别。
+    const lag = { value: 0, velocity: 0 };
     let stacks: HTMLElement[] = [];
     let frame = 0;
+    let lastTime = 0;
+    let lastScrollY = window.scrollY;
 
     /**
      * 重新找一遍这一页里的纸堆。抽屉是点开才把卡片放进 DOM 的，匹配结果也可能整块换掉，
@@ -162,17 +177,42 @@ export function useDeckStack(
       return stacks;
     };
 
-    const paint = () => {
+    /**
+     * 一帧：量几何 → 定目标 → 弹一次弹簧 → 写 `--ap` 与两个 class。
+     * 目标值只跟滚动位置有关（真的滚动量），弹簧负责「跟上去的过程」；两者分开，
+     * 所以手停住之后弹簧还能把最后一点收干净，而不是直接冻结在手指离开的位置。
+     */
+    const tick = (now: number) => {
       frame = 0;
+      const dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 1 / 60;
+      lastTime = now;
       const vh = window.innerHeight;
       if (!stacks.length) refresh();
+      let unsettled = 0;
+      // 整摞的滞后量：只跟滚动速度有关，滑动停下后自己回到 0。
+      const speed = (window.scrollY - lastScrollY) / dt;
+      lastScrollY = window.scrollY;
+      const lagTarget = Math.max(-10, Math.min(10, speed * 0.014));
+      if (calm) { lag.value = 0; lag.velocity = 0; }
+      else {
+        // 整摞的滞后也用一根欠阻尼弹簧（ωn ≈ 16、ζ ≈ 0.7）：快滑时整摞往后沉一点，
+        // 手一停就带一点点回弹地归位——这是「跟手但不粘手」的那层重量。
+        lag.velocity += (260 * (lagTarget - lag.value) - 22 * lag.velocity) * dt;
+        lag.value += lag.velocity * dt;
+      }
+      if (Math.abs(lagTarget - lag.value) + Math.abs(lag.velocity) * 0.1 > 0.002) unsettled += 1;
+      root.style.setProperty("--pile-lag", `${lag.value.toFixed(2)}px`);
       for (const stack of stacks) {
-        // 视野之外的一摞整摞跳过：不读它的布局，也就不会每帧拖一次 layout。
-        const box = stack.getBoundingClientRect();
-        if (box.bottom < -vh * 0.35 || box.top > vh * 1.35) continue;
         const slots = Array.from(stack.children).filter(
           (node): node is HTMLElement => node instanceof HTMLElement && node.classList.contains("stack-slot"));
         if (!slots.length) continue;
+        // 视野之外的一摞整摞跳过：不读它的布局，也就不会每帧拖一次 layout。
+        // 顺手把它的弹簧清掉——回来时从目标值重新开始，不会带着一个过期的量跳一下。
+        const box = stack.getBoundingClientRect();
+        if (box.bottom < -vh * 0.35 || box.top > vh * 1.35) {
+          for (const slot of slots) springs.delete(slot);
+          continue;
+        }
         const rects = slots.map((slot) => slot.getBoundingClientRect());
         let current = -1;
         rects.forEach((rect, index) => {
@@ -183,26 +223,43 @@ export function useDeckStack(
         rects.forEach((rect, index) => {
           const slot = slots[index]!;
           const line = deckTop + index * peek;
-          // 还差多少才贴线：卡片在线下方时 top > line，ap < 1（翘着）；贴上或越过线 ap = 1（摊平）。
-          const ap = clamp01(1 - (rect.top - line) / travel);
+          // 还差多少才贴线：卡片在线下方时 top > line，目标 ap < 1（翘着）；贴上或越过线目标 = 1（摊平）。
+          const target = clamp01(1 - (rect.top - line) / travel);
+          let spring = springs.get(slot);
+          if (!spring) { spring = { value: target, velocity: 0 }; springs.set(slot, spring); }
+          if (calm) {
+            spring.value = target;
+            spring.velocity = 0;
+          } else {
+            spring.velocity += (STIFFNESS * (target - spring.value) - DAMPING * spring.velocity) * dt;
+            spring.value += spring.velocity * dt;
+          }
+          const drift = Math.abs(target - spring.value) + Math.abs(spring.velocity) * 0.1;
+          if (drift > 0.0015) unsettled += 1;
+          // 允许一点点过冲（落到线上时压过头再回一丝，就是那口「阻尼」）；上限 1.12 是防失控。
+          const shown = spring.value < 0 ? 0 : spring.value > 1.12 ? 1.12 : spring.value;
           const previous = slot.style.getPropertyValue("--ap");
-          if (previous === "" || Math.abs(Number(previous) - ap) > 0.006) slot.style.setProperty("--ap", ap.toFixed(3));
+          if (previous === "" || Math.abs(Number(previous) - shown) > 0.004) slot.style.setProperty("--ap", shown.toFixed(3));
           const isCurrent = index === current;
           const isCovered = current > index;
           if (slot.classList.contains("is-current") !== isCurrent) slot.classList.toggle("is-current", isCurrent);
           if (slot.classList.contains("is-covered") !== isCovered) slot.classList.toggle("is-covered", isCovered);
         });
       }
+      // 弹簧都停住了就不再排帧；下一次滚动（或 DOM 变化）会重新把它叫醒。
+      if (unsettled > 0) frame = requestAnimationFrame(tick);
+      else lastTime = 0;
     };
-    const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(tick); };
     const observer = new MutationObserver(() => { refresh(); schedule(); });
     observer.observe(root, { childList: true, subtree: true });
     refresh();
-    paint();
+    tick(performance.now());
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     return () => {
       observer.disconnect();
+      springs.clear();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       if (frame) cancelAnimationFrame(frame);

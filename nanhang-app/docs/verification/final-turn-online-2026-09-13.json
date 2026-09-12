@@ -1,0 +1,11 @@
+{
+  "http_status": 200,
+  "cors_ok": true,
+  "complete": true,
+  "reply_present": true,
+  "reply_has_question_mark": false,
+  "options_count": 0,
+  "suggestions_count": 2,
+  "error_codes": [],
+  "synthetic_material_only": true
+}

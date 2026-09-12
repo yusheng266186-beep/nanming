@@ -6,11 +6,3 @@
 > @nanhang/web@0.1.0 typecheck
 > tsc --noEmit -p tsconfig.json
 
-
-> @nanhang/web-paper@0.1.0 typecheck
-> tsc --noEmit -p tsconfig.json
-
-
-> @nanhang/api@0.1.0 typecheck
-> tsc --noEmit -p tsconfig.json
-
