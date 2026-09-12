@@ -5,6 +5,7 @@ import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted, withTi
   type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots } from "../chat.js";
+import type { SchoolPool } from "../journey-model.js";
 import type { PageId } from "./shared.js";
 
 export interface TalkProps {
@@ -34,12 +35,15 @@ export interface TalkProps {
   exchangeCode: () => Promise<void>;
   sendAi: (override?: string) => Promise<void>;
   saveChatEvidence: (text: string) => void;
+  pool: SchoolPool | null;
+  quoteFor: (evidenceId: string) => string | null;
+  hasChatted: boolean;
 }
 
 export function renderTalk({ state, page, setPage, drafts, setDrafts, talkStep, setTalkStep, thinking,
   setThinking, reducedMotion, chatScrollRef, questionsDone, canConfirmDirections, saveAnswer, skip,
   notify, ai, setAi, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
-  saveChatEvidence }: TalkProps) {
+  saveChatEvidence, pool, quoteFor, hasChatted }: TalkProps) {
   // 谈心以 AI 谈心为主路径：进入本页即启用 AI（其它页面的无 AI 可用性不变）。
   useEffect(() => {
     if (page === "talk") setAi((current) => current.enabled ? current : enableAi(current));
@@ -196,16 +200,38 @@ export function renderTalk({ state, page, setPage, drafts, setDrafts, talkStep, 
                 aria-pressed={ai.tier === choice.value}
                 onClick={() => setAi(withTier(ai, choice.value))}>{choice.label}</button>)}
             </div>
-            <p className="fhint">聊法与节奏下一轮生效；你说的每句话都可以「存为方向证据」，只有存了的才会进入方向结论。</p>
+            <p className="fhint">聊法与节奏下一轮生效。你说的每句话都会作为「你自己的表达」提供给 AI（它只能引用你说过的）；按下「存为方向证据」的，才会进入方向结论。</p>
             {ai.status ? <p className="feedback">{ai.status}</p> : null}
           </>}
         </div>
       </div>
       <div className="talk-meta">
         <span className="eyebrow plain">方向证据 {questionsDone} 条</span>
-        <button type="button" className="tbtn" disabled={!canConfirmDirections}
-          onClick={() => { setPage("direction"); notify(canConfirmDirections ? "已根据你的原话生成待确认方向" : "先在对话里把一句原话「存为方向证据」"); }}>生成我的方向<Icon name="arrow" /></button>
+        <button type="button" className="tbtn" disabled={!hasChatted}
+          onClick={() => { setPage("direction"); notify(hasChatted ? "到「方向」看 AI 的建议，再亲自选一次专业" : "先在对话里聊几句，或用经典问答保存一句原话"); }}>去方向 · 选专业<Icon name="arrow" /></button>
       </div>
+      {/* AI 的结构化建议：只能来自真实专业目录（与院校池一致），每条都引用学生自己的话。
+          它是「AI 推荐线」的来源，与学生的自选在「方向」页同等位置。 */}
+      {ai.suggestions.length ? <div className="panel" style={{ marginTop: 18 }}>
+        <h3><Icon name="layers" />溟的建议（待你选择）</h3>
+        <p className="psub">这些专业类来自你刚才聊到的内容，每一条都引用你的原话。它们只是探索建议——到「方向」页看它们包含的真实专业，再决定保不保留；不和你的自选比高低。</p>
+        <div className="grid-2" style={{ marginTop: 14 }}>
+          {ai.suggestions.map((item) => {
+            const name = pool?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId;
+            const quotes = item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null);
+            return <div className="sidecard" key={item.directionId}>
+              <span className="eyebrow plain">AI 建议 · 引用了你的话</span>
+              <h3 className="song" style={{ marginTop: 8 }}>{name}</h3>
+              {quotes.map((quote) => <blockquote className="dquote" key={quote}>{quote}</blockquote>)}
+              <p className="dwhy">{item.rationale}</p>
+            </div>;
+          })}
+        </div>
+        <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
+          <button type="button" className="btn sm brass" onClick={() => setPage("direction")}>去方向 · 选专业<Icon name="arrow" /></button>
+          <small className="muted-note">建议要配合你的自选一起看：两条线同等位置。</small>
+        </div>
+      </div> : null}
       <div className="banner">
         <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="gear" size="lg" />
           <div><h3 className="song">AI 只负责理解人，事实一律可溯源</h3><p>兴趣、性格、价值偏好由模型辅助；是否招生、招多少人、去年最低分与位次一律来自数据库。AI 绝不猜录取分数。</p></div></div>

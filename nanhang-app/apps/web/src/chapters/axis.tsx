@@ -1,93 +1,101 @@
 import type { Dispatch, SetStateAction } from "react";
-import { SELECTABLE_BATCHES, axisMarks, batchOfferings, comparabilityNote, isMatchFresh, scorePosition, summary, withForm, type WebState } from "../model.js";
+import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Provenance } from "../theme.js";
 import { Icon } from "../art.js";
 import { REFERENCE_YEAR, clamp, label, type PageId } from "./shared.js";
+import type { SchoolPool, ScoreRange } from "../journey-model.js";
 
 export interface AxisProps {
   state: WebState;
   setState: Dispatch<SetStateAction<WebState>>;
   page: PageId;
   setPage: Dispatch<SetStateAction<PageId>>;
-  score: number | null;
-  queueMatch: (source: WebState) => void;
+  notify: (message: string) => void;
+  range: ScoreRange | null;
+  setRange: Dispatch<SetStateAction<ScoreRange | null>>;
+  pool: SchoolPool | null;
+  poolStale: boolean;
+  poolPending: boolean;
+  poolError: string | null;
+  matchPool: () => Promise<void>;
   toggleBatch: (batch: string) => void;
-  matching: boolean;
-  runNow: () => void;
-  comparability: ReturnType<typeof comparabilityNote>;
-  fresh: NonNullable<WebState["match"]>["result"] | null;
-  catalogueEntry: (offeringId: string) => WebState["catalog"][string] | null;
-  reading: ReturnType<typeof summary>;
 }
 
-export function renderAxis({ state, setState, page, setPage, score, queueMatch, toggleBatch, matching,
-  runNow, comparability, fresh, catalogueEntry, reading }: AxisProps) {
-  // 刻度用真实存在的东西：官方分段表公布的最低分/最高分，以及学生自己的情景分。
-  // 项目没有公布的控制线，因此不画「本科线/特控线」——那是原设计的示意数据。
-  const axisMarkList = axisMarks(state.release, state.form.primary, score);
-  const axisPosition = scorePosition(state.release, state.form.primary, score);
-  // 滑块范围始终取官方分段表公布的范围，与刻度同源。
-  // 早先的做法是从「本次位次结果」推范围，没填分数时退回 300–700，
-  // 结果刻度（150/691）被夹到错误位置，和滑块说的范围也对不上。
+export function renderAxis({ state, setState, page, setPage, notify, range, setRange, pool, poolStale,
+  poolPending, poolError, matchPool, toggleBatch }: AxisProps) {
+  // 刻度用真实存在的东西：官方分段表公布的最低分/最高分。项目没有公布的控制线，因此不画线。
+  const axisMarkList = axisMarks(state.release, state.form.primary, null);
   const publishedBounds = axisMarkList.filter((mark) => mark.major).map((mark) => mark.score);
   const axisMin = publishedBounds.length > 0 ? Math.min(...publishedBounds) : 300;
   const axisMax = publishedBounds.length > 0 ? Math.max(...publishedBounds) : 700;
-  // 没填分数时滑块停在正中，只表示「可以拖」，不假装已有一个分数。
-  const sliderValue = clamp(score ?? Math.round((axisMin + axisMax) / 2), axisMin, axisMax);
-  const sliderPct = axisMax > axisMin ? (sliderValue - axisMin) / (axisMax - axisMin) * 100 : 0;
+  const pct = (value: number) => axisMax > axisMin ? (clamp(value, axisMin, axisMax) - axisMin) / (axisMax - axisMin) * 100 : 0;
+  const bandLeft = range ? pct(range.low) : 0;
+  const bandWidth = range ? Math.max(0.8, pct(range.high) - pct(range.low)) : 0;
+  const rows = pool?.rows ?? [];
   return <section id="page-axis" className={`view${page === "axis" ? " active" : ""}`} aria-label="分数轴">
     <div className="page-head">
       <div><span className="eyebrow">Chapter 06 · 分数轴 · 试风</span>
-        <h1 className="song">如果我多考 <em>{score === null ? "—" : score}</em> 分。</h1>
-        <p className="lede">前台单位是分数，后台判断用位次 + 线差 + 历史录取数据；位次退到「解释层」，不占主界面。</p></div>
+        <h1 className="song">这段区间里，<em>哪些学校可选。</em></h1>
+        <p className="lede">把「定位」页的探索区间放到官方分段表上：区间端点换算成同科类历史位次，与每条院校专业记录的历史录取位次取交集——交集非空才进入结果。前台单位是分数，后台判断用位次。</p></div>
       <div className="head-aside">
         <svg className="head-rose" aria-hidden="true"><use href="#rose" /></svg>
-        <p>「努力」太抽象，<br />+20 分能多看到哪一批，<br />是具体、可想象的。</p></div>
+        <p>先看海的宽度，<br />再挑想靠的岸。</p></div>
     </div>
     <div className="axis-hero">
       <div className="axis-head">
-        <div><span className="eyebrow">Score Axis · 拖动你的目标分</span>
-          <h2 className="song">目标情景分每提高一分，可比较的候选就会重新排列。</h2>
-          <p>拖动下面的金铜滑块，候选实时更新。真正的推荐单位是「专业 × 大学」，不是机械的 ±20 分。</p></div>
-        <div className="delta-box"><div className="dk">目标情景分</div>
-          <div className="delta-num num"><span>{score ?? "—"}</span></div></div>
+        <div><span className="eyebrow">Score Axis · 你的探索区间</span>
+          <h2 className="song">区间每宽一分，能看到的院校就多一批；区间只决定先看谁，不决定谁能录取。</h2>
+          <p>在「定位」页生成区间后，这里把它画在官方分段表上。拖不动没关系——区间本来就是一段，不是一点。</p></div>
+        <div className="delta-box"><div className="dk">探索区间</div>
+          <div className="delta-num num"><span>{range ? `${range.low}–${range.high}` : "—"}</span></div></div>
       </div>
       <div className="slider-wrap">
         <div className="slider-scale">
-          {/* 刻度只标「公布范围的上下界」与「你的情景分」。原来的实现把三个标签都居中排在
-              同一高度，两端与刻度数字相撞（150/公布低段/2025 与 300 叠在一起）。这里按位置
-              决定对齐方式：左端左对齐、右端右对齐、中间的（情景分）才居中，并让情景分单独
-              占一行高度，避免与边界标签重叠。 */}
-          {axisMarkList.map((mark) => {
-            const pct = axisMax > axisMin ? (clamp(mark.score, axisMin, axisMax) - axisMin) / (axisMax - axisMin) * 100 : 0;
-            const edge = pct <= 1 ? " start" : pct >= 99 ? " end" : "";
-            return <span className={`stick${mark.major ? " major" : " own"}${edge}`}
-              key={`${mark.score}-${mark.label}`} style={{ left: `${pct}%` }}>
-              {mark.score}<b>{mark.label}</b></span>;
+          {/* 刻度只标「公布范围的上下界」与「你的区间两端」，端点贴边对齐避免文字相撞。 */}
+          {([axisMin, axisMax, ...(range ? [range.low, range.high] : [])] as const).map((value, index) => {
+            const name = index === 0 ? "公布最低" : index === 1 ? "公布最高"
+              : value === range?.low ? "区间下限" : "区间上限";
+            const major = index < 2;
+            const left = pct(value);
+            const edge = left <= 1 ? " start" : left >= 99 ? " end" : "";
+            return <span className={`stick${major ? " major" : " own"}${edge}`}
+              key={`${value}-${name}`} style={{ left: `${left}%` }}>
+              {value}<b>{name}</b></span>;
           })}
         </div>
         <div style={{ position: "relative" }}>
-          <div className="axis-prog" style={{ width: `${sliderPct}%` }} />
-          <div className="axis-now" style={{ left: `${sliderPct}%` }} />
-          <input className="axis" type="range" min={axisMin} max={axisMax} step={1} value={sliderValue} aria-label="目标情景分"
-            onChange={(event) => {
-              const value = Number(event.target.value);
-              const next = withForm(state, { score: value });
-              setState(next);
-              queueMatch(next);
-            }} />
+          <div className="axis-track" />
+          {range ? <div className="axis-band" style={{ left: `${bandLeft}%`, width: `${bandWidth}%` }} /> : null}
+          {range ? <>
+            <div className="axis-now" style={{ left: `${bandLeft}%` }} />
+            <div className="axis-now" style={{ left: `${pct(range.high)}%` }} />
+          </> : null}
         </div>
         <div className="slider-foot">
-          <span>{axisMin}{axisPosition ? "（公布最低）" : ""}</span>
-          <span>{axisPosition
-            ? `${axisPosition.tableYear} 年官方分段表 · 位次约 ${axisPosition.rank.toLocaleString("zh-CN")} 名`
-            : score === null
-              // 措辞要区分两件事：没填分数，和没有分段表。原来无论哪种都写「尚未载入分段表」，
-              // 学生填了分却看到这句会以为数据没加载成功。
-              ? "尚未填写情景分 · 填好后即可定位位次"
-              : `参考年 ${REFERENCE_YEAR} · 该分数不在官方公布范围内`}</span>
-          <span>{axisMax}{axisPosition ? "（公布最高）" : ""}</span>
+          <span>{axisMin}（公布最低）</span>
+          <span>{range ? "金色带就是你的探索区间" : "还没有探索区间 · 去「定位」生成"}</span>
+          <span>{axisMax}（公布最高）</span>
         </div>
+      </div>
+      <div className="grid-2" style={{ marginTop: 18, gap: 14, maxWidth: 460 }}>
+        <label className="field"><span className="flab">区间下限</span>
+          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间下限"
+            value={range && Number.isFinite(range.low) ? range.low : ""}
+            onChange={(event) => {
+              const value = event.target.value === "" ? NaN : Number(event.target.value);
+              setRange((current) => ({ low: value, high: current?.high ?? 750, basis: "手动调整的探索区间；可随时修改。" }));
+            }} /></label>
+        <label className="field"><span className="flab">区间上限</span>
+          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
+            value={range && Number.isFinite(range.high) ? range.high : ""}
+            onChange={(event) => {
+              const value = event.target.value === "" ? NaN : Number(event.target.value);
+              setRange((current) => ({ low: current?.low ?? 0, high: value, basis: "手动调整的探索区间；可随时修改。" }));
+            }} /></label>
+      </div>
+      {range ? <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p> : null}
+      <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
+        <button type="button" className="btn sm ghost" onClick={() => setPage("locate")}>去「定位」生成区间</button>
       </div>
     </div>
     <div className="chain">
@@ -106,77 +114,88 @@ export function renderAxis({ state, setState, page, setPage, score, queueMatch, 
     <p className="fhint">普通类批次之外还有提前批、专项计划等，本页暂不提供。</p>
 
     <div className="res-bar" style={{ marginTop: 24 }}>
-      <div className="res-count">在目标情景分下，匹配到 <b>{fresh?.candidates.length ?? 0}</b> 个专业 × 院校</div>
+      <div className="res-count">{pool
+        ? <>区间内匹配到 <b>{pool.schoolCount}</b> 所院校 · <b>{rows.length}</b> 条专业 × 院校</>
+        : <>还没有匹配结果</>}</div>
       <div className="legend">
-        <span><i style={{ background: "var(--reach)" }} />需更好位置</span>
-        <span><i style={{ background: "var(--steady)" }} />边界重叠</span>
-        <span><i style={{ background: "var(--safe)" }} />符合已检查条件</span>
+        <span><i style={{ background: "var(--steady)" }} />按专业自己的历史</span>
+        <span><i style={{ background: "var(--reach)" }} />只有专业组历史</span>
       </div>
     </div>
-    <div className="rfilters" style={{ marginBottom: 20 }}>
-      <span className="chip" aria-pressed={false}>已确认方向 {(reading?.confirmed ?? []).length}</span>
-      {state.form.additional.map((item) => <span className="chip" key={item}>{label(item)}</span>)}
-    </div>
-
     <div className="chart-actions" style={{ justifyContent: "flex-start", marginBottom: 20 }}>
-      <button type="button" className="btn brass" disabled={matching} onClick={runNow}>{matching ? "正在准备数据…" : "运行匹配"}</button>
-      {state.match && !isMatchFresh(state) ? <span className="gap neg">输入或画像已改变，旧结果已失效，请重新运行。</span> : null}
+      <button type="button" className="btn brass" disabled={poolPending || !range}
+        onClick={() => void matchPool()}>{poolPending ? "正在匹配院校…" : "用这个区间匹配院校"}</button>
+      {poolStale ? <span className="gap neg">选科、批次或区间已改变，旧结果已失效，请重新匹配。</span> : null}
+      {range ? null : <span className="gap neg">还没有探索区间——先去「定位」生成一个。</span>}
     </div>
-    {comparability ? <p className="basis">{comparability.basis}{comparability.limits ? ` ${comparability.limits}` : ""}</p> : null}
-    {state.release && fresh && fresh.candidates.length > 0 && !comparability
-      ? <p className="feedback">未找到该参考年的可比性记录，历史位置关系不应被採用；请核对发布包。</p> : null}
-    {fresh && fresh.warnings.length ? <p className="feedback">数据提示：{fresh.warnings.map(label).join("；")}</p> : null}
+    {poolError ? <p className="feedback" role="alert">{poolError}</p> : null}
+
+    {pool ? <div className="panel" style={{ marginBottom: 20 }}>
+      <div className="stats">
+        <div className="stat"><span className="sk"><Icon name="pin" />院校</span>
+          <div className="sv num">{pool.schoolCount}</div>
+          <div className="sd">区间内至少有一条记录可参考的院校数</div></div>
+        <div className="stat"><span className="sk"><Icon name="layers" />专业 × 院校</span>
+          <div className="sv num">{rows.length}</div>
+          <div className="sd">历史位次与你的位次跨度有交集的记录</div></div>
+        <div className="stat"><span className="sk"><Icon name="axis" />你的位次跨度</span>
+          <div className="sv num">{pool.rankRange[1].toLocaleString("zh-CN")}–{pool.rankRange[0].toLocaleString("zh-CN")}</div>
+          <div className="sd">由区间两端按 {pool.referenceYear} 年分段表换算</div></div>
+        <div className="stat"><span className="sk"><Icon name="wave" />缺历史依据</span>
+          <div className="sv num">{pool.missingHistory}</div>
+          <div className="sd">条记录没有可用历史，未进入结果，不补造数字</div></div>
+      </div>
+      <p className="fhint" style={{ marginTop: 10 }}>按 {pool.referenceYear} 年同科类历史位次筛选（发布版本 {pool.releaseId}）；这决定「先看谁」，不构成任何录取判断。</p>
+    </div> : null}
 
     <div className="schools">
-      {fresh && fresh.candidates.length > 0
-        ? fresh.candidates.slice(0, 60).map((candidate) => {
-          const entry = catalogueEntry(candidate.offering_id);
-          const relation = candidate.group_reference.relation;
-          const badge = candidate.eligibility.status === "PASS" ? "safe" : candidate.eligibility.status === "UNKNOWN" ? "plain" : "steady";
-          // 标签直接来自工作簿原文，不推断、不评级；没有标签的院校就不显示这一行。
-          const tags = (entry?.institutionTags ?? "").split("/").map((item) => item.trim()).filter(Boolean).slice(0, 4);
-          return <article className="scard" key={candidate.offering_id}>
+      {rows.length > 0
+        ? rows.slice(0, 60).map((row) => {
+          const entry = row.label;
+          const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
+          const interval = reference.reference_rank_interval ?? [];
+          const badge = row.candidate.eligibility.status === "PASS" ? "safe" : "plain";
+          return <article className="scard" key={entry.offeringId}>
             <div className="scard-top">
-              <span className={`rbadge ${badge}`}>{label(candidate.eligibility.status)}</span>
-              <span className="sc-loc"><Icon name="pin" />{entry?.institutionName ?? "院校名称未随发布包提供"}{entry?.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
-              <h3 className="song">{entry?.majorName ?? label(candidate.offering_id)}</h3>
+              <span className={`rbadge ${badge}`}>{label(row.candidate.eligibility.status)}</span>
+              <span className="sc-loc"><Icon name="pin" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
+              <h3 className="song">{entry.majorName}</h3>
               <div className="sc-tags">
-                {entry?.category ? <span>{entry.category}</span> : null}
-                {entry?.categoryClass && entry.categoryClass !== entry.category ? <span>{entry.categoryClass}</span> : null}
-                <span>招生数 {entry?.planCount === null || entry?.planCount === undefined ? "未知" : entry.planCount}</span>
-                <span>学费 {entry?.tuition === null || entry?.tuition === undefined ? "未知" : `¥${entry.tuition}`}</span>
+                <span>{entry.batch}</span>
+                {entry.categoryClass ? <span>{entry.categoryClass}</span> : null}
+                <span>招生数 {entry.planCount ?? "未知"}</span>
+                <span>学费 {entry.tuition === null || entry.tuition === undefined ? "未知" : `¥${entry.tuition}`}</span>
               </div>
             </div>
-            {tags.length ? <div className="sc-tags" style={{ margin: "0 20px 14px" }}>
-              {tags.map((tag) => <span key={tag}>{tag}</span>)}
-            </div> : null}
             <div className="ranks">
-              <div className="rank"><div className="ry">参考年</div><div className="rv num">{candidate.group_reference.source_year ?? REFERENCE_YEAR}</div></div>
-              <div className="rank"><div className="ry">组位置</div><div className="rv">{label(relation)}</div></div>
-              <div className="rank"><div className="ry">专业</div><div className="rv">{label(candidate.major_reference.relation)}</div></div>
+              <div className="rank"><div className="ry">参考年</div><div className="rv num">{reference.source_year ?? REFERENCE_YEAR}</div></div>
+              <div className="rank"><div className="ry">{row.reference === "major" ? "专业位次区间" : "专业组位次区间"}</div>
+                <div className="rv num">{interval.length ? interval.join("–") : "—"}</div></div>
+              <div className="rank"><div className="ry">资格</div><div className="rv">{label(row.candidate.eligibility.status)}</div></div>
             </div>
-            <div className="sc-foot">
-              <span className="gap"><b>{label(candidate.preference_status)}</b></span>
-              <span className="sc-match"><Icon name="layers" />组与专业证据分开展示</span>
-            </div>
+            {row.reference === "group" ? <p className="fhint" style={{ margin: "0 20px 12px" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
+            {row.candidate.eligibility.pending_requirements.length > 0
+              ? <p className="fhint" style={{ margin: "0 20px 12px" }}>待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join("、")}。</p> : null}
             <Provenance>
-              组位置取自 {candidate.group_reference.source_year ?? REFERENCE_YEAR} 年专业组记录，
-              专业位置取该专业自己的记录；两者分列，缺一项就写「暂无比较依据」。
+              位次区间来自 {reference.source_year ?? REFERENCE_YEAR} 年{row.reference === "major" ? "该专业自己的录取记录" : "所在专业组的投档记录"}；
+              与你的位次跨度有交集才进入列表，缺依据的记录不进入，也不补造数字。
             </Provenance>
           </article>;
         })
         : <div className="empty">
           <Icon name="compass" size="xl" />
-          <h3>{matching ? "正在载入已发布数据…" : "还没有可展示的候选"}</h3>
-          <p>填写目标情景分、选择两门再选科目与批次后，点击「运行匹配」。</p>
+          <h3>{poolPending ? "正在匹配院校…" : pool ? "当前区间没有命中记录" : "还没有可展示的院校"}</h3>
+          <p>{pool
+            ? "可以回到「定位」把区间稍微放宽，再点一次匹配；结果不会自动扩大范围。"
+            : "先在「定位」生成探索区间，选好批次，然后点「用这个区间匹配院校」。区间端点超出分段表公布范围时，页面会如实提示。"}</p>
         </div>}
     </div>
     <p className="fhint" style={{ margin: "22px 2px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
-      <Icon name="doc" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。</span></p>
+      <Icon name="doc" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。超过 60 条时先展示前 60 条，完整结果在「航线图」按你的两条线分别给出。</span></p>
     <div className="banner">
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="route" size="lg" />
-        <div><h3 className="song">看够了？生成你的《南溟航线图》</h3><p>已确认方向、匹配候选与两周行动，一次看清。</p></div></div>
-      <button type="button" className="btn sm brass" style={{ flexShrink: 0 }} onClick={() => setPage("chart")}>点亮航线图<Icon name="arrow" /></button>
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="chat" size="lg" />
+        <div><h3 className="song">能选的院校都在海面上了，聊聊想去哪</h3><p>下一步由 AI 主持一场谈心：两种聊法，只从你的原话出发；聊完你再亲自选一次专业。</p></div></div>
+      <button type="button" className="btn sm brass" style={{ flexShrink: 0 }} onClick={() => setPage("talk")}>去谈心<Icon name="arrow" /></button>
     </div>
   </section>;
 }

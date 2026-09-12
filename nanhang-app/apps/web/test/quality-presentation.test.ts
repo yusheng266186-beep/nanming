@@ -20,15 +20,18 @@ const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8
 const vite = readFileSync(resolve(import.meta.dirname, "../vite.config.ts"), "utf8");
 
 describe("成绩页的界面约定", () => {
-  it("入口卡片不再是禁用状态，并说明需要验证码", () => {
+  it("入口卡片可点，并说明需要姓名加验证码", () => {
     expect(app).not.toMatch(/className="entry deep" disabled/);
-    expect(app).toContain("需要 6 位验证码");
-    expect(app).toContain("不按姓名查询，也不显示任何同学的成绩");
+    expect(app).toContain("姓名 + 6 位验证码");
+    // 隐私承诺保持：只取本人分片，不显示任何同学的成绩。
+    expect(app).toContain("不显示任何同学的成绩");
   });
 
-  it("明确写出验证码不是安全边界，正式上线需服务端校验", () => {
-    expect(app).toContain("可被穷举");
-    expect(app).toContain("必须改为服务器校验并加限流");
+  it("识别改为服务端核对并写明限流，不再声称仅验证码是安全边界", () => {
+    // 姓名加验证码由 /v1/school/identify 在服务端核对并有尝试限制；
+    // 界面要说清「核对在服务端、有次数限制」，不能暗示验证码本身不可穷举。
+    expect(app).toContain("服务端核对");
+    expect(app).toContain("有尝试次数限制");
     expect(loader).toContain("MAX_CODE_ATTEMPTS");
     // 限流只是挡住误触，不能写成安全措施。
     expect(loader).toContain("不构成安全边界");

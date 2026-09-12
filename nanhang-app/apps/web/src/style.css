@@ -298,7 +298,10 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
    那是给「当前分 / 目标分」两个滑块的旧设计留的；本页只有一个目标分滑块，
    两个标签叠在一起既重复又会被误读成两段时间。 */
 .axis-now::after{content:none}
-.slider-foot{display:flex;justify-content:space-between;font:italic 400 10px/1 var(--display);letter-spacing:.1em;color:#7fa39c;margin-top:2px;position:relative;z-index:2}
+/* 区间匹配后的轴：没有拖动滑块，轨道常驻，金色带就是学生的探索区间（两端有 .axis-now 立柱）。 */
+.axis-track{position:absolute;left:0;right:0;top:19px;height:6px;border-radius:6px;background:#2c5a63}
+.axis-band{position:absolute;top:8px;height:28px;border-radius:8px;border:1px solid var(--brass);background:linear-gradient(180deg,rgba(169,123,52,.30),rgba(169,123,52,.14));pointer-events:none;z-index:2}
+.slider-foot{display:flex;justify-content:space-between;font:italic 400 10px/1 var(--display);letter-spacing:.1em;color:#7fa39c;margin-top:2px;position:relative;z-index:2;flex-wrap:wrap;row-gap:4px}
 .res-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;flex-wrap:wrap}
 .res-count{font-family:var(--song);font-size:15px;color:var(--ink-2)}
 .res-count b{font-family:var(--display);font-size:26px;color:var(--brass);margin:0 3px}

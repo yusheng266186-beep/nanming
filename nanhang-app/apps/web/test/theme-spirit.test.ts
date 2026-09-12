@@ -65,25 +65,26 @@ describe("内核：每个数字都能追到来源", () => {
     // 这四处是页面给出数字/结论的地方，各自必须写明依据。
     const anchors = app.match(/<Provenance[^>]*>/g) ?? [];
     expect(anchors.length, "expected provenance notes on every data-bearing section").toBeGreaterThanOrEqual(5);
-    // 院校卡要说清组线与专业线是两条记录，来自哪一年。
-    expect(app).toContain("组位置取自");
-    expect(app).toContain("专业位置取该专业自己的记录");
+    // 院校卡要说清依据是专业自己的记录还是专业组记录，来自哪一年——两条不同的记录。
+    expect(app).toContain("该专业自己的录取记录");
+    expect(app).toContain("专业组的投档记录");
     // 航线图要说清分组依据。
     expect(app).toContain("历史参考关系");
   });
 
   it("shows the student's own words on a direction card", () => {
-    // 项目内核：方向来自学生本人保存的原话。引文只能取自 evidence，
-    // 没有原话时就明说没有，不许用系统措辞顶上。
-    expect(app).toContain("interestEvidence[0]");
+    // 项目内核：方向建议必须引用学生本人的原话。引文只能取自他说过的话，
+    // 原话不在了就明说，不许用系统措辞顶上；没有建议也如实说明，不编一条出来。
+    expect(app).toContain("quoteFor");
     expect(app).toContain('className="dquote"');
-    expect(app).toContain("还没有你自己的原话支撑");
+    expect(app).toContain("这次对话还没有形成有依据的建议");
   });
 
   it("does not invent a score when the student has not entered one", () => {
-    // 未填分数时显示「—」，不许拿 480 之类的兜底数字冒充分数。
+    // 未填分数/未生成区间时显示「—」，不许拿 480 之类的兜底数字冒充分数。
     expect(app).not.toContain("score ?? 480");
-    expect(app).toContain('{score ?? "—"}');
+    expect(app).toContain('{score === null ? <span className="absent">—</span> : score}');
+    expect(app).toContain('{range ? `${range.low}–${range.high}` : "—"}');
   });
 });
 
@@ -97,8 +98,8 @@ describe("内核：范围与刻度同源", () => {
   });
 
   it("keeps both ends of the scale from colliding with the tick numbers", () => {
-    // 端点的标签必须贴边对齐；情景分单独占一行。这些规则删掉就会重现重叠。
-    expect(app).toContain('const edge = pct <= 1 ? " start"');
+    // 端点的标签必须贴边对齐；区间端点与公布范围同用这套规则。这些规则删掉就会重现重叠。
+    expect(app).toContain('const edge = left <= 1 ? " start"');
     expect(css).toContain(".stick.start{transform:none;text-align:left}");
     expect(css).toContain(".stick.end{transform:translateX(-100%);text-align:right}");
     expect(css).toContain(".stick.own{");
@@ -115,9 +116,9 @@ describe("内核：留白要说出原因", () => {
     // 缺考/无来源的场次在航迹里画成虚线空柱，并说明不补成 0 分。
     expect(app).toContain('className="trail-gap"');
     expect(app).toContain("不补成 0 分");
-    // 位次不可得时要区分「没填分数」与「分数不在公布范围」——原来两种都写「尚未载入分段表」。
-    expect(app).toContain("尚未填写情景分");
-    expect(app).toContain("该分数不在官方公布范围内");
+    // 区间/位次不可得时要说清缺的是什么、去哪一步补上——不许只丢一个「—」或一句技术术语。
+    expect(app).toContain("还没有探索区间");
+    expect(app).toContain("该分数官方未列出");
     // 旧措辞只允许出现在解释这次修改的注释里，不允许再作为界面文案。
     const asDisplayText = app.split(String.fromCharCode(10))
       .filter((line) => !line.trim().startsWith("//"));

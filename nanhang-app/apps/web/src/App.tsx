@@ -10,9 +10,11 @@ import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
 import {
   additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam, loadQualityIndex,
-  loadQualityShard, normalizeCode, recentExams, registerFailure,
+  normalizeCode, recentExams, registerFailure,
   type LoadedQuality, type QualityAttempts
 } from "./quality-huixi.js";
+import type { QualityShard } from "./quality-types.js";
+import { buildSchoolPool, makeBranches, rangeFromExams, type SchoolPool, type ScoreRange } from "./journey-model.js";
 import {
   CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
   type PageId, type QualityState
@@ -30,7 +32,15 @@ export default function App() {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [ai, setAi] = useState<AiPanelState>(initialAiPanel);
   const [qualityCode, setQualityCode] = useState("");
+  const [schoolName, setSchoolName] = useState("");
   const [quality, setQuality] = useState<QualityState>(initialQualityState);
+  // 新主流程的三块状态：探索区间（成绩 → 匹配）、院校池（区间匹配结果）、我的专业自选。
+  // poolRun 附带生成时的输入指纹，选科/批次/区间一变，旧池即标记失效。
+  const [range, setRange] = useState<ScoreRange | null>(null);
+  const [poolRun, setPoolRun] = useState<{ key: string; data: SchoolPool } | null>(null);
+  const [poolPending, setPoolPending] = useState(false);
+  const [poolError, setPoolError] = useState<string | null>(null);
+  const [picks, setPicks] = useState<string[]>([]);
   const [aiDraft, setAiDraft] = useState("");
   const [aiCode, setAiCode] = useState("");
   const [page, setPage] = useState<PageId>("sail");
@@ -61,6 +71,7 @@ export default function App() {
   const matchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const aiSeq = useRef(0);
   const qualitySeq = useRef(0);
+  const poolSeq = useRef(0);
   const chartSvgRef = useRef<SVGSVGElement | null>(null);
   const detailRef = useRef<HTMLDialogElement | null>(null);
   const releaseAbort = useRef<AbortController | null>(null);
@@ -170,7 +181,14 @@ export default function App() {
     matchSeq.current += 1;
     aiSeq.current += 1;
     qualitySeq.current += 1;
+    poolSeq.current += 1;
     setMatchPending(false);
+    setPoolPending(false);
+    setPoolError(null);
+    setPoolRun(null);
+    setRange(null);
+    setPicks([]);
+    setSchoolName("");
     setAi(disableAi(ai));
     setAiDraft("");
     setAiCode("");
@@ -184,8 +202,20 @@ export default function App() {
     notify("已清除本次探索");
   };
   const download = () => {
+    // 双线结果一并导出：AI 建议线与自选线各自的专业类，以及两条路的合并/分路概要。
+    const routes = pool ? makeBranches(pool, aiDirectionIds, picks)
+      .map((branch) => ({ kind: branch.kind, title: branch.title,
+        majors: branch.majors.map((item) => item.name),
+        offerings: branch.rows.length })) : [];
     const content = JSON.stringify({ exported_at: new Date().toISOString(), storage: "student_download",
-      profile: state.profile, answers: state.answers, form: state.form }, null, 2);
+      profile: state.profile, answers: state.answers, form: state.form,
+      range, picks: picks.map((id) => pool?.majors.find((major) => major.id === id)?.name ?? id),
+      aiSuggestions: ai.suggestions.map((item) => ({
+        direction: pool?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId,
+        rationale: item.rationale,
+        quotes: item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null) })),
+      routes,
+      note: "历史区间与专业探索结果，不保证录取；专业组参考不等于专业录取线。" }, null, 2);
     const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -194,43 +224,54 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  // 荣县一中增强模式：输入 6 位验证码 → 取回本人分片 → 回填表单并展示成绩面板。
-  // 只有拿到分片才算验证通过；失败按次计数，达到上限就停手，不做无上限的试号。
-  const verifyQualityCode = async () => {
+  // 荣县一中增强模式：姓名 + 6 位验证码 → 服务端核对（/v1/school/identify，带限流）→
+  // 取回本人分片 → 回填表单并推导探索区间。失败按次计数，达到上限就停手，不做无上限的试号。
+  const identifySchool = async () => {
     if (quality.attempts.blocked || quality.status === "loading") return;
-    if (normalizeCode(qualityCode) === null) {
+    const name = schoolName.trim();
+    if (!name || name.length > 40 || normalizeCode(qualityCode) === null) {
       setQuality((current) => ({ ...current, status: "failed",
-        message: "请输入 6 位数字验证码。" }));
+        message: "请填写学生姓名和 6 位数字验证码。" }));
       return;
     }
     const seq = ++qualitySeq.current;
     setQuality((current) => ({ ...current, status: "loading", message: null }));
     try {
-      const [index, shard] = await Promise.all([
-        quality.index ? Promise.resolve(quality.index) : loadQualityIndex(),
-        loadQualityShard(qualityCode)
-      ]);
+      const response = await fetch(`${ai.apiBase}/v1/school/identify`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, code: qualityCode }) });
+      const body = await response.json() as { shard?: QualityShard; message?: string };
+      if (!response.ok || !body.shard) throw new Error(body.message ?? "姓名或验证码不匹配，请向老师核对。");
+      if (seq !== qualitySeq.current) return;
+      const shard = body.shard;
+      const index = quality.index ?? await loadQualityIndex();
       if (seq !== qualitySeq.current) return;
       const exam = latestExam(shard);
       setQuality({ status: "ready", index, shard, attempts: initialQualityAttempts, message: null });
       setQualityCode("");
-      // 回填表单：首选科目与再选科目来自本人记录，分数用最近一次总分，历史用最近五次。
+      setSchoolName("");
+      // 回填表单：首选科目与再选科目来自本人记录，分数用最近一次总分，考试用最近五次；
+      // 探索区间按这些考试各自的切线做等位换算（min—max），供「分数轴」匹配院校。
       if (exam) {
         const primary = shard.person.track === "物理类" ? "PHYSICS" : "HISTORY";
         // 再选科目按组合原文解析（如「物化地」→ 化+地）。解析不出两门时不猜一个组合出来，
         // 保持学生当前的选择让他自己改——数据里出现新组合时，猜错会把资格判断悄悄带偏。
         const additional = additionalFromCombination(shard.person.combination);
+        const recent = recentExams(shard);
         setState((current) => withForm(current, { primary,
           additional: additional ?? current.form.additional,
-          score: Math.round(exam.total), exams: recentExams(shard) }));
+          score: exam.total !== null ? Math.round(exam.total) : current.form.score, exams: recent }));
+        const derived = rangeFromExams(recent, primary);
+        if (derived) setRange(derived);
       }
       notify(`已接入质量慧析 · ${shard.person.classLabel}`);
-      setPage("quality");
     } catch (error) {
       if (seq !== qualitySeq.current) return;
+      const reason = error instanceof Error ? error.message : "识别没有完成，请重试。";
       const attempts = registerFailure(quality.attempts);
       setQuality((current) => ({ ...current, status: "failed", attempts,
-        message: attemptsMessage(attempts) }));
+        // 第一次失败优先展示服务端给的具体原因（不匹配/未配置/暂不可用），连错才强调次数。
+        message: attempts.count <= 1 ? reason : attemptsMessage(attempts) }));
       setQualityCode("");
     }
   };
@@ -256,9 +297,16 @@ export default function App() {
     const history = [...ai.history, { role: "user" as const, text }];
     setAi((current) => withUserTurn({ ...current, pending: true, ...(override ? { options: [] } : {}) }, text));
     if (!override) setAiDraft("");
-    // 学生自己保存的原话随请求上行：服务端只让模型引用这些 ID，引用不到的会被拦下。
-    const evidence = evidenceForRequest(state.registry);
-    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence);
+    // 学生自己说的每句话都作为「本人的表达」随请求上行（服务端只让模型引用这些话）；
+    // 按下「存为方向证据」的原话额外进入方向证据链，决定方向结论能不能生成。
+    // 院校池存在时同时上行真实专业目录，AI 的建议只能从里面挑，前端还会再过滤一遍。
+    const userTurns = ai.history.filter((turn) => turn.role === "user");
+    const chatEvidence = [
+      ...userTurns.map((turn, index) => ({ evidenceId: `ev-chat-${index}`, quote: turn.text, kind: "student_self_report" })),
+      { evidenceId: `ev-chat-${userTurns.length}`, quote: text, kind: "student_self_report" }
+    ];
+    const evidence = [...evidenceForRequest(state.registry), ...chatEvidence].slice(-12);
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, poolRun?.data.directions ?? []);
     if (seq !== aiSeq.current) return;
     setAi((current) => applyTurnResult(current, next));
   };
@@ -268,6 +316,54 @@ export default function App() {
   const saveChatEvidence = (text: string) => {
     setState((current) => recordAnswer(current, "q-interest", text));
     notify("已把这句存为方向证据");
+  };
+
+  // —— 新主流程：探索区间 → 院校池 → AI 建议 × 自选 → 双线结果 ——
+  // 院校池的输入指纹：选科、批次或区间任一变化，旧池就在界面上标记失效（不静默沿用）。
+  const poolKeyNow = [state.form.primary ?? "none", [...state.form.additional].sort().join("+"),
+    [...state.form.batches].sort().join("+"), range ? `${range.low}-${range.high}` : "no-range"].join("|");
+  const pool = poolRun?.data ?? null;
+  const poolStale = poolRun !== null && poolRun.key !== poolKeyNow;
+
+  /** 用当前区间跑一次院校池匹配：区间端点换位次区间，与历史录取位次取交集。 */
+  const matchPool = async () => {
+    if (!state.form.primary || state.form.additional.length !== 2) { notify("先在「起航」选好首选与两门再选科目。"); return; }
+    if (!range) { notify("先在「定位」生成探索区间。"); return; }
+    if (!state.form.batches.length) { notify("请至少选择一个批次。"); return; }
+    if (!state.release) { notify("发布数据还没有载入，稍等或刷新后再试。"); return; }
+    const seq = ++poolSeq.current;
+    setPoolPending(true);
+    setPoolError(null);
+    try {
+      const data = await buildSchoolPool(state.release, state.form.primary, state.form.additional, range, state.form.batches);
+      if (seq !== poolSeq.current) return;
+      setPoolRun({ key: poolKeyNow, data });
+      setPicks([]);
+      notify(`已匹配 ${data.schoolCount} 所院校 · ${data.rows.length} 条记录`);
+    } catch (error) {
+      if (seq === poolSeq.current) setPoolError(error instanceof Error ? error.message : "匹配没有完成，请调整范围后重试。");
+    } finally {
+      if (seq === poolSeq.current) setPoolPending(false);
+    }
+  };
+
+  /** 自选专业（≤5 个）：换池即清空，不让旧选择悄悄挂到新范围上。 */
+  const togglePick = (majorId: string) => {
+    setPicks((current) => {
+      if (current.includes(majorId)) return current.filter((item) => item !== majorId);
+      if (current.length >= 5) { notify("最多选 5 个专业，先聚焦在最想去的几个上。"); return current; }
+      return [...current, majorId];
+    });
+  };
+
+  /** 建议引用的原话：先查保存过的证据，再查聊天转录（ev-chat-序号）。 */
+  const userTurns = ai.history.filter((turn) => turn.role === "user");
+  const quoteFor = (evidenceId: string): string | null => {
+    const saved = state.answers.find((item) => item.evidenceId === evidenceId);
+    if (saved) return saved.text;
+    const match = /^ev-chat-(\d+)$/.exec(evidenceId);
+    const turn = match ? userTurns[Number(match[1])] : undefined;
+    return turn ? turn.text : null;
   };
 
   const runNow = () => {
@@ -281,6 +377,10 @@ export default function App() {
 
   const questionsDone = state.answers.length;
   const canConfirmDirections = state.answers.some((item) => item.questionId === "q-interest");
+  // 学生是否已经和 AI 聊过：AI 转录里有发言，或经典问答存过原话，都算「聊过」。
+  // 自选专业在这一步之后才解锁——这是流程设计：先聊过、认识自己，再选专业。
+  const hasChatted = userTurns.length > 0 || canConfirmDirections;
+  const aiDirectionIds = ai.suggestions.map((item) => item.directionId);
   const fresh = isMatchFresh(state) ? state.match?.result ?? null : null;
 
   // 每个章节只声明它真正用到的字段（结构性子集），这里一次性把页面状态交给它们。
@@ -288,7 +388,9 @@ export default function App() {
     state, setState, page, setPage, drafts, setDrafts, talkStep, setTalkStep, thinking, setThinking,
     reducedMotion, chatScrollRef, questionsDone, canConfirmDirections, saveAnswer, skip, notify,
     ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, saveChatEvidence,
-    quality, qualityCode, setQualityCode, verifyQualityCode,
+    quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
+    range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, togglePick,
+    hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,
     map, score, contextLabel, chartSvgRef, download, clear, setShowKun, setToast, toast

@@ -82,11 +82,11 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           onClick={() => setPage("quality")}>
           <span className="eidx">02</span>
           <span className="elab"><Icon name="shield" />荣县一中 · 增强模式</span>
-          <h3>{quality.status === "ready" ? `已接入 · ${quality.shard?.person.classLabel ?? ""}` : "验证后读取质量慧析"}</h3>
+          <h3>{quality.status === "ready" ? `已接入 · ${quality.shard?.person.classLabel ?? ""}` : "姓名 + 验证码接入质量慧析"}</h3>
           <p>{quality.status === "ready"
-            ? "最近成绩、年级与班级位置、线差与知识点已读取。你仍可修改任何一项，增强模式只提供依据，不替你决定方向。"
-            : "用班主任发放的 6 位验证码读取你自己的成绩记录，自动带入最近考试、班级与年级位置。不按姓名查询，也不显示任何同学的成绩。"}</p>
-          <span className="efoot"><span>{quality.status === "ready" ? "增强能力 · 已启用" : "需要 6 位验证码"}</span><i className="carrow"><Icon name="arrow" /></i></span>
+            ? "最近成绩、年级与班级位置、线差与知识点已读取，探索区间也按你的考试推导好了。你仍可修改任何一项，增强模式只提供依据，不替你决定方向。"
+            : "输入姓名和班主任发放的 6 位验证码，服务端核对后读取你自己的成绩记录，自动带入最近考试并推导探索区间。不显示任何同学的成绩。"}</p>
+          <span className="efoot"><span>{quality.status === "ready" ? "增强能力 · 已启用" : "需要 姓名 + 6 位验证码"}</span><i className="carrow"><Icon name="arrow" /></i></span>
         </button>
       </div>
 
@@ -170,9 +170,9 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
     <div className="section">
       <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>从看清水平，到聊出方向，再拖动分数看着候选一批批变化。</p></div></div>
       <div className="trio">
-        <div className="mini"><span className="mk"><Icon name="compass" />02 定位</span><h4>看清此刻的海面</h4><p>情景分 → 位次 → 稳定性 → 趋势。控制线数据尚未随发布包提供时，南溟会诚实标注未知，而不是编造一条线。</p></div>
-        <div className="mini"><span className="mk"><Icon name="chat" />03 谈心</span><h4>六到八个真问题</h4><p>每题都可以跳过。只有你保存的原话才能成为方向证据，AI 只提问，不替你下结论。</p></div>
-        <div className="mini"><span className="mk"><Icon name="route" />06 航线图</span><h4>下一段路怎么走</h4><p>已确认方向、可用候选与两周行动，合成一张可打印的航线图。</p></div>
+        <div className="mini"><span className="mk"><Icon name="compass" />02 定位</span><h4>圈出你的探索区间</h4><p>近几次考试按各自切线换算，或围绕目标分 ±10——得到一段区间，用它去匹配院校，而不是一个孤零零的分数。</p></div>
+        <div className="mini"><span className="mk"><Icon name="chat" />04 谈心</span><h4>先聊，再选专业</h4><p>两种聊法由 AI 主持，只从你的原话出发；聊完它会给出有据可依的方向建议，然后你再亲自选一次专业。</p></div>
+        <div className="mini"><span className="mk"><Icon name="route" />07 航线图</span><h4>两条来路，一张图</h4><p>AI 的建议和你的自选各是一条线：一致合成一条，不一致分两条并列——区间内的院校专业按线分开给你。</p></div>
       </div>
     </div>
 

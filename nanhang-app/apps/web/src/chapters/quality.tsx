@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import {
-  QUALITY_BASE, classChanges, formatGap, formatRate, formatScore, friendlyExamLabel, latestExam,
+  classChanges, formatGap, formatRate, formatScore, friendlyExamLabel, latestExam,
   subjectDistances, trailChart, weakestKnowledge
 } from "../quality-huixi.js";
 import { Provenance } from "../theme.js";
@@ -12,11 +12,14 @@ export interface QualityProps {
   quality: QualityState;
   qualityCode: string;
   setQualityCode: Dispatch<SetStateAction<string>>;
-  verifyQualityCode: () => Promise<void>;
+  schoolName: string;
+  setSchoolName: Dispatch<SetStateAction<string>>;
+  identifySchool: () => Promise<void>;
   setPage: Dispatch<SetStateAction<PageId>>;
 }
 
-export function renderQuality({ page, quality, qualityCode, setQualityCode, verifyQualityCode, setPage }: QualityProps) {
+export function renderQuality({ page, quality, qualityCode, setQualityCode, schoolName, setSchoolName,
+  identifySchool, setPage }: QualityProps) {
   const exam = quality.shard ? latestExam(quality.shard) : null;
   const distances = exam ? subjectDistances(exam) : [];
   const gaps = quality.shard ? weakestKnowledge(quality.shard, 6) : [];
@@ -41,26 +44,31 @@ export function renderQuality({ page, quality, qualityCode, setQualityCode, veri
 
     {quality.status !== "ready" && <div className="panel">
       <h3><Icon name="shield" />荣县一中增强模式</h3>
-      <p className="psub">输入班主任发放的 6 位验证码。系统按验证码取回你本人的成绩分片，不搜索姓名、不显示同学成绩。没有验证码时，本页以外的全部功能照常可用。</p>
-      <label className="field" style={{ maxWidth: 280, marginTop: 16 }}>
-        <span className="flab">6 位验证码</span>
-        <input className="inp" type="text" inputMode="numeric" autoComplete="off" maxLength={6}
-          value={qualityCode}
-          placeholder="例如 246810"
-          aria-describedby="quality-hint"
-          onChange={(event) => setQualityCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-          onKeyDown={(event) => { if (event.key === "Enter") void verifyQualityCode(); }} />
-      </label>
+      <p className="psub">输入姓名和班主任发放的 6 位验证码，服务端核对后取回你本人的成绩分片：最近考试、班级与年级位置、知识短板自动带入。不显示任何同学的成绩；识别后探索区间也会按你的考试自动推导。</p>
+      <div className="grid-2" style={{ marginTop: 16, gap: 14, maxWidth: 460 }}>
+        <label className="field"><span className="flab">学生姓名</span>
+          <input className="inp" type="text" autoComplete="off" maxLength={40}
+            value={schoolName}
+            placeholder="和验证码一起由班主任发放"
+            onChange={(event) => setSchoolName(event.target.value)} /></label>
+        <label className="field"><span className="flab">6 位验证码</span>
+          <input className="inp" type="text" inputMode="numeric" autoComplete="off" maxLength={6}
+            value={qualityCode}
+            placeholder="例如 246810"
+            aria-describedby="quality-hint"
+            onChange={(event) => setQualityCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+            onKeyDown={(event) => { if (event.key === "Enter") void identifySchool(); }} /></label>
+      </div>
       <div className="hero-act" style={{ marginTop: 16 }}>
         <button type="button" className="btn brass" disabled={quality.status === "loading" || quality.attempts.blocked}
-          onClick={() => void verifyQualityCode()}>
-          {quality.status === "loading" ? "正在核对…" : "验证并接入"}<Icon name="arrow" />
+          onClick={() => void identifySchool()}>
+          {quality.status === "loading" ? "正在核对…" : "识别并接入"}<Icon name="arrow" />
         </button>
         <button type="button" className="tbtn" onClick={() => setPage("locate")}>先用通用模式</button>
       </div>
       <p className="fhint" id="quality-hint">{quality.message
-        ?? `验证码只用于定位你本人的成绩文件；本机演示数据来自 ${QUALITY_BASE}。`}</p>
-      <p className="fhint">说明：6 位数字在离线产物上可被穷举，因此增强模式当前只用于校内/本机演示；正式上线必须改为服务器校验并加限流。这里也再声明一次——本页不会因为成绩好就给出「你能上什么学校」的结论。</p>
+        ?? "姓名和验证码只发送给成绩服务核对（有尝试次数限制），不进入对话，也不发给 AI。"}</p>
+      <p className="fhint">说明：识别由服务端完成核对与限流；连错多次会暂停本页重试，请向班主任核对后再刷新。这里也再声明一次——本页不会因为成绩好就给出「你能上什么学校」的结论。</p>
     </div>}
 
     {quality.status === "ready" && quality.shard && exam && <div className="panel">
@@ -187,6 +195,12 @@ export function renderQuality({ page, quality, qualityCode, setQualityCode, veri
         </table>
       </div>
       <p className="fhint">只统计有来源满分且本人有作答的小题；缺少分值的题不参与得分率计算，也不会被补成满分。</p>
+    </div>}
+
+    {quality.status === "ready" && <div className="banner">
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="compass" size="lg" />
+        <div><h3 className="song">成绩已接入，探索区间也推导好了</h3><p>到「定位」确认这段区间（可手动微调），然后去「分数轴」匹配这段区间里你可以选的院校与专业。</p></div></div>
+      <button type="button" className="btn sm" style={{ flexShrink: 0 }} onClick={() => setPage("locate")}>去定位看区间<Icon name="arrow" /></button>
     </div>}
   </section>;
 }

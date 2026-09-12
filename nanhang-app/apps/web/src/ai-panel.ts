@@ -4,7 +4,8 @@
 // enabled it, nothing in the no-AI flow changes. Every displayed AI string is passed through
 // `safeText`, and the run stamp is carried so a superseded response can never be applied (A47).
 import { beginTurn, runAiTurn, DEFAULT_CHAT_MODE, DEFAULT_THINKING_TIER,
-  type AiEvidence, type AiRunStamp, type AiTurnOutcome, type ChatMode, type ThinkingTier } from "./ai-client.js";
+  type AiEvidence, type AiRunStamp, type AiTurnOutcome, type ChatMode, type SseLikeEvent,
+  type ThinkingTier } from "./ai-client.js";
 
 export const AI_NOTICE = "AI 建议只使用你已经保存的原话，且必须由你确认后才会进入画像。AI 不能修改资格、位次或数据发布状态。";
 
@@ -148,8 +149,11 @@ export interface AiTurnDeps {
  * `history` 是已有的对话记录（含刚发出的这条用户消息之前的部分）；只带最近 8 轮给模型，
  * 让多轮谈心能接得上话，同时限制请求体大小。
  *
- * `evidence` 是学生自己保存的原话。它是「建议必须有据可依」的输入：服务端只让模型引用这些 ID，
- * 引用不到的会被输出校验拦下。学生一条都没存时传空数组，服务端会回落到演示注册表。
+ * `evidence` 是学生自己说的话（保存过的原话 + 聊天发言）。它是「建议必须有据可依」的输入：
+ * 服务端只让模型引用这些 ID，引用不到的会被输出校验拦下。为空时服务端回落到演示注册表。
+ *
+ * `directionCatalog` 是本轮允许建议的真实专业目录（来自院校池）。带上它，服务端把提示词
+ * 换成这份目录并逐条过滤库外建议；前端再按同样的集合过滤一遍——两道闸，不靠模型自觉。
  */
 export async function askAi(
   state: AiPanelState,
@@ -159,7 +163,8 @@ export async function askAi(
   requestId: string,
   deps: AiTurnDeps = {},
   history: readonly { readonly role: "user" | "assistant"; readonly text: string }[] = [],
-  evidence: readonly AiEvidence[] = []
+  evidence: readonly AiEvidence[] = [],
+  directionCatalog: readonly { readonly id: string; readonly name: string }[] = []
 ): Promise<AiPanelState> {
   if (!state.enabled) return state;
   if (!state.token) return { ...state, status: "请先兑换本地访问码。" };
@@ -171,9 +176,42 @@ export async function askAi(
     { runId: sendStamp.runId, requestId, inputRevision: sendStamp.inputRevision, userText,
       context: history.slice(-8).map(({ role, text }) => ({ role, text })),
       tier: state.tier, mode: state.mode,
-      ...(evidence.length > 0 ? { evidence } : {}) }
+      ...(evidence.length > 0 ? { evidence } : {}),
+      ...(directionCatalog.length > 0 ? { directionCatalog } : {}) }
   );
-  return applyOutcome(state, result.outcome, result.httpStatus, sendStamp.inputRevision);
+  const next = applyOutcome(state, result.outcome, result.httpStatus, sendStamp.inputRevision);
+  return { ...next, suggestions: groundedSuggestions(result.events, directionCatalog, evidence) };
+}
+
+export interface AiSuggestion {
+  readonly directionId: string;
+  readonly evidenceIds: readonly string[];
+  readonly rationale: string;
+}
+
+/**
+ * 从 complete 事件里取结构化建议，并做与输出校验同源的落地过滤：
+ * 专业类必须在目录里、引用的原话必须是本轮真的发上去的。两道闸里这是前端这道——
+ * 就算服务端漏放了一条库外建议，它也到不了界面。
+ */
+export function groundedSuggestions(events: readonly SseLikeEvent[],
+  catalog: readonly { readonly id: string; readonly name: string }[],
+  evidence: readonly AiEvidence[]): readonly AiSuggestion[] {
+  if (!catalog.length) return [];
+  const completion = ([...events].reverse().find((event) => event.event === "complete")?.data.output) as { suggestions?: unknown } | undefined;
+  const raw = completion?.suggestions;
+  if (!Array.isArray(raw)) return [];
+  const allowed = new Set(catalog.map((item) => item.id));
+  const cited = new Set(evidence.map((item) => item.evidenceId));
+  return raw.flatMap((item) => {
+    const value = item as { directionId?: unknown; rationale?: unknown; evidenceIds?: unknown };
+    if (typeof value.directionId !== "string" || !allowed.has(value.directionId)) return [];
+    const ids = Array.isArray(value.evidenceIds)
+      ? value.evidenceIds.filter((id): id is string => typeof id === "string" && cited.has(id))
+      : [];
+    if (!ids.length) return [];
+    return [{ directionId: value.directionId, evidenceIds: ids, rationale: safeText(value.rationale) }];
+  }).slice(0, 4);
 }
 
 export function applyOutcome(state: AiPanelState, outcome: AiTurnOutcome, httpStatus = 200, inputRevision: number | null = null): AiPanelState {

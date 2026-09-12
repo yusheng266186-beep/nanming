@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { QUESTIONS, axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from "../model.js";
 import { examLineDiffs, equivalentPosition, scoreStability, scoreTrend } from "../exam-position.js";
+import { rangeFromExams, type ScoreRange } from "../journey-model.js";
 import { OFFICIAL_LINES_2026 } from "../reference-lines.js";
 import { formatGap } from "../quality-huixi.js";
 import { Provenance, Uncharted } from "../theme.js";
@@ -15,13 +16,15 @@ export interface LocateProps {
   score: number | null;
   trackLabel: string;
   notify: (message: string) => void;
+  range: ScoreRange | null;
+  setRange: Dispatch<SetStateAction<ScoreRange | null>>;
 }
 
 const formatRatio = (ratio: number) => `${ratio >= 0 ? "+" : ""}${(ratio * 100).toFixed(1)}%`;
 const formatPercentile = (percentile: number) =>
   `前 ${percentile < 1 ? percentile.toFixed(2) : percentile.toFixed(1)}%`;
 
-export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify }: LocateProps) {
+export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange }: LocateProps) {
   const exams = state.form.exams;
   const totals = exams.map((exam) => exam.total).filter((item): item is number => item !== null);
   const stability = scoreStability(totals);
@@ -161,8 +164,8 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
               <div className="sv num">{stability === null ? "—" : `±${stability.toFixed(1)}`}</div>
               <div className="sd">{stability === null ? "尚未录入考试成绩" : "波动越小，定位越可信"}</div></div>
             <div className="stat"><span className="sk"><Icon name="up" />近期趋势</span>
-              <div className="sv num">{trend === null ? "—" : `${trend >= 0 ? "+" : ""}${trend}`}</div>
-              <div className="sd">{trend === null ? "尚未录入考试成绩" : "相对上一次的变化"}</div></div>
+              <div className="sv num">{trend === null ? "—" : `${trend >= 0 ? "+" : ""}${Math.round(trend * 10) / 10}`}</div>
+              <div className="sd">{trend === null ? "尚未录入考试成绩" : "相对上一次的变化（分）"}</div></div>
           </div>
         </div>
         <div className="verdict">
@@ -250,10 +253,66 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       </Provenance>
     </div>}
 
+    {/* 探索区间是新主流程的枢纽：匹配院校不看单点分数，看这一段区间。
+        两条来路都在这里汇合——校外同学按目标分或历考换算，荣县一中的同学识别后自动推导。 */}
+    <div className="panel" style={{ marginTop: 22 }}>
+      <h3><Icon name="compass" />探索区间（用它匹配院校）</h3>
+      <p className="psub">后面的院校匹配不看单点分数，看这段区间：下限到上限之间的院校才会进入结果。
+        可以按近几次考试的等位换算自动推导，也可以围绕目标分各取 10 分，再手动微调。</p>
+      {range
+        ? <div className="vlist" style={{ marginTop: 14 }}>
+          <span className="vpill">区间 <b>{range.low}–{range.high}</b> 分</span>
+          <span className="vpill">参考 <b>{trackLabel}</b></span>
+        </div>
+        : <p className="muted-note" style={{ marginTop: 12 }}>还没有生成区间。用下面任一方式生成，或者直接手动填写。</p>}
+      <div className="grid-2" style={{ marginTop: 14, gap: 14, maxWidth: 420 }}>
+        <label className="field"><span className="flab">区间下限</span>
+          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间下限"
+            value={range && Number.isFinite(range.low) ? range.low : ""}
+            onChange={(event) => {
+              const value = event.target.value === "" ? NaN : Number(event.target.value);
+              setRange((current) => ({ low: value, high: current?.high ?? 750,
+                basis: "手动填写的探索区间；可随时修改。" }));
+            }} /></label>
+        <label className="field"><span className="flab">区间上限</span>
+          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
+            value={range && Number.isFinite(range.high) ? range.high : ""}
+            onChange={(event) => {
+              const value = event.target.value === "" ? NaN : Number(event.target.value);
+              setRange((current) => ({ low: current?.low ?? 0, high: value,
+                basis: "手动填写的探索区间；可随时修改。" }));
+            }} /></label>
+      </div>
+      {range ? <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p> : null}
+      <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
+        <button type="button" className="btn sm" disabled={!state.form.primary}
+          onClick={() => {
+            if (!state.form.primary) { notify("先在「起航」选好首选科目。"); return; }
+            const derived = rangeFromExams(exams, state.form.primary);
+            if (!derived) { notify("近几次考试至少要有一次「总分 + 任一切线」才能换算；也可以改用目标分。"); return; }
+            setRange(derived);
+            notify("已按近几次考试的等位换算生成探索区间");
+          }}>按近几次考试换算</button>
+        <button type="button" className="btn sm" disabled={score === null}
+          onClick={() => {
+            if (score === null) { notify("先在「起航」填一个目标情景分。"); return; }
+            setRange({ low: Math.max(0, score - 10), high: Math.min(750, score + 10),
+              basis: "目标分上下各 10 分作为初始探索范围，可自行调整；不是预测区间。" });
+            notify("已按目标分 ±10 生成探索区间");
+          }}>按目标分 ±10</button>
+        {range ? <button type="button" className="btn sm brass" onClick={() => setPage("axis")}>
+          拿这个区间去匹配院校<Icon name="arrow" /></button> : null}
+      </div>
+      <Provenance icon="ruler">
+        区间端点在「分数轴」页会换算成同科类历史位次区间，再与院校的历史录取位次取交集；
+        它只决定先看哪些院校，不是预测，也不会悄悄扩大。
+      </Provenance>
+    </div>
+
     <div className="banner">
       <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="chat" size="lg" />
-        <div><h3 className="song">看清位置之后，聊聊你想去哪</h3><p>分数决定「能到哪」，兴趣决定「想去哪」。下一步，我们用六到八个问题聊出你的专业方向。</p></div></div>
-      <button type="button" className="btn sm" style={{ flexShrink: 0 }} onClick={() => setPage("talk")}>去谈心<Icon name="arrow" /></button>
+        <div><h3 className="song">区间有了，先看看这段海面里有哪些学校</h3><p>下一步用探索区间匹配院校与专业；匹配完再去谈心聊方向，最后按「AI 建议 × 自选」两条线出结果。</p></div></div>
+      <button type="button" className="btn sm" style={{ flexShrink: 0 }} onClick={() => setPage("axis")}>去分数轴匹配<Icon name="arrow" /></button>
     </div>
   </section>;
 }
