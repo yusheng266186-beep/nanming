@@ -20,6 +20,7 @@ const app = [
 const chart = src("chapters/chart.tsx");
 const axis = src("chapters/axis.tsx");
 const shared = src("chapters/shared.ts");
+const css = src("style.css");
 
 describe("推荐卡：分层标签", () => {
   it("页底的「保底路线」说明段与它的卡片样式不再回来", () => {
@@ -91,12 +92,31 @@ describe("航线图：海图版画的导出约束", () => {
     expect(chart).not.toMatch(/x=\{992\}|x="992"/);
   });
 
+  it("图直接落在页面上：没有底板、没有版框（负责人：不要边框）", () => {
+    // 图内不再铺纸色底、不再画版框与四角刻线——SVG 透明，卡片底色透上来，看着是页面的一部分，
+    // 而不是贴上去的一张图。导出 PNG 的垫色在 svgStringToPng 里，与这里无关。
+    expect(chart).not.toContain("CHART.frame");
+    expect(chart).not.toContain("四角刻线");
+    expect(chart).not.toContain('<rect width="1000" height="320"');
+    expect(chart).not.toContain('<rect width="360" height="344"');
+  });
+
+  it("入场与悬停的钩子在（CSS 负责动，导出不受影响）", () => {
+    expect(chart).toContain('className="rt-row"');
+    expect(chart).toContain('className="rt-band"');
+    expect(chart).toContain('className="rt-boat"');
+    expect(css).toContain(".routes .rt-row{opacity:0;animation:rt-row-in");
+    expect(css).toContain("@keyframes rt-bob");
+    expect(css).toMatch(/@media\(hover:hover\)/);
+    expect(css).toMatch(/prefers-reduced-motion:reduce\)\{\s*\.routes \.rt-row\{animation:none/);
+  });
+
   it("窄屏换竖排版心，不让横版一路缩到看不清", () => {
     // 横版版心 1000×320，缩到 390 宽的手机上字号只剩 4–5px。窄屏改画 360×372 的竖排版心：
     // 一条关系一行，字号按 1.0 倍左右渲染。
     expect(chart).toContain("useNarrowPlate");
     expect(chart).toContain("(max-width: 640px)");
-    expect(chart).toContain('viewBox="0 0 360 372"');
+    expect(chart).toContain('viewBox="0 0 360 344"');
     expect(chart).toContain('viewBox="0 0 1000 320"');
     // 导出尺寸跟当前这张图自己的 viewBox 走，不再写死横版尺寸。
     expect(chart).toContain("node.viewBox");

@@ -208,6 +208,20 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
   opacity:0;transform:translateY(-6px);
   transition:opacity .28s var(--ease) .1s,transform .45s var(--ease) .06s}
 .stop.open .stop-inner p{opacity:1;transform:none}
+/* ══════════ 谈心：进对话之后把聊天区放大到接近整屏 ══════════
+   原来消息区最高只有 48vh/440px——视口一矮就只容得下一两句话，看着拥挤。
+   现在由卡片给高度（跟着视口算，并留上下限），消息区用 flex 撑满剩余空间，
+   头部与输入栏各自固定，输入栏自然落在卡片底部。气泡仍限宽（约四十个汉字一行），
+   宽屏上不会被拉成一条长线；容器放宽到 1024px 是为了占满屏幕，不是让文字变宽。 */
+.talk{max-width:min(1024px,100%)}
+.chat{display:flex;flex-direction:column;height:clamp(420px,calc(100dvh - 300px),820px)}
+.chat-head,.dock{flex:0 0 auto}
+.chat-scroll{flex:1 1 auto;min-height:0;max-height:none}
+.bub{max-width:min(82%,560px)}
+@media(max-width:640px){
+  /* 手机上顶栏更矮、页头更薄，卡片可以再多占一点。 */
+  .chat{height:clamp(360px,calc(100dvh - 200px),760px)}
+}
 .quote-strip{padding:40px 0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .quote-strip p{font-family:var(--song);font-size:19px;letter-spacing:.06em;color:var(--sea)}
 .quote-strip span{font:italic 400 12px/1 var(--display);letter-spacing:.16em;color:var(--mut);display:block;margin-top:12px}
@@ -298,8 +312,8 @@ textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;fo
 /* 输入框吃掉剩余宽度（width:auto + flex:1），按钮保持自然宽度——连接按钮不再被压扁。 */
 .dock-row .inp{flex:1;min-width:0;width:auto}
 .dock-row textarea{min-height:46px;max-height:120px;padding:11px 13px;font-size:14px}
-.dock-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px}
-.dc-k{font-size:10px;color:var(--mut);letter-spacing:.08em;margin-right:1px}
+/* 底栏原来还有一行「聊法」切换（.dock-ctrl/.dc-k）：负责人 2026-09-12 定，
+   进对话之后不再给切的按钮，聊法只在进对话之前选一次，规则随标记一并删除。 */
 .send{width:50px;height:50px;border-radius:11px;background:var(--sea);color:#eef4f1;display:grid;place-items:center;flex-shrink:0;transition:background .3s,transform .2s}
 .send:hover{background:var(--brass)}
 .send:active{transform:scale(.92)}
@@ -449,6 +463,36 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .chart-head .sub{font-size:12.5px;color:#9fbdb6;margin-top:12px;position:relative;z-index:2;line-height:1.9;max-width:520px}
 .chart-head .seal{position:absolute;right:36px;top:34px;width:76px;height:76px;border:1px solid rgba(200,155,82,.4);border-radius:50%;display:grid;place-items:center;color:var(--brass-2);z-index:2;animation:spin 40s linear infinite}
 .seal .song{font-size:13px;letter-spacing:.1em;text-align:center;line-height:1.4}
+
+/* ══════════ 航线图：入场与悬停 ══════════
+   这套动效只在页面上生效——导出 PNG 时 SVG 会被序列化重画，CSS 不跟着走，静态图保持干净。
+   全部走 transform/opacity，尊重 prefers-reduced-motion；触屏没有 hover，用按下点亮代替。 */
+.routes .rt-row{opacity:0;animation:rt-row-in .62s var(--ease) both}
+.routes .rt-row:nth-of-type(2){animation-delay:.11s}
+.routes .rt-row:nth-of-type(3){animation-delay:.22s}
+@keyframes rt-row-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.routes .rt-band{opacity:0;transition:opacity .32s var(--ease)}
+.routes .rt-line,.routes .rt-glow,.routes .rt-pill{transition:stroke-width .32s var(--ease),opacity .32s var(--ease)}
+.routes .rt-name,.routes .rt-share{transition:fill .3s var(--ease),opacity .3s var(--ease)}
+/* 悬停某一行：那一行浮起淡色底、线加粗、数字胶囊加深，其余两行退到后面——像海图上一层被点亮。 */
+@media(hover:hover){
+  .routes svg:hover .rt-row{opacity:.42}
+  .routes svg:hover .rt-row:hover{opacity:1}
+  .routes .rt-row:hover .rt-band{opacity:.045}
+  .routes .rt-row:hover .rt-line{stroke-width:4}
+  .routes .rt-row:hover .rt-glow{opacity:.2}
+  .routes .rt-row:hover .rt-pill{opacity:.18}
+  .routes .rt-row:hover .rt-name{fill:var(--ink)}
+}
+.routes .rt-row:active .rt-band{opacity:.06}
+/* 帆船：极轻的起伏，让整张图有呼吸；减少动态时不动。 */
+.routes .rt-boat{animation:rt-bob 6.5s ease-in-out infinite}
+@keyframes rt-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.6px)}}
+@media(prefers-reduced-motion:reduce){
+  .routes .rt-row{animation:none;opacity:1}
+  .routes .rt-boat{animation:none}
+  .routes .rt-band,.routes .rt-line,.routes .rt-glow,.routes .rt-pill{transition:none}
+}
 .routes{padding:8px 20px 20px}
 .routes svg{width:100%;height:auto}
 /* 图例与图内三条线一一对应：线样、颜色、名称取同一份定义；字体用章节衬线，
@@ -632,6 +676,106 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
   .slot-wrap{transition:none}
   .board-card{animation:none}
 }
+/* ══════════ 谈心 / 方向 / 分数轴 / 航线图：动画适配 ══════════
+   与起航、定位两页同一套语言：块自上而下错峰落位；数字、刻度、卡片这些「数据自己长出来」的
+   动效一律在原地做（只用 transform/opacity），不搬动布局；能点的东西补上悬停与按下反馈。
+   减少动态效果时由文件末尾的全局规则统一压成瞬时（含延迟）。
+   三处不能随便动 transform：`.stick` 靠 translateX(-50%) / -100% 做端点对齐（只淡入、不位移）；
+   `.seal` 与 `.head-rose` 自带旋转动画（不覆盖它们的 animation）；`.axis-band` / `.axis-prog`
+   的位置来自内联 left/width，只做自身的缩放展开。 */
+
+/* —— 谈心：房间与消息落位；可点答案逐条出现；连接状态亮起时扩一下 —— */
+#page-talk .talk{animation:arrive .5s var(--ease) both}
+#page-talk .chat-head{animation:fade .5s var(--ease) .08s both}
+#page-talk .dock{animation:fade .5s var(--ease) .16s both}
+#page-talk .talk-meta{animation:fade .5s var(--ease) .2s both}
+#page-talk .voyage-card,#page-talk .sidecard{animation:arrive .5s var(--ease) both}
+#page-talk .voyage-card:nth-child(2),#page-talk .sidecard:nth-child(2){animation-delay:.07s}
+#page-talk .sidecard:nth-child(3){animation-delay:.14s}
+#page-talk .qopt{animation:msgin .4s var(--ease) both}
+#page-talk .qopt:nth-child(2){animation-delay:.05s}
+#page-talk .qopt:nth-child(3){animation-delay:.1s}
+#page-talk .qopt:nth-child(4){animation-delay:.15s}
+#page-talk .qopt:nth-child(n+5){animation-delay:.2s}
+#page-talk .ch-state.on{animation:seal-pop .5s var(--ease-spring)}
+#page-talk .dock .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
+
+/* —— 方向：两块选择区与建议卡逐条落位；引用原话的句子淡入 —— */
+#page-direction>*{animation:arrive .55s var(--ease) both}
+#page-direction>:nth-child(2){animation-delay:.05s}
+#page-direction>:nth-child(3){animation-delay:.1s}
+#page-direction>:nth-child(n+4){animation-delay:.15s}
+#page-direction .chips .chip{animation:msgin .4s var(--ease) both}
+#page-direction .chips .chip:nth-child(2){animation-delay:.03s}
+#page-direction .chips .chip:nth-child(3){animation-delay:.06s}
+#page-direction .chips .chip:nth-child(4){animation-delay:.09s}
+#page-direction .chips .chip:nth-child(5){animation-delay:.12s}
+#page-direction .chips .chip:nth-child(n+6){animation-delay:.15s}
+#page-direction .sidecard{animation:arrive .5s var(--ease) both}
+#page-direction .sidecard:nth-child(2){animation-delay:.07s}
+#page-direction .dquote{animation:fade .5s var(--ease) .12s both}
+#page-direction .dmajors span{display:inline-block;animation:msgin .35s var(--ease) both}
+#page-direction .dmajors span:nth-child(2){animation-delay:.04s}
+#page-direction .dmajors span:nth-child(3){animation-delay:.08s}
+#page-direction .dmajors span:nth-child(4){animation-delay:.12s}
+#page-direction .dmajors span:nth-child(n+5){animation-delay:.16s}
+#page-direction .vlist .vpill{animation:msgin .4s var(--ease) both}
+#page-direction .vlist .vpill:nth-child(2){animation-delay:.05s}
+#page-direction .vlist .vpill:nth-child(3){animation-delay:.1s}
+#page-direction .vlist .vpill:nth-child(n+4){animation-delay:.15s}
+
+/* —— 分数轴：英雄区落位，金带横向展开、端头刻度随后报到，批次链条与候选卡逐段落位 —— */
+#page-axis>*{animation:arrive .55s var(--ease) both}
+#page-axis>:nth-child(2){animation-delay:.06s}
+#page-axis>:nth-child(n+3){animation-delay:.12s}
+#page-axis .axis-head{animation:msgin .5s var(--ease) .08s both}
+#page-axis .delta-num{animation:num-in .6s var(--ease) .16s both}
+#page-axis .axis-band{transform-origin:center;animation:band-open .6s var(--ease) .22s both}
+#page-axis .axis-prog{transform-origin:left;animation:band-open .7s var(--ease) .26s both}
+#page-axis .stick{animation:fade .5s var(--ease) both}
+#page-axis .stick:nth-of-type(1){animation-delay:.3s}
+#page-axis .stick:nth-of-type(2){animation-delay:.36s}
+#page-axis .stick:nth-of-type(3){animation-delay:.42s}
+#page-axis .stick:nth-of-type(n+4){animation-delay:.48s}
+#page-axis .chain-seg{animation:fade .45s var(--ease) both}
+#page-axis .chain-seg:nth-child(2){animation-delay:.05s}
+#page-axis .chain-seg:nth-child(3){animation-delay:.1s}
+#page-axis .chain-seg:nth-child(n+4){animation-delay:.15s}
+#page-axis .res-count{animation:msgin .45s var(--ease) both}
+#page-axis .scard{animation-delay:.06s}
+#page-axis .scard:nth-child(2){animation-delay:.1s}
+#page-axis .scard:nth-child(3){animation-delay:.14s}
+#page-axis .scard:nth-child(4){animation-delay:.18s}
+#page-axis .scard:nth-child(n+5){animation-delay:.22s}
+#page-axis .legend{animation:fade .5s var(--ease) .2s both}
+#page-axis .field .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
+@keyframes band-open{from{transform:scaleX(.86);opacity:0}to{transform:none;opacity:1}}
+
+/* —— 航线图：外壳与结果列表落位（图内 SVG 的动效留给正在重画这一块的那条线）—— */
+#page-chart>*{animation:arrive .55s var(--ease) both}
+#page-chart>:nth-child(2){animation-delay:.06s}
+#page-chart>:nth-child(n+3){animation-delay:.12s}
+#page-chart .chart-head{animation:msgin .5s var(--ease) .14s both}
+#page-chart .route-legend{animation:fade .5s var(--ease) .22s both}
+#page-chart .res-bar{animation:msgin .45s var(--ease) both}
+#page-chart .dmajors span{display:inline-block;animation:msgin .35s var(--ease) both}
+#page-chart .dmajors span:nth-child(2){animation-delay:.04s}
+#page-chart .dmajors span:nth-child(3){animation-delay:.08s}
+#page-chart .dmajors span:nth-child(4){animation-delay:.12s}
+#page-chart .dmajors span:nth-child(n+5){animation-delay:.16s}
+#page-chart .scard{animation-delay:.05s}
+#page-chart .scard:nth-child(2){animation-delay:.09s}
+#page-chart .scard:nth-child(3){animation-delay:.13s}
+#page-chart .scard:nth-child(4){animation-delay:.17s}
+#page-chart .scard:nth-child(n+5){animation-delay:.21s}
+#page-chart .srow{animation:msgin .4s var(--ease) both}
+#page-chart .srow:nth-child(2){animation-delay:.05s}
+#page-chart .srow:nth-child(3){animation-delay:.1s}
+#page-chart .srow:nth-child(4){animation-delay:.15s}
+#page-chart .srow:nth-child(n+5){animation-delay:.2s}
+#page-chart .blessing{animation:arrive .6s var(--ease) both}
+#page-chart .export-row{animation:fade .5s var(--ease) .12s both}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
   /* 延迟也要归零：入场编排靠 animation-delay 错峰，只压时长不压延迟的话，
