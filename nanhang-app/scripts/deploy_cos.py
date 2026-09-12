@@ -112,6 +112,12 @@ def main() -> int:
         client.create_bucket(Bucket=bucket)
         print("已创建存储桶")
 
+    # 策略里的资源串用 uid/<APPID>（注意是 APPID，不是账号 ID/UIN）。
+    # 桶名本身就是 <名称>-<APPID>，所以直接从桶名末尾取，避免两处各写一遍再写错。
+    appid = bucket.rsplit("-", 1)[-1]
+    if not appid.isdigit():
+        raise SystemExit(f"桶名 {bucket} 末尾不是 APPID，无法拼策略资源串")
+
     # 匿名只读：只放行读对象，不放行列举（数据是公开的招生发布包，但没必要让人翻目录）。
     policy = {
         "version": "2.0",
@@ -119,7 +125,7 @@ def main() -> int:
             "Principal": {"qcs": ["qcs::cam::anyone:anyone"]},
             "Effect": "Allow",
             "Action": ["cos:GetObject", "cos:HeadObject"],
-            "Resource": [f"qcs::cos:{region}:uid/{uid}:{bucket}/*"],
+            "Resource": [f"qcs::cos:{region}:uid/{appid}:{bucket}/*"],
         }],
     }
     client.put_bucket_policy(Bucket=bucket, Policy=json.dumps(policy))

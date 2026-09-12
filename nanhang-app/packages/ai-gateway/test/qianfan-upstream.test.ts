@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import {
   AiGateway, MemoryStateStore, QianfanUpstream, STRUCT_MARKER, UpstreamFailure, buildQianfanSystemPrompt,
   createEvidenceRegistry, parseSseStream, qianfanEndpoint, qianfanOptionsFromEnv, registryLookup,
-  splitStructured, validateCareerTurnOutput, withConfig, type UpstreamRequest
+  splitStructured, validateCareerTurnOutput, validateTurnRequest, withConfig, type UpstreamRequest
 } from "../src/index.js";
 
 const KEY = "bce-test-key-must-not-leak";
@@ -465,6 +465,74 @@ describe("网关与千帆上游合起来跑一轮", () => {
     expect(rejected.httpStatus).toBe(400);
     // 取值非法时不会再去打扰上游
     expect(stub.calls).toHaveLength(1);
+  });
+});
+
+describe("学生自己的原话（证据）", () => {
+  const base = { run_id: "r", request_id: "q", input_revision: 1, user_text: "你好", context: [] };
+
+  it("格式不对就拒绝：来源未知、引文为空、ID 重复、不是数组", () => {
+    const check = (evidence: unknown) => validateTurnRequest({ ...base, evidence }, withConfig());
+    expect(check([{ evidenceId: "e1", quote: "我自己的话", kind: "student_preference_statement" }]).ok).toBe(true);
+    expect(check([{ evidenceId: "e1", quote: "我自己的话", kind: "我猜的来源" }]).ok).toBe(false);
+    expect(check([{ evidenceId: "e1", quote: "   ", kind: "student_self_report" }]).ok).toBe(false);
+    expect(check([{ evidenceId: "e1", quote: "x", kind: "student_self_report" },
+      { evidenceId: "e1", quote: "y", kind: "student_self_report" }]).ok).toBe(false);
+    expect(check("not-an-array").ok).toBe(false);
+    expect(check([{ evidenceId: "e1", quote: "x", kind: "student_self_report", 额外: 1 }]).ok).toBe(false);
+  });
+
+  it("没给证据时为空数组，服务端据此回落到会话注册表", () => {
+    const accepted = validateTurnRequest(base, withConfig());
+    expect(accepted.ok).toBe(true);
+    if (accepted.ok) expect(accepted.value.evidence).toEqual([]);
+  });
+
+  it("客户端给了自己的原话，模型引用演示原话会被拦下并降级", async () => {
+    const fabricated = STRUCTURED.replace("ev-q-interest-1", "ev-q-interest-1"); // 演示注册表里的 ID
+    const stub = stubFetch(sseResponse([delta("正文。"), delta(STRUCT_MARKER + fabricated)]));
+    const upstream = new QianfanUpstream({ apiKey: KEY, model: "glm-5.2", fetchImpl: stub.impl });
+    const gateway = new AiGateway({
+      store: new MemoryStateStore(), upstream, config: withConfig({ modelId: "glm-5.2" }),
+      now: () => 1_000_000,
+      registryFor: () => createEvidenceRegistry(MESSAGES),
+      profileFor: () => ({ profileId: "p", revision: 0, entries: [], revisions: [] }),
+      constraintsFor: () => []
+    });
+    const session = gateway.createTestSession("s-own", "sub-own", "t-own");
+    const result = await gateway.careerTurn(session, {
+      run_id: "r", request_id: "q", input_revision: 1, user_text: "我自己的话", context: [],
+      evidence: [{ evidenceId: "ev-mine-1", quote: "我自己的原话", kind: "student_preference_statement" }]
+    });
+    const output = parseSseStream(result.frames.join(""))
+      .find((item) => item.event === "complete")?.data.output as { reply: string; suggestions: unknown[] };
+    expect(output.suggestions).toEqual([]);
+    expect(output.reply).toContain("未通过安全校验");
+    // 提示词里也只该出现学生自己的原话，不该带上演示注册表那几条
+    expect(String(bodyOf(stub.calls[0]!).messages && (bodyOf(stub.calls[0]!).messages as { content: string }[])[0]?.content))
+      .toContain("ev-mine-1");
+  });
+
+  it("引用学生自己给的 ID 则正常通过", async () => {
+    const mine = STRUCTURED.replace("ev-q-interest-1", "ev-mine-1");
+    const stub = stubFetch(sseResponse([delta("正文。"), delta(STRUCT_MARKER + mine)]));
+    const upstream = new QianfanUpstream({ apiKey: KEY, model: "glm-5.2", fetchImpl: stub.impl });
+    const gateway = new AiGateway({
+      store: new MemoryStateStore(), upstream, config: withConfig({ modelId: "glm-5.2" }),
+      now: () => 1_000_000,
+      registryFor: () => createEvidenceRegistry(MESSAGES),
+      profileFor: () => ({ profileId: "p", revision: 0, entries: [], revisions: [] }),
+      constraintsFor: () => []
+    });
+    const session = gateway.createTestSession("s-mine", "sub-mine", "t-mine");
+    const result = await gateway.careerTurn(session, {
+      run_id: "r", request_id: "q", input_revision: 1, user_text: "我自己的话", context: [],
+      evidence: [{ evidenceId: "ev-mine-1", quote: "我自己的原话", kind: "student_preference_statement" }]
+    });
+    const output = parseSseStream(result.frames.join(""))
+      .find((item) => item.event === "complete")?.data.output as { suggestions: { evidenceIds: string[] }[] };
+    expect(output.suggestions).toHaveLength(1);
+    expect(output.suggestions[0]?.evidenceIds).toEqual(["ev-mine-1"]);
   });
 });
 

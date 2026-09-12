@@ -17,24 +17,18 @@ import {
 } from "@nanhang/exploration";
 import type {
   AiGatewayConfig, GatewayError, GatewayErrorCode, ReservationKey, ReservationRecord,
-  SessionRecord, TaskType, ChatMode, ThinkingTier
+  SessionRecord, TaskType, ChatMode, ThinkingTier, UpstreamEvidence
 } from "./types.js";
 import { reservationKeyId } from "./types.js";
 import { MemoryStateStore, type ClaimOutcome, type StateStore } from "./state-store.js";
 import { hashPayload, tokenHash } from "./identity.js";
 import { profilePayloadHash, turnPayloadHash, validateProfileRequest, validateTurnRequest, type ProfileRequest, type TurnRequest } from "./input-guard.js";
 import {
-  degradedTurnOutput, registryLookup, scanStreamedText, validateCareerTurnOutput, type CareerTurnOutput,
+  degradedTurnOutput, registryLookup, scanStreamedText, validateCareerTurnOutput,
+  type CareerTurnOutput, type EvidenceLookup,
   type OutputRejection
 } from "./output-guard.js";
 import { completeEvent, deltaEvent, errorEvent, parseSseStream, sseFrame, sseHeartbeat, sseSequence, startEvent } from "./sse.js";
-
-/** 学生已保存的原话。模型只能引用这些 ID，且引用后还要过 validateCareerTurnOutput。 */
-export interface UpstreamEvidence {
-  readonly evidenceId: string;
-  readonly quote: string;
-  readonly kind: string;
-}
 
 export interface UpstreamRequest {
   readonly taskType: TaskType;
@@ -287,7 +281,7 @@ export class AiGateway {
       taskType: "career_turn", systemPromptId: this.deps.config.systemPromptId, modelId: this.deps.config.modelId,
       userText: request.user_text, context: request.context.map(({ role, text }) => ({ role, text })),
       inputRevision: request.input_revision, offeringId: null, releaseId: null,
-      evidence: this.evidenceFor(session), thinkingTier: request.thinking_tier, mode: request.mode
+      evidence: this.evidenceForRequest(session, request.evidence), thinkingTier: request.thinking_tier, mode: request.mode
     };
     const frames: string[] = [sseFrame(startEvent(request.request_id, sequence, this.deps.config.modelId))];
     this.deps.store.transition(record.keyId, { status: "running" }, this.deps.now());
@@ -321,7 +315,7 @@ export class AiGateway {
       return { httpStatus: 503, frames: [...frames, sseFrame(errorEvent(request.request_id, sequence, "UPSTREAM_UNAVAILABLE", "upstream finalize failed", true))] };
     }
 
-    const lookup = registryLookup(this.deps.registryFor(session.sessionId));
+    const lookup = this.lookupFor(session, request.evidence);
     const accepted = validateCareerTurnOutput(finalObject, lookup);
     if (!accepted.ok) {
       // A46/A48: the raw model text is never forwarded; the client gets an explicit degradation.
@@ -383,13 +377,13 @@ export class AiGateway {
       taskType: "career_profile", systemPromptId: this.deps.config.systemPromptId, modelId: this.deps.config.modelId,
       userText: "", context: request.context.map(({ role, text }) => ({ role, text })),
       inputRevision: request.input_revision, offeringId: request.offering_id, releaseId: request.release_id,
-      evidence: this.evidenceFor(session), thinkingTier: null, mode: null
+      evidence: this.evidenceForRequest(session, request.evidence), thinkingTier: null, mode: null
     };
     this.deps.store.transition(record.keyId, { status: "running", upstreamStarted: true }, this.deps.now());
     try {
       const text = await this.pumpText(record, upstreamRequest, signal);
       const finalObject = await this.deps.upstream.finalize(upstreamRequest, text);
-      const lookup = registryLookup(this.deps.registryFor(session.sessionId));
+      const lookup = this.lookupFor(session, request.evidence);
       const accepted = validateCareerTurnOutput(finalObject, lookup);
       if (!accepted.ok) {
         const degraded = degradedTurnOutput(accepted.detail);
@@ -410,6 +404,23 @@ export class AiGateway {
       this.deps.store.transition(record.keyId, { status: "unknown", errorCode: failure.code, retryable: true }, this.deps.now());
       return { httpStatus: 503, body: errorBody(failure.code, failure.message, request.request_id) };
     }
+  }
+
+  /**
+   * 可引用的学生原话：客户端给了就用客户端的，没给才回落到会话注册表（本地演示）。
+   * 提示词与输出校验必须用同一份，否则会出现「模型引用了校验不认的 ID」这种假失败。
+   */
+  private evidenceForRequest(session: SessionRecord, provided: readonly UpstreamEvidence[]): readonly UpstreamEvidence[] {
+    if (provided.length > 0) return provided.slice(0, this.deps.config.maxEvidenceIds);
+    return this.evidenceFor(session);
+  }
+
+  /** 与 evidenceForRequest 配套的校验口径：只认这一次请求里出现过的 ID。 */
+  private lookupFor(session: SessionRecord, provided: readonly UpstreamEvidence[]): EvidenceLookup {
+    if (provided.length > 0) {
+      return { allowedEvidenceIds: () => provided.map((item) => item.evidenceId) };
+    }
+    return registryLookup(this.deps.registryFor(session.sessionId));
   }
 
   /** 会话注册表 → 上游可引用的原话。上限用配置里的 maxEvidenceIds，避免提示词无限增长。 */

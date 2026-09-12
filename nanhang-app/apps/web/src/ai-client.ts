@@ -3,6 +3,7 @@
 // A47: a response that belongs to an older run must never be applied to the current route map.
 // The guard is a plain function so it is testable without a DOM, and the fetch call is injected
 // so tests never touch the network.
+import type { EvidenceRegistry } from "@nanhang/exploration";
 
 /**
  * 思考档位。默认 deep（质量优先），学生可以自己切到更快的档位。
@@ -20,6 +21,21 @@ export type ChatMode = "guided" | "open";
 
 export const DEFAULT_CHAT_MODE: ChatMode = "guided";
 
+/**
+ * 学生自己保存的原话。随请求发给服务端，服务端据此告诉模型「只能引用这些 ID」，
+ * 并校验模型引用的是不是这些 ID——所以模型引用不到学生没说过的话。
+ */
+export interface AiEvidence {
+  readonly evidenceId: string;
+  readonly quote: string;
+  readonly kind: string;
+}
+
+/** 只取服务端会校验的三样，不把页面内部字段（如 messageId）带上行。 */
+export function evidenceForRequest(registry: EvidenceRegistry): readonly AiEvidence[] {
+  return registry.messages.map(({ evidenceId, quote, kind }) => ({ evidenceId, quote, kind }));
+}
+
 export interface AiTurnRequest {
   readonly runId: string;
   readonly requestId: string;
@@ -30,6 +46,8 @@ export interface AiTurnRequest {
   readonly tier?: ThinkingTier;
   /** 学生选的聊法；不填则服务端按自由探索处理。 */
   readonly mode?: ChatMode;
+  /** 学生已保存的原话；不填则服务端回落到演示注册表（本地演示用）。 */
+  readonly evidence?: readonly AiEvidence[];
 }
 
 export interface AiTurnOutcome {
@@ -108,6 +126,7 @@ export interface AiTurnWireBody {
   readonly context: readonly { readonly role: "user" | "assistant"; readonly text: string }[];
   readonly thinking_tier?: ThinkingTier;
   readonly mode?: ChatMode;
+  readonly evidence?: readonly AiEvidence[];
 }
 
 export function toWireBody(request: AiTurnRequest): AiTurnWireBody {
@@ -118,7 +137,9 @@ export function toWireBody(request: AiTurnRequest): AiTurnWireBody {
     user_text: request.userText,
     context: request.context.map(({ role, text }) => ({ role, text })),
     ...(request.tier ? { thinking_tier: request.tier } : {}),
-    ...(request.mode ? { mode: request.mode } : {})
+    ...(request.mode ? { mode: request.mode } : {}),
+    // 学生一条原话都还没存时就不带这个字段，服务端会回落到演示注册表。
+    ...(request.evidence && request.evidence.length > 0 ? { evidence: request.evidence } : {})
   };
 }
 

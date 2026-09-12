@@ -4,7 +4,7 @@
 // enabled it, nothing in the no-AI flow changes. Every displayed AI string is passed through
 // `safeText`, and the run stamp is carried so a superseded response can never be applied (A47).
 import { beginTurn, runAiTurn, DEFAULT_CHAT_MODE, DEFAULT_THINKING_TIER,
-  type AiRunStamp, type AiTurnOutcome, type ChatMode, type ThinkingTier } from "./ai-client.js";
+  type AiEvidence, type AiRunStamp, type AiTurnOutcome, type ChatMode, type ThinkingTier } from "./ai-client.js";
 
 export const AI_NOTICE = "AI 建议只使用你已经保存的原话，且必须由你确认后才会进入画像。AI 不能修改资格、位次或数据发布状态。";
 
@@ -147,6 +147,9 @@ export interface AiTurnDeps {
  *
  * `history` 是已有的对话记录（含刚发出的这条用户消息之前的部分）；只带最近 8 轮给模型，
  * 让多轮谈心能接得上话，同时限制请求体大小。
+ *
+ * `evidence` 是学生自己保存的原话。它是「建议必须有据可依」的输入：服务端只让模型引用这些 ID，
+ * 引用不到的会被输出校验拦下。学生一条都没存时传空数组，服务端会回落到演示注册表。
  */
 export async function askAi(
   state: AiPanelState,
@@ -155,7 +158,8 @@ export async function askAi(
   userText: string,
   requestId: string,
   deps: AiTurnDeps = {},
-  history: readonly { readonly role: "user" | "assistant"; readonly text: string }[] = []
+  history: readonly { readonly role: "user" | "assistant"; readonly text: string }[] = [],
+  evidence: readonly AiEvidence[] = []
 ): Promise<AiPanelState> {
   if (!state.enabled) return state;
   if (!state.token) return { ...state, status: "请先兑换本地访问码。" };
@@ -166,7 +170,8 @@ export async function askAi(
     pending, activeStamp,
     { runId: sendStamp.runId, requestId, inputRevision: sendStamp.inputRevision, userText,
       context: history.slice(-8).map(({ role, text }) => ({ role, text })),
-      tier: state.tier, mode: state.mode }
+      tier: state.tier, mode: state.mode,
+      ...(evidence.length > 0 ? { evidence } : {}) }
   );
   return applyOutcome(state, result.outcome, result.httpStatus, sendStamp.inputRevision);
 }

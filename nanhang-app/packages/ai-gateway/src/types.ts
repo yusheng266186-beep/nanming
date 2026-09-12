@@ -15,6 +15,22 @@ export type ThinkingTier = "speed" | "standard" | "deep";
 export type ChatMode = "guided" | "open";
 export const CHAT_MODES: readonly ChatMode[] = ["guided", "open"];
 
+/**
+ * 学生自己保存的原话（证据）。它由客户端随请求发上来，服务端只用它做两件事：
+ * 告诉模型可以引用哪些 ID，以及校验模型引用的是不是这些 ID。
+ * 模型不能引用客户端没给过的 ID——这条是「建议必须有据可依」的实现方式。
+ */
+export interface UpstreamEvidence {
+  readonly evidenceId: string;
+  readonly quote: string;
+  readonly kind: string;
+}
+
+/** 学生原话的四种来源，与 @nanhang/exploration 的 EvidenceKind 一致。 */
+export const EVIDENCE_KINDS: readonly string[] = [
+  "student_preference_statement", "student_task_attempt", "student_self_report", "facilitator_note"
+];
+
 export type RequestStatus = "reserved" | "running" | "succeeded" | "failed" | "unknown";
 
 /** Transport status of the local HTTP adapter; mirrors SYSTEM_AND_INTERFACE_SPEC.md section 6. */

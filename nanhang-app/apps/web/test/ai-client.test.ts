@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acceptEvent, beginTurn, parseFrames, responseMatchesActiveRun, runAiTurn, toWireBody } from "../src/ai-client.js";
+import { acceptEvent, beginTurn, evidenceForRequest, parseFrames, responseMatchesActiveRun, runAiTurn, toWireBody } from "../src/ai-client.js";
 
 const active = { runId: "run-new", inputRevision: 2 };
 
@@ -109,5 +109,21 @@ describe("线格式与契约一致", () => {
   it("学生在界面上选的思考档位随请求发给服务端", () => {
     const wire = toWireBody({ runId: "r", requestId: "q", inputRevision: 1, userText: "x", context: [], tier: "speed" });
     expect(wire.thinking_tier).toBe("speed");
+  });
+
+  it("学生自己的原话随请求上行；一条都没有时不带这个字段", () => {
+    const evidence = [{ evidenceId: "ev-1", quote: "我自己的原话", kind: "student_self_report" }];
+    const withEvidence = toWireBody({ runId: "r", requestId: "q", inputRevision: 1, userText: "x", context: [], evidence });
+    expect(withEvidence.evidence).toEqual(evidence);
+    // 没有原话时不带字段，服务端据此回落到演示注册表（本地演示路径不变）
+    expect(toWireBody({ runId: "r", requestId: "q", inputRevision: 1, userText: "x", context: [] }).evidence).toBeUndefined();
+  });
+
+  it("evidenceForRequest 只带服务端会校验的三样，不把页面内部字段带上行", () => {
+    const mapped = evidenceForRequest({ messages: [
+      { evidenceId: "ev-1", messageId: "q-interest", quote: "我愿意继续整理公开数据", kind: "student_preference_statement" }
+    ] });
+    expect(mapped).toEqual([{ evidenceId: "ev-1", quote: "我愿意继续整理公开数据", kind: "student_preference_statement" }]);
+    expect(Object.keys(mapped[0] ?? {})).toEqual(["evidenceId", "quote", "kind"]);
   });
 });

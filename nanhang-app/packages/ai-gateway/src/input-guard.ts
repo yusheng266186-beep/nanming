@@ -3,10 +3,17 @@
 // A45 is enforced here: the client may submit user-turn text and its own history, but it can
 // never choose the system prompt, model, upstream URL or tool definitions. Any such field is
 // rejected outright rather than ignored, so a client cannot discover the boundary by probing.
-import { CHAT_MODES, type AiGatewayConfig, type ChatMode, type ThinkingTier } from "./types.js";
+import {
+  CHAT_MODES, EVIDENCE_KINDS, type AiGatewayConfig, type ChatMode, type ThinkingTier, type UpstreamEvidence
+} from "./types.js";
 
-export const ALLOWED_TURN_FIELDS = ["run_id", "request_id", "input_revision", "user_text", "context", "thinking_tier", "mode"] as const;
-export const ALLOWED_PROFILE_FIELDS = ["run_id", "request_id", "input_revision", "offering_id", "release_id", "context"] as const;
+export const ALLOWED_TURN_FIELDS = ["run_id", "request_id", "input_revision", "user_text", "context", "thinking_tier", "mode", "evidence"] as const;
+export const ALLOWED_PROFILE_FIELDS = ["run_id", "request_id", "input_revision", "offering_id", "release_id", "context", "evidence"] as const;
+
+/** 学生原话的体量上限：够一次完整谈心的记录，又不至于把请求撑爆。 */
+const MAX_EVIDENCE_ITEMS = 40;
+const MAX_EVIDENCE_QUOTE_CHARS = 500;
+const MAX_EVIDENCE_TOTAL_CHARS = 8000;
 /** 学生可以自己选的思考档位。它是偏好，不是控制面字段：取值只有这三种，服务端只做校验。 */
 export const SELECTABLE_THINKING_TIERS: readonly ThinkingTier[] = ["speed", "standard", "deep"];
 
@@ -28,6 +35,11 @@ export interface TurnRequest {
   readonly thinking_tier: ThinkingTier | null;
   /** 学生选的聊法；null 表示没选，按自由探索处理。 */
   readonly mode: ChatMode | null;
+  /**
+   * 学生自己保存的原话（客户端提供）。空数组表示客户端没给，
+   * 此时回落到会话注册表（本地演示用）。
+   */
+  readonly evidence: readonly UpstreamEvidence[];
 }
 
 export interface ProfileRequest {
@@ -36,6 +48,8 @@ export interface ProfileRequest {
   readonly input_revision: number;
   readonly offering_id: string | null;
   readonly release_id: string | null;
+  /** 同 TurnRequest：客户端给的学生原话，空数组表示回落到会话注册表。 */
+  readonly evidence: readonly UpstreamEvidence[];
   readonly context: readonly ContextMessage[];
 }
 
@@ -94,6 +108,48 @@ function parseContext(raw: unknown, config: AiGatewayConfig): { ok: true; contex
   return { ok: true, context };
 }
 
+/**
+ * 学生原话。返回 null 表示「客户端没提供」——调用方据此回落到会话注册表；
+ * 提供了但格式不对则直接拒绝，不做静默修补。
+ */
+function parseEvidence(raw: unknown): ValidationResult<readonly UpstreamEvidence[]> | null {
+  if (raw === undefined || raw === null) return null;
+  if (!Array.isArray(raw)) return { ok: false, code: "BAD_REQUEST", detail: "evidence must be an array" };
+  if (raw.length > MAX_EVIDENCE_ITEMS) {
+    return { ok: false, code: "PAYLOAD_TOO_LARGE", detail: `evidence must not exceed ${MAX_EVIDENCE_ITEMS} items` };
+  }
+  const seen = new Set<string>();
+  const items: UpstreamEvidence[] = [];
+  let total = 0;
+  for (const entry of raw) {
+    const record = asRecord(entry);
+    if (!record) return { ok: false, code: "BAD_REQUEST", detail: "evidence entries must be objects" };
+    const unknown = Object.keys(record).find((key) => !["evidenceId", "quote", "kind"].includes(key));
+    if (unknown) return { ok: false, code: "BAD_REQUEST", detail: `unknown evidence field ${unknown}` };
+    const evidenceId = nonEmptyString(record.evidenceId);
+    const quote = nonEmptyString(record.quote);
+    const kind = nonEmptyString(record.kind);
+    if (!evidenceId) return { ok: false, code: "BAD_REQUEST", detail: "evidenceId is required" };
+    if (!quote) return { ok: false, code: "BAD_REQUEST", detail: "evidence quote is required" };
+    if (!kind || !EVIDENCE_KINDS.includes(kind)) {
+      return { ok: false, code: "BAD_REQUEST", detail: `evidence kind ${String(record.kind)} is not a known source` };
+    }
+    if (evidenceId.length > 64) return { ok: false, code: "BAD_REQUEST", detail: "evidenceId is too long" };
+    if (quote.length > MAX_EVIDENCE_QUOTE_CHARS) {
+      return { ok: false, code: "PAYLOAD_TOO_LARGE", detail: `evidence quote must not exceed ${MAX_EVIDENCE_QUOTE_CHARS} characters` };
+    }
+    // 重复 ID 会让「模型引用了哪一条」变得不可判定，直接拒绝而不是去重。
+    if (seen.has(evidenceId)) return { ok: false, code: "BAD_REQUEST", detail: `duplicate evidence id ${evidenceId}` };
+    seen.add(evidenceId);
+    total += quote.length;
+    if (total > MAX_EVIDENCE_TOTAL_CHARS) {
+      return { ok: false, code: "PAYLOAD_TOO_LARGE", detail: `evidence must not exceed ${MAX_EVIDENCE_TOTAL_CHARS} characters in total` };
+    }
+    items.push({ evidenceId, quote, kind });
+  }
+  return { ok: true, value: items };
+}
+
 function parseEnvelope(body: Record<string, unknown>, allowed: readonly string[]): ValidationResult<{ run_id: string; request_id: string; input_revision: number; context: ContextMessage[] }> | { ok: false; code: "BAD_REQUEST" | "CLIENT_CONTROL_REJECTED" | "PAYLOAD_TOO_LARGE"; detail: string } {
   const rejected = rejectClientControl(body);
   if (rejected) return { ok: false, code: "CLIENT_CONTROL_REJECTED", detail: `field ${rejected} is server-controlled` };
@@ -142,7 +198,13 @@ export function validateTurnRequest(raw: unknown, config: AiGatewayConfig): Vali
     }
     mode = rawMode as ChatMode;
   }
-  return { ok: true, value: { ...envelope.value, user_text, context: context.context, thinking_tier, mode } };
+  const evidence = parseEvidence(body.evidence);
+  if (evidence && !evidence.ok) return evidence;
+  return {
+    ok: true,
+    value: { ...envelope.value, user_text, context: context.context, thinking_tier, mode,
+      evidence: evidence ? evidence.value : [] }
+  };
 }
 
 export function validateProfileRequest(raw: unknown, config: AiGatewayConfig): ValidationResult<ProfileRequest> {
@@ -161,7 +223,13 @@ export function validateProfileRequest(raw: unknown, config: AiGatewayConfig): V
   }
   const context = parseContext(body.context, config);
   if (!context.ok) return context;
-  return { ok: true, value: { ...envelope.value, offering_id, release_id, context: context.context } };
+  const evidence = parseEvidence(body.evidence);
+  if (evidence && !evidence.ok) return evidence;
+  return {
+    ok: true,
+    value: { ...envelope.value, offering_id, release_id, context: context.context,
+      evidence: evidence ? evidence.value : [] }
+  };
 }
 
 /**
@@ -171,8 +239,10 @@ export function validateProfileRequest(raw: unknown, config: AiGatewayConfig): V
  * that only flipped one of them must not be reported as a payload conflict.
  */
 export function turnPayloadHash(request: TurnRequest): unknown {
-  return { user_text: request.user_text, context: request.context, input_revision: request.input_revision };
+  return { user_text: request.user_text, context: request.context, input_revision: request.input_revision,
+    evidence: request.evidence };
 }
 export function profilePayloadHash(request: ProfileRequest): unknown {
-  return { offering_id: request.offering_id, release_id: request.release_id, context: request.context, input_revision: request.input_revision };
+  return { offering_id: request.offering_id, release_id: request.release_id, context: request.context,
+    input_revision: request.input_revision, evidence: request.evidence };
 }

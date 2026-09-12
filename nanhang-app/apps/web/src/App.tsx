@@ -5,6 +5,7 @@ import {
   summary, withForm, type ModelContextLike, type WebState
 } from "./model.js";
 import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUserTurn, type AiPanelState } from "./ai-panel.js";
+import { evidenceForRequest } from "./ai-client.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
 import {
@@ -255,7 +256,9 @@ export default function App() {
     const history = [...ai.history, { role: "user" as const, text }];
     setAi((current) => withUserTurn({ ...current, pending: true, ...(override ? { options: [] } : {}) }, text));
     if (!override) setAiDraft("");
-    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history);
+    // 学生自己保存的原话随请求上行：服务端只让模型引用这些 ID，引用不到的会被拦下。
+    const evidence = evidenceForRequest(state.registry);
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence);
     if (seq !== aiSeq.current) return;
     setAi((current) => applyTurnResult(current, next));
   };
