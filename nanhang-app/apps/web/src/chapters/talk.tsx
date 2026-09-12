@@ -4,7 +4,6 @@ import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted, withTi
   type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
 import { ChatBubble, TypingDots } from "../chat.js";
-import type { SchoolPool } from "../journey-model.js";
 import type { PageId } from "./shared.js";
 
 export interface TalkProps {
@@ -20,13 +19,13 @@ export interface TalkProps {
   setAiDraft: Dispatch<SetStateAction<string>>;
   exchangeCode: () => Promise<void>;
   sendAi: (override?: string) => Promise<void>;
-  pool: SchoolPool | null;
+  catalog: { majors: unknown[]; directions: readonly { readonly id: string; readonly name: string }[] } | null;
   quoteFor: (evidenceId: string) => string | null;
   hasChatted: boolean;
 }
 
 export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
-  aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, pool, quoteFor,
+  aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, catalog, quoteFor,
   hasChatted }: TalkProps) {
   // 谈心以 AI 谈心为主路径：进入本页即启用 AI（其它页面的无 AI 可用性不变）。
   useEffect(() => {
@@ -143,7 +142,7 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
         <p className="psub">这些专业类来自你刚才聊到的内容，每一条都引用你的原话。它们只是探索建议——到「方向」页看它们包含的真实专业，再决定保不保留；不和你的自选比高低。</p>
         <div className="grid-2" style={{ marginTop: 14 }}>
           {ai.suggestions.map((item) => {
-            const name = pool?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId;
+            const name = catalog?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId;
             const quotes = item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null);
             return <div className="sidecard" key={item.directionId}>
               <span className="eyebrow plain">AI 建议 · 引用了你的话</span>

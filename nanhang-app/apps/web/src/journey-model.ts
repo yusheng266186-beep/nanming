@@ -6,7 +6,7 @@ import {
   type OfferingLabel,
 } from "@nanhang/release-loader";
 import type { NanhangMatchResult100 } from "@nanhang/contracts";
-import { lineEquivalent } from "./exam-position.js";
+import { lineEquivalent, usableLines } from "./exam-position.js";
 import { OFFICIAL_LINES_2026 } from "./reference-lines.js";
 import type { ExamRecord } from "./model.js";
 
@@ -60,6 +60,35 @@ export function validRange(low: number, high: number): boolean {
   );
 }
 
+/**
+ * 一场考试的综合等位分。
+ *
+ * 负责人 2026-09-12 裁定：特控线口径与本科线口径各占一半、取算术平均，不再把两个口径
+ * 各自的值一起丢进 min–max——两条线的口径差不是学生水平的信号，混进去只会把区间撑宽
+ * （同一名学生因此从 36 分宽变成 54 分宽）。只有一个口径可用（另一条线缺、为 0、
+ * 或两条线高低颠倒）时就用可用的那一个，不拿缺失的那条当 0 参与平均。
+ */
+function combinedEquivalent(
+  exam: ExamRecord,
+  official: { specialControl: number; undergraduate: number },
+): number | null {
+  const total = exam.total;
+  // 总分 0 或缺失一律当「没有这一场」：0 分不是成绩，比例换算会得到 0 并把区间击穿。
+  if (total === null || !Number.isFinite(total) || total <= 0 || total > 750) return null;
+  const lines = usableLines(exam);
+  const values = [
+    lines.top === null ? null : lineEquivalent(total, lines.top, official.specialControl),
+    lines.undergraduate === null ? null : lineEquivalent(total, lines.undergraduate, official.undergraduate),
+  ].flatMap((estimate) => {
+    if (!estimate) return [];
+    return estimate.equivalentScore >= 0 && estimate.equivalentScore <= 750
+      ? [estimate.equivalentScore]
+      : [];
+  });
+  if (!values.length) return null;
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
 /** No raw mock score is silently used as a gaokao score. Every usable exam needs its own line. */
 export function rangeFromExams(
   exams: readonly ExamRecord[],
@@ -67,32 +96,15 @@ export function rangeFromExams(
 ): ScoreRange | null {
   const official = OFFICIAL_LINES_2026.tracks[track];
   const estimates = exams.flatMap((exam) => {
-    if (
-      exam.total === null ||
-      !Number.isFinite(exam.total) ||
-      exam.total < 0 ||
-      exam.total > 750
-    )
-      return [];
-    return [
-      [exam.topTotal, official.specialControl],
-      [exam.undergraduateTotal, official.undergraduate],
-    ].flatMap(([line, target]) => {
-      if (line == null || target == null || line <= 0 || line > 750) return [];
-      const estimate = lineEquivalent(exam.total!, line, target);
-      return estimate &&
-        estimate.equivalentScore >= 0 &&
-        estimate.equivalentScore <= 750
-        ? [estimate.equivalentScore]
-        : [];
-    });
+    const value = combinedEquivalent(exam, official);
+    return value === null ? [] : [value];
   });
   if (!estimates.length) return null;
   return {
     low: Math.min(...estimates),
     high: Math.max(...estimates),
     basis:
-      "近几次考试按各自切线作比例换算，取可用估算的最小—最大值；不是预测区间。",
+      "每场考试把特控线口径与本科线口径各占一半取平均，再取各场的最小—最大值；不是预测区间。",
   };
 }
 
@@ -221,6 +233,55 @@ export async function buildSchoolPool(
     missingHistory,
     range,
   };
+}
+
+/**
+ * 发布包级的专业类目录（与分数区间无关）：同一选科与批次下，发布库里全部真实专业与专业类。
+ *
+ * 「方向」页的自选清单与 AI 的方向目录都用它——流程是先定方向、再按分数匹配，
+ * 不能要求学生先跑出院校池才谈方向。目录只枚举发布库里的真实条目，不发明专业。
+ * 场景构建需要一个分数才能过分段表校验：取该科类公布的最高分（目录枚举不使用它）。
+ */
+export async function buildReleaseCatalog(
+  release: LoadedRelease,
+  track: Track,
+  additional: readonly string[],
+  batches: readonly string[],
+  signal?: AbortSignal,
+): Promise<{ majors: Major[]; directions: CatalogDirection[] }> {
+  if (additional.length !== 2 || new Set(additional).size !== 2)
+    throw new Error("请选择两门不同的再选科目。");
+  if (
+    !batches.length ||
+    batches.some(
+      (batch) =>
+        !SELECTABLE_BATCHES.includes(
+          batch as (typeof SELECTABLE_BATCHES)[number],
+        ),
+    )
+  )
+    throw new Error("请至少选择一个支持的批次。");
+  if (release.manifest.synthetic || release.manifest.status !== "PUBLISHED")
+    throw new Error("当前没有可用的真实发布数据，请稍等后重试。");
+  const table = release.distributions.find((item) => item.track === track);
+  if (!table) throw new Error("当前发布库没有该科类的分段表。");
+  const built = await buildPublishedInput(
+    {
+      track,
+      additional,
+      // 取公布范围中点：场景构建只要求分数落在分段表内，目录枚举不使用这个分数；
+      // 中点比最高分更稳——不同年份的公布范围略有差异时也不会越界。
+      score: Math.round((table.publishedMinScore + table.publishedMaxScore) / 2),
+      targetYear: new Date().getFullYear() + 1,
+      hardBudget: null,
+      confirmedDirections: [],
+      batches,
+    },
+    release,
+    signal,
+  );
+  if (!built) throw new Error("当前发布库没有覆盖所选科目与批次。");
+  return catalogFromRows(Object.values(built.catalog));
 }
 
 export interface RouteBranch {

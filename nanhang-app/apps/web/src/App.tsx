@@ -14,7 +14,8 @@ import {
   type LoadedQuality, type QualityAttempts
 } from "./quality-huixi.js";
 import type { QualityShard } from "./quality-types.js";
-import { buildSchoolPool, makeBranches, rangeFromExams, type SchoolPool, type ScoreRange } from "./journey-model.js";
+import { buildReleaseCatalog, buildSchoolPool, makeBranches, rangeFromExams,
+  type CatalogDirection, type Major, type SchoolPool, type ScoreRange } from "./journey-model.js";
 import { equivalentPosition } from "./exam-position.js";
 import { OFFICIAL_LINES_2026 } from "./reference-lines.js";
 import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from "./debug.js";
@@ -46,6 +47,9 @@ export default function App() {
   const [poolPending, setPoolPending] = useState(false);
   const [poolError, setPoolError] = useState<string | null>(null);
   const [picks, setPicks] = useState<string[]>([]);
+  // 发布包级专业类目录（与分数区间无关）：方向页的自选清单与 AI 的方向目录都用它。
+  // 流程是先定方向、再按分数匹配——不能等院校池跑出来才谈方向。
+  const [catalogRun, setCatalogRun] = useState<{ key: string; data: { majors: Major[]; directions: CatalogDirection[] } } | null>(null);
   // 章节门禁：学生按下「先用通用模式」算一次显式跳过；maxStage 记住本会话解锁到哪一段（只增不减）。
   const [maxStage, setMaxStage] = useState(0);
   const [aiDraft, setAiDraft] = useState("");
@@ -80,6 +84,7 @@ export default function App() {
   const aiSeq = useRef(0);
   const qualitySeq = useRef(0);
   const poolSeq = useRef(0);
+  const catalogSeq = useRef(0);
   const chartSvgRef = useRef<SVGSVGElement | null>(null);
   const detailRef = useRef<HTMLDialogElement | null>(null);
   const releaseAbort = useRef<AbortController | null>(null);
@@ -160,6 +165,20 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.form.primary, state.form.score, examsKey]);
+
+  // 发布包目录自动构建：选科+两门再选就绪即拉全量专业类（不需要探索区间，更不需要院校池）；
+  // 选科/批次变化按指纹换新，旧目录静默失效（目录是基础数据，失败时如实显示为空）。
+  const catalogKey = [state.form.primary ?? "none", [...state.form.additional].sort().join("+"),
+    [...(state.form.batches.length ? state.form.batches : SELECTABLE_BATCHES)].sort().join("+")].join("|");
+  const catalog = catalogRun?.key === catalogKey ? catalogRun.data : null;
+  useEffect(() => {
+    if (!state.release || !state.form.primary || state.form.additional.length !== 2) return;
+    const seq = ++catalogSeq.current;
+    const batches = state.form.batches.length ? state.form.batches : [...SELECTABLE_BATCHES];
+    buildReleaseCatalog(state.release, state.form.primary, state.form.additional, batches)
+      .then((data) => { if (seq === catalogSeq.current) setCatalogRun({ key: catalogKey, data }); })
+      .catch(() => { if (seq === catalogSeq.current) setCatalogRun(null); });
+  }, [state.release, state.form.primary, state.form.additional, catalogKey]);
 
   useEffect(() => {
     if (toast === null) return;
@@ -337,14 +356,14 @@ export default function App() {
       { evidenceId: `ev-chat-${userTurns.length}`, quote: text, kind: "student_self_report" }
     ];
     const evidence = [...evidenceForRequest(state.registry), ...chatEvidence].slice(-12);
-    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, poolRun?.data.directions ?? []);
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, catalog?.directions ?? []);
     if (seq !== aiSeq.current) return;
     setAi((current) => {
       const merged = applyTurnResult(current, next);
-      // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在院校池里
+      // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在发布包目录里
       // 真实存在的专业类上，引用学生的第一句原话），让「AI 推荐线」的界面能被验收。
-      if (!DEBUG_MODE || merged.suggestions.length > 0 || !poolRun) return merged;
-      const sample = [...poolRun.data.directions]
+      if (!DEBUG_MODE || merged.suggestions.length > 0 || !catalog) return merged;
+      const sample = [...catalog.directions]
         .sort((a, b) => a.name.localeCompare(b.name, "zh-CN")).slice(0, 2);
       return { ...merged, suggestions: sample.map((entry) => ({
         directionId: entry.id,
@@ -377,7 +396,7 @@ export default function App() {
       const data = await buildSchoolPool(state.release, state.form.primary, state.form.additional, range, state.form.batches);
       if (seq !== poolSeq.current) return;
       setPoolRun({ key: poolKeyNow, data });
-      setPicks([]);
+      // 自选专业挂在发布包目录上（与分数无关），匹配不清空它——方向先定、匹配在后。
       notify(`已匹配 ${data.schoolCount} 所院校 · ${data.rows.length} 条记录`);
     } catch (error) {
       if (seq === poolSeq.current) setPoolError(error instanceof Error ? error.message : "匹配没有完成，请调整范围后重试。");
@@ -386,7 +405,7 @@ export default function App() {
     }
   };
 
-  /** 自选专业（≤5 个）：换池即清空，不让旧选择悄悄挂到新范围上。 */
+  /** 自选专业（≤5 个）：挂在发布包目录上，与分数区间无关，匹配不清理。 */
   const togglePick = (majorId: string) => {
     setPicks((current) => {
       if (current.includes(majorId)) return current.filter((item) => item !== majorId);
@@ -454,7 +473,7 @@ export default function App() {
     ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
     quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
     range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, togglePick,
-    hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
+    catalog, hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,
     map, score, contextLabel, chartSvgRef, download, clear, setShowKun, setToast, toast

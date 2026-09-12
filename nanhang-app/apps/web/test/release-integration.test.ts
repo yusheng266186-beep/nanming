@@ -9,6 +9,7 @@ import {
   type ComparabilityRecord, type DistributionTable, type LoadedRelease,
 } from "../src/release-loader.js";
 import { axisMarks, batchOfferings, scorePosition } from "../src/model.js";
+import { buildReleaseCatalog, buildSchoolPool } from "../src/journey-model.js";
 
 /**
  * Integration coverage for the published release.
@@ -480,5 +481,30 @@ describeIf("published release integration", () => {
     // Institution tags likewise come through verbatim for the schools that have them.
     const tagged = labels.filter((label) => label.institutionTags !== null);
     expect(tagged.length).toBeGreaterThan(0);
+  });
+
+  it("发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业", async () => {
+    const { dir, manifest, index, distributions, comparability } = loadRelease();
+    const release: LoadedRelease = { manifest, index, distributions, comparability, basePath: "test-release://r" };
+    // buildPublishedInput 按 index 里的路径去取 offering 分片；测试桩把请求落回磁盘上的发布目录。
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const relative = String(input).replace("test-release://r/", "");
+      return new Response(readFileSync(resolve(dir, relative), "utf8"), { status: 200 });
+    }) as typeof fetch;
+    try {
+      // 「方向」页的目录：先定方向、再按分数匹配，所以目录不能依赖院校池。
+      const catalog = await buildReleaseCatalog(release, "PHYSICS", ["CHEMISTRY", "BIOLOGY"], ["本科批B段"]);
+      expect(catalog.directions.length).toBeGreaterThan(10);
+      expect(catalog.majors.length).toBeGreaterThanOrEqual(catalog.directions.length);
+      // 与窄分数区间的院校池对比：池只含区间内命中的专业类，目录必须包含池外条目。
+      const pool = await buildSchoolPool(
+        release, "PHYSICS", ["CHEMISTRY", "BIOLOGY"], { low: 685, high: 691, basis: "t" }, ["本科批B段"]);
+      const poolDirs = new Set(pool.directions.map((entry) => entry.id));
+      expect(catalog.directions.length).toBeGreaterThanOrEqual(pool.directions.length);
+      expect(catalog.directions.some((entry) => !poolDirs.has(entry.id))).toBe(true);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
   });
 });
