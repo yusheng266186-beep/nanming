@@ -404,10 +404,10 @@
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
     "api": "nanming-api version 8; Active; deployed ZIP verified; environment preserved",
-    "pages": "f18f21521acc2e932e98e0de5d85f289a2b987a7; workflow34694705981 success; HTML/JS/CSS HTTP200",
+    "pages": "9e31d9f; workflow34696117253 build/deploy success",
     "ciphertext_objects": 881,
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
     "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
-    "followup": "负责人继续指示：基线5124e86及当前talk、页面动效测试等在建修改补充发布；API代码无变化，保留版本8"
+    "followup": "补充快照已部署；沿用API版本8；CI仍有原三处失败，依授权不阻断"
   }
 }
