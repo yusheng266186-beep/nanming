@@ -225,7 +225,9 @@ describe("参考年最低分与整页海报", () => {
   });
 
   it("手机端抽屉、宽屏平铺；导出海报始终平铺（两版共用同一份挑选）", () => {
-    expect(chart).toContain("useNarrowChart");
+    expect(chart).toContain("useNarrow()");
+    expect(shared).toContain("export function useNarrow");
+    expect(axis).toContain("useNarrow()");
     expect(chart).toContain('className="deck"');
     expect(chart).toContain('className="stop-head"');
     expect(chart).toContain('className="sc-class"');
@@ -244,6 +246,18 @@ describe("参考年最低分与整页海报", () => {
     expect(chart).toContain("院校池只收与你的位次区间有交集的记录");
     expect(chart).toContain("chartNote:");
     expect(shared).toContain("chartNote?: string");
+  });
+
+  it("分数轴的院校卡也是抽屉 + 跟随滑动：滑到中间的那张浮出细节", () => {
+    expect(axis).toContain("groupRouteRows(rows)");
+    expect(axis).toContain("pickGroupedCards(grouped, AXIS_CARDS_PER_CLASS, AXIS_CARDS_TOTAL)");
+    expect(axis).toContain('className="deck"');
+    expect(axis).toContain("IntersectionObserver");
+    expect(axis).toContain('classList.toggle("focus"');
+    expect(axis).toContain('className="sc-detail"');
+    // 细节只做透明度/位移过渡（不改高度），所以展开收起不会顶动页面
+    expect(css).toMatch(/\.sc-detail\{[^}]*transition:opacity/);
+    expect(css).toContain(".scard.focus .sc-detail{opacity:1");
   });
 
   it("复制文字版按钮已按负责人要求删掉", () => {

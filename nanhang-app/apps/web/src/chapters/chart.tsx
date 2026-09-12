@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type PoolRow, type RouteBranch, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
@@ -6,7 +6,7 @@ import type { WebState } from "../model.js";
 import { Icon } from "../art.js";
 import {
   REFERENCE_YEAR, RELATION_CLASSES, buildRoutePoster, formatRankInterval, groupRouteRows, label,
-  levelLabel, pickGroupedCards, scoreRangeForRanks, svgStringToPng, type PageId
+  levelLabel, pickGroupedCards, scoreRangeForRanks, svgStringToPng, useNarrow, type PageId
 } from "./shared.js";
 
 export interface ChartProps {
@@ -29,26 +29,6 @@ const BLESSING = {
   sign: "—— 南 溟"
 } as const;
 
-
-/**
- * 窄屏判定。手机端用「抽屉式堆叠卡」按大类收起（负责人 2026-09-12：不要一股脑全堆出来，
- * 借首页起航六站那套），宽屏仍是平铺的分组列表；导出海报一律平铺。
- */
-function useNarrowChart(query = "(max-width: 720px)"): boolean {
-  const [narrow, setNarrow] = useState(() =>
-    typeof window !== "undefined" && typeof window.matchMedia === "function"
-      ? window.matchMedia(query).matches
-      : false);
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia(query);
-    const onChange = () => setNarrow(media.matches);
-    onChange();
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, [query]);
-  return narrow;
-}
 
 /** 每个专业类在页面上取几张、每条线一共取几张（页面与海报用同一组数字）。 */
 const CARDS_PER_CLASS = 4;
@@ -113,7 +93,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   const drawable = relationGroups.some((group) => group.items.length > 0);
   const rangeLabel = range ? `${range.low}–${range.high}` : "未生成";
   /** 三种关系的记录总数，用来算各自占比（两个版式共用）。 */
-  const narrowChart = useNarrowChart();
+  const narrowChart = useNarrow();
   /** 抽屉当前展开的大类（键是「线:大类名」）；一次只开一个，和首页六站一个脾气。 */
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const relationTotal = relationGroups.reduce((sum, group) => sum + group.items.length, 0);

@@ -1,11 +1,16 @@
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Icon } from "../art.js";
 import {
-  REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, label, levelLabel, scoreRangeForRanks,
-  type PageId
+  REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, groupRouteRows, label, levelLabel,
+  pickGroupedCards, scoreRangeForRanks, useNarrow, type PageId
 } from "./shared.js";
-import type { SchoolPool, ScoreRange } from "../journey-model.js";
+import type { PoolRow, SchoolPool, ScoreRange } from "../journey-model.js";
+
+/** 池子里放大类分组后每类取几张、合计上限多少（与航线图同一套挑选思路）。 */
+const AXIS_CARDS_PER_CLASS = 6;
+const AXIS_CARDS_TOTAL = 60;
 
 export interface AxisProps {
   state: WebState;
@@ -34,6 +39,76 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
   const bandLeft = range ? pct(range.low) : 0;
   const bandWidth = range ? Math.max(0.8, pct(range.high) - pct(range.low)) : 0;
   const rows = pool?.rows ?? [];
+  // 池子按大类 → 小类分组（与航线图同一套），手机端收抽屉、宽屏平铺；卡片挑选规则也一致。
+  const grouped = groupRouteRows(rows);
+  const picked = pickGroupedCards(grouped, AXIS_CARDS_PER_CLASS, AXIS_CARDS_TOTAL);
+  const narrowAxis = useNarrow();
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+
+  /** 一张院校专业卡：抬头、专业名与最低分常显；位次/招生数/学费/院校标签是「细节」，
+   *  滑动时由 CSS 的 .focus 浮出（负责人 2026-09-12：抽屉式卡片、跟随滑动显示、停留显示当前那张）。 */
+  const renderCard = (row: PoolRow) => {
+    const entry = row.label;
+    const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
+    const interval = reference.reference_rank_interval ?? [];
+    const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+    const institutionTags = (entry.institutionTags ?? "").split("/")
+      .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
+    const passed = row.candidate.eligibility.status === "PASS";
+    const sourceYear = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
+    const scores = scoreRangeForRanks(state.release, state.form.primary, sourceYear, interval);
+    const scoreText = scores
+      ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`)
+      : "未知";
+    return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={entry.offeringId}>
+      <div className="scard-top">
+        <div className="sc-head">
+          <span className="sc-loc"><Icon name="pin" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
+          {relation
+            ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
+            : <span className="sc-rel none">暂无比较依据</span>}
+        </div>
+        <h3 className="song">{entry.majorName}
+          {entry.level ? <em className="sc-lv">{levelLabel(entry.level)}</em> : null}</h3>
+        <p className="sc-sub">
+          {entry.batch}{entry.categoryClass ? ` · ${entry.categoryClass}` : ""}
+          {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
+        </p>
+      </div>
+      <div className="sc-foot">
+        <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
+      </div>
+      {/* 细节：位置固定，只做透明度与位移的过渡——滑到哪一张就显示哪一张，页面不会因为
+          展开/收起而跳动（这是「丝滑」的关键）。 */}
+      <div className="sc-detail">
+        <p className="sc-detail-line">
+          位次 {formatRankInterval(interval)} · 招 {entry.planCount ?? "—"} 人 ·
+          {entry.tuition == null ? " 学费未知" : ` 学费 ${entry.tuition}`}
+        </p>
+        {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
+        {row.reference === "group" ? <p className="fhint">只有专业组依据，具体专业门槛未知。</p> : null}
+        {row.candidate.eligibility.pending_requirements.length > 0
+          ? <p className="fhint">待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join("、")}。</p> : null}
+      </div>
+    </article>;
+  };
+
+  /** 卡片里的「当前这张」：进入视野中间约 16% 的带子就算聚焦，滑走就交还——
+   *  停住时显示的那一张就是它（IntersectionObserver 直接切换 class，不触发 React 重渲染）。 */
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+  const focusKey = pool ? `${pool.releaseId}:${pool.rows.length}` : "none";
+  useEffect(() => {
+    const root = cardsRef.current;
+    if (!root) return;
+    const cards = Array.from(root.querySelectorAll<HTMLElement>(".scard"));
+    if (!cards.length) return;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) entry.target.classList.toggle("focus", entry.isIntersecting);
+    }, { rootMargin: "-42% 0px -42% 0px", threshold: 0 });
+    for (const card of cards) observer.observe(card);
+    return () => observer.disconnect();
+  }, [focusKey, openCategory]);
+
   return <section id="page-axis" className={`view${page === "axis" ? " active" : ""}`} aria-label="分数轴">
     <div className="page-head">
       <div><span className="eyebrow">Chapter 05 · 分数轴 · 试风</span>
@@ -163,50 +238,49 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
       <p className="fhint" style={{ marginTop: 10 }}>按 {pool.referenceYear} 年同科类历史位次筛选（发布版本 {pool.releaseId}）；这决定「先看谁」，不构成任何录取判断。</p>
     </div> : null}
 
-    <div className="schools">
+    <div className="axis-cards" ref={cardsRef}>
       {rows.length > 0
-        ? rows.slice(0, 60).map((row) => {
-          const entry = row.label;
-          const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
-          const interval = reference.reference_rank_interval ?? [];
-          // 与「航线图」同一套分层标签：历史位置关系（项目边界内不写冲稳保）、办学层次、资格。
-          const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
-          const institutionTags = (entry.institutionTags ?? "").split("/")
-            .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
-          const passed = row.candidate.eligibility.status === "PASS";
-          const sourceYear = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
-          // 与「航线图」同款：最低分由位次区间反查同年分段表得到，查不到写「未知」。
-          const scores = scoreRangeForRanks(state.release, state.form.primary, sourceYear, interval);
-          const scoreText = scores
-            ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`)
-            : "未知";
-          return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={entry.offeringId}>
-            <div className="scard-top">
-              <div className="sc-head">
-                <span className="sc-loc"><Icon name="pin" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
-                {relation
-                  ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
-                  : <span className="sc-rel none">暂无比较依据</span>}
+        ? narrowAxis
+          // 手机端：大类收成抽屉，点开看它的小类与卡片（与航线图同款，堆叠与展开动效同源）。
+          ? <div className="deck">
+            {grouped.map((category) => {
+              const key = `axis:${category.name}`;
+              const open = openCategory === key;
+              const entry = picked.find((item) => item.category.name === category.name);
+              return <div className={`stop${open ? " open" : ""}`} key={key}>
+                <button type="button" className="stop-head" aria-expanded={open}
+                  onClick={() => setOpenCategory(open ? null : key)}>
+                  <span className="mk">{category.classes.length} 个专业类</span>
+                  <h4>{category.name}</h4>
+                  <span className="sc-cat-count">{category.total} 条</span>
+                  <span className="stop-cue"><Icon name="chevron" /></span>
+                </button>
+                {open ? <div className="stop-body">
+                  {entry ? entry.classes.map((cls) => <div className="sc-class" key={cls.name}>
+                    <div className="sc-class-head">
+                      <span>{cls.name}</span>
+                      <span>{cls.total} 条{cls.total > cls.rows.length ? ` · 列前 ${cls.rows.length}` : ""}</span>
+                    </div>
+                    <div className="schools" style={{ marginTop: 0 }}>{cls.rows.map((row) => renderCard(row))}</div>
+                  </div>) : <p className="muted-note">这个大类没有展开的卡片。</p>}
+                </div> : null}
+              </div>;
+            })}
+          </div>
+          // 宽屏：平铺的分组列表——大类标题 → 小类标题 → 卡片。
+          : <>{picked.map((entry) => <section className="sc-cat" key={entry.category.name}>
+            <div className="sc-cat-head">
+              <h4 className="song">{entry.category.name}</h4>
+              <span>{entry.category.total} 条 · {entry.category.classes.length} 个专业类</span>
+            </div>
+            {entry.classes.map((cls) => <div className="sc-class" key={cls.name}>
+              <div className="sc-class-head">
+                <span>{cls.name}</span>
+                <span>{cls.total} 条{cls.total > cls.rows.length ? ` · 列前 ${cls.rows.length}` : ""}</span>
               </div>
-              <h3 className="song">{entry.majorName}
-                {entry.level ? <em className="sc-lv">{levelLabel(entry.level)}</em> : null}</h3>
-              <p className="sc-sub">
-                {entry.batch}{entry.categoryClass ? ` · ${entry.categoryClass}` : ""}
-                {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
-              </p>
-            </div>
-            <div className="sc-foot">
-              <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
-              <span>位次 {formatRankInterval(interval)}</span>
-              <span>招 {entry.planCount ?? "—"} 人</span>
-              <span className="sc-fee">{entry.tuition == null ? "学费未知" : `学费 ${entry.tuition}`}</span>
-            </div>
-            {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
-            {row.reference === "group" ? <p className="fhint" style={{ margin: "8px 16px 10px" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
-            {row.candidate.eligibility.pending_requirements.length > 0
-              ? <p className="fhint" style={{ margin: "8px 16px 10px" }}>待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join("、")}。</p> : null}
-          </article>;
-        })
+              <div className="schools" style={{ marginTop: 0 }}>{cls.rows.map((row) => renderCard(row))}</div>
+            </div>)}
+          </section>)}</>
         : <div className="empty">
           <Icon name="compass" size="xl" />
           <h3>{poolPending ? "正在匹配院校…" : pool ? "当前区间没有命中记录" : "还没有可展示的院校"}</h3>

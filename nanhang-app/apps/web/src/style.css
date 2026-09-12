@@ -454,6 +454,24 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .sc-foot .sc-score b{font-family:var(--display);font-size:16px;font-weight:600;color:var(--brass-3);margin:0 1px}
 .sc-foot .sc-fee{color:var(--mut)}
 .sc-tagline{margin:8px 16px 0;font-size:10px;color:var(--brass-3);letter-spacing:.02em}
+/* ══════════ 推荐卡的「当前这张」 ══════════
+   滑到视野中间的那一张浮出细节（位次/招生数/学费/院校标签），其余只留抬头、专业名与最低分。
+   细节始终占着位置、只做透明度与位移的过渡，所以展开收起不会顶动页面——滑动才是丝滑的。 */
+.sc-detail{margin:0 16px 10px;transition:opacity .36s var(--ease),transform .36s var(--ease);
+  opacity:.35;transform:translateY(3px)}
+.sc-detail-line{font-size:11px;color:var(--ink-2);line-height:1.7}
+.sc-detail .sc-tagline{margin:4px 0 0}
+.sc-detail .fhint{margin:4px 0 0}
+.scard.focus{border-color:var(--brass-line);box-shadow:var(--sh-card)}
+.scard.focus .sc-detail{opacity:1;transform:none}
+/* 细屏上细节整段可见即可读，没必要跟着滚动忽明忽暗。 */
+@media(pointer:coarse) and (hover:none){
+  .sc-detail{opacity:.75}
+}
+@media(prefers-reduced-motion:reduce){
+  .sc-detail{opacity:1;transform:none;transition:none}
+}
+.axis-cards{margin-top:4px}
 /* 推荐卡的分层：大类（学科门类）标题 → 小类（专业类）标题 → 卡片。
    宽屏平铺时用这两级标题分隔，手机端则把大类收进抽屉（复用首页起航那套 .deck/.stop）。 */
 .sc-cat{margin:20px 0 4px}

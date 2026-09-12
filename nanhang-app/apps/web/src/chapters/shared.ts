@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { MAJOR_FACT_CARDS, explorationCards } from "@nanhang/exploration";
 import type { LoadedRelease } from "@nanhang/release-loader";
 import type { ArtName } from "../art.js";
@@ -102,6 +103,26 @@ export function scoreRangeForRanks(
   const best = scoreAt(Math.min(...interval));
   const worst = scoreAt(Math.max(...interval));
   return best === null || worst === null ? null : { min: worst, max: best };
+}
+
+/**
+ * 窄屏判定（默认 ≤720px）。手机端用抽屉式分组，宽屏用平铺；导出海报一律平铺。
+ * 放在 shared 里是因为分数轴与航线图两页都要用同一套阈值。
+ */
+export function useNarrow(query = "(max-width: 720px)"): boolean {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia(query).matches
+      : false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(query);
+    const onChange = () => setNarrow(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [query]);
+  return narrow;
 }
 
 /** 一条线的记录按「大类（学科门类）→ 小类（专业类）」分组后的形状。 */
