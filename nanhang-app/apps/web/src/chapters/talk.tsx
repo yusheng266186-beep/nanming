@@ -154,8 +154,8 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
           })}
         </div>
         <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
-          <button type="button" className="btn sm brass" onClick={() => setPage("axis")}>下一步：去分数轴匹配院校<Icon name="arrow" /></button>
-          <small className="muted-note">匹配出院校池后，回「方向」看这条建议对应的真实专业，再亲自选一次。</small>
+          <button type="button" className="btn sm brass" onClick={() => setPage("direction")}>下一步：去方向定两条线<Icon name="arrow" /></button>
+          <small className="muted-note">在「方向」看这条建议对应的真实专业、亲自选一次；两条线定好后再去「分数轴」匹配院校。</small>
         </div>
       </div> : null}
     </div>}

@@ -98,8 +98,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       <div className="sec-head"><div><span className="eyebrow">Chapter 01 · 起航 · 北冥有鱼</span><h2 style={{ marginTop: 12 }}>先定下三件事</h2><p>首选科目与再选科目决定「这个专业我能不能报」；高考目标分给出起点，探索区间决定先看哪些院校。</p></div></div>
       {/* 选科与情景分必须在这里能设置，否则「选择你的选科组合」只是文案：
           位次、资格与匹配都依赖首选科目，没有它整页只能显示未知。 */}
-      <div className="panel" style={{ marginTop: 22 }}>
-        <div className="grid-2" style={{ marginTop: 4, gap: 22 }}>
+      <div className="panel sail-panel">
+        <div className="grid-2 sail-form">
           <div className="field">
             <span className="flab">首选科目</span>
             <div className="chips">
@@ -133,7 +133,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
             <p className="fhint">选满 2 门才能判断资格。不确定的要求会显示「待核对」，不会被当成满足。</p>
           </div>
         </div>
-        <label className="field" style={{ marginTop: 20, maxWidth: 320 }}>
+        <label className="field sail-score">
           <span className="flab">高考目标分（可不填）</span>
           <input className="inp" type="number" min={0} max={750} inputMode="numeric"
             value={state.form.score ?? ""} placeholder="例如 600"
@@ -141,7 +141,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
         </label>
         {/* 行动入口放在表单之后：流程是「先定下三件事，再出发」。开始起航弹出登船卡片，
             两条入口作为通向定位/成绩的桥——不再平铺在页面上。 */}
-        <div className="hero-act" style={{ marginTop: 22 }}>
+        <div className="hero-act sail-act">
           <button type="button" className="btn brass" onClick={() => setBoardOpen(true)}>开始起航<Icon name="arrow" /></button>
           <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
         </div>

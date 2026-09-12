@@ -186,9 +186,9 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
     <p className="fhint" style={{ margin: "22px 2px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
       <Icon name="doc" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。超过 60 条时先展示前 60 条，完整结果在「航线图」按你的两条线分别给出。</span></p>
     <div className="banner">
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="layers" size="lg" />
-        <div><h3 className="song">院校池有了，去「方向」定两条线</h3><p>AI 的建议和你的自选各是一条线：一致合并，不一致分路，最后在「航线图」按线出结果。</p></div></div>
-      <button type="button" className="btn sm brass" style={{ flexShrink: 0 }} onClick={() => setPage("direction")}>去方向 · 选专业<Icon name="arrow" /></button>
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="route" size="lg" />
+        <div><h3 className="song">院校池有了，去「航线图」看两条线的结果</h3><p>方向在上一站已经定好：AI 建议线和你的自选线在「航线图」分开列出——一致合成一条，不一致各走一条。</p></div></div>
+      <button type="button" className="btn sm brass" style={{ flexShrink: 0 }} onClick={() => setPage("chart")}>去航线图<Icon name="arrow" /></button>
     </div>
   </section>;
 }

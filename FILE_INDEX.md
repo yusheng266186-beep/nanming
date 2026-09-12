@@ -53,11 +53,11 @@
 | [nanhang-app/apps/web/src/chapters/chart.tsx](nanhang-app/apps/web/src/chapters/chart.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/direction.tsx](nanhang-app/apps/web/src/chapters/direction.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/locate.tsx](nanhang-app/apps/web/src/chapters/locate.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
-| [nanhang-app/apps/web/src/chapters/quality.tsx](nanhang-app/apps/web/src/chapters/quality.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/sail.tsx](nanhang-app/apps/web/src/chapters/sail.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/shared.ts](nanhang-app/apps/web/src/chapters/shared.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/debug.ts](nanhang-app/apps/web/src/debug.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/exam-position.ts](nanhang-app/apps/web/src/exam-position.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey-model.ts](nanhang-app/apps/web/src/journey-model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey-worker.ts](nanhang-app/apps/web/src/journey-worker.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |

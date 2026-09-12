@@ -334,8 +334,11 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .axis-band::before,.axis-band::after{content:"";position:absolute;top:6px;bottom:6px;width:3px;border-radius:3px;background:var(--brass)}
 .axis-band::before{left:2px}
 .axis-band::after{right:2px}
-/* 深色英雄区里的表单：输入文字继承了大区域的浅色字，白底上白字，看起来像两个空框。 */
-.axis-hero .inp{color:var(--ink)}
+/* 深色英雄区里的表单：不用白底框（与深色卡片冲突），换成深海玻璃底 + 浅色字。 */
+.axis-hero .inp{background:rgba(9,38,44,.55);border-color:rgba(200,155,82,.32);color:#eef4f1;caret-color:#eef4f1}
+.axis-hero .inp::placeholder{color:#7fa39c}
+.axis-hero .inp:focus{border-color:var(--brass-2)}
+.axis-hero .inp:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #0a282e inset;-webkit-text-fill-color:#eef4f1;caret-color:#eef4f1}
 .axis-hero .fhint{color:#9fc3bc}
 /* 幽灵按钮在深色卡上会隐形：描边换成金调，让「去定位生成区间」找得到。 */
 .axis-hero .btn.ghost{color:#e9dfc9;border-color:rgba(200,155,82,.6);background:rgba(200,155,82,.1)}
