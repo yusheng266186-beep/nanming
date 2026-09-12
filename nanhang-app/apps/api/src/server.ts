@@ -1,3 +1,4 @@
+import { createSchoolAccess } from "./school-access.js";
 // TASK-08: HTTP adapter for the AI gateway.
 //
 // Transport concerns only: routing, JSON parsing limits, status codes and the SSE response.
@@ -138,6 +139,8 @@ function applyCors(request: IncomingMessage, response: ServerResponse): void {
   response.setHeader("access-control-max-age", "600");
 }
 
+const schoolAccess = createSchoolAccess();
+
 export function createApiServer(deps: ServerDeps): Server {
   const { gateway } = deps;
   const sessionsByToken = new Map<string, SessionRecord>();
@@ -190,6 +193,8 @@ export function createApiServer(deps: ServerDeps): Server {
       sendJson(response, 200, { session_id: session.sessionId, token, quota: session.quotaRemaining, academic_scope: false });
       return;
     }
+
+    if (route === "POST /v1/school/identify") { await schoolAccess(request, response); return; }
 
     if (route === "POST /v1/career/turn") {
       const auth = authenticate(request);

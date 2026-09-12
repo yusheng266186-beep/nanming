@@ -1,3 +1,4 @@
+import { parseDirectionCatalog, type CatalogChoice } from "./catalog-guard.js";
 // TASK-08: input limits and client-control rejection.
 //
 // A45 is enforced here: the client may submit user-turn text and its own history, but it can
@@ -7,7 +8,7 @@ import {
   CHAT_MODES, EVIDENCE_KINDS, type AiGatewayConfig, type ChatMode, type ThinkingTier, type UpstreamEvidence
 } from "./types.js";
 
-export const ALLOWED_TURN_FIELDS = ["run_id", "request_id", "input_revision", "user_text", "context", "thinking_tier", "mode", "evidence"] as const;
+export const ALLOWED_TURN_FIELDS = ["run_id", "request_id", "input_revision", "user_text", "context", "thinking_tier", "mode", "evidence", "direction_catalog"] as const;
 export const ALLOWED_PROFILE_FIELDS = ["run_id", "request_id", "input_revision", "offering_id", "release_id", "context", "evidence"] as const;
 
 /** 学生原话的体量上限：够一次完整谈心的记录，又不至于把请求撑爆。 */
@@ -35,6 +36,7 @@ export interface TurnRequest {
   readonly thinking_tier: ThinkingTier | null;
   /** 学生选的聊法；null 表示没选，按自由探索处理。 */
   readonly mode: ChatMode | null;
+  readonly direction_catalog?: readonly CatalogChoice[];
   /**
    * 学生自己保存的原话（客户端提供）。空数组表示客户端没给，
    * 此时回落到会话注册表（本地演示用）。
@@ -200,9 +202,11 @@ export function validateTurnRequest(raw: unknown, config: AiGatewayConfig): Vali
   }
   const evidence = parseEvidence(body.evidence);
   if (evidence && !evidence.ok) return evidence;
+  const catalog = parseDirectionCatalog(body.direction_catalog);
+  if (!catalog) return { ok: false, code: "BAD_REQUEST", detail: "invalid published direction catalog" };
   return {
     ok: true,
-    value: { ...envelope.value, user_text, context: context.context, thinking_tier, mode,
+    value: { direction_catalog: catalog, ...envelope.value, user_text, context: context.context, thinking_tier, mode,
       evidence: evidence ? evidence.value : [] }
   };
 }
@@ -240,6 +244,7 @@ export function validateProfileRequest(raw: unknown, config: AiGatewayConfig): V
  */
 export function turnPayloadHash(request: TurnRequest): unknown {
   return { user_text: request.user_text, context: request.context, input_revision: request.input_revision,
+    direction_catalog: request.direction_catalog ?? [],
     evidence: request.evidence };
 }
 export function profilePayloadHash(request: ProfileRequest): unknown {

@@ -37,6 +37,7 @@
 | [nanhang-app/apps/api/src/demo-context.ts](nanhang-app/apps/api/src/demo-context.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/src/dev-upstream.ts](nanhang-app/apps/api/src/dev-upstream.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/src/main.ts](nanhang-app/apps/api/src/main.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/src/school-access.ts](nanhang-app/apps/api/src/school-access.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/src/server.ts](nanhang-app/apps/api/src/server.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/test/api.test.ts](nanhang-app/apps/api/test/api.test.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/tsconfig.json](nanhang-app/apps/api/tsconfig.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
@@ -56,6 +57,7 @@
 | [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/exam-position.ts](nanhang-app/apps/web/src/exam-position.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/journey-model.ts](nanhang-app/apps/web/src/journey-model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/main.tsx](nanhang-app/apps/web/src/main.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/model.ts](nanhang-app/apps/web/src/model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/quality-huixi.ts](nanhang-app/apps/web/src/quality-huixi.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -705,6 +707,7 @@
 | [nanhang-app/package-lock.json](nanhang-app/package-lock.json) | 工程配置或总入口 |
 | [nanhang-app/package.json](nanhang-app/package.json) | 工程配置或总入口 |
 | [nanhang-app/packages/ai-gateway/package.json](nanhang-app/packages/ai-gateway/package.json) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
+| [nanhang-app/packages/ai-gateway/src/catalog-guard.ts](nanhang-app/packages/ai-gateway/src/catalog-guard.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/fake-upstream.ts](nanhang-app/packages/ai-gateway/src/fake-upstream.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/gateway.ts](nanhang-app/packages/ai-gateway/src/gateway.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/identity.ts](nanhang-app/packages/ai-gateway/src/identity.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
@@ -767,6 +770,7 @@
 | [nanhang-app/packages/school-adapter/tsconfig.json](nanhang-app/packages/school-adapter/tsconfig.json) | 工程配置或总入口 |
 | [nanhang-app/pipelines/quality-huixi/build_quality_db.py](nanhang-app/pipelines/quality-huixi/build_quality_db.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/export_dataset.ts](nanhang-app/pipelines/quality-huixi/export_dataset.ts) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/quality-huixi/export_identity.py](nanhang-app/pipelines/quality-huixi/export_identity.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/export_release.py](nanhang-app/pipelines/quality-huixi/export_release.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/verify_release.py](nanhang-app/pipelines/quality-huixi/verify_release.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/build_admissions_db.py](nanhang-app/pipelines/task03/build_admissions_db.py) | 招生数据管线与历史来源工具 |

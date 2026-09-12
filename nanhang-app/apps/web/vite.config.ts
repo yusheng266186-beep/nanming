@@ -70,7 +70,7 @@ export default defineConfig({
   plugins: [
     excelDevelopmentView(),
     serveDataDirectory("release-data", "/data/releases", "../../data/releases"),
-    serveDataDirectory("quality-huixi-data", "/data/quality-huixi", "../../data/quality-huixi")
+    // Student shards are served only by POST /v1/school/identify.
   ],
   server: { port: 5173 }
 });

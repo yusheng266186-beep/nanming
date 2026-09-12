@@ -14,6 +14,7 @@ export interface AllowedEvidence {
 export interface EvidenceLookup {
   /** Returns the registered evidence IDs the model is allowed to cite. */
   allowedEvidenceIds(): readonly string[];
+  allowedDirectionIds?(): readonly string[];
 }
 
 export function registryLookup(registry: { readonly messages: readonly AllowedEvidence[] }): EvidenceLookup {
@@ -157,6 +158,9 @@ export function validateCareerTurnOutput(raw: unknown, lookup: EvidenceLookup): 
     if (!suggestion) return { ok: false, code: "OUTPUT_REJECTED", detail: "suggestion must be an object" };
     const directionId = typeof suggestion.directionId === "string" ? suggestion.directionId : null;
     if (!directionId) return { ok: false, code: "OUTPUT_REJECTED", detail: "suggestion needs directionId" };
+    if (lookup.allowedDirectionIds && !lookup.allowedDirectionIds().includes(directionId)) {
+      droppedSuggestions.push(`${directionId}: 不在本轮发布专业目录中`); continue;
+    }
     const rationale = typeof suggestion.rationale === "string" ? suggestion.rationale : "";
     const rejectedRationale = scanText(rationale, "suggestion rationale");
     if (rejectedRationale) return rejectedRationale;

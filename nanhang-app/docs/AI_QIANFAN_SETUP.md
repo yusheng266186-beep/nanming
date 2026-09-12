@@ -86,6 +86,10 @@ req.TriggerDesc  = json.dumps({
 
 `NANHANG_CORS_ORIGINS` 与前端 `VITE_NANHANG_API_BASE` 都要跟着这个域名走。
 
+更新函数代码时不必在本机留一份密钥：先用 `GetFunction` 把线上函数现有的 `Environment.Variables`
+读回环境变量，再跑 `scripts/deploy_function.py`——密钥全程只在内存里，
+本机因此没有 `.env`，也没有任何密钥文件（2026-09-12 更新到版本 3 就是这么做的）。
+
 ## 三·五、思考档位：服务端默认最高档，学生可以自己切
 
 北辰把档位固定在云端最高档、页面不带模型字段。南溟沿用「服务端配置」这一点，但**默认档是

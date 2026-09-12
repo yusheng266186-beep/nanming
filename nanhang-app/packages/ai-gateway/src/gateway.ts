@@ -1,3 +1,4 @@
+import type { CatalogChoice } from "./catalog-guard.js";
 // TASK-08: the AI gateway core.
 //
 // Responsibilities, in the order the specification requires them:
@@ -31,6 +32,7 @@ import {
 import { completeEvent, deltaEvent, errorEvent, parseSseStream, sseFrame, sseHeartbeat, sseSequence, startEvent } from "./sse.js";
 
 export interface UpstreamRequest {
+  readonly directionCatalog?: readonly CatalogChoice[];
   readonly taskType: TaskType;
   readonly systemPromptId: string;
   readonly modelId: string;
@@ -281,7 +283,8 @@ export class AiGateway {
       taskType: "career_turn", systemPromptId: this.deps.config.systemPromptId, modelId: this.deps.config.modelId,
       userText: request.user_text, context: request.context.map(({ role, text }) => ({ role, text })),
       inputRevision: request.input_revision, offeringId: null, releaseId: null,
-      evidence: this.evidenceForRequest(session, request.evidence), thinkingTier: request.thinking_tier, mode: request.mode
+      directionCatalog: request.direction_catalog ?? [],
+      evidence: request.direction_catalog?.length ? request.evidence : this.evidenceForRequest(session, request.evidence), thinkingTier: request.thinking_tier, mode: request.mode
     };
     const frames: string[] = [sseFrame(startEvent(request.request_id, sequence, this.deps.config.modelId))];
     this.deps.store.transition(record.keyId, { status: "running" }, this.deps.now());
@@ -315,7 +318,9 @@ export class AiGateway {
       return { httpStatus: 503, frames: [...frames, sseFrame(errorEvent(request.request_id, sequence, "UPSTREAM_UNAVAILABLE", "upstream finalize failed", true))] };
     }
 
-    const lookup = this.lookupFor(session, request.evidence);
+    const lookup: EvidenceLookup = request.direction_catalog?.length
+      ? { allowedEvidenceIds: () => request.evidence.map(e => e.evidenceId), allowedDirectionIds: () => request.direction_catalog!.map(d => d.id) }
+      : this.lookupFor(session, request.evidence);
     const accepted = validateCareerTurnOutput(finalObject, lookup);
     if (!accepted.ok) {
       // A46/A48: the raw model text is never forwarded; the client gets an explicit degradation.
