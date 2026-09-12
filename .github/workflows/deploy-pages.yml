@@ -1,0 +1,65 @@
+# 南溟学生端：构建主前端并发布到 GitHub Pages。
+#
+# 两件事在仓库变量里配，不写死在文件里（改地址不用改代码）：
+#   vars.NANHANG_RELEASE_BASE  发布包地址，例如 https://<bucket>.cos.ap-chengdu.myqcloud.com/data/releases
+#   vars.NANHANG_API_BASE      AI 中转函数地址；留空则前端回落到本机 127.0.0.1:8790（面板会提示连不上）
+#
+# 数据与代码分开发布：换一版发布包只需要重跑 scripts/deploy_cos.py，
+# 前端读 current.json 指针，不必重新构建 Pages。
+name: Deploy 南溟学生端
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: nanhang-app/package-lock.json
+
+      - name: 安装依赖
+        working-directory: nanhang-app
+        run: npm ci
+
+      - name: 生成合同类型并编译共享包
+        working-directory: nanhang-app
+        run: npm run generate && npx tsc -b
+
+      - name: 构建主前端
+        working-directory: nanhang-app
+        env:
+          VITE_NANHANG_RELEASE_BASE: ${{ vars.NANHANG_RELEASE_BASE }}
+          VITE_NANHANG_API_BASE: ${{ vars.NANHANG_API_BASE }}
+        # 站点在 /<仓库名>/ 子路径下，base 必须跟着改，否则资源全部 404。
+        run: npm --workspace @nanhang/web run build -- --base=/${{ github.event.repository.name }}/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: nanhang-app/apps/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

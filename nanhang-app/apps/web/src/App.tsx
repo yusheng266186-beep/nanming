@@ -245,11 +245,14 @@ export default function App() {
       setAiCode("");
     } catch { setAi((current) => ({ ...current, status: "无法连接本地 AI 服务；无 AI 流程不受影响。" })); }
   };
-  const sendAi = async () => {
+  /** 点选 AI 给出的答案时用 override 直接发出，不必先写进草稿再等一轮渲染。 */
+  const sendAi = async (override?: string) => {
+    const text = override ?? aiDraft;
     const seq = ++aiSeq.current;
     const requestId = `web-req-${state.generation}-${Date.now()}`;
-    setAi((current) => ({ ...current, pending: true }));
-    const next = await askAi(ai, aiStamp(), aiStamp(), aiDraft, requestId);
+    setAi((current) => ({ ...current, pending: true, ...(override ? { options: [] } : {}) }));
+    if (override) setAiDraft(override);
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId);
     if (seq !== aiSeq.current) return;
     setAi(next);
     if (next.reply) setAiDraft("");

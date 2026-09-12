@@ -2,6 +2,19 @@
 // No DOM, no network, no LLM execution, no current-time reads (callers inject `now`).
 export type TaskType = "career_turn" | "career_profile";
 
+/**
+ * 学生可选的思考档位。`deep` 是默认档（质量优先）：模型先想清楚再回答，代价是等待时间变长。
+ * 档位由学生自己选，服务端只做取值校验；具体下发什么由上游适配器决定。
+ */
+export type ThinkingTier = "speed" | "standard" | "deep";
+
+/**
+ * 聊法。`guided` 每轮给几个可以直接选的答案（学生点一下就能答），`open` 只问问题、不设选项。
+ * 与北辰的领航／夜航同构，但取值名保持中性，界面文案由前端决定。
+ */
+export type ChatMode = "guided" | "open";
+export const CHAT_MODES: readonly ChatMode[] = ["guided", "open"];
+
 export type RequestStatus = "reserved" | "running" | "succeeded" | "failed" | "unknown";
 
 /** Transport status of the local HTTP adapter; mirrors SYSTEM_AND_INTERFACE_SPEC.md section 6. */

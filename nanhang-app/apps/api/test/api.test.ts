@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { createApiServer, buildDemoGateway, DEMO_TRIAL_CODE } from "../src/server.ts";
+import { createApiServer, buildDemoGateway, selectUpstream, DEMO_TRIAL_CODE } from "../src/server.ts";
 import { parseSseStream } from "@nanhang/ai-gateway";
 import { scenarioUpstream } from "../src/dev-upstream.ts";
 import { withConfig, AiGateway, MemoryStateStore, createEvidenceRegistry } from "@nanhang/ai-gateway";
@@ -247,16 +247,47 @@ function scenarioUpstreamCalls(gateway: AiGateway): number {
 
 describe("演示网关与配置", () => {
   it("buildDemoGateway 使用假上游且AI在开发档可用", () => {
-    const { gateway } = buildDemoGateway();
+    const { gateway } = buildDemoGateway({}, {});
     expect(gateway.readiness().upstream).toBe("fake-local");
     expect(gateway.readiness().ai).toBe(true);
     expect(gateway.readiness().public_data).toBe(true);
   });
 
   it("生产档下内存存储使AI关闭，公共数据仍可用", () => {
-    const { gateway } = buildDemoGateway({ profile: "production" });
+    const { gateway } = buildDemoGateway({ profile: "production" }, {});
     expect(gateway.readiness().ai).toBe(false);
     expect(gateway.readiness().public_data).toBe(true);
+  });
+});
+
+describe("上游选择", () => {
+  const QIANFAN = { QIANFAN_API_KEY: "test-key", QIANFAN_MODEL: "glm-5.2" };
+
+  it("未配置千帆时退回本地假上游", () => {
+    expect(selectUpstream({}).kind).toBe("fake-local");
+  });
+
+  it("千帆两项必需配置齐全就自动使用真模型", () => {
+    expect(selectUpstream(QIANFAN).kind).toBe("qianfan");
+  });
+
+  it("显式要求千帆却缺配置时拒绝启动，而不是悄悄退回假上游", () => {
+    expect(() => selectUpstream({ NANHANG_AI_UPSTREAM: "qianfan" })).toThrow(/QIANFAN_API_KEY/);
+    expect(() => selectUpstream({ NANHANG_AI_UPSTREAM: "qianfan", QIANFAN_API_KEY: "k" })).toThrow(/QIANFAN_MODEL/);
+  });
+
+  it("显式指定假上游或失败场景时，即使有千帆配置也不用真模型", () => {
+    expect(selectUpstream({ ...QIANFAN, NANHANG_AI_UPSTREAM: "fake" }).kind).toBe("fake-local");
+    expect(selectUpstream({ ...QIANFAN, NANHANG_FAKE_SCENARIO: "timeout" }).kind).toBe("fake-local");
+  });
+
+  it("不认识的上游名称直接报错", () => {
+    expect(() => selectUpstream({ NANHANG_AI_UPSTREAM: "openai" })).toThrow(/只支持 qianfan 或 fake/);
+  });
+
+  it("端点写错时在启动阶段就停住", () => {
+    expect(() => selectUpstream({ ...QIANFAN, QIANFAN_BASE_URL: "https://evil.example/v2/tokenplan/personal" }))
+      .toThrow(/允许名单/);
   });
 });
 

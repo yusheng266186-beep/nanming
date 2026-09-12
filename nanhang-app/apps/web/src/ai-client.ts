@@ -4,12 +4,32 @@
 // The guard is a plain function so it is testable without a DOM, and the fetch call is injected
 // so tests never touch the network.
 
+/**
+ * 思考档位。默认 deep（质量优先），学生可以自己切到更快的档位。
+ * 刻意不从 @nanhang/ai-gateway 导入：那个包只在服务端运行，不进浏览器产物。
+ */
+export type ThinkingTier = "speed" | "standard" | "deep";
+
+export const DEFAULT_THINKING_TIER: ThinkingTier = "deep";
+
+/**
+ * 聊法。`guided` 每轮给几个可以直接点的答案（选择作答），`open` 只问问题、不设选项（自由探索）。
+ * 默认与北辰一致，先给选项，学生随时可以切到自由探索。
+ */
+export type ChatMode = "guided" | "open";
+
+export const DEFAULT_CHAT_MODE: ChatMode = "guided";
+
 export interface AiTurnRequest {
   readonly runId: string;
   readonly requestId: string;
   readonly inputRevision: number;
   readonly userText: string;
   readonly context: readonly { readonly role: "user" | "assistant"; readonly text: string }[];
+  /** 学生选的思考档位；不填则服务端用默认档。 */
+  readonly tier?: ThinkingTier;
+  /** 学生选的聊法；不填则服务端按自由探索处理。 */
+  readonly mode?: ChatMode;
 }
 
 export interface AiTurnOutcome {
@@ -17,6 +37,15 @@ export interface AiTurnOutcome {
   readonly status: "applied" | "rejected" | "degraded" | "error";
   readonly reply: string | null;
   readonly reason: string | null;
+  /** 选择作答模式下可直接点的答案；其余情况为空数组。 */
+  readonly options: readonly string[];
+}
+
+/** 只保留服务端校验过的字符串数组，避免把任意结构渲染成按钮。 */
+function readOptions(output: unknown): readonly string[] {
+  const raw = (output as { options?: unknown } | undefined)?.options;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
 }
 
 export interface AiRunStamp {
@@ -50,18 +79,18 @@ export interface SseLikeEvent {
 export function acceptEvent(pending: PendingTurn, active: AiRunStamp, event: SseLikeEvent): AiTurnOutcome | null {
   if (!responseMatchesActiveRun({ runId: pending.stamp.runId, runRevision: pending.stamp.inputRevision }, active)) {
     return { requestId: pending.requestId, status: "rejected", reply: null,
-      reason: "STALE_RUN_RESPONSE" };
+      reason: "STALE_RUN_RESPONSE", options: [] };
   }
   if (event.event === "error") {
     const error = event.data.error as { code?: string; message?: string } | undefined;
     return { requestId: pending.requestId, status: error?.code === "OUTPUT_REJECTED" ? "degraded" : "error",
-      reply: null, reason: error?.message ?? error?.code ?? "AI_ERROR" };
+      reply: null, reason: error?.message ?? error?.code ?? "AI_ERROR", options: [] };
   }
   if (event.event === "complete") {
     const output = event.data.output as { reply?: unknown } | undefined;
     const reply = typeof output?.reply === "string" ? output.reply : null;
     return { requestId: pending.requestId, status: reply ? "applied" : "error", reply,
-      reason: reply ? null : "EMPTY_COMPLETION" };
+      reason: reply ? null : "EMPTY_COMPLETION", options: reply ? readOptions(output) : [] };
   }
   return null;
 }
@@ -77,6 +106,8 @@ export interface AiTurnWireBody {
   readonly input_revision: number;
   readonly user_text: string;
   readonly context: readonly { readonly role: "user" | "assistant"; readonly text: string }[];
+  readonly thinking_tier?: ThinkingTier;
+  readonly mode?: ChatMode;
 }
 
 export function toWireBody(request: AiTurnRequest): AiTurnWireBody {
@@ -85,7 +116,9 @@ export function toWireBody(request: AiTurnRequest): AiTurnWireBody {
     request_id: request.requestId,
     input_revision: request.inputRevision,
     user_text: request.userText,
-    context: request.context.map(({ role, text }) => ({ role, text }))
+    context: request.context.map(({ role, text }) => ({ role, text })),
+    ...(request.tier ? { thinking_tier: request.tier } : {}),
+    ...(request.mode ? { mode: request.mode } : {})
   };
 }
 
@@ -105,7 +138,8 @@ export interface AiTurnResult {
 export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active: AiRunStamp, request: AiTurnRequest): Promise<AiTurnResult> {
   const doFetch = deps.fetchImpl ?? fetch;
   if (!deps.token) {
-    return { httpStatus: 401, events: [], outcome: { requestId: pending.requestId, status: "error", reply: null, reason: "NOT_AUTHENTICATED" } };
+    return { httpStatus: 401, events: [], outcome: { requestId: pending.requestId, status: "error", reply: null,
+      reason: "NOT_AUTHENTICATED", options: [] } };
   }
   const response = await doFetch(`${deps.baseUrl}/v1/career/turn`, {
     method: "POST",
@@ -114,7 +148,8 @@ export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active
   });
   const text = await response.text();
   const events = parseFrames(text);
-  let outcome: AiTurnOutcome = { requestId: pending.requestId, status: "error", reply: null, reason: `HTTP_${response.status}` };
+  let outcome: AiTurnOutcome = { requestId: pending.requestId, status: "error", reply: null,
+    reason: `HTTP_${response.status}`, options: [] };
   for (const event of events) {
     const decided = acceptEvent(pending, active, event);
     if (decided) outcome = decided;

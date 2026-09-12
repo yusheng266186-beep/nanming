@@ -1,6 +1,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { ANSWER_STARTERS, QUESTIONS, type WebState } from "../model.js";
-import { AI_NOTICE, disableAi, enableAi, isReplyStale, type AiPanelState } from "../ai-panel.js";
+import { AI_NOTICE, MODE_CHOICES, THINKING_CHOICES, disableAi, enableAi, isReplyStale, withMode, withTier,
+  type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots } from "../chat.js";
 import type { PageId } from "./shared.js";
@@ -30,7 +31,7 @@ export interface TalkProps {
   aiDraft: string;
   setAiDraft: Dispatch<SetStateAction<string>>;
   exchangeCode: () => Promise<void>;
-  sendAi: () => Promise<void>;
+  sendAi: (override?: string) => Promise<void>;
 }
 
 export function renderTalk({ state, page, setPage, drafts, setDrafts, talkStep, setTalkStep, thinking,
@@ -124,14 +125,44 @@ export function renderTalk({ state, page, setPage, drafts, setDrafts, talkStep, 
             <textarea className="inp" rows={3} value={aiDraft} placeholder="用你自己的话描述一段经历；AI 也会要求你本人确认后才生效。"
               onChange={(event) => setAiDraft(event.target.value)} />
           </label>
+          <div className="field" style={{ marginTop: 16 }}>
+            <span className="flab">聊法 · 由你选</span>
+            <div className="voyage-pick">
+              {MODE_CHOICES.map((choice) => <button key={choice.value} type="button" className="voyage-card"
+                aria-pressed={ai.mode === choice.value}
+                onClick={() => setAi(withMode(ai, choice.value))}>
+                <span className="vc-name">{choice.label}</span>
+                <span className="vc-hint">{choice.hint}</span>
+              </button>)}
+            </div>
+            <p className="fhint">两种都由你定，随时可换、下一轮生效；已经聊过的内容不受影响。</p>
+          </div>
+          <div className="field" style={{ marginTop: 12 }}>
+            <span className="flab">回答方式</span>
+            <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 0 }}>
+              {THINKING_CHOICES.map((choice) => <button key={choice.value} type="button"
+                className={`btn sm${ai.tier === choice.value ? " brass" : " ghost"}`}
+                onClick={() => setAi(withTier(ai, choice.value))}>{choice.label}</button>)}
+            </div>
+            <p className="fhint">{THINKING_CHOICES.find((choice) => choice.value === ai.tier)?.hint}切换后下一轮生效。</p>
+          </div>
           <div className="chart-actions" style={{ justifyContent: "flex-start" }}>
-            <button type="button" className="btn sm brass" onClick={sendAi} disabled={ai.pending || !ai.connected}>{ai.pending ? "等待回复…" : "发送给 AI"}</button>
+            <button type="button" className="btn sm brass" onClick={() => void sendAi()} disabled={ai.pending || !ai.connected}>{ai.pending ? "等待回复…" : "发送给 AI"}</button>
             <small className="muted-note">AI 不可用时，浏览、探索、匹配与航线图全部照常可用。</small>
           </div>
           {ai.status ? <p className="feedback">{ai.status}</p> : null}
           {ai.reply ? <div className={`ai-reply${isReplyStale(ai, state.generation) ? " stale" : ""}`}>
             {isReplyStale(ai, state.generation) ? <p className="feedback">输入已改变，这条 AI 回复不再对应当前情况；重新发送可获得新的建议。</p> : null}
             {ai.reply}</div> : null}
+          {ai.mode === "guided" && ai.options.length > 0 ? <div className="field" style={{ marginTop: 14 }}>
+            <span className="flab">可以直接选一个</span>
+            <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 0 }}>
+              {ai.options.map((option) => <button key={option} type="button" className="btn sm"
+                disabled={ai.pending || !ai.connected}
+                onClick={() => void sendAi(option)}>{option}</button>)}
+            </div>
+            <p className="fhint">点一下就以你的名义发出去；不想用就自己写。</p>
+          </div> : null}
           {ai.suggestions.length ? <ul className="tick-list" style={{ marginTop: 14 }}>{ai.suggestions.map((item) => <li key={item.rationale}>
             <Icon name="check" /><span><b>{item.directionId}</b>：{item.rationale}<br /><small>证据：{item.evidenceIds.join("、")}（需你在「方向」章节本人确认）</small></span></li>)}</ul> : null}
           {ai.actions.length ? <ul className="tick-list" style={{ marginTop: 14 }}>{ai.actions.map((action) => <li key={action}><Icon name="arrow" /><span>{action}</span></li>)}</ul> : null}

@@ -102,5 +102,12 @@ describe("线格式与契约一致", () => {
     for (const field of ["system", "model", "upstream_url", "api_key", "tools"]) {
       expect(wire).not.toContain(field);
     }
+    // 学生选了档位才带上这个字段；没选就不发，由服务端用默认档
+    expect(wire).not.toContain("thinking_tier");
+  });
+
+  it("学生在界面上选的思考档位随请求发给服务端", () => {
+    const wire = toWireBody({ runId: "r", requestId: "q", inputRevision: 1, userText: "x", context: [], tier: "speed" });
+    expect(wire.thinking_tier).toBe("speed");
   });
 });

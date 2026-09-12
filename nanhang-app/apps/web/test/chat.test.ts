@@ -25,6 +25,48 @@ const app = [
 ].join("\n");
 const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8");
 
+describe("两种聊法（选择作答 / 自由探索）", () => {
+  it("可点答案只在选择作答模式下渲染，自由探索下不出按钮", () => {
+    // 判据写在渲染条件里：谁要是改成「有 options 就渲染」，
+    // 自由探索模式就会冒出按钮，这条断言会失败。
+    expect(app).toContain('ai.mode === "guided" && ai.options.length > 0');
+  });
+
+  it("点选答案是以学生自己的名义发出去的", () => {
+    expect(app).toContain("sendAi(option)");
+  });
+
+  it("切换聊法通过 withMode，并会清掉上一轮的选项", () => {
+    expect(app).toContain("withMode(ai, choice.value)");
+    const panel = readFileSync(resolve(import.meta.dirname, "../src/ai-panel.ts"), "utf8");
+    expect(panel).toContain("return { ...state, mode, options: [] }");
+  });
+
+  it("两种聊法用南溟自己的名字，并且各自有一句说明", () => {
+    expect(app).toContain("MODE_CHOICES");
+    const panel = readFileSync(resolve(import.meta.dirname, "../src/ai-panel.ts"), "utf8");
+    // 名字与南溟同源：引航是引航员带路，泛舟取自「泛若不系之舟」。
+    expect(panel).toContain('label: "引航"');
+    expect(panel).toContain('label: "泛舟"');
+    // 不能只剩两个标签：每张卡都要说清代价与自由
+    expect(panel).toContain("点一下就算你答了");
+    expect(panel).toContain("不摆选项");
+  });
+
+  it("两种聊法是学生自己的选择：选中的那张有明确状态，样式与主题一致", () => {
+    // aria-pressed 既给屏幕阅读器状态，也给 CSS 做选中态（与既有 .chip 同一套做法）
+    expect(app).toContain('className="voyage-card"');
+    expect(app).toContain('aria-pressed={ai.mode === choice.value}');
+    expect(css).toContain(".voyage-pick");
+    expect(css).toContain('.voyage-card[aria-pressed="true"]');
+    // 用既有设计令牌，不引新颜色
+    const cardCss = css.slice(css.indexOf(".voyage-pick"));
+    expect(cardCss).toContain("var(--card)");
+    expect(cardCss).toContain("var(--brass)");
+    expect(cardCss).toContain("var(--song)");
+  });
+});
+
 describe("谈心对话", () => {
   it("renders the chat through the shared components rather than inline markup", () => {
     // The page must use the extracted components, so the animation and reduced-motion

@@ -17,7 +17,7 @@ import {
 } from "@nanhang/exploration";
 import type {
   AiGatewayConfig, GatewayError, GatewayErrorCode, ReservationKey, ReservationRecord,
-  SessionRecord, TaskType
+  SessionRecord, TaskType, ChatMode, ThinkingTier
 } from "./types.js";
 import { reservationKeyId } from "./types.js";
 import { MemoryStateStore, type ClaimOutcome, type StateStore } from "./state-store.js";
@@ -29,6 +29,13 @@ import {
 } from "./output-guard.js";
 import { completeEvent, deltaEvent, errorEvent, parseSseStream, sseFrame, sseHeartbeat, sseSequence, startEvent } from "./sse.js";
 
+/** 学生已保存的原话。模型只能引用这些 ID，且引用后还要过 validateCareerTurnOutput。 */
+export interface UpstreamEvidence {
+  readonly evidenceId: string;
+  readonly quote: string;
+  readonly kind: string;
+}
+
 export interface UpstreamRequest {
   readonly taskType: TaskType;
   readonly systemPromptId: string;
@@ -38,6 +45,15 @@ export interface UpstreamRequest {
   readonly inputRevision: number;
   readonly offeringId: string | null;
   readonly releaseId: string | null;
+  /**
+   * 会话注册表里可引用的原话，由网关填入。上游必须把它当成素材而不是指令：
+   * 模型只有拿到这些 ID 才可能给出有据可依的方向建议。
+   */
+  readonly evidence: readonly UpstreamEvidence[];
+  /** 学生本轮选的思考档位；null 表示没选，用服务端默认档。 */
+  readonly thinkingTier: ThinkingTier | null;
+  /** 本轮聊法；null 按自由探索处理（不给选项）。 */
+  readonly mode: ChatMode | null;
 }
 
 export interface UpstreamChunk {
@@ -262,7 +278,8 @@ export class AiGateway {
     const upstreamRequest: UpstreamRequest = {
       taskType: "career_turn", systemPromptId: this.deps.config.systemPromptId, modelId: this.deps.config.modelId,
       userText: request.user_text, context: request.context.map(({ role, text }) => ({ role, text })),
-      inputRevision: request.input_revision, offeringId: null, releaseId: null
+      inputRevision: request.input_revision, offeringId: null, releaseId: null,
+      evidence: this.evidenceFor(session), thinkingTier: request.thinking_tier, mode: request.mode
     };
     const frames: string[] = [sseFrame(startEvent(request.request_id, sequence, this.deps.config.modelId))];
     this.deps.store.transition(record.keyId, { status: "running" }, this.deps.now());
@@ -357,7 +374,8 @@ export class AiGateway {
     const upstreamRequest: UpstreamRequest = {
       taskType: "career_profile", systemPromptId: this.deps.config.systemPromptId, modelId: this.deps.config.modelId,
       userText: "", context: request.context.map(({ role, text }) => ({ role, text })),
-      inputRevision: request.input_revision, offeringId: request.offering_id, releaseId: request.release_id
+      inputRevision: request.input_revision, offeringId: request.offering_id, releaseId: request.release_id,
+      evidence: this.evidenceFor(session), thinkingTier: null, mode: null
     };
     this.deps.store.transition(record.keyId, { status: "running", upstreamStarted: true }, this.deps.now());
     try {
@@ -384,6 +402,13 @@ export class AiGateway {
       this.deps.store.transition(record.keyId, { status: "unknown", errorCode: failure.code, retryable: true }, this.deps.now());
       return { httpStatus: 503, body: errorBody(failure.code, failure.message, request.request_id) };
     }
+  }
+
+  /** 会话注册表 → 上游可引用的原话。上限用配置里的 maxEvidenceIds，避免提示词无限增长。 */
+  private evidenceFor(session: SessionRecord): readonly UpstreamEvidence[] {
+    return this.deps.registryFor(session.sessionId).messages
+      .slice(0, this.deps.config.maxEvidenceIds)
+      .map((message) => ({ evidenceId: message.evidenceId, quote: message.quote, kind: message.kind }));
   }
 
   private claim(session: SessionRecord, taskType: TaskType, requestId: string, runId: string, payloadHash: string, inputRevision: number): ClaimOutcome {

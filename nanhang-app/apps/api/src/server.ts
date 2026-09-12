@@ -5,13 +5,13 @@
 // so the same rules hold for any future SCF/Express host.
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import {
-  AiGateway, FakeUpstream, MemoryStateStore, newSessionId, newSessionToken, newSubjectId,
-  type SessionRecord
+  AiGateway, FakeUpstream, MemoryStateStore, QianfanUpstream, newSessionId, newSessionToken, newSubjectId,
+  qianfanOptionsFromEnv, type SessionRecord, type Upstream
 } from "@nanhang/ai-gateway";
 import { createEvidenceRegistry, emptyDirectionProfile, type EvidenceRegistry } from "@nanhang/exploration";
 import { demoEvidence, DEMO_TRIAL_CODE, DEMO_ACADEMIC_BINDING } from "./demo-context.ts";
 import { scriptedUpstreamFromEnv } from "./dev-upstream.ts";
-import { loadRuntimeConfig } from "./config.ts";
+import { ENV_NAMES, loadRuntimeConfig } from "./config.ts";
 
 const MAX_BODY_BYTES = 64 * 1024;
 /** Past this multiple of the limit we stop draining and drop the connection instead of absorbing bytes. */
@@ -233,14 +233,45 @@ export function createApiServer(deps: ServerDeps): Server {
 
 export const DEMO_REPLY = "本地假上游：我看到你在描述自己的经历。可以先把愿意尝试的小任务写下来，再决定方向。";
 
-export function buildDemoGateway(overrides: Record<string, unknown> = {}): { gateway: AiGateway; registry: EvidenceRegistry; store: MemoryStateStore } {
-  const config = loadRuntimeConfig(overrides);
-  const store = new MemoryStateStore();
+function demoFakeUpstream(): Upstream {
   // Chunks and final reply are kept identical so the streamed text matches what completes.
-  const upstream = scriptedUpstreamFromEnv(process.env) ?? new FakeUpstream({
+  return new FakeUpstream({
     chunks: [DEMO_REPLY],
     final: { reply: DEMO_REPLY, suggestions: [], actions: ["两周内完成一次小体验并记录过程"] }
   });
+}
+
+/**
+ * 上游选择，三条规则：
+ *   1. NANHANG_AI_UPSTREAM=qianfan 时缺配置就直接拒绝启动——显式要真模型却悄悄退回假上游是最坏的情况；
+ *   2. 显式 =fake，或设了 NANHANG_FAKE_SCENARIO，用本地假上游（验收失败路径用）；
+ *   3. 未指定时，千帆两项必需配置齐全就自动用真模型，否则继续用假上游。
+ * 实际生效的是哪一个会出现在启动日志与 /readyz 的 upstream 字段里，不会静默切换。
+ */
+export function selectUpstream(env: NodeJS.ProcessEnv = process.env): Upstream {
+  const requested = (env[ENV_NAMES.upstream] ?? "").trim().toLowerCase();
+  const qianfan = qianfanOptionsFromEnv(env);
+  if (requested === "qianfan") {
+    if (!qianfan) {
+      throw new Error(`${ENV_NAMES.upstream}=qianfan 需要同时提供 ${ENV_NAMES.qianfanApiKey} 与 ${ENV_NAMES.qianfanModel}`);
+    }
+    return new QianfanUpstream(qianfan);
+  }
+  if (requested && requested !== "fake") {
+    throw new Error(`未知的 ${ENV_NAMES.upstream}=${requested}（只支持 qianfan 或 fake）`);
+  }
+  if (requested === "fake") return scriptedUpstreamFromEnv(env) ?? demoFakeUpstream();
+  const scenario = scriptedUpstreamFromEnv(env);
+  if (scenario) return scenario;
+  return qianfan ? new QianfanUpstream(qianfan) : demoFakeUpstream();
+}
+
+export function buildDemoGateway(
+  overrides: Record<string, unknown> = {}, env: NodeJS.ProcessEnv = process.env
+): { gateway: AiGateway; registry: EvidenceRegistry; store: MemoryStateStore } {
+  const config = loadRuntimeConfig(overrides, env);
+  const store = new MemoryStateStore();
+  const upstream = selectUpstream(env);
   const registry = createEvidenceRegistry(demoEvidence());
   const profile = emptyDirectionProfile("api-profile");
   const gateway = new AiGateway({

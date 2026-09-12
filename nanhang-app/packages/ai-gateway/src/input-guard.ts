@@ -3,10 +3,12 @@
 // A45 is enforced here: the client may submit user-turn text and its own history, but it can
 // never choose the system prompt, model, upstream URL or tool definitions. Any such field is
 // rejected outright rather than ignored, so a client cannot discover the boundary by probing.
-import type { AiGatewayConfig } from "./types.js";
+import { CHAT_MODES, type AiGatewayConfig, type ChatMode, type ThinkingTier } from "./types.js";
 
-export const ALLOWED_TURN_FIELDS = ["run_id", "request_id", "input_revision", "user_text", "context"] as const;
+export const ALLOWED_TURN_FIELDS = ["run_id", "request_id", "input_revision", "user_text", "context", "thinking_tier", "mode"] as const;
 export const ALLOWED_PROFILE_FIELDS = ["run_id", "request_id", "input_revision", "offering_id", "release_id", "context"] as const;
+/** 学生可以自己选的思考档位。它是偏好，不是控制面字段：取值只有这三种，服务端只做校验。 */
+export const SELECTABLE_THINKING_TIERS: readonly ThinkingTier[] = ["speed", "standard", "deep"];
 
 export type RequestedRole = "user" | "assistant" | "system" | "developer" | "tool";
 
@@ -22,6 +24,10 @@ export interface TurnRequest {
   readonly input_revision: number;
   readonly user_text: string;
   readonly context: readonly ContextMessage[];
+  /** 学生选的档位；null 表示没选，用服务端默认档。 */
+  readonly thinking_tier: ThinkingTier | null;
+  /** 学生选的聊法；null 表示没选，按自由探索处理。 */
+  readonly mode: ChatMode | null;
 }
 
 export interface ProfileRequest {
@@ -120,7 +126,23 @@ export function validateTurnRequest(raw: unknown, config: AiGatewayConfig): Vali
   }
   const context = parseContext(body.context, config);
   if (!context.ok) return context;
-  return { ok: true, value: { ...envelope.value, user_text, context: context.context } };
+  const rawTier = body.thinking_tier;
+  let thinking_tier: ThinkingTier | null = null;
+  if (rawTier !== undefined && rawTier !== null) {
+    if (!SELECTABLE_THINKING_TIERS.includes(rawTier as ThinkingTier)) {
+      return { ok: false, code: "BAD_REQUEST", detail: "thinking_tier must be speed, standard or deep" };
+    }
+    thinking_tier = rawTier as ThinkingTier;
+  }
+  const rawMode = body.mode;
+  let mode: ChatMode | null = null;
+  if (rawMode !== undefined && rawMode !== null) {
+    if (!CHAT_MODES.includes(rawMode as ChatMode)) {
+      return { ok: false, code: "BAD_REQUEST", detail: "mode must be guided or open" };
+    }
+    mode = rawMode as ChatMode;
+  }
+  return { ok: true, value: { ...envelope.value, user_text, context: context.context, thinking_tier, mode } };
 }
 
 export function validateProfileRequest(raw: unknown, config: AiGatewayConfig): ValidationResult<ProfileRequest> {
@@ -142,7 +164,12 @@ export function validateProfileRequest(raw: unknown, config: AiGatewayConfig): V
   return { ok: true, value: { ...envelope.value, offering_id, release_id, context: context.context } };
 }
 
-/** Payload hash is computed over the validated, whitelisted fields only. */
+/**
+ * Payload hash is computed over the validated, whitelisted fields only.
+ * The thinking tier and the chat mode are deliberately excluded: they change how the answer is
+ * shaped (how long the model thinks, whether options are offered), not what was asked, so a retry
+ * that only flipped one of them must not be reported as a payload conflict.
+ */
 export function turnPayloadHash(request: TurnRequest): unknown {
   return { user_text: request.user_text, context: request.context, input_revision: request.input_revision };
 }

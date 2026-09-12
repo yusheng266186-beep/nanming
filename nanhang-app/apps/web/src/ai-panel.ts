@@ -3,7 +3,8 @@
 // The AI feature is opt-in and off by default. When the API is unreachable or the user has not
 // enabled it, nothing in the no-AI flow changes. Every displayed AI string is passed through
 // `safeText`, and the run stamp is carried so a superseded response can never be applied (A47).
-import { beginTurn, runAiTurn, type AiRunStamp, type AiTurnOutcome } from "./ai-client.js";
+import { beginTurn, runAiTurn, DEFAULT_CHAT_MODE, DEFAULT_THINKING_TIER,
+  type AiRunStamp, type AiTurnOutcome, type ChatMode, type ThinkingTier } from "./ai-client.js";
 
 export const AI_NOTICE = "AI 建议只使用你已经保存的原话，且必须由你确认后才会进入画像。AI 不能修改资格、位次或数据发布状态。";
 
@@ -28,12 +29,54 @@ export interface AiPanelState {
   readonly actions: readonly string[];
   /** Revision the displayed reply was produced for; null when nothing is displayed. */
   readonly replyRevision: number | null;
+  /** 学生选的思考档位：想得更透 vs 回得更快，由学生自己决定。 */
+  readonly tier: ThinkingTier;
+  /** 学生选的聊法：选择作答（给可点的答案）或自由探索（只问问题）。 */
+  readonly mode: ChatMode;
+  /** 本轮可以直接点的答案；自由探索模式下恒为空。 */
+  readonly options: readonly string[];
 }
 
 export const initialAiPanel: AiPanelState = {
   enabled: false, connected: false, apiBase: DEFAULT_API_BASE, token: null,
-  pending: false, reply: null, status: null, suggestions: [], actions: [], replyRevision: null
+  pending: false, reply: null, status: null, suggestions: [], actions: [], replyRevision: null,
+  tier: DEFAULT_THINKING_TIER, mode: DEFAULT_CHAT_MODE, options: []
 };
+
+/** 档位只影响下一轮；已经拿到的回复不因为切换档位而作废。 */
+export function withTier(state: AiPanelState, tier: ThinkingTier): AiPanelState {
+  return { ...state, tier };
+}
+
+/**
+ * 切换聊法。上一轮的选项属于上一轮的问法，切走时一并清掉——
+ * 留着会让学生以为那是新问题下的可选项。
+ */
+export function withMode(state: AiPanelState, mode: ChatMode): AiPanelState {
+  return { ...state, mode, options: [] };
+}
+
+/**
+ * 学生可见的档位选项。默认档放最前，标签用学生能懂的话，不用内部代号；
+ * 每档一句实话说明等待代价——不写「更快更聪明」这种不可能同时成立的承诺。
+ */
+export const THINKING_CHOICES: readonly { readonly value: ThinkingTier; readonly label: string; readonly hint: string }[] = [
+  { value: "deep", label: "深（默认）", hint: "模型先想清楚再回答，等得久一点（可能二三十秒），质量优先。" },
+  { value: "standard", label: "标准", hint: "由服务端决定思考深度，速度与质量居中。" },
+  { value: "speed", label: "快", hint: "不等思考，几秒就回；适合先把话说完、来回多聊几轮。" }
+];
+
+/**
+ * 学生可见的两种聊法。参考北辰的领航／夜航（一种给现成答案、一种完全自由），
+ * 名字与说明都按南溟自己的主题重写：
+ *   引航 —— 引航员上船带路，每一步都有现成答案可点，想不出来也不会卡住；
+ *   泛舟 —— 取自「泛若不系之舟」（《庄子》，与「南溟」同源），不设路线，随水而行。
+ * 默认引航：第一次用的人多半需要扶手，而随时可以自己换。
+ */
+export const MODE_CHOICES: readonly { readonly value: ChatMode; readonly label: string; readonly hint: string }[] = [
+  { value: "guided", label: "引航", hint: "每一步都摆出现成的答案，点一下就算你答了；想不出来时不会卡在这儿。也可以不用它，自己写。" },
+  { value: "open", label: "泛舟", hint: "不摆选项，只问问题。想说什么说什么，说多短都行——用自己的话答，它听得更认真。" }
+];
 
 /**
  * True when a displayed reply was produced for an earlier input revision. The text stays readable
@@ -51,7 +94,8 @@ export function enableAi(state: AiPanelState): AiPanelState {
 
 export function disableAi(state: AiPanelState): AiPanelState {
   return { ...state, enabled: false, connected: false, token: null, pending: false, reply: null,
-    status: "AI 已关闭。浏览、探索、匹配与航线图不受影响。", suggestions: [], actions: [], replyRevision: null };
+    status: "AI 已关闭。浏览、探索、匹配与航线图不受影响。", suggestions: [], actions: [], replyRevision: null,
+    options: [] };
 }
 
 export function withSession(state: AiPanelState, token: string): AiPanelState {
@@ -91,7 +135,8 @@ export async function askAi(
   const result = await runAiTurn(
     { baseUrl: state.apiBase, token: state.token, ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}) },
     pending, activeStamp,
-    { runId: sendStamp.runId, requestId, inputRevision: sendStamp.inputRevision, userText, context: [] }
+    { runId: sendStamp.runId, requestId, inputRevision: sendStamp.inputRevision, userText, context: [],
+      tier: state.tier, mode: state.mode }
   );
   return applyOutcome(state, result.outcome, result.httpStatus, sendStamp.inputRevision);
 }
@@ -102,16 +147,17 @@ export function applyOutcome(state: AiPanelState, outcome: AiTurnOutcome, httpSt
     return { ...state, pending: false, status: "已忽略过期的 AI 回复（它属于更早的一次输入）。" };
   }
   if (outcome.status === "error") {
-    return { ...state, pending: false, reply: null, suggestions: [], actions: [], replyRevision: null,
+    return { ...state, pending: false, reply: null, suggestions: [], actions: [], options: [], replyRevision: null,
       status: httpStatus === 503
         ? "AI 当前不可用，无 AI 的浏览、探索与匹配仍可正常使用。"
         : `AI 未完成：${outcome.reason ?? "未知原因"}` };
   }
   if (outcome.status === "degraded") {
     return { ...state, pending: false, reply: outcome.reply === null ? null : safeText(outcome.reply),
-      suggestions: [], actions: [], replyRevision: inputRevision,
+      suggestions: [], actions: [], options: [], replyRevision: inputRevision,
       status: `AI 回复未通过安全校验，已降级为本地提示（${outcome.reason ?? "已拒绝"}）。` };
   }
   return { ...state, pending: false, reply: outcome.reply === null ? null : safeText(outcome.reply),
-    replyRevision: inputRevision, status: "AI 建议仅作待确认方向，需你本人确认。" };
+    options: outcome.options.map(safeText), replyRevision: inputRevision,
+    status: "AI 建议仅作待确认方向，需你本人确认。" };
 }

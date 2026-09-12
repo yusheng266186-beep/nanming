@@ -576,3 +576,16 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
    弱化它，让缺值读起来是留白而不是数字。 */
 .absent{color:var(--line-2);font-weight:400;letter-spacing:.05em}
 .bignum .absent,.delta-num .absent{font-size:.72em;line-height:1}
+
+/* ══════════ 聊法（引航 / 泛舟）══════════
+   两个模式是学生自己的选择，所以做成两张可以挑的卡，而不是一个小开关：
+   选中的那张用金铜色边框与底色标出来，未选中的保持纸白底色、悬停时轻微提亮。
+   名称用衬线字体，与章节标题同一套语言。 */
+.voyage-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.voyage-card{text-align:left;padding:16px 18px;border:1px solid var(--line-2);border-radius:12px;
+  background:var(--card);transition:border-color .3s,background .3s,box-shadow .3s var(--ease)}
+.voyage-card:hover{border-color:var(--brass-line);background:#fff}
+.voyage-card[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-bg);box-shadow:var(--sh-card)}
+.voyage-card .vc-name{display:block;font-family:var(--song);font-size:15px;color:var(--ink);margin-bottom:6px}
+.voyage-card[aria-pressed="true"] .vc-name{color:var(--brass-3)}
+.voyage-card .vc-hint{display:block;font-size:11px;color:var(--mut);line-height:1.85}

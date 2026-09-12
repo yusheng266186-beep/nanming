@@ -101,7 +101,13 @@ export interface LoadedRelease {
  */
 const viteEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
 
-export const RELEASE_BASE: string = viteEnv?.VITE_NANHANG_RELEASE_BASE ?? "/data/releases";
+/**
+ * 取数根地址：构建期可用 VITE_NANHANG_RELEASE_BASE 指向对象存储。
+ * 空字符串按「没配」处理——CI 里把一个未设置的仓库变量注入 env 会得到空串，
+ * 那时若直接采用空串，页面会去请求 /current.json，而不是回落到同源默认路径。
+ */
+export const RELEASE_BASE: string =
+  viteEnv?.VITE_NANHANG_RELEASE_BASE?.trim() || "/data/releases";
 
 export interface LoadReleaseOptions {
   signal?: AbortSignal;

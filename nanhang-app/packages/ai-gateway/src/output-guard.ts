@@ -31,6 +31,11 @@ export interface CareerTurnOutput {
   readonly reply: string;
   readonly suggestions: readonly CareerSuggestion[];
   readonly actions: readonly string[];
+  /**
+   * 「选择作答」模式下可以直接点的答案；自由探索模式恒为空数组。
+   * 它只是把学生可能想说的话摆出来，点选后仍然作为学生自己的话发出去。
+   */
+  readonly options: readonly string[];
 }
 
 export type OutputRejection = {
@@ -115,12 +120,14 @@ function scanKeys(value: unknown, path: string): OutputRejection | null {
 const MAX_REPLY_CHARS = 2000;
 const MAX_SUGGESTIONS = 5;
 const MAX_ACTIONS = 2;
+const MAX_OPTIONS = 4;
+const MAX_OPTION_CHARS = 24;
 
 export function validateCareerTurnOutput(raw: unknown, lookup: EvidenceLookup): OutputAcceptance<CareerTurnOutput> | OutputRejection {
   const body = asRecord(raw);
   if (!body) return { ok: false, code: "OUTPUT_REJECTED", detail: "output must be a JSON object" };
   const keys = Object.keys(body);
-  if (keys.some((key) => !["reply", "suggestions", "actions"].includes(key))) {
+  if (keys.some((key) => !["reply", "suggestions", "actions", "options"].includes(key))) {
     return { ok: false, code: "OUTPUT_REJECTED", detail: "output has unknown fields" };
   }
   if (typeof body.reply !== "string" || !body.reply.trim()) {
@@ -180,7 +187,23 @@ export function validateCareerTurnOutput(raw: unknown, lookup: EvidenceLookup): 
     if (rejectedAction) return rejectedAction;
     actions.push(action);
   }
-  return { ok: true, value: { reply: body.reply.trim(), suggestions, actions } };
+  const rawOptions = body.options ?? [];
+  if (!Array.isArray(rawOptions)) return { ok: false, code: "OUTPUT_REJECTED", detail: "options must be an array" };
+  if (rawOptions.length > MAX_OPTIONS) return { ok: false, code: "OUTPUT_REJECTED", detail: "too many options" };
+  const options: string[] = [];
+  for (const option of rawOptions) {
+    if (typeof option !== "string" || !option.trim()) {
+      return { ok: false, code: "OUTPUT_REJECTED", detail: "option must be a non-empty string" };
+    }
+    const trimmed = option.trim();
+    if (trimmed.length > MAX_OPTION_CHARS) {
+      return { ok: false, code: "OUTPUT_REJECTED", detail: "option is too long to be a clickable answer" };
+    }
+    const rejectedOption = scanText(trimmed, "option");
+    if (rejectedOption) return rejectedOption;
+    options.push(trimmed);
+  }
+  return { ok: true, value: { reply: body.reply.trim(), suggestions, actions, options } };
 }
 
 /**
@@ -191,7 +214,8 @@ export function degradedTurnOutput(reason: string): CareerTurnOutput {
   return {
     reply: `AI 回复未通过安全校验，已改为本地提示（${reason}）。你可以继续使用无 AI 的专业浏览与合成参考；你的回答和已确认方向不受影响。`,
     suggestions: [],
-    actions: []
+    actions: [],
+    options: []
   };
 }
 

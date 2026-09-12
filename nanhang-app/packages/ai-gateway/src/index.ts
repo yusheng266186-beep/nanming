@@ -8,3 +8,4 @@ export * from "./output-guard.js";
 export * from "./sse.js";
 export * from "./gateway.js";
 export * from "./fake-upstream.js";
+export * from "./qianfan-upstream.js";
