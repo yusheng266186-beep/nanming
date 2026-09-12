@@ -195,7 +195,9 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
           <h3>{poolPending ? "正在匹配院校…" : pool ? "当前区间没有命中记录" : "还没有可展示的院校"}</h3>
           <p>{pool
             ? "可以回到「定位」把区间稍微放宽，再点一次匹配；结果不会自动扩大范围。"
-            : "先在「定位」生成探索区间，选好批次，然后点「用这个区间匹配院校」。区间端点超出分段表公布范围时，页面会如实提示。"}</p>
+            : range
+              ? "区间已经有了：选好批次，点上面的「用这个区间匹配院校」。区间端点超出分段表公布范围时，页面会如实提示。"
+              : "先在这一页填上下限（或去「定位」按考试数据生成），选好批次，然后点「用这个区间匹配院校」。区间端点超出分段表公布范围时，页面会如实提示。"}</p>
         </div>}
     </div>
     <p className="fhint" style={{ margin: "22px 2px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>

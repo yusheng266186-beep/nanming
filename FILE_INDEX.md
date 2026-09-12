@@ -54,6 +54,7 @@
 | [nanhang-app/apps/web/src/chapters/direction.tsx](nanhang-app/apps/web/src/chapters/direction.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/locate.tsx](nanhang-app/apps/web/src/chapters/locate.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/sail.tsx](nanhang-app/apps/web/src/chapters/sail.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/settings.tsx](nanhang-app/apps/web/src/chapters/settings.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/shared.ts](nanhang-app/apps/web/src/chapters/shared.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -83,6 +84,7 @@
 | [nanhang-app/apps/web/test/quality-huixi.test.ts](nanhang-app/apps/web/test/quality-huixi.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/quality-presentation.test.ts](nanhang-app/apps/web/test/quality-presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/release-integration.test.ts](nanhang-app/apps/web/test/release-integration.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/settings.test.ts](nanhang-app/apps/web/test/settings.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/theme-spirit.test.ts](nanhang-app/apps/web/test/theme-spirit.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/tsconfig.json](nanhang-app/apps/web/tsconfig.json) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/visual-evidence/demo-sail-1440x1000.png](nanhang-app/apps/web/visual-evidence/demo-sail-1440x1000.png) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -672,6 +674,7 @@
 | [nanhang-app/docs/DOCUMENTATION_POLICY.md](nanhang-app/docs/DOCUMENTATION_POLICY.md) | 实施进度与记录 |
 | [nanhang-app/docs/FRONTENDS.md](nanhang-app/docs/FRONTENDS.md) | 实施进度与记录 |
 | [nanhang-app/docs/IMPLEMENTATION_LOG.md](nanhang-app/docs/IMPLEMENTATION_LOG.md) | 实施进度与记录 |
+| [nanhang-app/docs/PARALLEL_FRONTEND.md](nanhang-app/docs/PARALLEL_FRONTEND.md) | 实施进度与记录 |
 | [nanhang-app/docs/project-status.json](nanhang-app/docs/project-status.json) | 实施进度与记录 |
 | [nanhang-app/docs/PROJECT_STATUS.md](nanhang-app/docs/PROJECT_STATUS.md) | 实施进度与记录 |
 | [nanhang-app/docs/QUALITY_HUIXI_PIPELINE.md](nanhang-app/docs/QUALITY_HUIXI_PIPELINE.md) | 实施进度与记录 |
@@ -862,6 +865,7 @@
 | [releases/nanhang-app-source-2026-09-10.zip](releases/nanhang-app-source-2026-09-10.zip) | 当前源码分发与哈希 |
 | [releases/nanhang-app-source-2026-09-10.zip.sha256](releases/nanhang-app-source-2026-09-10.zip.sha256) | 当前源码分发与哈希 |
 | [releases/README.md](releases/README.md) | 当前源码分发与哈希 |
+| [tools/check_frontend_lanes.py](tools/check_frontend_lanes.py) | 目录与文档维护工具 |
 | [tools/sync_project_docs.py](tools/sync_project_docs.py) | 目录与文档维护工具 |
 | [历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx](历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx) | 用户提供的只读招生主输入；核实与发布见 TASK-03 记录 |
 | [物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx](物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx) | 用户提供的只读招生主输入；核实与发布见 TASK-03 记录 |
