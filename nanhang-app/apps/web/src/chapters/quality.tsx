@@ -16,10 +16,12 @@ export interface QualityProps {
   setSchoolName: Dispatch<SetStateAction<string>>;
   identifySchool: () => Promise<void>;
   setPage: Dispatch<SetStateAction<PageId>>;
+  /** 显式跳过学校识别（通用模式）——门禁据此把「成绩」记为已完成。 */
+  skipSchool: () => void;
 }
 
 export function renderQuality({ page, quality, qualityCode, setQualityCode, schoolName, setSchoolName,
-  identifySchool, setPage }: QualityProps) {
+  identifySchool, setPage, skipSchool }: QualityProps) {
   const exam = quality.shard ? latestExam(quality.shard) : null;
   const distances = exam ? subjectDistances(exam) : [];
   const gaps = quality.shard ? weakestKnowledge(quality.shard, 6) : [];
@@ -64,7 +66,8 @@ export function renderQuality({ page, quality, qualityCode, setQualityCode, scho
           onClick={() => void identifySchool()}>
           {quality.status === "loading" ? "正在核对…" : "识别并接入"}<Icon name="arrow" />
         </button>
-        <button type="button" className="tbtn" onClick={() => setPage("locate")}>先用通用模式</button>
+        <button type="button" className="tbtn"
+          onClick={() => { skipSchool(); setPage("locate"); }}>先用通用模式</button>
       </div>
       <p className="fhint" id="quality-hint">{quality.message
         ?? "姓名和验证码只发送给成绩服务核对（有尝试次数限制），不进入对话，也不发给 AI。"}</p>

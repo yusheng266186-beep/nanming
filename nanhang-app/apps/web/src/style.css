@@ -57,6 +57,12 @@ ul{margin:0;padding:0;list-style:none}
 .vstop[aria-current="step"]{color:var(--sea)}
 .vstop[aria-current="step"] .vdot{background:var(--brass);border-color:var(--brass);box-shadow:0 0 0 4px rgba(169,123,52,.15)}
 .vstop[aria-current="step"] .vlab{font-weight:600}
+/* 未解锁的章节：看得见、点得动，但只给一句「先完成哪一步」的提示，不跳页。 */
+.vstop.locked{color:var(--line-2);cursor:not-allowed}
+.vstop.locked .vdot{border-style:dashed;background:transparent}
+.vstop.locked .vlab{opacity:.65}
+.vstop.locked:hover{color:var(--line-2)}
+.vstop.locked .vnum{opacity:.5}
 .vline{width:26px;height:1px;background:var(--line-2);flex-shrink:0}
 .vline.done{background:var(--foam)}
 .head-end{display:flex;align-items:center;gap:12px;flex-shrink:0}
@@ -476,7 +482,10 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
   .bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:56px;min-height:48px;color:var(--mut);font-size:9.5px;letter-spacing:.02em;position:relative;transition:color .3s}
   .bottom-nav button .icon{width:21px;height:21px;transition:transform .4s var(--ease)}
   .bottom-nav button[aria-current="step"]{color:var(--sea)}
-  .bottom-nav button[aria-current="step"] .icon{transform:translateY(-2px);color:var(--brass)}
+
+.bottom-nav button.locked{opacity:.4;cursor:not-allowed}
+.bottom-nav button.done::after{content:"";position:absolute;top:6px;right:14px;width:5px;height:5px;border-radius:50%;background:var(--foam)}
+.bottom-nav button{position:relative}  .bottom-nav button[aria-current="step"] .icon{transform:translateY(-2px);color:var(--brass)}
   .bottom-nav button[aria-current="step"]::before{content:"";position:absolute;top:-6px;left:calc(50% - 9px);width:18px;height:2px;border-radius:2px;background:var(--brass)}
   main{padding-bottom:20px}
   .footer{padding-bottom:calc(80px + env(safe-area-inset-bottom));flex-direction:column;align-items:flex-start;gap:12px}

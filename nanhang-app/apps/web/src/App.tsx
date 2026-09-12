@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   DIRECTIONS, SELECTABLE_BATCHES, comparabilityNote, initialState, isMatchFresh,
   loadPublishedRelease, recordAnswer, registerStartTool, resetLocal, routeMap, runMatch, skipAnswer,
@@ -19,6 +19,9 @@ import {
   CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
   type PageId, type QualityState
 } from "./chapters/shared.js";
+import {
+  canOpen, isDone, lockHint, stageDone, stageOf, unlockedStage, type ProgressInput
+} from "./progress.js";
 import { renderSail } from "./chapters/sail.js";
 import { renderLocate } from "./chapters/locate.js";
 import { renderQuality } from "./chapters/quality.js";
@@ -41,6 +44,9 @@ export default function App() {
   const [poolPending, setPoolPending] = useState(false);
   const [poolError, setPoolError] = useState<string | null>(null);
   const [picks, setPicks] = useState<string[]>([]);
+  // 章节门禁：学生按下「先用通用模式」算一次显式跳过；maxStage 记住本会话解锁到哪一段（只增不减）。
+  const [schoolSkipped, setSchoolSkipped] = useState(false);
+  const [maxStage, setMaxStage] = useState(0);
   const [aiDraft, setAiDraft] = useState("");
   const [aiCode, setAiCode] = useState("");
   const [page, setPage] = useState<PageId>("sail");
@@ -145,6 +151,8 @@ export default function App() {
     else if (!detail && node.open) node.close();
   }, [detail]);
   const notify = (message: string) => setToast(message);
+  /** 成绩这一步的显式跳过：不接学校数据也能往下走，但记下来，好让「成绩」显示为已完成。 */
+  const skipSchool = () => setSchoolSkipped(true);
 
   // Display names come straight from the release's typed catalog, keyed by offeringId. The
   // OfferingLabel fields are camelCase (institutionName/majorName/...), and the id — never a list
@@ -197,6 +205,9 @@ export default function App() {
     setDrafts({});
     setTalkStep(0);
     setOnlyConfirmed(false);
+    // 门禁也一并归零：清除本次探索之后，仍然要从「起航」一步步来。
+    setSchoolSkipped(false);
+    setMaxStage(0);
     setState((current) => resetLocal(current));
     reloadRelease();
     notify("已清除本次探索");
@@ -383,12 +394,37 @@ export default function App() {
   const aiDirectionIds = ai.suggestions.map((item) => item.directionId);
   const fresh = isMatchFresh(state) ? state.match?.result ?? null : null;
 
+  // —— 章节门禁（见 progress.ts）——
+  // 完成状态始终按当前数据实时算；解锁段位只增不减，所以「回看」不会被中途改数据卡住。
+  const progress: ProgressInput = {
+    state, quality, rangeKnown: range !== null, poolReady: pool !== null,
+    picks: picks.length, suggestionCount: ai.suggestions.length,
+    chatted: hasChatted, schoolSkipped
+  };
+  const derivedStage = unlockedStage(progress);
+  useEffect(() => {
+    setMaxStage((current) => (derivedStage > current ? derivedStage : current));
+  }, [derivedStage]);
+  const openStage = Math.max(maxStage, derivedStage);
+
+  /**
+   * 唯一的页面切换入口：章节里的按钮、导航条、页头全部走这里。
+   * 没解锁就只给一句指名道姓的提示（「先完成『定位』（生成探索区间）」），不跳页。
+   * 类型与 useState 的 setter 一致，章节组件那边一行都不用改。
+   */
+  const goTo: Dispatch<SetStateAction<PageId>> = (value) => {
+    const id = typeof value === "function" ? value(page) : value;
+    if (canOpen(id, progress, openStage)) { setPage(id); return; }
+    notify(lockHint(id, progress));
+  };
+
   // 每个章节只声明它真正用到的字段（结构性子集），这里一次性把页面状态交给它们。
   const ctx = {
-    state, setState, page, setPage, drafts, setDrafts, talkStep, setTalkStep, thinking, setThinking,
+    // 章节里所有跳转都经过 goTo：没解锁的章节点了只会得到提示，不会跳页。
+    state, setState, page, setPage: goTo, drafts, setDrafts, talkStep, setTalkStep, thinking, setThinking,
     reducedMotion, chatScrollRef, questionsDone, canConfirmDirections, saveAnswer, skip, notify,
     ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, saveChatEvidence,
-    quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
+    quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName, skipSchool,
     range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, togglePick,
     hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
@@ -397,26 +433,39 @@ export default function App() {
   };
 
   const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);
+  /** 导航条上每一步的状态：locked（还没轮到）/ done（已完成，可以回看）/ 当前。 */
+  const stepState = (id: PageId) => ({
+    open: canOpen(id, progress, openStage),
+    done: isDone(id, progress),
+    hint: canOpen(id, progress, openStage) ? null : lockHint(id, progress)
+  });
 
   return <main>
     <Sprite />
     <header className="topbar">
       <div className="topbar-in">
-        <button type="button" className="brand" aria-label="南溟 · 回到起航" onClick={() => setPage("sail")}>
+        <button type="button" className="brand" aria-label="南溟 · 回到起航" onClick={() => goTo("sail")}>
           <BrandMark />
           <span className="brand-txt"><span className="brand-name">南溟</span><span className="brand-sub">NANMING · 天池</span></span>
         </button>
         <nav className="voyage" aria-label="航程">
-          {CHAPTERS.map((chapter, index) => <span key={chapter.id} style={{ display: "contents" }}>
-            {index ? <span className={`vline${index <= chapterIndex ? " done" : ""}`} /> : null}
-            <button type="button" className={`vstop${index < chapterIndex ? " done" : ""}`}
-              aria-current={chapter.id === page ? "step" : undefined} onClick={() => setPage(chapter.id)}>
-              <span className="vnum">{chapter.num}</span><span className="vdot" /><span className="vlab">{chapter.k}</span>
-            </button>
-          </span>)}
+          {CHAPTERS.map((chapter, index) => {
+            const step = stepState(chapter.id);
+            return <span key={chapter.id} style={{ display: "contents" }}>
+              {index ? <span className={`vline${stageDone(stageOf(CHAPTERS[index - 1]!.id), progress) ? " done" : ""}`} /> : null}
+              <button type="button"
+                className={`vstop${step.done ? " done" : ""}${step.open ? "" : " locked"}`}
+                aria-current={chapter.id === page ? "step" : undefined}
+                aria-disabled={step.open ? undefined : true}
+                {...(step.hint ? { title: step.hint } : {})}
+                onClick={() => goTo(chapter.id)}>
+                <span className="vnum">{chapter.num}</span><span className="vdot" /><span className="vlab">{chapter.k}</span>
+              </button>
+            </span>;
+          })}
         </nav>
         <div className="head-end">
-          <button type="button" className="ctx-btn" onClick={() => setPage("locate")}><span>{contextLabel}</span><Icon name="chevron" /></button>
+          <button type="button" className="ctx-btn" onClick={() => goTo("locate")}><span>{contextLabel}</span><Icon name="chevron" /></button>
           <button type="button" className="avatar" aria-label="关于南溟 / 设置" onClick={() => setShowKun(true)}>溟</button>
         </div>
       </div>
@@ -438,10 +487,17 @@ export default function App() {
     </footer>
 
     <nav className="bottom-nav" aria-label="移动端导航">
-      {CHAPTERS.map((chapter) => <button type="button" key={chapter.id}
-        aria-current={chapter.id === page ? "step" : undefined} onClick={() => setPage(chapter.id)}>
-        <Icon name={chapter.icon} /><span>{chapter.k}</span>
-      </button>)}
+      {CHAPTERS.map((chapter) => {
+        const step = stepState(chapter.id);
+        return <button type="button" key={chapter.id}
+          className={`${step.done ? "done" : ""}${step.open ? "" : " locked"}`}
+          aria-current={chapter.id === page ? "step" : undefined}
+          aria-disabled={step.open ? undefined : true}
+          {...(step.hint ? { title: step.hint } : {})}
+          onClick={() => goTo(chapter.id)}>
+          <Icon name={chapter.icon} /><span>{chapter.k}</span>
+        </button>;
+      })}
     </nav>
 
     <div id="kun-stage" className={showKun ? "show" : ""} role="dialog" aria-label="逍遥游">
