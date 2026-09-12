@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
-import { Provenance } from "../theme.js";
 import { Icon } from "../art.js";
 import { REFERENCE_YEAR, clamp, label, type PageId } from "./shared.js";
 import type { SchoolPool, ScoreRange } from "../journey-model.js";
@@ -176,10 +175,6 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
             {row.reference === "group" ? <p className="fhint" style={{ margin: "0 20px 12px" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
             {row.candidate.eligibility.pending_requirements.length > 0
               ? <p className="fhint" style={{ margin: "0 20px 12px" }}>待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join("、")}。</p> : null}
-            <Provenance>
-              位次区间来自 {reference.source_year ?? REFERENCE_YEAR} 年{row.reference === "major" ? "该专业自己的录取记录" : "所在专业组的投档记录"}；
-              与你的位次跨度有交集才进入列表，缺依据的记录不进入，也不补造数字。
-            </Provenance>
           </article>;
         })
         : <div className="empty">

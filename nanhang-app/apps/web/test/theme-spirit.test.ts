@@ -50,27 +50,24 @@ describe("主题：图标与航程", () => {
   });
 });
 
-describe("内核：每个数字都能追到来源", () => {
-  it("ships the provenance and uncharted elements", () => {
-    expect(theme).toContain("export function Provenance");
+describe("内核：缺失有名字，来源说明按产品裁定不再露出", () => {
+  it("ships the uncharted element", () => {
     expect(theme).toContain("export function Uncharted");
-    for (const cls of [".provenance", ".uncharted", ".trail-gap"]) {
+    for (const cls of [".uncharted", ".trail-gap"]) {
       expect(css, `stylesheet is missing ${cls}`).toContain(cls);
     }
-    // 两者都必须真的被用上，否则只是躺在样式表里的死代码。
-    expect(app).toContain("<Provenance");
+    // 未测绘必须真的被用上，否则只是躺在样式表里的死代码。
     expect(app).toContain("<Uncharted");
   });
 
-  it("anchors the rank, the candidate cards, the chart and the school data", () => {
-    // 这四处是页面给出数字/结论的地方，各自必须写明依据。
-    const anchors = app.match(/<Provenance[^>]*>/g) ?? [];
-    expect(anchors.length, "expected provenance notes on every data-bearing section").toBeGreaterThanOrEqual(5);
-    // 院校卡要说清依据是专业自己的记录还是专业组记录，来自哪一年——两条不同的记录。
-    expect(app).toContain("该专业自己的录取记录");
-    expect(app).toContain("专业组的投档记录");
-    // 航线图要说清分组依据。
-    expect(app).toContain("历史参考关系");
+  it("shows no provenance/evidence machinery to students", () => {
+    // 负责人裁定（2026-09）：溯源锚点、证据链、资料来源这类「数据真实性」展示对
+    // 学生没有意义，一律不进界面。这里钉住删除，防止哪次重构又把它们贴回来。
+    expect(theme).not.toContain("export function Provenance");
+    expect(css).not.toContain(".provenance");
+    expect(app).not.toContain("<Provenance");
+    expect(app).not.toContain("证据链");
+    expect(app).not.toContain("资料来源编号");
   });
 
   it("shows the student's own words on a direction card", () => {
@@ -114,9 +111,9 @@ describe("内核：范围与刻度同源", () => {
 
 describe("内核：留白要说出原因", () => {
   it("explains why a number is missing instead of showing a bare dash", () => {
-    // 缺考/无来源的场次在航迹里画成虚线空柱，并说明不补成 0 分。
+    // 缺考/无来源的场次在航迹里画成虚线空柱，并说明留空不补零。
     expect(app).toContain('className="trail-gap"');
-    expect(app).toContain("不补成 0 分");
+    expect(app).toContain("留空不补零");
     // 区间/位次不可得时要说清缺的是什么、去哪一步补上——不许只丢一个「—」或一句技术术语。
     expect(app).toContain("还没有探索区间");
     expect(app).toContain("该分数官方未列出");

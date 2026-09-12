@@ -209,20 +209,18 @@ textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;fo
 .stat .sd{font-size:10.5px;color:var(--foam);margin-top:7px;line-height:1.6}
 .sidecard{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:26px}
 .sidecard h3{font-family:var(--song);font-size:17px;margin-bottom:4px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
 .trend{display:flex;align-items:flex-end;gap:8px;height:96px;margin:20px 0 8px}
 .tbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;justify-content:flex-end;height:100%}
 .tbar .col{width:100%;max-width:26px;background:linear-gradient(var(--foam),var(--sea));border-radius:5px 5px 2px 2px;transition:height 1s var(--ease)}
 .tbar.now .col{background:linear-gradient(var(--brass-2),var(--brass))}
 .tbar .tl{font:italic 400 9px/1 var(--display);color:var(--mut);letter-spacing:.04em}
-.evi{border-top:1px solid var(--line);margin-top:18px;padding-top:16px}
-.evi-row{display:flex;gap:11px;padding:9px 0;font-size:11.5px;color:var(--mut);line-height:1.8;align-items:flex-start}
-.evi-row .icon{width:15px;height:15px;color:var(--brass);margin-top:3px;flex-shrink:0}
-.evi-row b{color:var(--ink-2);font-weight:500}
 .verdict{background:var(--sea);color:#eaf2ef;border-radius:16px;padding:28px;margin-top:22px;position:relative;overflow:hidden}
 .verdict::after{content:"";position:absolute;right:-60px;bottom:-60px;width:200px;height:200px;border:1px solid rgba(200,155,82,.2);border-radius:50%}
 .verdict .eyebrow{color:var(--brass-2)}
 .verdict h3{font-family:var(--song);font-size:22px;line-height:1.7;margin:16px 0 14px;color:#f2f6f3}
-.verdict .vlist{display:flex;flex-wrap:wrap;gap:9px}
+.vlist{display:flex;flex-wrap:wrap;gap:9px}
 .vpill{font-size:11.5px;padding:7px 13px;border-radius:30px;background:rgba(255,255,255,.08);border:1px solid rgba(200,155,82,.28);color:#e4ded0}
 .vpill b{color:var(--brass-2);font-weight:600}
 .talk{max-width:760px;margin:0 auto}
@@ -613,15 +611,9 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
 }
 
 /* ------------------------------------------------------------------
-   主题元件：溯源锚点 与 未测绘
+   主题元件：未测绘
    ------------------------------------------------------------------
-   .provenance 挂在数据下面，说明这个数字出自哪里；左侧的点线像一段缆绳，
-   与页面里其它虚线（.dreal / .fhint）保持同一套语言。
    .uncharted 表示这片位置没有数据：一枚浮标，而不是一个空洞的「—」。 */
-.provenance{display:flex;gap:9px;align-items:flex-start;font-size:11px;color:var(--mut);
-  line-height:1.8;margin-top:11px;padding-left:12px;border-left:2px dotted var(--brass-line)}
-.provenance .icon{width:14px;height:14px;color:var(--brass);flex-shrink:0;margin-top:3px}
-.provenance b{color:var(--ink-2);font-weight:500}
 .uncharted{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--foam)}
 .uncharted .icon{width:15px;height:15px;color:var(--brass-line);flex-shrink:0}
 .uncharted .uc-label{color:var(--mut);letter-spacing:.04em}

@@ -441,7 +441,7 @@ describe("考试代码友好名与航迹图", () => {
     expect(friendlyExamLabel(null)).toBe("");
   });
 
-  it("航迹图：统一分数标尺覆盖总分与最近一次的两条切线", () => {
+  it("航迹图：标尺覆盖总分与各场切线，划线按每一场自己的值分段", () => {
     const chart = trailChart([
       mkExam("1册", 380, null, 360),
       mkExam("2册", 420, 400, 370),
@@ -449,13 +449,29 @@ describe("考试代码友好名与航迹图", () => {
     ]);
     expect(chart).not.toBeNull();
     expect(chart!.bars.length).toBe(3);
-    expect(chart!.lines.map((line) => line.kind)).toEqual(["top", "undergraduate"]);
-    // 切线取最近一次（51）自己的值，并且都落在标尺范围内。
+    // 每一场考试有自己的划线段：top 两段（2册/51），本科线三段——不能用一条线代表所有场次。
+    const top = chart!.lines.filter((line) => line.kind === "top");
+    const undergraduate = chart!.lines.filter((line) => line.kind === "undergraduate");
+    expect(top.map((line) => line.value)).toEqual([400, 440]);
+    expect(undergraduate.map((line) => line.value)).toEqual([360, 370, 380]);
+    // 只有每种划线的最后一段带标签；所有段都落在画布内，且各段占各自考试的横向槽位。
+    expect(top[0]!.label).toBeNull();
+    expect(top[1]!.label).toContain("440");
+    expect(undergraduate.at(-1)!.label).toContain("380");
     for (const line of chart!.lines) {
-      expect(line.value).toBeCloseTo(line.kind === "top" ? 440 : 380, 9);
       expect(line.y).toBeGreaterThanOrEqual(0);
       expect(line.y).toBeLessThanOrEqual(chart!.height);
+      expect(line.x2).toBeGreaterThan(line.x1);
     }
+    // 标尺上有分数刻度，学生能读出柱子高低差对应的分差。
+    expect(chart!.grid.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("航迹图：两类划线的值很接近时，标签防重叠至少隔 12px", () => {
+    const chart = trailChart([mkExam("1册", 500, 490, 485), mkExam("2册", 505, 492, 486)]);
+    const labels = chart!.lines.filter((line) => line.label !== null).map((line) => line.labelY);
+    expect(labels.length).toBe(2);
+    expect(Math.abs(labels[0]! - labels[1]!)).toBeGreaterThanOrEqual(12);
   });
 
   it("缺考场次留空槽位不补零；无可绘总分时返回 null", () => {

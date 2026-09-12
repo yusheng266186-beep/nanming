@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { QUESTIONS, axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from "../model.js";
+import { axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from "../model.js";
 import { examLineDiffs, equivalentPosition, scoreStability, scoreTrend } from "../exam-position.js";
 import { rangeFromExams, type ScoreRange } from "../journey-model.js";
 import { OFFICIAL_LINES_2026 } from "../reference-lines.js";
@@ -7,7 +7,7 @@ import {
   classChanges, formatGap, formatRate, formatScore, friendlyExamLabel, latestExam,
   subjectDistances, trailChart, weakestKnowledge
 } from "../quality-huixi.js";
-import { Provenance, Uncharted } from "../theme.js";
+import { Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
 import { REFERENCE_YEAR, clamp, label, type PageId, type QualityState } from "./shared.js";
 
@@ -74,7 +74,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
   };
   const applyEquivalent = (value: number) => {
     setState((current) => withForm(current, { score: value }));
-    notify(`已把等位分 ${value} 设为高考目标分`);
+    notify(`已把等位分 ${value} 设为高考等价分`);
   };
   const numberField = (ariaLabel: string, placeholder: string, value: number | null,
                        onChange: (value: number | null) => void, disabled = false) =>
@@ -169,13 +169,13 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       <div>
         <div className="gauge">
           <div className="gauge-top">
-            <div><span className="eyebrow plain">高考目标分 · 裸分</span>
+            <div><span className="eyebrow plain">{schoolLocked ? "高考等价分 · 学校数据换算" : "高考目标分 · 裸分"}</span>
               <div className="bignum num" style={{ marginTop: 12 }}>{score === null ? <span className="absent">—</span> : score}<small>分</small></div></div>
             <div style={{ textAlign: "right" }}><span className="eyebrow plain">全省位次 · 参考年</span>
               <div className="bignum num" style={{ marginTop: 12, fontSize: 40 }}>
                 {position ? position.rank.toLocaleString("zh-CN") : <span className="absent">—</span>}</div>
               {!position && <div style={{ marginTop: 4 }}>
-                <Uncharted>{score === null ? "还没填高考目标分" : "该分数官方未列出"}</Uncharted>
+                <Uncharted>{score === null ? "还没有可查的分数" : "该分数官方未列出"}</Uncharted>
               </div>}</div>
           </div>
           <div style={{ marginTop: 26 }}>
@@ -200,10 +200,6 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
               <span>{position ? `${position.tableYear} 年分段表 · 共 ${position.total.toLocaleString("zh-CN")} 人` : "分段表"}</span>
               <span>{position ? `官方公布最高 ${position.publishedMaxScore} 分` : "官方公布最高分"}</span>
             </div>
-            <Provenance icon="ruler">
-              这条区间是官方分段表实际公布的分数范围。控制线不在发布包内：学校考试的切线请在上方自行录入，
-              换算见「高考等位参考」。
-            </Provenance>
           </div>
           <div className="stats">
             <div className="stat"><span className="sk"><Icon name="pin" />全省位次</span>
@@ -231,7 +227,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
             <span className="vpill">目标年份 <b>{state.form.targetYear}</b></span>
             <span className="vpill">科类 <b>{trackLabel}</b></span>
             <span className="vpill">再选 <b>{state.form.additional.length ? state.form.additional.map(label).join("、") : "未选择"}</b></span>
-            <span className="vpill">高考目标分 <b>{score ?? "未填写"}</b></span>
+            <span className="vpill">{schoolLocked ? "高考等价分" : "高考目标分"} <b>{score ?? "未填写"}</b></span>
             <span className="vpill">位次表年份 <b>{position ? position.tableYear : "未知"}</b></span>
             <span className="vpill">参考年 <b>{REFERENCE_YEAR}</b></span>
           </div>
@@ -248,27 +244,24 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           <h3 className="song" style={{ marginTop: 10 }}>你的成绩曲线</h3>
           <div className="trend">
             {totals.length >= 2
-              ? totals.map((value, index) => {
-                const max = Math.max(...totals, 1);
-                return <div className={`tbar${index === totals.length - 1 ? " now" : ""}`} key={index}>
-                  <span className="col" style={{ height: `${Math.round(value / max * 100)}%` }} />
-                  <span className="tl">{index + 1}</span>
-                </div>;
-              })
+              ? (() => {
+                // 标尺按总分区间放大（上下留边距）：「以最高分为 100%」的旧标尺里 550 和 570
+                // 几乎一样高，看不出起伏；缩放后柱子的高低差对应分数差，悬停可见当次分数。
+                const low = Math.min(...totals);
+                const high = Math.max(...totals);
+                const floorScore = low - 3 - (high - low) * 0.2;
+                const ceilScore = high + 3 + (high - low) * 0.2;
+                return totals.map((value, index) => {
+                  const height = Math.max(6, Math.round((value - floorScore) / (ceilScore - floorScore) * 100));
+                  return <div className={`tbar${index === totals.length - 1 ? " now" : ""}`} key={index}>
+                    <span className="col" style={{ height: `${height}%` }} title={`${value} 分`} />
+                    <span className="tl">{index + 1}</span>
+                  </div>;
+                });
+              })()
               : <div className="empty-inline">尚未录入考试成绩；此页不生成趋势结论。</div>}
           </div>
           <p className="fhint">曲线越平，说明当前定位越可信；起伏大时，我们用区间而非单点来表达。</p>
-        </div>
-        <div className="sidecard" style={{ marginTop: 22 }}>
-          <span className="eyebrow plain">Evidence · 证据链</span>
-          <h3 className="song" style={{ marginTop: 10 }}>每个数字都有依据</h3>
-          <div className="evi">
-            {state.answers.length === 0
-              ? <p className="muted-note">还没有保存的本人表达。去「谈心」写下一句话，它才会进入证据链。</p>
-              : state.answers.map((answer) => <div className="evi-row" key={answer.evidenceId}>
-                <Icon name="doc" /><span><b>{QUESTIONS.find((item) => item.questionId === answer.questionId)?.text ?? answer.questionId}</b><br />{answer.text}</span>
-              </div>)}
-          </div>
         </div>
       </aside>
     </div>
@@ -287,7 +280,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           <span className="eyebrow plain">{entry.title}</span>
           <div className="vlist" style={{ marginTop: 10 }}>
             <span className="vpill">距线比例 <b>{formatRatio(entry.item.lineRatio)}</b></span>
-            <span className="vpill">等位分 <b>{entry.item.equivalentScore}</b></span>
+            <span className="vpill">高考等价分 <b>{entry.item.equivalentScore}</b></span>
             <span className="vpill">位次区间 <b>{entry.item.position
               ? `约 ${entry.item.position.rank.toLocaleString("zh-CN")} 名` : "—"}</b></span>
             <span className="vpill">全省百分位 <b>{entry.item.position
@@ -296,17 +289,12 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           {entry.item.position ? <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
             <button type="button" className="btn sm ghost"
               onClick={() => applyEquivalent(entry.item.equivalentScore)}>
-              把 {entry.item.equivalentScore} 设为高考目标分</button>
-            <small className="muted-note">高考目标分决定起点，探索区间决定匹配范围，随时可在「起航」改回。</small>
+              把 {entry.item.equivalentScore} 设为高考等价分</button>
+            <small className="muted-note">高考等价分决定起点，探索区间决定匹配范围，随时可在「起航」改回。</small>
           </div> : <p className="fhint" style={{ marginTop: 10 }}>
-            等位分不在官方分段表公布范围内，或尚未载入发布数据——不插值、不外推。</p>}
+            等价分不在官方分段表公布范围内，或尚未载入发布数据——不插值、不外推。</p>}
         </div>)}
       </div>
-      <Provenance icon="ruler">
-        考试切线由你本人填写；{OFFICIAL_LINES_2026.year} 年特控线与本科线来自{OFFICIAL_LINES_2026.province}
-        省教育考试院公开发布；位次区间来自官方一分一段表{equivalent.tableYear ? `（${equivalent.tableYear} 年表）` : ""}。
-        等位分是粗略参照：真实高考位置还取决于当年试题与全省人数。
-      </Provenance>
     </div>}
 
     {/* 探索区间由数据自动生成：有考试按等位换算取 min–max，没有考试按目标分 ±10。
@@ -342,10 +330,6 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p>
         </>
         : <p className="muted-note" style={{ marginTop: 12 }}>还没有可以生成区间的数据：录入至少一次「总分 + 切线」的考试，或在「起航」填一个高考目标分。</p>}
-      <Provenance icon="ruler">
-        区间端点在「分数轴」页会换算成同科类历史位次区间，再与院校的历史录取位次取交集；
-        它只决定先看哪些院校，不是预测，也不会悄悄扩大。
-      </Provenance>
     </div>
 
     {/* —— 荣县一中质量慧析（原「成绩」章并入）：学校数据接入后才能看 —— */}
@@ -383,24 +367,36 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
 
     {schoolLocked && quality.shard && quality.shard.exams.length > 1 && <div className="panel" style={{ marginTop: 22 }}>
       <h3><Icon name="route" />航迹：历次总分与切线</h3>
-      <p className="psub">柱子画在统一分数标尺上，越高分越高；两条虚线是最近一次考试的本科线与特控线（一本线），柱子到虚线的落差就是当次距线差。</p>
+      <p className="psub">柱子画在统一分数标尺上（左侧是分数刻度），柱顶标着当次总分，越高分越高；两条虚线按每一场考试自己的划线分段画——各场考试的划线深浅不一样，不能共用一条线。柱子到虚线的落差就是当次距线差。更早的考试见下表。</p>
       {(() => {
-        const chart = trailChart(quality.shard!.exams);
+        // 只画最近 6 次：更早的考试量纲可能不同（如入口考），会把标尺撑宽、压扁近期的高低差；
+        // 完整历次见下面的表格。
+        const chart = trailChart(quality.shard!.exams.slice(-6));
         if (!chart) return <div className="empty-inline">暂无可绘制的总分记录。</div>;
         return <svg viewBox={`0 0 ${chart.width} ${chart.height}`} width="100%" role="img"
-          aria-label="历次考试总分轨迹，含最近一次考试的本科线与特控线参考线" style={{ display: "block", maxWidth: 560 }}>
-          <line x1={6} y1={chart.baseline} x2={chart.width - 6} y2={chart.baseline} stroke="#dcd6c6" strokeWidth={1} />
-          {chart.lines.map((line) => <g key={line.kind}>
-            <line x1={6} y1={line.y} x2={chart.width - 6} y2={line.y}
-              stroke={line.kind === "top" ? "#a97b34" : "#7d9a86"} strokeWidth={1.2} strokeDasharray="6 4" />
-            <text x={chart.width - 8} y={line.y - 4} textAnchor="end" fontSize="10"
-              fill={line.kind === "top" ? "#a97b34" : "#7d9a86"}>{line.label}</text>
+          aria-label="历次考试总分轨迹：柱顶是当次总分，两条虚线按各场考试自己的划线分段画"
+          style={{ display: "block", maxWidth: 560 }}>
+          {chart.grid.map((tick) => <g key={`grid-${tick.value}`}>
+            <line x1={chart.padLeft} y1={tick.y} x2={chart.width - 6} y2={tick.y} stroke="#ece5d4" strokeWidth={1} />
+            <text x={chart.padLeft - 4} y={tick.y + 3} textAnchor="end" fontSize="8" fill="#a89f88">{tick.value}</text>
+          </g>)}
+          <line x1={chart.padLeft} y1={chart.baseline} x2={chart.width - 6} y2={chart.baseline} stroke="#dcd6c6" strokeWidth={1} />
+          {chart.lines.map((line, index) => <g key={`${line.kind}-${index}`}>
+            <line x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
+              stroke={line.kind === "top" ? "#a97b34" : "#7d9a86"} strokeWidth={1.2} strokeDasharray="5 3" />
+            {line.label ? <text x={chart.width - 6} y={line.labelY} textAnchor="end" fontSize="9"
+              fill={line.kind === "top" ? "#a97b34" : "#7d9a86"}>{line.label}</text> : null}
           </g>)}
           {chart.bars.map((bar) => <g key={bar.key}>
             {bar.total !== null
-              ? <rect x={bar.x} y={bar.y} width={bar.w} height={Math.max(2, bar.h)} rx={3} fill="#12454f" opacity={0.88}>
-                <title>{`${bar.full}：${formatScore(bar.total)} 分`}</title>
-              </rect>
+              ? <>
+                <rect x={bar.x} y={bar.y} width={bar.w} height={Math.max(2, bar.h)} rx={3} fill="#12454f" opacity={0.88}>
+                  <title>{`${bar.full}：${formatScore(bar.total)} 分`}</title>
+                </rect>
+                <text x={bar.x + bar.w / 2} textAnchor="middle" fontSize="8.5" fontWeight={600}
+                  fill={bar.h >= 14 ? "#f4efe2" : "#12454f"} y={bar.h >= 14 ? bar.y + 12 : bar.y - 4}>
+                  {Math.round(bar.total)}</text>
+              </>
               : <line className="trail-gap" x1={bar.x + bar.w / 2} y1={chart.baseline - 10} x2={bar.x + bar.w / 2} y2={chart.baseline}
                 stroke="#cbc4b0" strokeWidth={2} strokeDasharray="2 2">
                 <title>{`${bar.full}：缺考/无来源总分，留空不补零`}</title>
@@ -428,9 +424,6 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
         </table>
       </div>
       {moves.length > 0 && <p className="fhint">注意：你的班号在 {moves.map((row) => friendlyExamLabel(row.exam)).join("、")} 发生变化，页面按各次考试的原始班号统计，班级均分差也随之切换。</p>}
-      <Provenance icon="log">
-        总分与两条切线来自学校质量复盘的原始记录；柱子画在统一分数标尺上，缺考场次留空，不补成 0 分，也不与其它场次拉平比较。
-      </Provenance>
       <p className="fhint">考试代码说明：一册～四册＝第1～4学期期末；「XY」＝第X学期第Y次月考（如 21 为第2学期第1次月考、51 为第5学期第1次月考）；4半＝第4学期半期。</p>
     </div>}
 

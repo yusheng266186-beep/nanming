@@ -2,7 +2,6 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
 import type { WebState } from "../model.js";
-import { Provenance } from "../theme.js";
 import { Icon } from "../art.js";
 import { REFERENCE_YEAR, RELATION_CLASSES, label, svgStringToPng, type PageId } from "./shared.js";
 
@@ -120,10 +119,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
             <span className="swatch" />{relation.label} · 历史参考
           </span>)}
         </div>
-        <Provenance icon="chartmap">
-          航线按<b>历史参考关系</b>分组：每条记录的位次与参考年记录逐条比较后再归类，
-          不是按分数段人为划分。参考年记录来自发布包，未建立可比关系的年份不参与比较。
-        </Provenance>
       </div>
 
       {/* 双线结果：每个方向类一条路，样式对等；重叠的专业×院校在两条线里都出现，不去重。 */}
@@ -172,9 +167,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
                       <div className="rank"><div className="ry">资格</div><div className="rv">{label(row.candidate.eligibility.status)}</div></div>
                     </div>
                     {row.reference === "group" ? <p className="fhint" style={{ margin: "0 20px 12px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
-                    <Provenance>
-                      依据：{reference.source_year ?? REFERENCE_YEAR} 年{row.reference === "major" ? "专业" : "专业组"}录取位次记录（发布版本 {pool.releaseId}）。
-                    </Provenance>
                   </article>;
                 })}
               </div>}

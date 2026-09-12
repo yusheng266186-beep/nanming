@@ -171,12 +171,17 @@ export interface TrailBar {
   h: number;
 }
 
-/** 参考线：取最近一次考试自己的切线，标明属于哪次考试。 */
+/** 划线段：每一场考试用自己的划线，段与段的高低差就是划线本身在各场之间的变化。 */
 export interface TrailLine {
   kind: "top" | "undergraduate";
   value: number;
   y: number;
-  label: string;
+  x1: number;
+  x2: number;
+  /** 只有每种划线的最后一段带文字标签（页面标在右端）。 */
+  label: string | null;
+  /** 标签的摆放 y：两类划线的值可能只差几分，已经过防重叠排布。 */
+  labelY: number;
 }
 
 export interface TrailChartModel {
@@ -186,37 +191,40 @@ export interface TrailChartModel {
   lines: TrailLine[];
   /** 底部基线的 y 坐标。 */
   baseline: number;
+  /** 横向分数刻度线（标在绘图区左侧），让学生读得出柱子的高低差。 */
+  grid: { value: number; y: number }[];
+  /** 绘图区左缘；刻度文字画在它左边。 */
+  padLeft: number;
 }
 
 /**
- * 把历次总分画在一条**统一分数标尺**上，并叠上最近一次考试的本科线/特控线参考线。
- *
- * 旧实现把柱高按本人分数区间归一化，切线没有位置可言；统一标尺后柱与线可比，
- * SVG 按坐标系绘制也修掉了旧版柱高溢出边框的问题。没有可绘总分时返回 null。
+ * 把历次总分画在一条**统一分数标尺**上：标尺覆盖总分与各场考试自己的划线，
+ * 柱子按总分高低落位；特控线（一本线）与本科线按每一场各自的值分段画——
+ * 各场考试的划线深浅不一，不能用一条线代表所有场次。没有可绘总分时返回 null。
  */
 export function trailChart(exams: QualityStudentExam[], width = 340, height = 200): TrailChartModel | null {
   const totals = exams.map((exam) => exam.total).filter((item): item is number => item !== null);
   if (exams.length === 0 || totals.length === 0) return null;
-  const latest = exams[exams.length - 1]!;
-  const lineValues = [latest.topTotal, latest.undergraduateTotal]
+  const lineValues = exams.flatMap((exam) => [exam.topTotal, exam.undergraduateTotal])
     .filter((item): item is number => item !== null && item > 0);
   const values = [...totals, ...lineValues];
   const rawMin = Math.min(...values);
   const rawMax = Math.max(...values);
-  const pad = Math.max(10, (rawMax - rawMin) * 0.12);
+  const pad = Math.max(10, (rawMax - rawMin) * 0.1);
   const floor = rawMin - pad;
   const ceil = rawMax + pad;
-  const padTop = 16;
+  const padTop = 18;
   const padBottom = 24;
-  const padX = 6;
+  const padLeft = 30;
+  const padRight = 6;
   const innerH = height - padTop - padBottom;
-  const innerW = width - padX * 2;
+  const innerW = width - padLeft - padRight;
   const yOf = (value: number) => padTop + (ceil - value) / (ceil - floor) * innerH;
   const baseline = padTop + innerH;
   const slot = innerW / exams.length;
   const barW = Math.min(26, slot * 0.55);
   const bars: TrailBar[] = exams.map((exam, index) => {
-    const centerX = padX + slot * index + slot / 2;
+    const centerX = padLeft + slot * index + slot / 2;
     const drawn = exam.total !== null;
     return {
       key: `${exam.exam}-${index}`,
@@ -229,16 +237,38 @@ export function trailChart(exams: QualityStudentExam[], width = 340, height = 20
       h: drawn ? baseline - yOf(exam.total) : 0
     };
   });
+  // 刻度线：选一个能让图上出现 2–5 条的整数步长。
+  const span = ceil - floor;
+  const step = [10, 20, 25, 50, 100, 200].find((candidate) => span / candidate <= 5) ?? 200;
+  const grid: { value: number; y: number }[] = [];
+  for (let value = Math.ceil(floor / step) * step; value < ceil; value += step) {
+    grid.push({ value, y: yOf(value) });
+  }
+  const lineDefs = [
+    { kind: "top" as const, name: "一本线", pick: (exam: QualityStudentExam) => exam.topTotal },
+    { kind: "undergraduate" as const, name: "本科线", pick: (exam: QualityStudentExam) => exam.undergraduateTotal }
+  ];
   const lines: TrailLine[] = [];
-  if (latest.topTotal !== null && latest.topTotal > 0) {
-    lines.push({ kind: "top", value: latest.topTotal, y: yOf(latest.topTotal),
-      label: `特控线/一本线 ${formatScore(latest.topTotal)}` });
+  for (const def of lineDefs) {
+    let lastSegment: TrailLine | null = null;
+    for (let index = 0; index < exams.length; index += 1) {
+      const value = def.pick(exams[index]!);
+      if (value === null || value <= 0) continue;
+      const segment: TrailLine = { kind: def.kind, value, y: yOf(value),
+        x1: padLeft + slot * index + 2, x2: padLeft + slot * (index + 1) - 2, label: null, labelY: 0 };
+      lastSegment = segment;
+      lines.push(segment);
+    }
+    if (lastSegment !== null) lastSegment.label = `${def.name} ${formatScore(lastSegment.value)}`;
   }
-  if (latest.undergraduateTotal !== null && latest.undergraduateTotal > 0) {
-    lines.push({ kind: "undergraduate", value: latest.undergraduateTotal, y: yOf(latest.undergraduateTotal),
-      label: `本科线 ${formatScore(latest.undergraduateTotal)}` });
+  // 标签防重叠：两类划线的值可能只差几分，文字按 y 排序后至少隔 12px。
+  const labeled = [...lines].filter((line) => line.label !== null).sort((a, b) => a.y - b.y);
+  let previousLabelY = -Infinity;
+  for (const line of labeled) {
+    line.labelY = Math.min(Math.max(line.y - 4, previousLabelY + 12, padTop + 8), baseline + 10);
+    previousLabelY = line.labelY;
   }
-  return { width, height, bars, lines, baseline };
+  return { width, height, bars, lines, baseline, grid, padLeft };
 }
 
 /** 再选科目的组合字符 → 表单科目代码。首选「物/历」不在此表，由本人 track 决定。 */

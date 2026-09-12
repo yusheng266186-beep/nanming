@@ -15,6 +15,8 @@ import {
 } from "./quality-huixi.js";
 import type { QualityShard } from "./quality-types.js";
 import { buildSchoolPool, makeBranches, rangeFromExams, type SchoolPool, type ScoreRange } from "./journey-model.js";
+import { equivalentPosition } from "./exam-position.js";
+import { OFFICIAL_LINES_2026 } from "./reference-lines.js";
 import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from "./debug.js";
 import {
   CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
@@ -154,7 +156,7 @@ export default function App() {
     if (derived) { setRange(derived); return; }
     if (state.form.score !== null) {
       setRange({ low: Math.max(0, state.form.score - 10), high: Math.min(750, state.form.score + 10),
-        basis: "按高考目标分上下各 10 分自动生成，可在「定位」微调；不是预测区间。" });
+        basis: "按当前分数上下各 10 分自动生成，可在「定位」微调；不是预测区间。" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.form.primary, state.form.score, examsKey]);
@@ -280,17 +282,27 @@ export default function App() {
       setQuality({ status: "ready", index, shard, attempts: initialQualityAttempts, message: null });
       setQualityCode("");
       setSchoolName("");
-      // 回填表单：首选科目与再选科目来自本人记录，分数用最近一次总分，考试用最近五次；
-      // 探索区间按这些考试各自的切线做等位换算（min—max），供「分数轴」匹配院校。
+      // 回填表单：首选科目与再选科目来自本人记录，考试用最近五次；探索区间按这些考试
+      // 各自的切线做等位换算（min—max），供「分数轴」匹配院校。
       if (exam) {
         const primary = shard.person.track === "物理类" ? "PHYSICS" : "HISTORY";
         // 再选科目按组合原文解析（如「物化地」→ 化+地）。解析不出两门时不猜一个组合出来，
         // 保持学生当前的选择让他自己改——数据里出现新组合时，猜错会把资格判断悄悄带偏。
         const additional = additionalFromCombination(shard.person.combination);
         const recent = recentExams(shard);
+        // 分数用「高考等价分」：最近一次带切线的考试按线差比例换算到省控线口径。
+        // 学校各场考试划线深浅不一，裸分总分没有可比性；没有可换算的考试时才退回最近一次总分。
+        const equivExam = [...recent].reverse()
+          .find((item) => item.total !== null && (item.topTotal !== null || item.undergraduateTotal !== null)) ?? null;
+        const equiv = equivExam
+          ? equivalentPosition(equivExam,
+            { year: OFFICIAL_LINES_2026.year, ...OFFICIAL_LINES_2026.tracks[primary] }, state.release, primary)
+          : null;
+        const equivScore = equiv?.top?.equivalentScore ?? equiv?.undergraduate?.equivalentScore
+          ?? (exam.total !== null ? Math.round(exam.total) : null);
         setState((current) => withForm(current, { primary,
           additional: additional ?? current.form.additional,
-          score: exam.total !== null ? Math.round(exam.total) : current.form.score, exams: recent }));
+          score: equivScore ?? current.form.score, exams: recent }));
         const derived = rangeFromExams(recent, primary);
         if (derived) setRange(derived);
       }
@@ -328,7 +340,7 @@ export default function App() {
     setAi((current) => withUserTurn({ ...current, pending: true, ...(override ? { options: [] } : {}) }, text));
     if (!override) setAiDraft("");
     // 学生自己说的每句话都作为「本人的表达」随请求上行（服务端只让模型引用这些话）；
-    // 按下「存为方向证据」的原话额外进入方向证据链，决定方向结论能不能生成。
+    // 按下「存为方向证据」的原话额外进入方向结论的依据，决定方向结论能不能生成。
     // 院校池存在时同时上行真实专业目录，AI 的建议只能从里面挑，前端还会再过滤一遍。
     const userTurns = ai.history.filter((turn) => turn.role === "user");
     const chatEvidence = [
@@ -353,7 +365,7 @@ export default function App() {
     });
   };
 
-  // 谈心对话里的「存为方向证据」：只有学生主动按下，这句原话才进入证据链。
+  // 谈心对话里的「存为方向证据」：只有学生主动按下，这句原话才写进方向结论的依据。
   // q-interest 是方向确认的主槽位；重复保存会替换上一条——转录本身始终完整保留。
   const saveChatEvidence = (text: string) => {
     setState((current) => recordAnswer(current, "q-interest", text));
@@ -568,8 +580,6 @@ export default function App() {
             {fact ? <div className="dlg-sec">
               <h3><Icon name="layers" />专业事实卡 · {fact.majorName}</h3>
               <div className="kv"><span>示例院校</span><b>{fact.exampleInstitution}</b></div>
-              <div className="kv"><span>资料来源编号</span><b>{fact.sourceId}</b></div>
-              <p className="small">{fact.sourceUrl}</p>
               <p className="muted-note">示例院校只用于说明这个专业学什么，不是该方向的录取院校，也不代表你的可达结果。</p>
             </div> : null}
             <div className="dlg-act"><button type="button" className="btn brass" onClick={() => setDetail(null)}>知道了</button></div>
