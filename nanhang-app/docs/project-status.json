@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-12",
   "revision": "2026-09-12-acceptance-cloud-snapshot",
-  "stage": "负责人授权当前全部半成品快照上云验收；Pages发布进行中，腾讯云API部署待恢复登录凭据",
+  "stage": "当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 36,
-    "passed": 454,
+    "files": 37,
+    "passed": 466,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本轮最终类型检查通过，全量36文件454通过，另Python查询码4项通过；历史结果保留原日志。",
+    "note": "本轮最终类型检查通过，全量36文件454通过，另Python查询码4项通过；历史结果保留原日志。 两路定位与浮层锁滚动另有守卫 6 项（apps/web/test/route-split.test.ts）。",
     "log": "docs/verification/class4-codes-x0-tests-2026-09-12.txt"
   },
   "runtime": {
@@ -42,7 +42,7 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "完成当前快照Pages/API发布并核验线上链路，供负责人实际验收；未完成门禁仍如实保留",
+  "next_task": "负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留",
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
   "workbook_data_rows": 52878,
@@ -306,7 +306,7 @@
   "code_baseline": {
     "commit": "1d43c94",
     "checked_at": "2026-09-12",
-    "note": "本轮开始65b35bb，其间其他前端任务并发提交；保留所有在建改动。查询码轮未提交未部署。"
+    "note": "本轮开始65b35bb，其间其他前端任务并发提交；保留所有在建改动。查询码已随验收快照推送并部署。"
   },
   "deployment": {
     "status": "IN_PROGRESS",
@@ -363,7 +363,7 @@
       "密钥轮换演练",
       "正式身份生命周期"
     ],
-    "query_code_rule": "四班48人身份证后六位X转0；四班其余8人及其他班级沿用原码；新索引本轮未部署"
+    "query_code_rule": "四班48人身份证后六位X转0；四班其余8人及其他班级沿用原码；新索引已部署API版本8"
   },
   "chapter_gate": {
     "rule": "按流程分段，前一段完成才解锁下一段；往回看永远允许；解锁只增不减",
@@ -379,7 +379,7 @@
     "module": "apps/web/src/progress.ts（纯逻辑，15 项测试）"
   },
   "backend_alignment": {
-    "status": "LOCAL_VERIFIED_NOT_DEPLOYED",
+    "status": "DEPLOYED_SMOKE_VERIFIED",
     "school_response": "shard + index(exams,trend), encrypted index object required before API rollout",
     "ai": "4000 chars per quote;48000 evidence total;32000 context;512KiB HTTP;network/401/503 recovery;session revoke",
     "pages": "DEV-only demo;HTTPS endpoint guard;typecheck and tests before deploy",
@@ -387,7 +387,7 @@
     "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md"
   },
   "class4_query_codes": {
-    "status": "LOCAL_VERIFIED_NOT_DEPLOYED",
+    "status": "DEPLOYED_48_ONLINE_VERIFIED",
     "rule": "身份证后六位，X替换为0，保留前导零；仍需姓名",
     "changed": 48,
     "x_to_zero": 6,
@@ -400,11 +400,13 @@
     "guide": "docs/CLASS4_QUERY_CODES.md"
   },
   "acceptance_deploy": {
-    "status": "IN_PROGRESS",
+    "status": "DEPLOYED_SMOKE_VERIFIED",
     "scope": "all current tracked and untracked project source; private credentials and student files excluded from Git",
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
-    "api": "pending deployment credentials",
-    "pages": "pending push"
+    "api": "nanming-api version 8; Active; deployed ZIP verified; environment preserved",
+    "pages": "first snapshot 46a51ee deployed successfully; final frontend snapshot follows",
+    "ciphertext_objects": 881,
+    "online_report": "docs/verification/acceptance-online-2026-09-12.json"
   }
 }

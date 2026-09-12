@@ -1,0 +1,10 @@
+{
+  "function": "nanming-api",
+  "status": "Active",
+  "version": "8",
+  "ciphertext_objects": 881,
+  "environment_preserved": true,
+  "deployed_zip_contents_verified": true,
+  "code_sha256": "f7219b385c193567371b830662c4633f7782dfc759795624b31cce7adf5b71ee",
+  "rollback_zip_private": true
+}

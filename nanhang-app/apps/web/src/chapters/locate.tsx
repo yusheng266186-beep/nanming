@@ -9,7 +9,7 @@ import {
 } from "../quality-huixi.js";
 import { Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
-import { REFERENCE_YEAR, clamp, label, type PageId, type QualityState } from "./shared.js";
+import { REFERENCE_YEAR, clamp, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
 
 export interface LocateProps {
   state: WebState;
@@ -27,6 +27,8 @@ export interface LocateProps {
   schoolName: string;
   setSchoolName: Dispatch<SetStateAction<string>>;
   identifySchool: () => Promise<void>;
+  /** 走的是哪条路：`manual` 手填几次考试，`school` 荣县一中接入。两条路的页面内容不互相掺杂。 */
+  route: LocateRoute;
 }
 
 const formatRatio = (ratio: number) => `${ratio >= 0 ? "+" : ""}${(ratio * 100).toFixed(1)}%`;
@@ -34,7 +36,7 @@ const formatPercentile = (percentile: number) =>
   `前 ${percentile < 1 ? percentile.toFixed(2) : percentile.toFixed(1)}%`;
 
 export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange,
-  quality, qualityCode, setQualityCode, schoolName, setSchoolName, identifySchool }: LocateProps) {
+  quality, qualityCode, setQualityCode, schoolName, setSchoolName, identifySchool, route }: LocateProps) {
   const exams = state.form.exams;
   // 0 分与缺考一样不参与稳定性/趋势：0 不是成绩，混进均值会同时压低均值、抬高波动。
   const totals = exams.flatMap((exam) => exam.total !== null && exam.total > 0 ? [exam.total] : []);
@@ -47,7 +49,9 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
   const bandLeft = position ? (position.score - position.publishedMinScore) / bandRange * 100 : 0;
 
   // 荣县一中增强模式接入后，考试行来自学校数据：只读、固定，不提供增删改。
-  const schoolLocked = quality.status === "ready" && quality.shard !== null;
+  // 只在「学校那条路」上成立：两条路并行、互不掺杂——手填路上不出现只读的学校行，
+  // 学校路上也不出现可编辑的手填行（否则切换路线后会看到别人的规则混在自己的数据里）。
+  const schoolLocked = route === "school" && quality.status === "ready" && quality.shard !== null;
 
   // 等位换算取最近一次「有总分且有任一切线」的考试；官方线是已登记的 2026 年四川省控线。
   const equivalentExam = [...exams].reverse()
@@ -107,7 +111,8 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     </div>
 
     {/* 荣县一中增强模式直接内嵌在这里：识别后考试行自动填好并锁定，替换掉手输。 */}
-    {quality.status !== "ready" ? <div className="panel" style={{ marginTop: 20 }}>
+    {/* 学校那条路才有接入卡：手填那条路上不出现任何学校入口。 */}
+    {route === "school" && (quality.status !== "ready" ? <div className="panel" style={{ marginTop: 20 }}>
       <h3><Icon name="shield" />荣县一中的同学：直接接入学校数据</h3>
       <p className="psub">输入姓名和 6 位查询码。四班已更新的同学使用身份证后六位（末位 X 改填 0），其他同学仍用班主任发放的验证码。服务端核对后读取你本人的成绩记录，自动填好下面的考试行并推导探索区间——不需要手动录入。其他学校的同学跳过这步，直接手填即可。</p>
       <div className="grid-2" style={{ marginTop: 16, gap: 14, maxWidth: 460 }}>
@@ -128,7 +133,8 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
         <button type="button" className="btn brass" disabled={quality.status === "loading" || quality.attempts.blocked}
           onClick={() => void identifySchool()}>
           {quality.status === "loading" ? "正在核对…" : "识别并接入"}<Icon name="arrow" /></button>
-        <span className="muted-note">不接入也完全可以：直接在下面手填考试即可。</span>
+        {/* 页面拆成两条路之后，「下面可以手填」不再成立：手填在另一条路上。 */}
+        <span className="muted-note">没有查询码就回「起航」点「开始起航」，选第一条路（通用模式）手填考试。</span>
       </div>
       <p className="fhint" id="locate-identify-hint">{quality.message
         ?? "姓名和验证码只发送给成绩服务核对（有尝试次数限制），不进入对话，也不发给 AI。"}</p>
@@ -136,9 +142,11 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     : <div className="panel" style={{ marginTop: 20 }}>
       <h3><Icon name="shield" />{quality.shard?.person.name} · {quality.shard?.person.classLabel}</h3>
       <p className="psub">{quality.shard?.person.track} · {quality.shard?.person.combination} · 已接入 {quality.shard?.exams.length} 次考试记录（入学入口考满分口径与正考不同，不作为参考，已剔除），下面这些行来自学校数据，是固定的，不能改；要看逐科位置、航迹与知识短板，见本页下方。</p>
-    </div>}
+    </div>)}
 
-    <div className="panel" style={{ marginTop: 22 }}>
+    {/* 手填那条路：考试行由学生自己录。走学校那条路时这一块不出现——接入后
+        学校数据自带考试行，页面上不该再混一份手填的。 */}
+    {(route === "manual" || schoolLocked) && <div className="panel" style={{ marginTop: 22 }}>
       <h3><Icon name="log" />{schoolLocked ? "学校带入的近几次考试（只读）" : "录入近几次考试"}</h3>
       {!schoolLocked ? <p className="psub">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。位次不需要填：没有全校人数做分母，它做不了可靠的换算。</p>
         : null}
@@ -169,7 +177,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           {exams.length >= 5 ? "最多记录 5 次" : "添加一次考试"}</button>
         <small className="muted-note">切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。</small>
       </div>}
-    </div>
+    </div>}
 
     <div className="locate">
       <div>

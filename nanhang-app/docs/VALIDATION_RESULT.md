@@ -1,18 +1,28 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：负责人授权当前全部半成品快照上云验收；Pages发布进行中，腾讯云API部署待恢复登录凭据。
+> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：完成当前快照Pages/API发布并核验线上链路，供负责人实际验收；未完成门禁仍如实保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：37 个测试文件、466 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-12 当前快照线上实测（负责人验收版本）
+
+- API版本8为Active，881密文上传及线上ZIP逐项比对成功，环境变量全部保留；[部署结果](verification/acceptance-cloud-api-2026-09-12.json)。
+- 使用负责人提供的身份表逐一请求线上接口：四班48人均成功，本人分片与原数据一致，匿名考试汇总返回，Pages来源CORS一致；其余8人保留原码。本机保留规则已在前轮全量核验，本次未用缺失身份的8人做线上登录。
+- 真实千帆speed档：guided完成且返回4项选择；open完成且无选择项；兑换和会话撤销成功。health/ready、Redis、Pages均通过。详见[线上结果](verification/acceptance-online-2026-09-12.json)。
+- 首次网络断连后有限重试；核验脚本一度用错evidence.kind被400拒绝，改成与前端一致的student_self_report后两模式通过。此错误来自脚本测试数据，没有修改线上接口来迁就脚本。
+- 首轮Pages工作流34694203265成功；本次最终提交继续纳入期间的前端在建修改，推送后由同一工作流构建发布。未再次运行本机全量测试，云端保留验证结果但依负责人要求不阻断半成品发布。历史454项结果不能冒充最终快照的新测试结果。
+- 未完成：负责人视觉与完整功能验收、standard/deep本轮在线调用、真实学生规模/校园网、回滚演练；任务与门禁不虚增。文档执行根目录--package和--check后随代码同次提交。
+
 
 ## 最新：四班身份证后六位查询码，X转0
 
 - 类型检查通过：[日志](verification/class4-codes-x0-typecheck-2026-09-12.txt)；全量36文件454项通过：[测试](verification/class4-codes-x0-tests-2026-09-12.txt)。Python合成测试4项通过；SCF打包通过。
 - 48人真实本机HTTP查询全部成功，6人验证X→0。旧48个查询键移除，其余832键保持原样，四班未提供身份的8人保留原码。成绩SQLite哈希不变：[脱敏结果](verification/class4-codes-x0-result-2026-09-12.json)。
-- 先前支持X的结果为历史，已被负责人改用0的指示替代；初始测试跨目录导入造成类型检查失败，最终已修正。未部署或线上核验新码，不作视觉验收。
+- 先前支持X的结果为历史，已被负责人改用0的指示替代；初始测试跨目录导入造成类型检查失败，最终已修正。当时尚未部署或线上核验新码；后续验收部署结果见本页最新补充，不作视觉验收。
 - 操作与发布边界见[查询码专题](CLASS4_QUERY_CODES.md)。
 
 
@@ -21,7 +31,7 @@
 - 类型检查通过：[最终类型检查](verification/backend-alignment-typecheck-latest-2026-09-12.txt)。全量34文件439项通过：[最终测试](verification/backend-alignment-tests-latest-2026-09-12.txt)。后端与AI客户端专项11文件168项通过：[专项](verification/backend-alignment-focused-2026-09-12.txt)。
 - 双前端生产构建通过：[构建](verification/backend-alignment-build-latest-2026-09-12.txt)；SCF打包与Pages配置检查器单元测试通过。
 - 本机SCF打包产物，真实学校身份只回本人+汇总、假AI HTTP与会话撤销：[脱敏结果](verification/backend-alignment-smoke-2026-09-12.json)。新增汇总密文实际回读与源exams/trend完全一致。
-- 线上现有API/Redis健康、Pages CORS与招生current.json通过：[线上只读](verification/backend-alignment-online-2026-09-12.json)。未部署本轮新代码、未完成本轮真模型对话，不视为联合上线验收。
+- 线上现有API/Redis健康、Pages CORS与招生current.json通过：[线上只读](verification/backend-alignment-online-2026-09-12.json)。该记录为部署前状态，不视为本轮联合上线验收；后续发布与实测单列。
 - 先前两轮默认并发目录测试超时，后采用maxWorkers=2通过；中途因并发前端编辑出现的编译/文案断言失败已由最新工作区通过结果替代，原始日志保留。本轮不做视觉验收、全量Excel重解析或学生规模/校园网/回滚验收。
 - 发布顺序与各功能映射见[后端对齐](BACKEND_FRONTEND_ALIGNMENT.md)。文档包同步结果以本轮根目录 --package/--check 实际结果为准。
 

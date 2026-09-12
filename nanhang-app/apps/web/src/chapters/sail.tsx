@@ -3,7 +3,8 @@ import type { Dispatch, SetStateAction } from "react";
 import { ADDITIONAL_OPTIONS, RELEASE_LABELS, SYNTHETIC_NOTICE, withForm, type WebState } from "../model.js";
 import { ArtSlot, Icon } from "../art.js";
 import { prefersReducedMotion } from "../chat.js";
-import { CHAPTERS, label, type PageId, type QualityState } from "./shared.js";
+import { useScrollLock } from "../scroll-lock.js";
+import { CHAPTERS, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
 
 /** 六次靠岸各自的一句话介绍：标题说这站做什么，描述说它在新流程里的位置。 */
 const STOP_INTRO: Record<string, { title: string; desc: string }> = {
@@ -24,9 +25,14 @@ export interface SailProps {
   setShowKun: Dispatch<SetStateAction<boolean>>;
   setToast: Dispatch<SetStateAction<string | null>>;
   toast: string | null;
+  /** 当前走的是哪条路（定位章有两个变体），登船卡片按它标出已选项。 */
+  route: LocateRoute;
+  /** 选路并进入「定位」：选完就跳到对应的那个页面。 */
+  chooseRoute: (route: LocateRoute) => void;
 }
 
-export function renderSail({ state, setState, page, setPage, quality, setShowKun, setToast, toast }: SailProps) {
+export function renderSail({ state, setState, page, setPage, quality, setShowKun, setToast, toast,
+  route, chooseRoute }: SailProps) {
   // 海景的小巧思：孤帆远影、岸边双层浪是指针无关的环境动画；指针视差只在鼠标/笔上生效
   // （触屏拖页时跟着抖），点水涟漪给触屏一个落点反馈。prefers-reduced-motion 时全部停用。
   const [tilt, setTilt] = useState<{ x: number; y: number } | null>(null);
@@ -36,6 +42,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
   const [boardOpen, setBoardOpen] = useState(false);
   // 六站航程收成一副抽屉卡：默认全部收起叠在一起，点哪一站展开哪一站（再点收起）。
   const [deckOpen, setDeckOpen] = useState<string | null>(null);
+  // 登船卡片是浮层：开着的时候锁住整页滚动，手指滑不出卡片外面去。
+  useScrollLock(boardOpen);
   const reducedMotion = useMemo(() => prefersReducedMotion(), []);
   const artPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedMotion || event.pointerType === "touch") return;
@@ -187,7 +195,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       </div>
     </aside>}
 
-    {/* 登船卡片：按「开始起航」后弹出，两条入口是通向定位/成绩的桥。Esc 或点背景关闭。 */}
+    {/* 登船卡片：按「开始起航」后弹出。两条入口就是定位章的两条路——选哪条就进哪个页面，
+        Esc / 点背景关闭；开着的时候整页滚动是锁住的（见 useScrollLock）。 */}
     {boardOpen ? <div className="board-backdrop" role="presentation"
       onClick={(event) => { if (event.target === event.currentTarget) setBoardOpen(false); }}
       onKeyDown={(event) => { if (event.key === "Escape") setBoardOpen(false); }}>
@@ -198,16 +207,16 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
         <h3 className="song" style={{ marginTop: 10 }}>两条入口，都通向同一片海</h3>
         <p className="psub">先去把成绩与探索区间定下来，后面的谈心与航线才有依据。荣县一中增强模式是「加分项」，不是使用前提。</p>
         <div className="entry-grid">
-          <button type="button" className={`entry${state.form.primary ? " picked" : ""}`}
-            onClick={() => { setBoardOpen(false); setPage("locate"); }}>
+          <button type="button" className={`entry${route === "manual" ? " picked" : ""}`}
+            onClick={() => { setBoardOpen(false); chooseRoute("manual"); }}>
             <span className="eidx">01</span>
             <span className="elab"><Icon name="compass" />全国通用模式</span>
             <h3>自选科 + 高考目标分</h3>
             <p>任何省份、任何层次的同学都能用。带着刚定下的选科与目标分进入「定位」，用近几次考试或目标分圈出探索区间。</p>
             <span className="efoot"><span>无需验证 · 去定位</span><i className="carrow"><Icon name="arrow" /></i></span>
           </button>
-          <button type="button" className={`entry deep${quality.status === "ready" ? " picked" : ""}`}
-            onClick={() => { setBoardOpen(false); setPage("locate"); }}>
+          <button type="button" className={`entry deep${route === "school" ? " picked" : ""}`}
+            onClick={() => { setBoardOpen(false); chooseRoute("school"); }}>
             <span className="eidx">02</span>
             <span className="elab"><Icon name="shield" />荣县一中 · 增强模式</span>
             <h3>{quality.status === "ready" ? `已接入 · ${quality.shard?.person.classLabel ?? ""}` : "姓名 + 验证码接入质量慧析"}</h3>

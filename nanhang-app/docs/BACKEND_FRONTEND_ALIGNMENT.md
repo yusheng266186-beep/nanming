@@ -1,14 +1,14 @@
 # 章节版前端与后端对齐（2026-09-12）
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：负责人授权当前全部半成品快照上云验收；Pages发布进行中，腾讯云API部署待恢复登录凭据。
+> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：完成当前快照Pages/API发布并核验线上链路，供负责人实际验收；未完成门禁仍如实保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：37 个测试文件、466 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
-本轮以 `apps/web/src/main.tsx` 实际挂载的 `App.tsx` 为准；JourneyApp 为参考壳。保留其他任务正在修改的界面与规则，视觉验收由负责人完成。本轮修改未提交、未推送、未部署。
+本轮以 `apps/web/src/main.tsx` 实际挂载的 `App.tsx` 为准；JourneyApp 为参考壳。保留其他任务正在修改的界面与规则，视觉验收由负责人完成。本轮修改已随验收快照推送并上线；API版本8，881个学校密文上传完成。
 
 ## 功能与数据路径
 
@@ -30,8 +30,8 @@
 必须按顺序发布，避免新 API 找不到汇总密文：
 
 1. `node scripts/export_school_cloud.mjs`（本轮已执行：880 本人密文＋1 汇总密文，抽查 5 本人分片逐字节回读一致）。
-2. `py -3.12 scripts/deploy_school_cloud.py`（本轮未执行，需要腾讯云部署凭据）。
-3. `node scripts/build_function.mjs`、`py -3.12 scripts/deploy_function.py`（已打包，未上传）。沿用并保留现有千帆、Redis、学校密钥环境配置；不得用缺项环境覆盖线上配置。
+2. `py -3.12 scripts/deploy_school_cloud.py`（本轮改用private/deploy_acceptance_snapshot.py官方SDK上传，881对象完成）。
+3. `node scripts/build_function.mjs`、`py -3.12 scripts/deploy_function.py`（已打包并用官方SDK上传，版本8及ZIP逐项内容校验通过）。沿用并保留现有千帆、Redis、学校密钥环境配置；不得用缺项环境覆盖线上配置。
 4. 发布包含本轮前端接线的 Pages 构建；工作流先执行 `node scripts/check_pages_config.mjs`，然后构建。两项 GitHub 仓库变量已只读核对为现有公网 HTTPS 地址。
 5. 发布后从 Pages 来源检查姓名＋码→成绩/趋势、引航/泛舟及档位、方向两线→分数轴→导出、清除后的会话撤销。真实学生规模、手机校园网及回滚仍待验收。
 
@@ -43,5 +43,5 @@
 - 最终类型检查通过，全量34文件439项通过（期间并发前端编辑造成的临时失败保留日志）；结果见 `verification/backend-alignment-typecheck-latest-2026-09-12.txt`、`verification/backend-alignment-tests-latest-2026-09-12.txt`。
 - 双前端生产构建通过，云函数打包通过；`node --test scripts/check_pages_config.test.mjs` 通过。
 - 本机运行 SCF 打包产物，使用一条实际学校身份核验（不记录身份内容），检查本人分片与汇总同时返回；假 AI 的真实 HTTP 完成帧及会话撤销通过。见 `verification/backend-alignment-smoke-2026-09-12.json`。
-- 线上既有 API health/ready 为 200、AI 可用、Redis 可用，Pages 来源预检 204 且 CORS 匹配；招生 current.json 为 200 且允许跨域。见 `verification/backend-alignment-online-2026-09-12.json`。这些结果不证明新代码已上线，也不代替真实模型对话质量验收；本轮未完成真模型调用。
+- 线上既有 API health/ready 为 200、AI 可用、Redis 可用，Pages 来源预检 204 且 CORS 匹配；招生 current.json 为 200 且允许跨域。见 `verification/backend-alignment-online-2026-09-12.json`。该历史只读记录不证明本轮新代码上线；本轮发布证据与真模型核验另见acceptance记录。
 - 不重跑全量 Excel 解析，不改冻结合同，不做浏览器视觉验收。任务与门禁状态不虚增。

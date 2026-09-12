@@ -1,0 +1,40 @@
+{
+  "/healthz": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "ai": true,
+      "store": "redis"
+    },
+    "cors": "https://yusheng266186-beep.github.io"
+  },
+  "/readyz": {
+    "status": 200,
+    "body": {
+      "public_data": true,
+      "ai": true,
+      "state_store": true,
+      "upstream": "qianfan"
+    },
+    "cors": "https://yusheng266186-beep.github.io"
+  },
+  "school_matched_passed": 48,
+  "ai": [
+    {
+      "mode": "guided",
+      "http_status": 200,
+      "completed": true,
+      "options_count": 4,
+      "error_codes": []
+    },
+    {
+      "mode": "open",
+      "http_status": 200,
+      "completed": true,
+      "options_count": 0,
+      "error_codes": []
+    }
+  ],
+  "session_delete_status": 200,
+  "pages_status": 200
+}

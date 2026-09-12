@@ -21,7 +21,7 @@ import { OFFICIAL_LINES_2026 } from "./reference-lines.js";
 import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from "./debug.js";
 import {
   CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
-  type PageId, type QualityState
+  type LocateRoute, type PageId, type QualityState
 } from "./chapters/shared.js";
 import {
   canOpen, isDone, lockHint, stageDone, stageOf, unlockedStage, type ProgressInput
@@ -33,6 +33,7 @@ import { renderDirection } from "./chapters/direction.js";
 import { renderAxis } from "./chapters/axis.js";
 import { renderChart } from "./chapters/chart.js";
 import { renderSettings } from "./chapters/settings.js";
+import { useScrollLock } from "./scroll-lock.js";
 
 export default function App() {
   const [state, setState] = useState(initialState);
@@ -66,12 +67,17 @@ export default function App() {
   const [showKun, setShowKun] = useState(false);
   // 设置卡片：思考深度与清除本人数据都收在这里，顶栏右上角的「溟」是唯一入口。
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // 定位章的两条路（负责人 2026-09-12 定）：手填几次考试，或荣县一中接入学校数据。
+  // 默认走通用模式；登船卡片里选哪条就跳到对应页面，两条路都通向「谈心」。
+  const [route, setRoute] = useState<LocateRoute>("manual");
   const [onlyConfirmed, setOnlyConfirmed] = useState(false);
   const [matchPending, setMatchPending] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
   // 谈心页的打字指示：换题后先显示「溟在听」，再开始逐字显示问题。
   const [thinking, setThinking] = useState(false);
   const reducedMotion = useMemo(() => prefersReducedMotion(), []);
+  // 设置卡片也是浮层：开着的时候一样锁住整页滚动（与登船卡片同一套做法）。
+  useScrollLock(settingsOpen);
 
   const reading = useMemo(() => summary(state), [state]);
   const map = useMemo(() => {
@@ -507,6 +513,12 @@ export default function App() {
     notify(lockHint(id, progress));
   };
 
+  /** 选定位的哪条路：定下路线后立刻进「定位」，进去看到的就是那条路对应的页面。 */
+  const chooseRoute = (next: LocateRoute) => {
+    setRoute(next);
+    goTo("locate");
+  };
+
   // 每个章节只声明它真正用到的字段（结构性子集），这里一次性把页面状态交给它们。
   const ctx = {
     // 章节里所有跳转都经过 goTo：没解锁的章节点了只会得到提示，不会跳页。
@@ -518,7 +530,8 @@ export default function App() {
     catalog, hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,
-    map, score, contextLabel, chartSvgRef, download, setShowKun, setToast, toast
+    map, score, contextLabel, chartSvgRef, download, setShowKun, setToast, toast,
+    route, chooseRoute
   };
 
   const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);

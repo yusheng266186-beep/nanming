@@ -31,6 +31,15 @@ export const CHAPTERS = [
 export type PageId = (typeof CHAPTERS)[number]["id"];
 
 /**
+ * 「定位」章的两条路（负责人 2026-09-12 定）。
+ *
+ * 定位不再是「一页里混着两种录入口」，而是并行的两条路：`manual` 手填几次考试、
+ * `school` 荣县一中接入学校数据。两条路产出同一个东西——探索区间——然后同时进入
+ * 「谈心」。所以它不新增章节，航程条仍然是六站，只是同一章下有两个页面变体。
+ */
+export type LocateRoute = "manual" | "school";
+
+/**
  * 荣县一中增强模式在本页的状态。
  *
  * `index` 与 `shard` 分开存放：年级/班级汇总是所有人共享的一份，学生本人的分片只有验证

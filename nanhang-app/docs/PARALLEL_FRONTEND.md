@@ -1,11 +1,11 @@
 # 前端三线并行：分工、共享文件与认领规则
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：负责人授权当前全部半成品快照上云验收；Pages发布进行中，腾讯云API部署待恢复登录凭据。
+> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：完成当前快照Pages/API发布并核验线上链路，供负责人实际验收；未完成门禁仍如实保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：37 个测试文件、466 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 负责人要求（2026-09-12）：多个 Agent 同时改 `apps/web`，必须**明确分工、互不覆盖**。本文件是这份分工的
@@ -81,6 +81,7 @@
 | 2026-09-12 20:21 | 线三（负责人指派） | `style.css`（定位页一段）、`test/locate-motion.test.ts`（新）；`chapters/locate.tsx` 未改动 | 定位页编排与微交互：逐块落位、位次标记落下、柱子原地长起、考试行 focus 提亮、已填格子描边转铜；并给 reduced-motion 补 `animation-delay:0s` | 已交还 |
 | 2026-09-12 20:26 | 线三（负责人指派） | `style.css`（定位页读数区窄屏修复）、`test/locate-motion.test.ts`；`chapters/locate.tsx` 未改动 | 修窄屏把两处读数挤成半栏导致的标签与数字断行：不拆行 + ≤560px 上下各占一行并收回左对齐 | 已交还 |
 | 2026-09-12 20:31 | 线三（负责人指派） | `style.css`（定位页留白收紧一段）、`test/locate-motion.test.ts`；`chapters/locate.tsx` 未改动 | 定位页卡片留白收紧：整页面板收一档，点名两张卡再收一档（用 `:has()` 按内容识别，避开另一条线正在改的同一文件） | 已交还 |
+| 2026-09-12 20:45 | 线三（负责人指派） | `scroll-lock.ts`（新）、`App.tsx`、`chapters/shared.ts`、`chapters/sail.tsx`、`chapters/locate.tsx`、`test/route-split.test.ts`（新） | 定位拆两条并行路（手填 / 荣县一中接入，选完跳对应页面、两条路都进谈心）；登船卡片与设置卡片打开时锁住整页滚动 | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 
