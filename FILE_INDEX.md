@@ -1,11 +1,11 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-chapter-gate）：本地核心流程、真实招生发布与学校成绩接入完成；千帆、学生原话链路、共享会话存储均已上线；学校成绩改为云端密文托管（对象存储里只有密文）；TASK-14 剩余线上验收与回滚演练。
+> 统一进度（2026-09-12，2026-09-12-backend-alignment）：章节版后端对齐已本地验证；既有千帆、Redis与成绩密文服务在线；本轮汇总接口、聊天收尾与Pages门禁未部署。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：34 个测试文件、439 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：依次发布学校汇总密文、新版API与Pages，再做线上完整流程、学生规模与回滚验收；TASK-11保持跳过。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。
@@ -77,9 +77,11 @@
 | [nanhang-app/apps/web/test/ai-panel.test.ts](nanhang-app/apps/web/test/ai-panel.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/backend-alignment.test.ts](nanhang-app/apps/web/test/backend-alignment.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/chat.test.ts](nanhang-app/apps/web/test/chat.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/class4-codes.test.ts](nanhang-app/apps/web/test/class4-codes.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/exam-position.test.ts](nanhang-app/apps/web/test/exam-position.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/flow.test.ts](nanhang-app/apps/web/test/flow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/journey-model.test.ts](nanhang-app/apps/web/test/journey-model.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/locate-motion.test.ts](nanhang-app/apps/web/test/locate-motion.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/presentation.test.ts](nanhang-app/apps/web/test/presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/progress.test.ts](nanhang-app/apps/web/test/progress.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/quality-huixi.test.ts](nanhang-app/apps/web/test/quality-huixi.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -710,6 +712,9 @@
 | [nanhang-app/docs/verification/backend-alignment-validate-recheck-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-validate-recheck-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt](nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/build-journey-2026-09-12.txt](nanhang-app/docs/verification/build-journey-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-result-2026-09-12.json](nanhang-app/docs/verification/class4-codes-result-2026-09-12.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-tests-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-tests-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-typecheck-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-typecheck-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/handoff-contracts-2026-09-10.txt](nanhang-app/docs/verification/handoff-contracts-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/handoff-contracts-task03-2026-09-10.txt](nanhang-app/docs/verification/handoff-contracts-task03-2026-09-10.txt) | 本次验证原始日志 |
@@ -826,6 +831,9 @@
 | [nanhang-app/pipelines/quality-huixi/export_dataset.ts](nanhang-app/pipelines/quality-huixi/export_dataset.ts) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/export_identity.py](nanhang-app/pipelines/quality-huixi/export_identity.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/export_release.py](nanhang-app/pipelines/quality-huixi/export_release.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/quality-huixi/import_class4_codes.py](nanhang-app/pipelines/quality-huixi/import_class4_codes.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/quality-huixi/test_class4_codes.py](nanhang-app/pipelines/quality-huixi/test_class4_codes.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/quality-huixi/verify_class4_codes.py](nanhang-app/pipelines/quality-huixi/verify_class4_codes.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/verify_release.py](nanhang-app/pipelines/quality-huixi/verify_release.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/build_admissions_db.py](nanhang-app/pipelines/task03/build_admissions_db.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/crosscheck_workbook_ranks.py](nanhang-app/pipelines/task03/crosscheck_workbook_ranks.py) | 招生数据管线与历史来源工具 |

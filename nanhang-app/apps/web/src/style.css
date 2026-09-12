@@ -451,8 +451,10 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .seal .song{font-size:13px;letter-spacing:.1em;text-align:center;line-height:1.4}
 .routes{padding:8px 20px 20px}
 .routes svg{width:100%;height:auto}
-.route-legend{display:flex;gap:22px;flex-wrap:wrap;padding:6px 20px 22px;border-top:1px solid var(--line);margin-top:6px}
-.rl{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--ink-2)}
+/* 图例与图内三条线一一对应：线样、颜色、名称取同一份定义；字体用章节衬线，
+   与图签、卡片同一种语气（2026-09-12 随「海图版画」重画一起收）。 */
+.route-legend{display:flex;gap:28px;flex-wrap:wrap;padding:14px 22px 22px;border-top:1px solid var(--line);margin-top:6px}
+.rl{display:flex;align-items:center;gap:10px;font-family:var(--song);font-size:11.5px;color:var(--ink-2);letter-spacing:.02em}
 .rl .swatch{width:24px;height:0;border-top:2px dashed var(--brass)}
 .rl.main .swatch{border-top:2.5px solid var(--sea)}
 .rl.safe .swatch{border-top:2px dotted var(--safe)}
@@ -622,6 +624,9 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  /* 延迟也要归零：入场编排靠 animation-delay 错峰，只压时长不压延迟的话，
+     元素会在延迟里保持首帧（opacity:0）而不显示。 */
+  *,*::before,*::after{animation-delay:0s!important}
   [data-reveal]{opacity:1;transform:none}
 }
 /* ============================================================
@@ -715,6 +720,120 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
 .table tbody th{font-weight:500;background:var(--card)}
 .table .num{font-family:var(--display);font-variant-numeric:tabular-nums;text-align:right}
 .empty-inline{border:1px dashed var(--line-2);border-radius:14px;padding:26px;text-align:center;color:var(--mut);font-size:12.5px;line-height:1.9}
+
+/* ══════════ 定位页：读数区不再被挤成半栏（窄屏修复）══════════
+   `.gauge-top` 里那两处读数（高考目标分 / 全省位次）在窄屏被 `space-between` 挤成半栏，
+   于是「高考目标分 · 裸分」在字中间断行、大号破折号与「分」也分了家——标签与数字都是
+   「一行就是一句话」，被压窄就会散架。修法：标签与数字自己不再拆行（短横线不参与收缩），
+   放不下就让两块上下各占一行；右块带着行内 style 的右对齐，用其子元素的显式声明盖过
+   继承值（不动 JSX）。 */
+.gauge .eyebrow{white-space:nowrap}
+.gauge .eyebrow::before{flex-shrink:0}
+.gauge .bignum{white-space:nowrap}
+@media(max-width:560px){
+  .gauge-top{flex-direction:column;gap:16px}
+  .gauge-top>div>*{text-align:left}
+}
+
+/* ══════════ 定位页：编排与微交互（只加样式，不动结构与文案）══════════
+   这一页要读的东西最多：识别、五次考试、位次、稳定性、趋势、等位、区间、逐科、航迹、知识短板。
+   编排只做两件事——(1) 页面自上而下逐块落位，眼睛有顺序；(2) 每个数字、柱子和标记在出现的
+   那一刻自己长出来（数值轻轻落定、柱子从底部长起、位次标记自上落下）。
+   全部只用 transform/opacity；减少动态效果时由文件末尾的全局规则压成瞬时（含延迟）。
+   注意两处不能随便动 transform 的元素：`.bandtick` 靠 translateX(-50%) 居中，
+   `.stat` 在 1px 缝隙的网格里（网格会裁切），所以它们只淡入、不位移。 */
+#page-locate>*{animation:arrive .55s var(--ease) both}
+#page-locate>:nth-child(2){animation-delay:.05s}
+#page-locate>:nth-child(3){animation-delay:.1s}
+#page-locate>:nth-child(4){animation-delay:.15s}
+#page-locate>:nth-child(5){animation-delay:.2s}
+#page-locate>:nth-child(6){animation-delay:.25s}
+#page-locate>:nth-child(n+7){animation-delay:.3s}
+/* 头部：eyebrow 的横线自己画出来。 */
+#page-locate .page-head .eyebrow::before{transform-origin:left;animation:rule-in .75s var(--ease) .1s both}
+@keyframes rule-in{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
+/* 分数条：位次标记自上落下，三条刻度依次报到（保留 translateX(-50%) 的居中）。 */
+#page-locate .bandbar .bandfill{transform-origin:top;animation:band-drop .75s var(--ease) .18s both}
+#page-locate .bandbar .bandmark{transform-origin:top;animation:mark-drop .7s var(--ease) .32s both}
+#page-locate .bandtick{animation:tick-in .55s var(--ease) both}
+#page-locate .bandtick:nth-of-type(1){animation-delay:.44s}
+#page-locate .bandtick:nth-of-type(2){animation-delay:.54s}
+#page-locate .bandtick:nth-of-type(3){animation-delay:.64s}
+@keyframes band-drop{from{transform:scaleY(0);opacity:0}to{transform:none;opacity:1}}
+@keyframes mark-drop{from{transform:scaleY(.25);opacity:0}to{transform:none;opacity:1}}
+@keyframes tick-in{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1;transform:translateX(-50%)}}
+/* 读数：大数字落定，四格统计只淡入（网格会裁切），格子里的数值单独弹一下。 */
+#page-locate .bignum{animation:num-in .6s var(--ease) .12s both}
+#page-locate .gauge-top>div:nth-child(2) .bignum{animation-delay:.2s}
+@keyframes num-in{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:none}}
+#page-locate .stat{animation:fade .5s var(--ease) both}
+#page-locate .stat:nth-child(1){animation-delay:.2s}
+#page-locate .stat:nth-child(2){animation-delay:.26s}
+#page-locate .stat:nth-child(3){animation-delay:.32s}
+#page-locate .stat:nth-child(4){animation-delay:.38s}
+#page-locate .stat .sv{animation:num-in .5s var(--ease) both}
+#page-locate .stat:nth-child(1) .sv{animation-delay:.32s}
+#page-locate .stat:nth-child(2) .sv{animation-delay:.38s}
+#page-locate .stat:nth-child(3) .sv{animation-delay:.44s}
+#page-locate .stat:nth-child(4) .sv{animation-delay:.5s}
+/* 结论卡：胶囊逐条报到，最后那排刻度值再补一拍。 */
+#page-locate .verdict .vpill{animation:msgin .45s var(--ease) both}
+#page-locate .verdict .vlist .vpill:nth-child(1){animation-delay:.26s}
+#page-locate .verdict .vlist .vpill:nth-child(2){animation-delay:.31s}
+#page-locate .verdict .vlist .vpill:nth-child(3){animation-delay:.36s}
+#page-locate .verdict .vlist .vpill:nth-child(4){animation-delay:.41s}
+#page-locate .verdict .vlist .vpill:nth-child(5){animation-delay:.46s}
+#page-locate .verdict .vlist .vpill:nth-child(6){animation-delay:.51s}
+#page-locate .verdict .chips .vpill{animation-delay:.58s}
+#page-locate .vpill{transition:transform .3s var(--ease),border-color .3s,background .3s}
+#page-locate .vpill:hover{transform:translateY(-1px);border-color:var(--brass-line)}
+/* 成绩曲线：柱子从底部长出来（scaleY，不动内联高度）。最后一根是当前分，落在最后。 */
+#page-locate .tbar .col{transform-origin:bottom;animation:bar-grow .85s var(--ease) both}
+#page-locate .tbar:nth-child(1) .col{animation-delay:.16s}
+#page-locate .tbar:nth-child(2) .col{animation-delay:.22s}
+#page-locate .tbar:nth-child(3) .col{animation-delay:.28s}
+#page-locate .tbar:nth-child(4) .col{animation-delay:.34s}
+#page-locate .tbar:nth-child(5) .col{animation-delay:.4s}
+#page-locate .tbar.now .col{animation-delay:.5s}
+@keyframes bar-grow{from{transform:scaleY(.02);opacity:.35}to{transform:none;opacity:1}}
+/* 考试行：逐行落位；正在填的那一行亮起来，左侧一条铜线长出来。 */
+#page-locate .exam-row{position:relative;border-radius:10px;animation:row-in .45s var(--ease) both;
+  transition:box-shadow .35s var(--ease)}
+#page-locate .exam-row:nth-child(1){animation-delay:.08s}
+#page-locate .exam-row:nth-child(2){animation-delay:.13s}
+#page-locate .exam-row:nth-child(3){animation-delay:.18s}
+#page-locate .exam-row:nth-child(4){animation-delay:.23s}
+#page-locate .exam-row:nth-child(5){animation-delay:.28s}
+#page-locate .exam-row::before{content:"";position:absolute;left:-12px;top:10px;bottom:10px;width:2px;border-radius:2px;
+  background:var(--brass);opacity:.9;transform:scaleY(0);transform-origin:center;transition:transform .35s var(--ease)}
+#page-locate .exam-row:focus-within{box-shadow:inset 0 0 0 100px rgba(169,123,52,.055)}
+#page-locate .exam-row:focus-within::before{transform:none}
+@keyframes row-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* 输入：聚焦给铜色描边与柔光；已填的格子描边转铜，一眼看得出还差哪一格。 */
+#page-locate .inp{transition:border-color .3s,background .3s,box-shadow .4s var(--ease)}
+#page-locate .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
+#page-locate .exam-row .inp:placeholder-shown{background:var(--paper)}
+#page-locate .exam-row .inp:not(:placeholder-shown){border-color:var(--brass-line)}
+/* 表格：行逐行淡入，悬停整行给一点底色（表头不动）。 */
+#page-locate .table tbody tr{animation:row-in .4s var(--ease) both}
+#page-locate .table tbody tr:nth-child(1){animation-delay:.06s}
+#page-locate .table tbody tr:nth-child(2){animation-delay:.1s}
+#page-locate .table tbody tr:nth-child(3){animation-delay:.14s}
+#page-locate .table tbody tr:nth-child(4){animation-delay:.18s}
+#page-locate .table tbody tr:nth-child(5){animation-delay:.22s}
+#page-locate .table tbody tr:nth-child(6){animation-delay:.26s}
+#page-locate .table tbody tr:nth-child(7){animation-delay:.3s}
+#page-locate .table tbody tr:nth-child(n+8){animation-delay:.34s}
+#page-locate .table th,#page-locate .table td{transition:background .3s}
+#page-locate .table tbody tr:hover th,#page-locate .table tbody tr:hover td{background:var(--paper)}
+/* 航迹 SVG：柱子在原地长起来，刻度与虚线先淡入（缺考的那根留白线只是淡入）。 */
+#page-locate svg[role="img"] rect{transform-box:fill-box;transform-origin:bottom;animation:bar-grow .8s var(--ease) .2s both}
+#page-locate svg[role="img"] line{animation:fade .6s var(--ease) .1s both}
+#page-locate svg[role="img"] text{animation:fade .6s var(--ease) .3s both}
+/* 按钮上的箭头跟着前进一点，动作方向与「下一步」一致。 */
+#page-locate .btn .icon{transition:transform .35s var(--ease)}
+#page-locate .btn:hover:not(:disabled) .icon{transform:translateX(3px)}
+#page-locate .empty-inline,#page-locate .absent,#page-locate .fhint,#page-locate .muted-note{animation:fade .5s var(--ease) .12s both}
 @media print{
   .topbar,.bottom-nav{display:none!important}
   .view{display:none!important}

@@ -98,7 +98,9 @@ export function svgStringToPng(svg: string, width: number, height: number, filen
       const context = canvas.getContext("2d");
       URL.revokeObjectURL(url);
       if (!context) { resolve(false); return; }
-      context.fillStyle = "#08202a";
+      // 垫底色用纸色而不是深海色：SVG 自带满幅底，垫色只在它没铺满时露出来——
+      // 旧图那块渐变底在序列化后不生效，导出的 PNG 就变成了深色底草稿。
+      context.fillStyle = "#f7f5ee";
       context.fillRect(0, 0, width, height);
       context.drawImage(image, 0, 0, width, height);
       canvas.toBlob((png) => {
