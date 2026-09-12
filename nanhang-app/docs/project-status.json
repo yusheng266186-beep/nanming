@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-13",
-  "revision": "2026-09-13-latest-frontend-deployed",
-  "stage": "API版本10与Pages c0b2664已部署并核验；负责人进行页面验收",
+  "revision": "2026-09-13-font-range-pending",
+  "stage": "API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -111,7 +111,7 @@
     "python_pipeline_tests_passed": 50,
     "score_distribution_verified": true
   },
-  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 111.08KB",
+  "web_build": "latest frontend production build passed with official API and release bases and /nanming/ base; main JS gzip 111.12KB; new snapshot pending Pages",
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",

@@ -9,6 +9,7 @@ import {
 } from "../quality-huixi.js";
 import { Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
+import { RangeFill } from "../range-fill.js";
 import { REFERENCE_YEAR, clamp, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
 
 export interface LocateProps {
@@ -326,23 +327,14 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
             <span className="vpill">区间 <b>{range.low}–{range.high}</b> 分</span>
             <span className="vpill">参考 <b>{trackLabel}</b></span>
           </div>
-          <div className="grid-2" style={{ marginTop: 14, gap: 14, maxWidth: 420 }}>
-            <label className="field"><span className="flab">微调下限</span>
-              <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间下限"
-                value={Number.isFinite(range.low) ? range.low : ""}
-                onChange={(event) => {
-                  const value = event.target.value === "" ? NaN : Number(event.target.value);
-                  setRange((current) => ({ low: value, high: current?.high ?? 750,
-                    basis: "手动微调过的探索区间；下一次数据变化会重新生成。" }));
-                }} /></label>
-            <label className="field"><span className="flab">微调上限</span>
-              <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
-                value={Number.isFinite(range.high) ? range.high : ""}
-                onChange={(event) => {
-                  const value = event.target.value === "" ? NaN : Number(event.target.value);
-                  setRange((current) => ({ low: current?.low ?? 0, high: value,
-                    basis: "手动微调过的探索区间；下一次数据变化会重新生成。" }));
-                }} /></label>
+          {/* 上下限是同一段区间的两端：用一支标尺（共用模块）输入，不是两只各自独立的框。
+              谁补谁仍按这一页原来的规则——改下限时上限兜 750，改上限时下限兜 0。 */}
+          <div style={{ marginTop: 16 }}>
+            <RangeFill lowLabel="微调下限" highLabel="微调上限" low={range.low} high={range.high}
+              onLow={(value) => setRange((current) => ({ low: value, high: current?.high ?? 750,
+                basis: "手动微调过的探索区间；下一次数据变化会重新生成。" }))}
+              onHigh={(value) => setRange((current) => ({ low: current?.low ?? 0, high: value,
+                basis: "手动微调过的探索区间；下一次数据变化会重新生成。" }))} />
           </div>
           <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p>
         </>

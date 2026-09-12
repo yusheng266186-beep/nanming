@@ -1,12 +1,16 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-latest-frontend-deployed）：API版本10与Pages c0b2664已部署并核验；负责人进行页面验收。
+> 统一进度（2026-09-13，2026-09-13-font-range-pending）：API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：45 个测试文件、549 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-13 最新前端待发布快照
+
+全站宋体与定位/分数轴共用区间标尺已纳入本机完整快照。`npm run typecheck` 通过；`npm test -- --maxWorkers=2` 为 45 个测试文件、549 项通过、0 失败；使用正式公开 API/COS 地址与 `/nanming/` base 构建主前端通过（JS gzip 111.12 kB）。工作区根目录 `py -3.12 tools/sync_project_docs.py --package` 与 `--check` 通过。这些是本机结果，下面的 Pages `c0b2664` 是上一轮已经上线的快照；新版本的线上结果待工作流和公网资产核验后补记。
 
 ## 2026-09-13 当前前端与 AI 收尾轮
 

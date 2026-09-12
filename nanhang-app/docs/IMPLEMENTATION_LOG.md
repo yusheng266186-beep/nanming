@@ -1,12 +1,18 @@
 # 实施记录
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-latest-frontend-deployed）：API版本10与Pages c0b2664已部署并核验；负责人进行页面验收。
+> 统一进度（2026-09-13，2026-09-13-font-range-pending）：API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：45 个测试文件、549 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-13 / GitHub 首页与最新前端同步发布
+
+- 按负责人要求，继续把现有前端增量同步到 GitHub Pages，并整理仓库首页。根 README 已覆盖项目用途、六个章节、招生与成绩数据、AI 验证、部署结构、运行命令、目录导航和待验收范围；GitHub 仓库简介和主页字段已回读确认包含 Pages 地址。本次又修正 README 中过时的固定测试文件数。
+- 本次纳入前端并行任务已交还的全站宋体与两页共用区间标尺。发布任务只收集、验证、提交和部署现有前端文件，不改动其实现逻辑；对应设计和交互依据见本文件下方 `serif-everywhere`、`range-fill-ruler` 条目。
+- 本机重新执行 `npm run typecheck`、`npm test -- --maxWorkers=2`（45 文件、549 项通过）、按正式 API/COS 地址和 `/nanming/` base 构建主前端（通过；JS gzip 111.12 kB），以及根目录 `--package`、`--check`（通过）。线上 Pages 发布结果需在工作流结束后另记；这组本地结果不冒充已部署或负责人视觉验收。
 
 ## 2026-09-13 / range-fill-ruler：探索区间与分数轴的上下限改成一支共用标尺
 

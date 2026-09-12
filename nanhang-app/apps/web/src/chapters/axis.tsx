@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Icon } from "../art.js";
+import { RangeFill } from "../range-fill.js";
 import {
   REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, groupRouteRows, label, levelLabel,
   pickGroupedCards, scoreRangeForRanks, useDeckStack, useNarrow, type PageId
@@ -149,25 +150,16 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
           <span>{axisMax}（公布最高）</span>
         </div>
       </div>
-      <div className="grid-2" style={{ marginTop: 18, gap: 14, maxWidth: 460 }}>
-        <label className="field"><span className="flab">区间下限</span>
-          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间下限"
-            value={range && Number.isFinite(range.low) ? range.low : ""}
-            onChange={(event) => {
-              const value = event.target.value === "" ? NaN : Number(event.target.value);
-              // 还没有区间时以「另一个端点先等于这个值」起步（原来补 750/0 会平白造出一个 0–750 的巨区间），
-              // 学生再改另一头就是一段明确的区间。
-              setRange((current) => ({ low: value, high: current?.high ?? value,
-                basis: "手动填写的探索区间（不来自考试数据）；可随时修改。" }));
-            }} /></label>
-        <label className="field"><span className="flab">区间上限</span>
-          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
-            value={range && Number.isFinite(range.high) ? range.high : ""}
-            onChange={(event) => {
-              const value = event.target.value === "" ? NaN : Number(event.target.value);
-              setRange((current) => ({ low: current?.low ?? value, high: value,
-                basis: "手动填写的探索区间（不来自考试数据）；可随时修改。" }));
-            }} /></label>
+      {/* 与「定位」页同一支标尺（共用模块），只是底下是深海底，颜色跟着换。
+          端点语义按这一页的规则：还没有区间时以「另一个端点先等于这个值」起步
+          （原来补 750/0 会平白造出一个 0–750 的巨区间），学生再改另一头就是一段明确的区间。 */}
+      <div style={{ marginTop: 18 }}>
+        <RangeFill lowLabel="区间下限" highLabel="区间上限"
+          low={range?.low ?? Number.NaN} high={range?.high ?? Number.NaN}
+          onLow={(value) => setRange((current) => ({ low: value, high: current?.high ?? value,
+            basis: "手动填写的探索区间（不来自考试数据）；可随时修改。" }))}
+          onHigh={(value) => setRange((current) => ({ low: current?.low ?? value, high: value,
+            basis: "手动填写的探索区间（不来自考试数据）；可随时修改。" }))} />
       </div>
       {range ? <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p> : null}
       {/* 「定位」是按考试数据生成区间的地方，但区间不是只能在那边产生：这一页可以直接填上下限，

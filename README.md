@@ -9,7 +9,7 @@
 - **当前进度：** [实施状态与待办](nanhang-app/docs/PROJECT_STATUS.md)
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-latest-frontend-deployed）：API版本10与Pages c0b2664已部署并核验；负责人进行页面验收。
+> 统一进度（2026-09-13，2026-09-13-font-range-pending）：API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：45 个测试文件、549 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
@@ -94,7 +94,7 @@ npm run web:build
 
 ## 当前进度与接手
 
-截至 2026-09-13，本机最新完整快照的类型检查、43 个测试文件和正式地址构建已通过；准确测试数、云端版本和 Pages 发布结果以 [当前验证记录](nanhang-app/docs/VALIDATION_RESULT.md) 为准。TASK-13 本人身份生命周期与 TASK-14 规模、校园网和回滚仍在进行；小范围试用 TASK-11 按负责人决定跳过，因此相应门禁未通过。
+截至 2026-09-13，本机最新完整快照的类型检查、完整测试和正式地址构建已通过；准确测试数、云端版本和 Pages 发布结果以 [当前验证记录](nanhang-app/docs/VALIDATION_RESULT.md) 为准。TASK-13 本人身份生命周期与 TASK-14 规模、校园网和回滚仍在进行；小范围试用 TASK-11 按负责人决定跳过，因此相应门禁未通过。
 
 每次代码、配置、数据或文档修改都要同步 [实施记录](nanhang-app/docs/IMPLEMENTATION_LOG.md) 和 [机器状态](nanhang-app/docs/project-status.json)，再从仓库根目录执行：
 
