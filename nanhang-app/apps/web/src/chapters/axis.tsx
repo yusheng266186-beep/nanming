@@ -93,7 +93,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
     </article>;
   };
 
-  /** 卡片里的「当前这张」：进入视野中间约 16% 的带子就算聚焦，滑走就交还——
+  /** 卡片里的「当前这张」：进入视野中间那条带子（约 8%，比卡片矮）就算聚焦，滑走就交还——
    *  停住时显示的那一张就是它（IntersectionObserver 直接切换 class，不触发 React 重渲染）。 */
   const cardsRef = useRef<HTMLDivElement | null>(null);
   const focusKey = pool ? `${pool.releaseId}:${pool.rows.length}` : "none";
@@ -104,7 +104,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
     if (!cards.length) return;
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) entry.target.classList.toggle("focus", entry.isIntersecting);
-    }, { rootMargin: "-42% 0px -42% 0px", threshold: 0 });
+    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
     for (const card of cards) observer.observe(card);
     return () => observer.disconnect();
   }, [focusKey, openCategory]);

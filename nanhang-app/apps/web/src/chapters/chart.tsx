@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type PoolRow, type RouteBranch, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
@@ -106,6 +106,25 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
     .slice(0, 4);
 
   /**
+   * 卡片里的「当前这张」：与分数轴同款——滑到视野中间那条带子（约 8%，比卡片矮）就算聚焦，滑走就交还。
+   * 停住时显示的那一张就是它；IntersectionObserver 直接切 class，不触发 React 重渲染。
+   * 抽屉（窄屏 deck）里的大类是点开才进 DOM 的，所以 openCategory 变化时要重新挂一遍。
+   */
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+  const focusKey = pool ? `${pool.releaseId}:${pool.rows.length}` : "none";
+  useEffect(() => {
+    const root = cardsRef.current;
+    if (!root) return;
+    const cards = Array.from(root.querySelectorAll<HTMLElement>(".scard"));
+    if (!cards.length) return;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) entry.target.classList.toggle("focus", entry.isIntersecting);
+    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
+    for (const card of cards) observer.observe(card);
+    return () => observer.disconnect();
+  }, [focusKey, openCategory]);
+
+  /**
    * 导出整页海报（负责人 2026-09-12：导出要和手机端显示一致——竖版长图、一条条卡片，
    * 不是把院校压成一堆文字行）。素材取竖版那张航线图（它在 DOM 里始终存在，窄屏可见），
    * 卡片按页面的顺序与字段逐张排出，末尾接上「写给你」。
@@ -206,16 +225,18 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
       {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
     </p>
   </div>
-  {/* 一行数据条：最低分打头（学生最先想知道的），位次/招生数/学费跟在后面。
-      旧版三格方块把卡片撑到 236px 高，滚动很费劲；这里压成一条。 */}
+  {/* 一行数据条：最低分常驻（学生最先想知道的就是它），位次/招生数/学费收进跟随滑动的细节里。
+      与分数轴同一套卡片结构：细节始终占着位置、只做透明度与位移过渡，滑到哪张哪张亮起来，
+      所以展开收起不会顶动页面，卡片高度也不随滚动变化。 */}
   <div className="sc-foot">
     <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
-    <span>位次 {formatRankInterval(interval)}</span>
-    <span>招 {row.label.planCount ?? "—"} 人</span>
-    <span className="sc-fee">{row.label.tuition == null ? "学费未知" : `学费 ${row.label.tuition}`}</span>
   </div>
-  {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
-  {row.reference === "group" ? <p className="fhint" style={{ margin: "0 16px 10px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
+  <div className="sc-detail">
+    <p className="sc-detail-line">位次 {formatRankInterval(interval)} · 招 {row.label.planCount ?? "—"} 人 ·
+      {row.label.tuition == null ? " 学费未知" : ` 学费 ${row.label.tuition}`}</p>
+    {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
+    {row.reference === "group" ? <p className="fhint">只有专业组依据，具体专业门槛未知。</p> : null}
+  </div>
 </article>;
   };
 
@@ -428,7 +449,8 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
             </>}
           </div>
         </div>
-        : routes.map((route) => {
+        // 两条线的卡片都装在这个容器里，滚动聚焦的观察者一次挂全。
+        : <div className="route-cards" ref={cardsRef}>{routes.map((route) => {
           const meta = ROUTE_META.find((item) => item.kind === route.kind)!;
           // 按大类 → 小类分组（负责人 2026-09-12：不要一股脑全堆出来，要有层次）；
           // 每小类取前几张、每条线合计上限若干张——页面两版与导出海报用同一份挑选。
@@ -499,7 +521,7 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
               ? <p className="fhint" style={{ marginTop: 12 }}>已按大类与专业类分层展开 {shown} 张卡片，其余 {route.rows.length - shown} 条未逐条展开（导出的图片与这一屏同款）。</p>
               : null}
           </div>;
-        })}
+        })}</div>}
     </>}
 
     <div className="blessing">

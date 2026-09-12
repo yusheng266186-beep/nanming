@@ -4,7 +4,7 @@
 > 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：41 个测试文件、509 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：42 个测试文件、521 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -93,6 +93,10 @@
 | 2026-09-12 21:49 | 线三（负责人指派） | `chapters/talk.tsx`（开场气泡与回答起点）、`test/talk-room.test.ts` | 两个模式的开场第一句都改成问题（取自内容规格）；引航一进来就摆出可点答案，泛舟只给问题 | 已交还 |
 | 2026-09-12 21:56 | 线三（负责人指派） | `direction-quota.ts`（新）、`App.tsx`（建议合并）、`chapters/talk.tsx`（收口提示与卡片时机）、`test/direction-quota.test.ts`（新）、`test/talk-room.test.ts` | 借北辰「到量即停、之后仍可聊但画像不再变」：方向收口（5 小类 + 2 大类，8 轮兜底）、上限 6 小类 / 3 大类、收口后冻结不再新增 | 已交还 |
 | 2026-09-12 22:04 | 线三（负责人指派） | `App.tsx`（顶栏）、`style.css`（`.qopts` 网格）、`test/settings.test.ts`、`test/talk-room.test.ts` | 删掉顶栏重复的上下文按钮（样式保留给窄屏守卫）；备选按钮照北辰改成两列网格、窄屏一列 | 已交还 |
+| 2026-09-12 22:53 | 线三（负责人指派） | `chapters/settings.tsx`、`App.tsx`、`chapters/talk.tsx`、`style.css`（`.set-rows` 与动效开关）、`test/settings.test.ts` | 设置卡加「思考低语」「界面动效」两个开关与「现在的样子」只读一览；低语是南溟自己的阶段提示（不显示模型思考），两项开关不写盘 | 已交还 |
+| 2026-09-12 23:05 | 线三（负责人指派） | `apps/web/.env.local`（本机、已忽略）、`scripts/totp_code.mjs`（新）、`apps/api/test/totp-code.test.ts`（新）、`.gitignore`、`tools/sync_project_docs.py` | 核实云端连通（healthz/readyz/跨域/401 形状）并把本机 dev server 指向云端中转；新增取码脚本并钉住它与服务端算法一致 | 已交还 |
+| 2026-09-12 23:29 | 线三（负责人指派） | `direction-quota.ts`（收口语义与冻结参数）、`App.tsx`（收尾轮）、`chapters/talk.tsx`（话术与卡片）、`style.css`、`test/direction-quota.test.ts`、`test/talk-room.test.ts` | 借北辰「报告轮」：聊天只收集素材，聊够后由界面发起一次专门的生成请求（指令不进转写/证据，素材只取学生原话），落定后方向集合冻结 | 已交还 |
+| 2026-09-12 23:36 | 线一（负责人指派） | `chapters/chart.tsx`、`chapters/axis.tsx`（带宽）、`test/route-labels.test.ts` | 负责人问「跟随滑动为什么没有，还是静态的」：航线图院校卡也拆出 `.sc-detail` 并挂上 IntersectionObserver（容器 `.route-cards`、deps 含抽屉展开状态）；两页的聚焦带由 -42% 收到 -46%，同一时刻通常只剩「当前这张」 | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 

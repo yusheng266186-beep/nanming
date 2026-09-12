@@ -260,6 +260,26 @@ describe("参考年最低分与整页海报", () => {
     expect(css).toContain(".scard.focus .sc-detail{opacity:1");
   });
 
+  it("航线图的院校卡也跟随滑动：最低分常驻，其余细节滑到哪张亮哪张", () => {
+    // 负责人 2026-09-12：分数轴做了跟随滑动，航线图还是静态的。两页现在共用同一套卡片
+    // 结构与观察者——细节始终占位、只做透明度过渡，所以滑到中间的那张浮出来，滑走就交还。
+    expect(chart).toContain('className="route-cards" ref={cardsRef}');
+    expect(chart).toContain("IntersectionObserver");
+    expect(chart).toContain('classList.toggle("focus"');
+    // 视野中间约 8% 的带子：卡片比带子高，同一时刻通常只有「当前这张」亮着
+    expect(chart).toContain('rootMargin: "-46% 0px -46% 0px"');
+    expect(axis).toContain('rootMargin: "-46% 0px -46% 0px"');
+    // 窄屏抽屉是点开才把大类放进 DOM 的，展开状态一变就得重新挂观察者
+    expect(chart).toContain("[focusKey, openCategory]");
+    // 最低分留在常驻那一行，位次/招生数/学费收进跟随滑动的细节块
+    const foot = /<div className="sc-foot">([\s\S]*?)<\/div>/.exec(chart)?.[1] ?? "";
+    expect(foot).toContain("sc-score");
+    expect(foot).not.toContain("位次");
+    expect(chart).toContain('className="sc-detail"');
+    expect(chart).toContain("位次 {formatRankInterval(interval)}");
+    expect(chart).toContain("招 {row.label.planCount ?? \"—\"} 人");
+  });
+
   it("复制文字版按钮已按负责人要求删掉", () => {
     expect(chart).not.toContain("复制文字版");
     expect(chart).not.toContain("copyText");
