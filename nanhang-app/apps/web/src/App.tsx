@@ -25,7 +25,6 @@ import {
 } from "./progress.js";
 import { renderSail } from "./chapters/sail.js";
 import { renderLocate } from "./chapters/locate.js";
-import { renderQuality } from "./chapters/quality.js";
 import { renderTalk } from "./chapters/talk.js";
 import { renderDirection } from "./chapters/direction.js";
 import { renderAxis } from "./chapters/axis.js";
@@ -46,7 +45,6 @@ export default function App() {
   const [poolError, setPoolError] = useState<string | null>(null);
   const [picks, setPicks] = useState<string[]>([]);
   // 章节门禁：学生按下「先用通用模式」算一次显式跳过；maxStage 记住本会话解锁到哪一段（只增不减）。
-  const [schoolSkipped, setSchoolSkipped] = useState(false);
   const [maxStage, setMaxStage] = useState(0);
   const [aiDraft, setAiDraft] = useState("");
   // 调试模式预填本地演示访问码：点「连接」就能进对话，不用手敲。
@@ -146,6 +144,21 @@ export default function App() {
       basis: "（调试模式）示例区间，仅供验收界面使用，不是真实数据。" });
   }, []);
 
+  // 探索区间自动生成（负责人裁定：区间由数据来，不由学生填）：有考试按各自切线做等位
+  // 换算取 min–max；没有考试但有目标分时按上下各 10 分。学生仍可在定位页微调，
+  // 但下一次数据变化会按新数据重新生成——改数据比保手调更重要。
+  const examsKey = state.form.exams.map((exam) => `${exam.total}/${exam.topTotal}/${exam.undergraduateTotal}`).join("|");
+  useEffect(() => {
+    if (!state.form.primary) return;
+    const derived = rangeFromExams(state.form.exams, state.form.primary);
+    if (derived) { setRange(derived); return; }
+    if (state.form.score !== null) {
+      setRange({ low: Math.max(0, state.form.score - 10), high: Math.min(750, state.form.score + 10),
+        basis: "按高考目标分上下各 10 分自动生成，可在「定位」微调；不是预测区间。" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.form.primary, state.form.score, examsKey]);
+
   useEffect(() => {
     if (toast === null) return;
     const timer = setTimeout(() => setToast(null), 2600);
@@ -160,8 +173,6 @@ export default function App() {
     else if (!detail && node.open) node.close();
   }, [detail]);
   const notify = (message: string) => setToast(message);
-  /** 成绩这一步的显式跳过：不接学校数据也能往下走，但记下来，好让「成绩」显示为已完成。 */
-  const skipSchool = () => setSchoolSkipped(true);
 
   // Display names come straight from the release's typed catalog, keyed by offeringId. The
   // OfferingLabel fields are camelCase (institutionName/majorName/...), and the id — never a list
@@ -215,7 +226,6 @@ export default function App() {
     setTalkStep(0);
     setOnlyConfirmed(false);
     // 门禁也一并归零：清除本次探索之后，仍然要从「起航」一步步来。
-    setSchoolSkipped(false);
     setMaxStage(0);
     setState((current) => resetLocal(current));
     reloadRelease();
@@ -419,9 +429,9 @@ export default function App() {
   // —— 章节门禁（见 progress.ts）——
   // 完成状态始终按当前数据实时算；解锁段位只增不减，所以「回看」不会被中途改数据卡住。
   const progress: ProgressInput = {
-    state, quality, rangeKnown: range !== null, poolReady: pool !== null,
+    state, rangeKnown: range !== null, poolReady: pool !== null,
     picks: picks.length, suggestionCount: ai.suggestions.length,
-    chatted: hasChatted, schoolSkipped
+    chatted: hasChatted
   };
   const derivedStage = unlockedStage(progress);
   useEffect(() => {
@@ -448,7 +458,7 @@ export default function App() {
     state, setState, page, setPage: goTo, drafts, setDrafts, talkStep, setTalkStep, thinking, setThinking,
     reducedMotion, chatScrollRef, questionsDone, canConfirmDirections, saveAnswer, skip, notify,
     ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, saveChatEvidence,
-    quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName, skipSchool,
+    quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
     range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, togglePick,
     hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
@@ -499,7 +509,6 @@ export default function App() {
     <div className="wrap">
       {renderSail(ctx)}
       {renderLocate(ctx)}
-      {renderQuality(ctx)}
       {renderTalk(ctx)}
       {renderDirection(ctx)}
       {renderAxis(ctx)}

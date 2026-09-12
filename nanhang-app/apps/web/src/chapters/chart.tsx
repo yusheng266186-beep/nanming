@@ -74,7 +74,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   };
   return <section id="page-chart" className={`view${page === "chart" ? " active" : ""}`} aria-label="航线图">
     <div className="page-head">
-      <div><span className="eyebrow">Chapter 07 · 航线图 · 抟扶摇</span>
+      <div><span className="eyebrow">Chapter 06 · 航线图 · 抟扶摇</span>
         <h1 className="song">两条来路，<em>一张航线图。</em></h1>
         <p className="lede">AI 建议和你的自选各是一条线：一致合成一条，不一致分两条并列列出。所有院校专业都来自区间匹配的院校池，系统不打分、不排先后。</p></div>
       <div className="head-aside">

@@ -39,7 +39,7 @@ export function renderTalk({ state, page, setPage, chatScrollRef, questionsDone,
 
   return <section id="page-talk" className={`view${page === "talk" ? " active" : ""}`} aria-label="谈心">
     <div className="page-head">
-      <div><span className="eyebrow">Chapter 04 · 谈心 · 问心</span>
+      <div><span className="eyebrow">Chapter 03 · 谈心 · 问心</span>
         <h1 className="song">不急着选专业，<em>先认识你。</em></h1>
         <p className="lede">谈心由 AI 主持：它只提问、只倾听，你说的话由你亲手保存后才成为方向证据。是否招生、招多少人、去年最低分一律来自数据库，AI 绝不猜录取分数。</p></div>
       <div className="head-aside">

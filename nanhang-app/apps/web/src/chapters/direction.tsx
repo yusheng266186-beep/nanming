@@ -46,7 +46,7 @@ export function renderDirection({ page, setPage, pool, poolStale, suggestions, p
 
   return <section id="page-direction" className={`view${page === "direction" ? " active" : ""}`} aria-label="方向">
     <div className="page-head">
-      <div><span className="eyebrow">Chapter 05 · 方向 · 定罗盘</span>
+      <div><span className="eyebrow">Chapter 04 · 方向 · 定罗盘</span>
         <h1 className="song">两条来路，<em>都算数。</em></h1>
         <p className="lede">方向不是系统判给你的：AI 会根据你在「谈心」里说过的原话给一条线，你自己再选一条线。
           两条一致就合成一条，不一致就各走各的——最后的专业和院校按两条线分开给你，系统不打分、不排先后。</p></div>

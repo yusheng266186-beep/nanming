@@ -25,20 +25,21 @@ describe("主题：图标与航程", () => {
     for (const id of ["i-kun", "i-wing", "i-log", "i-ruler", "i-buoy", "i-chartmap"]) {
       expect(art, `sprite is missing ${id}`).toContain(`id="${id}"`);
     }
-    // 成绩章节用航海日志，而不是与「校内位置」重复的 layers。
-    expect(app).toContain('{ id: "quality", num: "03", k: "成绩", icon: "log"');
+    // 成绩章已并入定位（负责人裁定）；质量慧析的航海日志图标跟去了定位页的识别与慧析面板。
+    expect(app).toContain('{ id: "locate", num: "02", k: "定位", icon: "compass"');
+    expect(app).toContain('<Icon name="log" />');
   });
 
   it("names each chapter as a leg of the voyage", () => {
-    // 七个阶段名来自《逍遥游》的航程意象；章节编号必须与导航一致（曾经错位过）。
+    // 六个阶段名来自《逍遥游》的航程意象；章节编号必须与导航一致（曾经错位过）。
+    // 成绩章并入定位后（负责人裁定），质量慧析的「录航迹」由定位页的慧析面板承担。
     const legs = [
       ["Chapter 01 · 起航 · 北冥有鱼", "sail"],
       ["Chapter 02 · 定位 · 测深", "locate"],
-      ["Chapter 03 · 成绩 · 录航迹", "quality"],
-      ["Chapter 04 · 谈心 · 问心", "talk"],
-      ["Chapter 05 · 方向 · 定罗盘", "direction"],
-      ["Chapter 06 · 分数轴 · 试风", "axis"],
-      ["Chapter 07 · 航线图 · 抟扶摇", "chart"],
+      ["Chapter 03 · 谈心 · 问心", "talk"],
+      ["Chapter 04 · 方向 · 定罗盘", "direction"],
+      ["Chapter 05 · 分数轴 · 试风", "axis"],
+      ["Chapter 06 · 航线图 · 抟扶摇", "chart"],
     ] as const;
     for (const [eyebrow] of legs) expect(app, `missing chapter label: ${eyebrow}`).toContain(eyebrow);
     // 导航里的编号与眉题必须成对出现，不能只改一处。

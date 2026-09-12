@@ -3,10 +3,13 @@ import { QUESTIONS, axisMarks, scorePosition, withForm, type ExamRecord, type We
 import { examLineDiffs, equivalentPosition, scoreStability, scoreTrend } from "../exam-position.js";
 import { rangeFromExams, type ScoreRange } from "../journey-model.js";
 import { OFFICIAL_LINES_2026 } from "../reference-lines.js";
-import { formatGap } from "../quality-huixi.js";
+import {
+  classChanges, formatGap, formatRate, formatScore, friendlyExamLabel, latestExam,
+  subjectDistances, trailChart, weakestKnowledge
+} from "../quality-huixi.js";
 import { Provenance, Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
-import { REFERENCE_YEAR, clamp, label, type PageId } from "./shared.js";
+import { REFERENCE_YEAR, clamp, label, type PageId, type QualityState } from "./shared.js";
 
 export interface LocateProps {
   state: WebState;
@@ -18,13 +21,20 @@ export interface LocateProps {
   notify: (message: string) => void;
   range: ScoreRange | null;
   setRange: Dispatch<SetStateAction<ScoreRange | null>>;
+  quality: QualityState;
+  qualityCode: string;
+  setQualityCode: Dispatch<SetStateAction<string>>;
+  schoolName: string;
+  setSchoolName: Dispatch<SetStateAction<string>>;
+  identifySchool: () => Promise<void>;
 }
 
 const formatRatio = (ratio: number) => `${ratio >= 0 ? "+" : ""}${(ratio * 100).toFixed(1)}%`;
 const formatPercentile = (percentile: number) =>
   `前 ${percentile < 1 ? percentile.toFixed(2) : percentile.toFixed(1)}%`;
 
-export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange }: LocateProps) {
+export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange,
+  quality, qualityCode, setQualityCode, schoolName, setSchoolName, identifySchool }: LocateProps) {
   const exams = state.form.exams;
   const totals = exams.map((exam) => exam.total).filter((item): item is number => item !== null);
   const stability = scoreStability(totals);
@@ -32,12 +42,13 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
   // 位次与百分位来自官方分段表；没有表或分数不在公布范围时保持 null，页面显示未知。
   const position = scorePosition(state.release, state.form.primary, score);
   const marks = axisMarks(state.release, state.form.primary, score);
-  // 公布范围条：把学生的高考目标分画在「官方公布的最低分 → 最高分」这条真实区间上。
   const bandRange = position ? Math.max(1, position.publishedMaxScore - position.publishedMinScore) : 0;
   const bandLeft = position ? (position.score - position.publishedMinScore) / bandRange * 100 : 0;
 
+  // 荣县一中增强模式接入后，考试行来自学校数据：只读、固定，不提供增删改。
+  const schoolLocked = quality.status === "ready" && quality.shard !== null;
+
   // 等位换算取最近一次「有总分且有任一切线」的考试；官方线是已登记的 2026 年四川省控线。
-  // 学生没选科类或发布数据未载入时，等位分仍可算，但一分一段定位显示为未知。
   const equivalentExam = [...exams].reverse()
     .find((exam) => exam.total !== null && (exam.topTotal !== null || exam.undergraduateTotal !== null)) ?? null;
   const officialLines = state.form.primary
@@ -66,48 +77,92 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     notify(`已把等位分 ${value} 设为高考目标分`);
   };
   const numberField = (ariaLabel: string, placeholder: string, value: number | null,
-                       onChange: (value: number | null) => void) =>
+                       onChange: (value: number | null) => void, disabled = false) =>
     <input className="inp exam-num" type="number" inputMode="numeric" min={0} max={750}
-      aria-label={ariaLabel} value={value ?? ""} placeholder={placeholder}
+      aria-label={ariaLabel} value={value ?? ""} placeholder={placeholder} disabled={disabled}
       onChange={(event) => onChange(event.target.value === "" ? null : Number(event.target.value))} />;
+
+  // —— 荣县一中质量慧析（合并自原「成绩」章）——
+  const shardExam = quality.shard ? latestExam(quality.shard) : null;
+  const distances = shardExam ? subjectDistances(shardExam) : [];
+  const gaps = quality.shard ? weakestKnowledge(quality.shard, 6) : [];
+  const moves = quality.shard ? classChanges(quality.shard) : [];
+  const examRow = quality.index && shardExam
+    ? quality.index.exams.find((row) => row.exam_code === shardExam.exam && row.track === quality.shard?.person.track) ?? null
+    : null;
+  const examTrend = quality.index?.trend ?? [];
+  const lastTrend = examTrend[examTrend.length - 1] ?? null;
+  const prevTrend = examTrend[examTrend.length - 2] ?? null;
+  const examName = (raw: string) => friendlyExamLabel(raw);
 
   return <section id="page-locate" className={`view${page === "locate" ? " active" : ""}`} aria-label="定位">
     <div className="page-head">
       <div><span className="eyebrow">Chapter 02 · 定位 · 测深</span>
         <h1 className="song">先看清，<em>我在哪片海域。</em></h1>
-        <p className="lede">不给虚假精确的单点数字。成绩、位次、稳定性与趋势共同围出一段「真实水平区间」——这才是能站得住脚的起点。</p></div>
+        <p className="lede">不给虚假精确的单点数字。几次考试（或学校数据）与它们各自的切线，共同围出一段「真实水平区间」——这才是能站得住脚的起点。</p></div>
       <div className="head-aside">
         <svg className="head-rose" aria-hidden="true"><use href="#rose" /></svg>
         <p>知止而后有定，<br />定而后能静，静而后能安。</p></div>
     </div>
 
-    <div className="panel" style={{ marginTop: 20 }}>
-      <h3><Icon name="log" />录入近几次考试</h3>
-      <p className="psub">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。荣县一中的同学在「成绩」页用验证码接入后自动带入，无需重复填写。</p>
-      {exams.length === 0 ? <p className="muted-note">还没有录入考试。填了总分，稳定性与趋势才有依据；不填也不影响目标分定位。</p> : null}
+    {/* 荣县一中增强模式直接内嵌在这里：识别后考试行自动填好并锁定，替换掉手输。 */}
+    {quality.status !== "ready" ? <div className="panel" style={{ marginTop: 20 }}>
+      <h3><Icon name="shield" />荣县一中的同学：直接接入学校数据</h3>
+      <p className="psub">输入姓名和班主任发放的 6 位验证码，服务端核对后读取你本人的成绩记录，自动填好下面的考试行并推导探索区间——不需要手动录入。其他学校的同学跳过这步，直接手填即可。</p>
+      <div className="grid-2" style={{ marginTop: 16, gap: 14, maxWidth: 460 }}>
+        <label className="field"><span className="flab">学生姓名</span>
+          <input className="inp" type="text" autoComplete="off" maxLength={40}
+            value={schoolName}
+            placeholder="和验证码一起由班主任发放"
+            onChange={(event) => setSchoolName(event.target.value)} /></label>
+        <label className="field"><span className="flab">6 位验证码</span>
+          <input className="inp" type="text" inputMode="numeric" autoComplete="off" maxLength={6}
+            value={qualityCode}
+            placeholder="例如 246810"
+            aria-describedby="locate-identify-hint"
+            onChange={(event) => setQualityCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+            onKeyDown={(event) => { if (event.key === "Enter") void identifySchool(); }} /></label>
+      </div>
+      <div className="hero-act" style={{ marginTop: 16 }}>
+        <button type="button" className="btn brass" disabled={quality.status === "loading" || quality.attempts.blocked}
+          onClick={() => void identifySchool()}>
+          {quality.status === "loading" ? "正在核对…" : "识别并接入"}<Icon name="arrow" /></button>
+        <span className="muted-note">不接入也完全可以：直接在下面手填考试即可。</span>
+      </div>
+      <p className="fhint" id="locate-identify-hint">{quality.message
+        ?? "姓名和验证码只发送给成绩服务核对（有尝试次数限制），不进入对话，也不发给 AI。"}</p>
+    </div>
+    : <div className="panel" style={{ marginTop: 20 }}>
+      <h3><Icon name="shield" />{quality.shard?.person.name} · {quality.shard?.person.classLabel}</h3>
+      <p className="psub">{quality.shard?.person.track} · {quality.shard?.person.combination} · 已接入 {quality.shard?.exams.length} 次考试记录，下面这些行来自学校数据，是固定的，不能改；要看逐科位置、航迹与知识短板，见本页下方。</p>
+    </div>}
+
+    <div className="panel" style={{ marginTop: 22 }}>
+      <h3><Icon name="log" />{schoolLocked ? "学校带入的近几次考试（只读）" : "录入近几次考试"}</h3>
+      {!schoolLocked ? <p className="psub">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。位次不需要填：没有全校人数做分母，它做不了可靠的换算。</p>
+        : null}
+      {exams.length === 0 ? <p className="muted-note">还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。</p> : null}
       {exams.map((exam, index) => {
         const diffs = examLineDiffs(exam);
+        const rowLabel = schoolLocked ? (exam.label || `第 ${index + 1} 次`) : `第 ${index + 1} 次`;
         return <div className="exam-row" key={index}>
-          <input className="inp exam-label" type="text" value={exam.label}
-            aria-label={`第 ${index + 1} 次考试名称`}
-            onChange={(event) => updateExam(index, { label: event.target.value })} />
-          {numberField(`第 ${index + 1} 次总分`, "总分", exam.total, (value) => updateExam(index, { total: value }))}
-          {numberField(`第 ${index + 1} 次位次（校内/全市，选填）`, "位次", exam.rank, (value) => updateExam(index, { rank: value }))}
-          {numberField(`第 ${index + 1} 次特控线/一本线`, "特控线", exam.topTotal, (value) => updateExam(index, { topTotal: value }))}
-          {numberField(`第 ${index + 1} 次本科线`, "本科线", exam.undergraduateTotal, (value) => updateExam(index, { undergraduateTotal: value }))}
-          <button type="button" className="rbtn" aria-label={`删除第 ${index + 1} 次考试`}
-            onClick={() => removeExam(index)}><Icon name="close" /></button>
+          <span className="exam-tag" title={exam.label}>{rowLabel}</span>
+          {numberField(`第 ${index + 1} 次总分`, "总分", exam.total, (value) => updateExam(index, { total: value }), schoolLocked)}
+          {numberField(`第 ${index + 1} 次特控线/一本线`, "特控线", exam.topTotal, (value) => updateExam(index, { topTotal: value }), schoolLocked)}
+          {numberField(`第 ${index + 1} 次本科线`, "本科线", exam.undergraduateTotal, (value) => updateExam(index, { undergraduateTotal: value }), schoolLocked)}
+          {!schoolLocked && <button type="button" className="rbtn" aria-label={`删除第 ${index + 1} 次考试`}
+            onClick={() => removeExam(index)}><Icon name="close" /></button>}
           {diffs.topDiff !== null || diffs.undergraduateDiff !== null ? <span className="exam-diffs">
             {diffs.topDiff !== null ? <span>距特控线 {formatGap(diffs.topDiff)}</span> : null}
             {diffs.undergraduateDiff !== null ? <span>距本科线 {formatGap(diffs.undergraduateDiff)}</span> : null}
           </span> : null}
         </div>;
       })}
-      <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
+      {!schoolLocked && <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
         <button type="button" className="btn sm" disabled={exams.length >= 5} onClick={addExam}>
           {exams.length >= 5 ? "最多记录 5 次" : "添加一次考试"}</button>
         <small className="muted-note">切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。</small>
-      </div>
+      </div>}
     </div>
 
     <div className="locate">
@@ -124,6 +179,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
               </div>}</div>
           </div>
           <div style={{ marginTop: 26 }}>
+            {/* 没有可用的分段表/分数越界时，说明写在条外——条内挤不下长句。 */}
             <div className="bandbar">
               {position
                 ? <>
@@ -133,12 +189,12 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
                   <span className="bandtick line" style={{ left: `${clamp(bandLeft, 6, 94)}%` }}>你 {position.score}</span>
                   <span className="bandtick" style={{ left: "98%" }}>{position.publishedMaxScore}</span>
                 </>
-                : <div className="band-empty">
-                  {state.release
-                    ? "该科类没有可用的官方分段表，或目标分不在公布范围内 · 不插值、不外推"
-                    : "尚未载入发布数据 · 位次与范围保持未知"}
-                </div>}
+                : null}
             </div>
+            {!position && <p className="fhint" style={{ marginTop: 8 }}>
+              {state.release
+                ? "该科类没有可用的官方分段表，或目标分不在公布范围内——位次保持未知，不插值、不外推。"
+                : "尚未载入发布数据，位次与范围保持未知。"}</p>}
             <div className="slider-foot" style={{ color: "var(--mut)", marginTop: 9 }}>
               <span>{position ? `官方公布最低 ${position.publishedMinScore} 分` : "官方公布最低分"}</span>
               <span>{position ? `${position.tableYear} 年分段表 · 共 ${position.total.toLocaleString("zh-CN")} 人` : "分段表"}</span>
@@ -253,66 +309,157 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       </Provenance>
     </div>}
 
-    {/* 探索区间是新主流程的枢纽：匹配院校不看单点分数，看这一段区间。
-        两条来路都在这里汇合——校外同学按目标分或历考换算，荣县一中的同学识别后自动推导。 */}
+    {/* 探索区间由数据自动生成：有考试按等位换算取 min–max，没有考试按目标分 ±10。
+        学生非要改可以改（微调），但不提供「去匹配」按钮——顺序上的下一步是谈心。 */}
     <div className="panel" style={{ marginTop: 22 }}>
-      <h3><Icon name="compass" />探索区间（用它匹配院校）</h3>
-      <p className="psub">后面的院校匹配不看单点分数，看这段区间：下限到上限之间的院校才会进入结果。
-        可以按近几次考试的等位换算自动推导，也可以围绕目标分各取 10 分，再手动微调。</p>
+      <h3><Icon name="compass" />探索区间（自动生成，可微调）</h3>
+      <p className="psub">后面的院校匹配不看单点分数，看这段区间。它由上面的数据自动生成：有几次考试时按各自的切线做等位换算、
+        取可用估算的最小—最大值；只有目标分时按上下各 10 分。非要改，可以直接改下面两个数——下一次数据变化时会按新数据重新生成。</p>
       {range
-        ? <div className="vlist" style={{ marginTop: 14 }}>
-          <span className="vpill">区间 <b>{range.low}–{range.high}</b> 分</span>
-          <span className="vpill">参考 <b>{trackLabel}</b></span>
-        </div>
-        : <p className="muted-note" style={{ marginTop: 12 }}>还没有生成区间。用下面任一方式生成，或者直接手动填写。</p>}
-      <div className="grid-2" style={{ marginTop: 14, gap: 14, maxWidth: 420 }}>
-        <label className="field"><span className="flab">区间下限</span>
-          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间下限"
-            value={range && Number.isFinite(range.low) ? range.low : ""}
-            onChange={(event) => {
-              const value = event.target.value === "" ? NaN : Number(event.target.value);
-              setRange((current) => ({ low: value, high: current?.high ?? 750,
-                basis: "手动填写的探索区间；可随时修改。" }));
-            }} /></label>
-        <label className="field"><span className="flab">区间上限</span>
-          <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
-            value={range && Number.isFinite(range.high) ? range.high : ""}
-            onChange={(event) => {
-              const value = event.target.value === "" ? NaN : Number(event.target.value);
-              setRange((current) => ({ low: current?.low ?? 0, high: value,
-                basis: "手动填写的探索区间；可随时修改。" }));
-            }} /></label>
-      </div>
-      {range ? <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p> : null}
-      <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
-        <button type="button" className="btn sm" disabled={!state.form.primary}
-          onClick={() => {
-            if (!state.form.primary) { notify("先在「起航」选好首选科目。"); return; }
-            const derived = rangeFromExams(exams, state.form.primary);
-            if (!derived) { notify("近几次考试至少要有一次「总分 + 任一切线」才能换算；也可以改用目标分。"); return; }
-            setRange(derived);
-            notify("已按近几次考试的等位换算生成探索区间");
-          }}>按近几次考试换算</button>
-        <button type="button" className="btn sm" disabled={score === null}
-          onClick={() => {
-            if (score === null) { notify("先在「起航」填一个高考目标分。"); return; }
-            setRange({ low: Math.max(0, score - 10), high: Math.min(750, score + 10),
-              basis: "目标分上下各 10 分作为初始探索范围，可自行调整；不是预测区间。" });
-            notify("已按目标分 ±10 生成探索区间");
-          }}>按目标分 ±10</button>
-        {range ? <button type="button" className="btn sm brass" onClick={() => setPage("axis")}>
-          拿这个区间去匹配院校<Icon name="arrow" /></button> : null}
-      </div>
+        ? <>
+          <div className="vlist" style={{ marginTop: 14 }}>
+            <span className="vpill">区间 <b>{range.low}–{range.high}</b> 分</span>
+            <span className="vpill">参考 <b>{trackLabel}</b></span>
+          </div>
+          <div className="grid-2" style={{ marginTop: 14, gap: 14, maxWidth: 420 }}>
+            <label className="field"><span className="flab">微调下限</span>
+              <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间下限"
+                value={Number.isFinite(range.low) ? range.low : ""}
+                onChange={(event) => {
+                  const value = event.target.value === "" ? NaN : Number(event.target.value);
+                  setRange((current) => ({ low: value, high: current?.high ?? 750,
+                    basis: "手动微调过的探索区间；下一次数据变化会重新生成。" }));
+                }} /></label>
+            <label className="field"><span className="flab">微调上限</span>
+              <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
+                value={Number.isFinite(range.high) ? range.high : ""}
+                onChange={(event) => {
+                  const value = event.target.value === "" ? NaN : Number(event.target.value);
+                  setRange((current) => ({ low: current?.low ?? 0, high: value,
+                    basis: "手动微调过的探索区间；下一次数据变化会重新生成。" }));
+                }} /></label>
+          </div>
+          <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p>
+        </>
+        : <p className="muted-note" style={{ marginTop: 12 }}>还没有可以生成区间的数据：录入至少一次「总分 + 切线」的考试，或在「起航」填一个高考目标分。</p>}
       <Provenance icon="ruler">
         区间端点在「分数轴」页会换算成同科类历史位次区间，再与院校的历史录取位次取交集；
         它只决定先看哪些院校，不是预测，也不会悄悄扩大。
       </Provenance>
     </div>
 
+    {/* —— 荣县一中质量慧析（原「成绩」章并入）：学校数据接入后才能看 —— */}
+    {schoolLocked && shardExam && <div className="panel" style={{ marginTop: 22 }}>
+      <h3><Icon name="layers" />最近一次考试的逐科位置</h3>
+      <p className="psub">每一科都给出「本人分数 / 本科线 / 距线差」和与年级、班级均分的差。缺失或异常单元格显示为「—」，不按 0 分计算。这些只描述已经发生的事，不预测录取。</p>
+      {examRow && <p className="fhint" style={{ marginTop: 10 }}>
+        {examName(shardExam.exam)} 本校 {shardExam.track} 共 {examRow.students} 人参考；一本上线 {examRow.top_count ?? "—"} 人（{formatRate(examRow.top_rate)}），
+        本科上线 {examRow.undergraduate_count ?? "—"} 人（{formatRate(examRow.undergraduate_rate)}）。
+        {shardExam.trackDiffersFromHome && `该场考试按${shardExam.track}统计（你平时在${quality.shard?.person.track}），位次、分数线与班级均分都取自这一场自己的口径。`}
+      </p>}
+      {lastTrend && <p className="fhint" style={{ marginTop: 6 }}>年级参考：{examName(lastTrend.exam_code)}全年级 {lastTrend.students} 人参考，
+        均分 {formatScore(lastTrend.average)}，一本上线 {lastTrend.top_count ?? "—"} 人{prevTrend
+          ? `；上次（${examName(prevTrend.exam_code)}）均分 ${formatScore(prevTrend.average)}` : ""}。</p>}
+      <div className="table-wrap" style={{ marginTop: 10 }}>
+        <table className="table">
+          <thead><tr><th scope="col">科目</th><th scope="col">分数</th><th scope="col">本科线</th><th scope="col">距本科线</th>
+            <th scope="col">一本线</th><th scope="col">距一本线</th><th scope="col">年级均分差</th><th scope="col">班级均分差</th></tr></thead>
+          <tbody>
+            {distances.map((row) => <tr key={row.subject}>
+              <th scope="row">{row.subject}</th>
+              <td className="num">{row.value === null ? "—" : formatScore(row.value)}</td>
+              <td className="num">{formatScore(row.undergraduateLine)}</td>
+              <td className="num">{formatGap(row.undergraduateGap)}</td>
+              <td className="num">{formatScore(row.topLine)}</td>
+              <td className="num">{formatGap(row.topGap)}</td>
+              <td className="num">{formatGap(row.gradeGap)}</td>
+              <td className="num">{formatGap(row.classGap)}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p className="fhint">语数外与物理/历史为原分，化学/生物/政治/地理为赋分。距线差为负数表示还差多少分。</p>
+    </div>}
+
+    {schoolLocked && quality.shard && quality.shard.exams.length > 1 && <div className="panel" style={{ marginTop: 22 }}>
+      <h3><Icon name="route" />航迹：历次总分与切线</h3>
+      <p className="psub">柱子画在统一分数标尺上，越高分越高；两条虚线是最近一次考试的本科线与特控线（一本线），柱子到虚线的落差就是当次距线差。</p>
+      {(() => {
+        const chart = trailChart(quality.shard!.exams);
+        if (!chart) return <div className="empty-inline">暂无可绘制的总分记录。</div>;
+        return <svg viewBox={`0 0 ${chart.width} ${chart.height}`} width="100%" role="img"
+          aria-label="历次考试总分轨迹，含最近一次考试的本科线与特控线参考线" style={{ display: "block", maxWidth: 560 }}>
+          <line x1={6} y1={chart.baseline} x2={chart.width - 6} y2={chart.baseline} stroke="#dcd6c6" strokeWidth={1} />
+          {chart.lines.map((line) => <g key={line.kind}>
+            <line x1={6} y1={line.y} x2={chart.width - 6} y2={line.y}
+              stroke={line.kind === "top" ? "#a97b34" : "#7d9a86"} strokeWidth={1.2} strokeDasharray="6 4" />
+            <text x={chart.width - 8} y={line.y - 4} textAnchor="end" fontSize="10"
+              fill={line.kind === "top" ? "#a97b34" : "#7d9a86"}>{line.label}</text>
+          </g>)}
+          {chart.bars.map((bar) => <g key={bar.key}>
+            {bar.total !== null
+              ? <rect x={bar.x} y={bar.y} width={bar.w} height={Math.max(2, bar.h)} rx={3} fill="#12454f" opacity={0.88}>
+                <title>{`${bar.full}：${formatScore(bar.total)} 分`}</title>
+              </rect>
+              : <line className="trail-gap" x1={bar.x + bar.w / 2} y1={chart.baseline - 10} x2={bar.x + bar.w / 2} y2={chart.baseline}
+                stroke="#cbc4b0" strokeWidth={2} strokeDasharray="2 2">
+                <title>{`${bar.full}：缺考/无来源总分，留空不补零`}</title>
+              </line>}
+            <text x={bar.x + bar.w / 2} y={chart.height - 8} textAnchor="middle" fontSize="9" fill="#6d7f83">{bar.short}</text>
+          </g>)}
+        </svg>;
+      })()}
+      <div className="table-wrap">
+        <table className="table">
+          <thead><tr><th scope="col">考试</th><th scope="col">总分</th><th scope="col">一本线</th><th scope="col">距一本</th>
+            <th scope="col">本科线</th><th scope="col">距本科</th><th scope="col">校内位次</th><th scope="col">考试人数</th></tr></thead>
+          <tbody>
+            {quality.shard.exams.map((row) => <tr key={row.exam}>
+              <th scope="row">{friendlyExamLabel(row.exam)}{row.trackDiffersFromHome ? `（按${row.track}）` : ""}</th>
+              <td className="num">{formatScore(row.total)}</td>
+              <td className="num">{formatScore(row.topTotal)}</td>
+              <td className="num">{formatGap(row.topDiff)}</td>
+              <td className="num">{formatScore(row.undergraduateTotal)}</td>
+              <td className="num">{formatGap(row.undergraduateDiff)}</td>
+              <td className="num">{row.gradeRank ?? "—"}</td>
+              <td className="num">{row.gradeSize ?? "—"}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      {moves.length > 0 && <p className="fhint">注意：你的班号在 {moves.map((row) => friendlyExamLabel(row.exam)).join("、")} 发生变化，页面按各次考试的原始班号统计，班级均分差也随之切换。</p>}
+      <Provenance icon="log">
+        总分与两条切线来自学校质量复盘的原始记录；柱子画在统一分数标尺上，缺考场次留空，不补成 0 分，也不与其它场次拉平比较。
+      </Provenance>
+      <p className="fhint">考试代码说明：一册～四册＝第1～4学期期末；「XY」＝第X学期第Y次月考（如 21 为第2学期第1次月考、51 为第5学期第1次月考）；4半＝第4学期半期。</p>
+    </div>}
+
+    {schoolLocked && gaps.length > 0 && <div className="panel" style={{ marginTop: 22 }}>
+      <h3><Icon name="layers" />知识点：最该先补的几块</h3>
+      <p className="psub">按本人得分率从低到高排列，同时给出年级同知识点的得分率。得分率为 0 说明该题没拿到分，不代表这一块完全不会。</p>
+      <div className="table-wrap">
+        <table className="table">
+          <thead><tr><th scope="col">学科</th><th scope="col">知识点</th><th scope="col">本人得分率</th>
+            <th scope="col">年级得分率</th><th scope="col">与年级差</th><th scope="col">考试</th></tr></thead>
+          <tbody>
+            {gaps.map((row) => <tr key={`${row.exam}-${row.subject}-${row.knowledge}`}>
+              <th scope="row">{row.subject}</th>
+              <td>{row.knowledge}</td>
+              <td className="num">{formatRate(row.rate)}</td>
+              <td className="num">{formatRate(row.gradeRate)}</td>
+              <td className="num">{row.gradeRate === null ? "—" : formatGap((row.rate - row.gradeRate) * 100)} 个百分点</td>
+              <td>{friendlyExamLabel(row.exam)}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p className="fhint">只统计有来源满分且本人有作答的小题；缺少分值的题不参与得分率计算，也不会被补成满分。</p>
+    </div>}
+
     <div className="banner">
       <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="chat" size="lg" />
-        <div><h3 className="song">区间有了，先看看这段海面里有哪些学校</h3><p>下一步用探索区间匹配院校与专业；匹配完再去谈心聊方向，最后按「AI 建议 × 自选」两条线出结果。</p></div></div>
-      <button type="button" className="btn sm" style={{ flexShrink: 0 }} onClick={() => setPage("axis")}>去分数轴匹配<Icon name="arrow" /></button>
+        <div><h3 className="song">位置看清了，去和 AI 聊聊你想去哪</h3><p>分数决定「能到哪」，聊出来的方向决定「想去哪」。区间匹配院校随时可以去「分数轴」做；顺序上的下一步是谈心。</p></div></div>
+      <button type="button" className="btn sm" style={{ flexShrink: 0 }} onClick={() => setPage("talk")}>去谈心<Icon name="arrow" /></button>
     </div>
   </section>;
 }

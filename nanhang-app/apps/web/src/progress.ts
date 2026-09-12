@@ -10,24 +10,23 @@
 //
 // 这里只做纯函数，界面负责把状态喂进来、把提示显示出来。
 import type { WebState } from "./model.js";
-import type { PageId, QualityState } from "./chapters/shared.js";
+import type { PageId } from "./chapters/shared.js";
 
 /**
  * 流程分段。段与段之间是硬顺序，段内是并列入口。
  * 顺序按实际流程而不是导航条上的编号：定位与成绩都通向「区间」，区间匹配完成后才去谈心。
  */
 export const STAGES: readonly (readonly PageId[])[] = [
-  ["sail"],              // 先选科：没有选科，位次与资格都无从谈起
-  ["locate", "quality"], // 两个成绩入口：通用模式 / 荣县一中增强模式
-  ["axis"],              // 探索区间 → 区间匹配院校
-  ["talk"],              // 有院校池了再谈心，聊的是「想去哪」
-  ["direction"],         // 聊过之后再自选专业
-  ["chart"]              // 最后合成航线图
+  ["sail"],     // 先选科：没有选科，位次与资格都无从谈起
+  ["locate"],   // 拿到成绩（手填或荣县一中接入，都在这一页）并生成探索区间
+  ["axis"],     // 探索区间 → 区间匹配院校
+  ["talk"],     // 有院校池了再谈心，聊的是「想去哪」
+  ["direction"],// 聊过之后再自选专业
+  ["chart"]     // 最后合成航线图
 ];
 
 export interface ProgressInput {
   readonly state: WebState;
-  readonly quality: QualityState;
   /** 探索区间是否已经生成（定位页的产出）。 */
   readonly rangeKnown: boolean;
   /** 院校池是否已经跑出来（分数轴页的产出）。 */
@@ -36,10 +35,8 @@ export interface ProgressInput {
   readonly picks: number;
   /** AI 建议条数。 */
   readonly suggestionCount: number;
-  /** 是否已经聊过（AI 转录里有发言，或经典问答存过原话）。 */
+  /** 是否已经聊过（AI 转录里有发言）。 */
   readonly chatted: boolean;
-  /** 学生是否按下了「先用通用模式」——成绩这一步的显式跳过。 */
-  readonly schoolSkipped: boolean;
 }
 
 export function stageOf(id: PageId): number {
@@ -62,8 +59,6 @@ export function chapterDone(id: PageId, input: ProgressInput): boolean {
       return input.state.form.primary !== null && input.state.form.additional.length === 2;
     case "locate":
       return input.rangeKnown;
-    case "quality":
-      return (input.quality.status === "ready" && input.quality.shard !== null) || input.schoolSkipped;
     case "axis":
       return input.poolReady;
     case "talk":
@@ -103,16 +98,15 @@ export function isDone(id: PageId, input: ProgressInput): boolean {
 /** 每一步「怎样才算完成」的人话说明。 */
 export const DONE_HINT: Record<PageId, string> = {
   sail: "选好首选科目与两门再选科目",
-  locate: "生成探索区间",
-  quality: "用验证码接入，或选择通用模式",
+  locate: "生成探索区间（手填考试或接入学校数据）",
   axis: "运行一次区间匹配",
-  talk: "在对话里聊几句，或保存一句自己的原话",
+  talk: "在对话里聊几句",
   direction: "自选几个专业，或采用 AI 建议",
   chart: "完成上面的步骤"
 };
 
 export const PAGE_LABEL: Record<PageId, string> = {
-  sail: "起航", locate: "定位", quality: "成绩", talk: "谈心",
+  sail: "起航", locate: "定位", talk: "谈心",
   direction: "方向", axis: "分数轴", chart: "航线图"
 };
 

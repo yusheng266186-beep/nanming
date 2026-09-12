@@ -585,10 +585,16 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
 .expl{display:block;margin-top:9px;font-size:11px;color:var(--mut);line-height:1.8}
 .qjump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 /* 定位页的考试录入行：名称占整行，数字输入自动换行成两列，距线差 chips 单独一行。 */
-.exam-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
-.exam-row .exam-label{flex:2 1 150px}
-.exam-row .exam-num{flex:1 1 90px;min-width:84px}
-.exam-row .rbtn{flex-shrink:0}
+/* 考试行：第几次是固定文字标签（不可改、不是输入框），后面三个数字框等宽一行排开，
+   删除按钮收在行尾不再单独占位；距线差 chips 整行铺在下方。 */
+.exam-row{display:grid;grid-template-columns:minmax(64px,auto) 1fr 1fr 1fr 34px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
+.exam-row .exam-tag{font:italic 500 12px/1.4 var(--display);letter-spacing:.04em;color:var(--brass-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exam-row .exam-num{min-width:0;width:100%}
+.exam-row .rbtn{flex-shrink:0;justify-self:end}
+.exam-row .exam-diffs{grid-column:1 / -1}
+@media(max-width:560px){
+  .exam-row{grid-template-columns:minmax(48px,auto) 1fr 1fr 1fr 30px;gap:6px}
+}
 .exam-diffs{display:flex;gap:8px;flex-wrap:wrap;flex-basis:100%}
 .exam-diffs span{font-size:11.5px;color:var(--ink-2);background:var(--paper-2);border-radius:20px;padding:3px 12px}
 /* 成绩页的数据表：宽表在窄屏横向滑动，行距更宽，数值列右对齐且不换行。 */

@@ -23,11 +23,10 @@ export const label = (value: unknown) => labels[String(value)] ?? String(value);
 export const CHAPTERS = [
   { id: "sail", num: "01", k: "起航", icon: "sail", art: "sea" },
   { id: "locate", num: "02", k: "定位", icon: "compass", art: "sea" },
-  { id: "quality", num: "03", k: "成绩", icon: "log", art: "harbor" },
-  { id: "talk", num: "04", k: "谈心", icon: "chat", art: "harbor" },
-  { id: "direction", num: "05", k: "方向", icon: "layers", art: "compass" },
-  { id: "axis", num: "06", k: "分数轴", icon: "axis", art: "lighthouse" },
-  { id: "chart", num: "07", k: "航线图", icon: "route", art: "sea" }
+  { id: "talk", num: "03", k: "谈心", icon: "chat", art: "harbor" },
+  { id: "direction", num: "04", k: "方向", icon: "layers", art: "compass" },
+  { id: "axis", num: "05", k: "分数轴", icon: "axis", art: "lighthouse" },
+  { id: "chart", num: "06", k: "航线图", icon: "route", art: "sea" }
 ] as const;
 export type PageId = (typeof CHAPTERS)[number]["id"];
 

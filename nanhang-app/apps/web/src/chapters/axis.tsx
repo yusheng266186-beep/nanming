@@ -34,7 +34,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
   const rows = pool?.rows ?? [];
   return <section id="page-axis" className={`view${page === "axis" ? " active" : ""}`} aria-label="分数轴">
     <div className="page-head">
-      <div><span className="eyebrow">Chapter 06 · 分数轴 · 试风</span>
+      <div><span className="eyebrow">Chapter 05 · 分数轴 · 试风</span>
         <h1 className="song">这段区间里，<em>哪些学校可选。</em></h1>
         <p className="lede">把「定位」页的探索区间放到官方分段表上：区间端点换算成同科类历史位次，与每条院校专业记录的历史录取位次取交集——交集非空才进入结果。前台单位是分数，后台判断用位次。</p></div>
       <div className="head-aside">

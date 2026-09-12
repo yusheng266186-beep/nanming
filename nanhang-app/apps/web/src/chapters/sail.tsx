@@ -7,8 +7,8 @@ import { CHAPTERS, label, type PageId, type QualityState } from "./shared.js";
 
 /** 六次靠岸各自的一句话介绍：标题说这站做什么，描述说它在新流程里的位置。 */
 const STOP_INTRO: Record<string, { title: string; desc: string }> = {
-  locate: { title: "圈出你的探索区间", desc: "近几次考试按各自切线换算，或围绕高考目标分 ±10——得到一段区间，用它去匹配院校。" },
-  quality: { title: "读取你的专属成绩", desc: "姓名 + 验证码接入质量慧析：逐科位置、航迹与知识短板，探索区间自动推导。" },
+  sail: { title: "登船点：定下选科与目标分", desc: "首选科目与两门再选科目决定「能报什么」；高考目标分给出起点。点「开始起航」选入口出发。" },
+  locate: { title: "圈出你的探索区间", desc: "手填近几次考试，或用姓名+验证码接入学校数据——区间由数据自动生成，可微调。" },
   talk: { title: "先聊，再选专业", desc: "谈心必须由 AI 主持：两种聊法只从你的原话出发，聊完给出有据可依的方向建议。" },
   direction: { title: "两条来路都算数", desc: "AI 推荐线和你的自选线同摆：一致合并为一条，不一致分两条，不打分不排先后。" },
   axis: { title: "区间里有哪些学校", desc: "区间端点换算成历史位次，与院校录取位次取交集，筛出这段海面里可选的院校专业。" },
@@ -83,7 +83,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
     <div className="section">
       <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>起航之后的六站，每一站都算数：先圈出探索区间，再聊出方向；两条来路都保留，最后一站合成一张航线图。</p></div></div>
       <div className="trio">
-        {CHAPTERS.filter((chapter) => chapter.id !== "sail").map((chapter) => {
+        {CHAPTERS.map((chapter) => {
           const intro = STOP_INTRO[chapter.id]!;
           return <div className="mini" key={chapter.id}>
             <span className="mk"><Icon name={chapter.icon} />{chapter.num} {chapter.k}</span>
@@ -95,7 +95,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
     </div>
 
     <div className="section">
-      <div className="sec-head"><div><span className="eyebrow">Chapter 01 · 起航 · 北冥有鱼</span><h2 style={{ marginTop: 12 }}>先定下三件事</h2><p>首选科目与再选科目决定「这个专业我能不能报」；目标情景分给出起点，探索区间决定先看哪些院校。</p></div></div>
+      <div className="sec-head"><div><span className="eyebrow">Chapter 01 · 起航 · 北冥有鱼</span><h2 style={{ marginTop: 12 }}>先定下三件事</h2><p>首选科目与再选科目决定「这个专业我能不能报」；高考目标分给出起点，探索区间决定先看哪些院校。</p></div></div>
       {/* 选科与情景分必须在这里能设置，否则「选择你的选科组合」只是文案：
           位次、资格与匹配都依赖首选科目，没有它整页只能显示未知。 */}
       <div className="panel" style={{ marginTop: 22 }}>
@@ -191,13 +191,13 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
             <span className="efoot"><span>无需验证 · 去定位</span><i className="carrow"><Icon name="arrow" /></i></span>
           </button>
           <button type="button" className={`entry deep${quality.status === "ready" ? " picked" : ""}`}
-            onClick={() => { setBoardOpen(false); setPage("quality"); }}>
+            onClick={() => { setBoardOpen(false); setPage("locate"); }}>
             <span className="eidx">02</span>
             <span className="elab"><Icon name="shield" />荣县一中 · 增强模式</span>
             <h3>{quality.status === "ready" ? `已接入 · ${quality.shard?.person.classLabel ?? ""}` : "姓名 + 验证码接入质量慧析"}</h3>
             <p>{quality.status === "ready"
               ? "最近成绩、年级与班级位置、线差与知识点已读取，探索区间也按你的考试推导好了。你仍可修改任何一项，增强模式只提供依据，不替你决定方向。"
-              : "输入姓名和班主任发放的 6 位验证码，服务端核对后读取你自己的成绩记录，自动带入最近考试并推导探索区间。不显示任何同学的成绩。"}</p>
+              : "去「定位」页输入姓名和班主任发放的 6 位验证码，服务端核对后自动填好考试行（只读）并推导探索区间。不显示任何同学的成绩。"}</p>
             <span className="efoot"><span>{quality.status === "ready" ? "增强能力 · 已启用" : "需要 姓名 + 6 位验证码"}</span><i className="carrow"><Icon name="arrow" /></i></span>
           </button>
         </div>

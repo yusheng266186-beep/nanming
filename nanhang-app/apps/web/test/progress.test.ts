@@ -1,15 +1,17 @@
 // 章节门禁：一步一步来、不许跳、可以回看。
 // 这里只测纯逻辑（progress.ts），界面上「点了没跳只给提示」由 App 里的 goTo 保证。
+// 成绩章已并入定位（负责人裁定）：拿成绩的手填/学校接入都发生在定位页内，
+// 门禁只看「探索区间是否生成」这一个产出。
 import { describe, expect, it } from "vitest";
 import { initialState, type WebState } from "../src/model.js";
-import { initialQualityState, type PageId } from "../src/chapters/shared.js";
+import type { PageId } from "../src/chapters/shared.js";
 import {
   DONE_HINT, STAGES, canOpen, chapterDone, isDone, lockHint, stageOf, unlockedStage, type ProgressInput
 } from "../src/progress.js";
 
 const blank: ProgressInput = {
-  state: initialState(), quality: initialQualityState, rangeKnown: false, poolReady: false,
-  picks: 0, suggestionCount: 0, chatted: false, schoolSkipped: false
+  state: initialState(), rangeKnown: false, poolReady: false,
+  picks: 0, suggestionCount: 0, chatted: false
 };
 
 const withInput = (patch: Partial<ProgressInput>): ProgressInput => ({ ...blank, ...patch });
@@ -39,12 +41,9 @@ describe("每一步「完成」的判定", () => {
     }))).toBe(true);
   });
 
-  it("定位：有探索区间才算完成；成绩：接了学校数据或显式跳过都算", () => {
+  it("定位：有探索区间才算完成——手填考试或接入学校数据都通向它", () => {
+    expect(chapterDone("locate", blank)).toBe(false);
     expect(chapterDone("locate", withInput({ rangeKnown: true }))).toBe(true);
-    expect(chapterDone("quality", withInput({ schoolSkipped: true }))).toBe(true);
-    const ready = { ...initialQualityState, status: "ready" as const, shard: {} as never };
-    expect(chapterDone("quality", withInput({ quality: ready }))).toBe(true);
-    expect(chapterDone("quality", withInput({ quality: { ...initialQualityState, status: "failed" } }))).toBe(false);
   });
 
   it("航线图：前面每一段都完成才算完成（不是一进来就打勾）", () => {
@@ -69,11 +68,10 @@ describe("解锁顺序", () => {
     }
   });
 
-  it("选完科之后，定位与成绩两个入口同时开；分数轴仍然锁着", () => {
+  it("选完科之后定位解锁；分数轴仍然锁着", () => {
     const input = completedThrough(0);
     expect(unlockedStage(input)).toBe(1);
     expect(canOpen("locate", input, 1)).toBe(true);
-    expect(canOpen("quality", input, 1)).toBe(true);
     expect(canOpen("axis", input, 1)).toBe(false);
     expect(canOpen("talk", input, 1)).toBe(false);
     expect(canOpen("chart", input, 1)).toBe(false);
@@ -90,10 +88,10 @@ describe("解锁顺序", () => {
     expect(canOpen("chart", completedThrough(4), 5)).toBe(true);
   });
 
-  it("两个成绩入口任选其一都能往下走（只走通用模式也算）", () => {
+  it("不接学校数据也能往下走：只要探索区间生成（手填或目标分），定位即算完成", () => {
     const generic = withInput({
       state: form({ primary: "HISTORY", additional: ["POLITICS", "GEOGRAPHY"] }),
-      schoolSkipped: true
+      rangeKnown: true
     });
     expect(unlockedStage(generic)).toBe(2);
     expect(canOpen("axis", generic, 2)).toBe(true);
@@ -122,7 +120,6 @@ describe("锁定提示指名道姓", () => {
   it("提示里写明缺的那一步和它的完成条件", () => {
     const hint = lockHint("axis", completedThrough(0));
     expect(hint).toContain("定位");
-    expect(hint).toContain("成绩");
     expect(hint).toContain(DONE_HINT.locate);
   });
 
@@ -139,11 +136,11 @@ describe("锁定提示指名道姓", () => {
 });
 
 describe("分段表本身", () => {
-  it("七个章节都在分段表里，且只出现一次", () => {
+  it("六个章节都在分段表里，且只出现一次", () => {
     const flat = STAGES.flat();
-    expect(flat).toHaveLength(7);
-    expect(new Set(flat).size).toBe(7);
-    for (const id of ["sail", "locate", "quality", "talk", "direction", "axis", "chart"] as PageId[]) {
+    expect(flat).toHaveLength(6);
+    expect(new Set(flat).size).toBe(6);
+    for (const id of ["sail", "locate", "talk", "direction", "axis", "chart"] as PageId[]) {
       expect(stageOf(id)).toBeLessThan(STAGES.length);
     }
   });

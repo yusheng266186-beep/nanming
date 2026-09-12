@@ -37,7 +37,7 @@ describe("成绩页的界面约定", () => {
     expect(loader).toContain("不构成安全边界");
   });
 
-  it("成绩页不给出录取结论，并区分「已发生」与「未预测」", () => {
+  it("慧析面板不给录取结论，并区分「已发生」与「未预测」", () => {
     expect(app).toContain("不预测录取");
     expect(app).not.toMatch(/录取概率为?\s*\d/);
     expect(app).not.toMatch(/录取把握|稳上|保底校/);
@@ -49,9 +49,10 @@ describe("成绩页的界面约定", () => {
     expect(headers.length).toBeGreaterThanOrEqual(20);
     // 三张数据表（逐科/航迹/知识点）的行头都从真实行数据生成。
     expect(rows.length).toBeGreaterThanOrEqual(3);
-    expect(app).toContain('aria-label="成绩"');
-    expect(app).toContain('aria-describedby="quality-hint"');
-    expect(app).toContain('id="quality-hint"');
+    // 成绩章并入定位后，识别与慧析都发生在定位页：可访问名称跟着搬。
+    expect(app).toContain('aria-label="定位"');
+    expect(app).toContain('aria-describedby="locate-identify-hint"');
+    expect(app).toContain('id="locate-identify-hint"');
     expect(app).toContain('autoComplete="off"');
     expect(app).toContain('inputMode="numeric"');
   });
