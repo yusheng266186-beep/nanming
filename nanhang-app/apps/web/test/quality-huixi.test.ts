@@ -3,10 +3,11 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   MAX_CODE_ATTEMPTS, additionalFromCombination, classChanges, formatGap, formatRate, formatScore,
-  latestExam, loadQualityShard, normalizeCode, recentExams, registerFailure, subjectDistances,
+  latestExam, loadQualityShard, friendlyExamLabel, normalizeCode, recentExams, registerFailure, subjectDistances,
+  trailChart,
   weakestKnowledge, initialQualityAttempts, trailHeights
 } from "../src/quality-huixi.js";
-import type { QualityIndex, QualityShard } from "../src/quality-types.js";
+import type { QualityIndex, QualityShard, QualityStudentExam } from "../src/quality-types.js";
 
 /**
  * Integration coverage for the 荣县一中 quality release.
@@ -243,9 +244,9 @@ describeRelease("发布产物与解析器输出一致", () => {
     expect(latestExam(shard)).toEqual(shard.exams[shard.exams.length - 1]);
     const exams = recentExams(shard);
     expect(exams.length).toBeLessThanOrEqual(5);
-    // 富记录逐字段对应分片：位次与两道切线不再被压扁成纯分数。
+    // 富记录逐字段对应分片：位次与两道切线不再被压扁成纯分数；label 是友好考试名。
     expect(exams).toEqual(shard.exams.slice(-5).map((exam) => ({
-      label: exam.rawLabel ?? exam.exam,
+      label: friendlyExamLabel(exam.exam),
       total: exam.total,
       rank: exam.gradeRank,
       topTotal: exam.topTotal,
@@ -423,5 +424,51 @@ describe("选科组合解析（回填表单用）", () => {
     expect(additionalFromCombination("物??")).toBeNull();
     expect(additionalFromCombination("物化")).toBeNull();
     expect(additionalFromCombination("")).toBeNull();
+  });
+});
+
+describe("考试代码友好名与航迹图", () => {
+  const mkExam = (exam: string, total: number | null,
+                  topTotal: number | null = null, undergraduateTotal: number | null = null) =>
+    ({ exam, rawLabel: null, total, topTotal, undergraduateTotal }) as unknown as QualityStudentExam;
+
+  it("学校考试代码翻译成学期/月考名称；未登记的代码原样返回", () => {
+    expect(friendlyExamLabel("1册")).toBe("第1学期期末");
+    expect(friendlyExamLabel("21")).toBe("第2学期第1次月考");
+    expect(friendlyExamLabel("4半")).toBe("第4学期半期");
+    expect(friendlyExamLabel("51")).toBe("第5学期第1次月考");
+    expect(friendlyExamLabel("入口")).toBe("入口");
+    expect(friendlyExamLabel(null)).toBe("");
+  });
+
+  it("航迹图：统一分数标尺覆盖总分与最近一次的两条切线", () => {
+    const chart = trailChart([
+      mkExam("1册", 380, null, 360),
+      mkExam("2册", 420, 400, 370),
+      mkExam("51", 452, 440, 380)
+    ]);
+    expect(chart).not.toBeNull();
+    expect(chart!.bars.length).toBe(3);
+    expect(chart!.lines.map((line) => line.kind)).toEqual(["top", "undergraduate"]);
+    // 切线取最近一次（51）自己的值，并且都落在标尺范围内。
+    for (const line of chart!.lines) {
+      expect(line.value).toBeCloseTo(line.kind === "top" ? 440 : 380, 9);
+      expect(line.y).toBeGreaterThanOrEqual(0);
+      expect(line.y).toBeLessThanOrEqual(chart!.height);
+    }
+  });
+
+  it("缺考场次留空槽位不补零；无可绘总分时返回 null", () => {
+    const chart = trailChart([mkExam("1册", null), mkExam("2册", 420)]);
+    expect(chart!.bars[0]!.total).toBeNull();
+    expect(chart!.bars[0]!.h).toBe(0);
+    expect(chart!.bars[1]!.total).toBe(420);
+    expect(trailChart([mkExam("1册", null)])).toBeNull();
+  });
+
+  it("没有切线就没有参考线，柱子仍可绘制", () => {
+    const chart = trailChart([mkExam("1册", 400), mkExam("2册", 430)]);
+    expect(chart!.lines).toEqual([]);
+    expect(chart!.bars.length).toBe(2);
   });
 });

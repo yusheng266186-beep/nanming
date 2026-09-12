@@ -122,12 +122,123 @@ export function latestExam(shard: QualityShard): QualityStudentExam | null {
  */
 export function recentExams(shard: QualityShard, limit = 5): ExamRecord[] {
   return shard.exams.slice(-limit).map((exam) => ({
-    label: exam.rawLabel ?? exam.exam,
+    label: friendlyExamLabel(exam.exam),
     total: exam.total,
     rank: exam.gradeRank,
     topTotal: exam.topTotal,
     undergraduateTotal: exam.undergraduateTotal
   }));
+}
+
+/**
+ * 学校考试代码的友好名称（display 层翻译，不改分片数据）。
+ *
+ * 代码语义来自校方说明：一册~四册为第 1~4 学期期末考试；「XY」是第 X 学期第 Y 次月考；
+ * 4半 是第 4 学期半期考试；4月 是第 4 学期月考；51 是第 5 学期第 1 次月考。
+ * 未登记的代码原样返回——宁可显示原文，不猜一个名字。
+ */
+const EXAM_LABELS: Record<string, string> = {
+  "1册": "第1学期期末", "2册": "第2学期期末", "3册": "第3学期期末", "4册": "第4学期期末",
+  "21": "第2学期第1次月考", "22": "第2学期第2次月考",
+  "31": "第3学期第1次月考", "32": "第3学期第2次月考", "33": "第3学期第3次月考",
+  "41": "第4学期第1次月考", "43": "第4学期第3次月考", "4月": "第4学期月考",
+  "4半": "第4学期半期", "51": "第5学期第1次月考"
+};
+
+export function friendlyExamLabel(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return EXAM_LABELS[raw] ?? raw;
+}
+
+/** 航迹图里 x 轴用的短标签：原始代码最短，长名称放在 title 与表格里。 */
+export function shortExamLabel(raw: string | null | undefined): string {
+  if (!raw) return "";
+  const base = raw.replace(/历\/.*$|物$/, "");
+  return base;
+}
+
+/** 航迹图的一根柱：total 为 null 表示缺考/无来源，画留空槽位，不补零。 */
+export interface TrailBar {
+  key: string;
+  /** x 轴短标签（原始代码）。 */
+  short: string;
+  /** 完整友好名称（表格与悬停提示用）。 */
+  full: string;
+  total: number | null;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** 参考线：取最近一次考试自己的切线，标明属于哪次考试。 */
+export interface TrailLine {
+  kind: "top" | "undergraduate";
+  value: number;
+  y: number;
+  label: string;
+}
+
+export interface TrailChartModel {
+  width: number;
+  height: number;
+  bars: TrailBar[];
+  lines: TrailLine[];
+  /** 底部基线的 y 坐标。 */
+  baseline: number;
+}
+
+/**
+ * 把历次总分画在一条**统一分数标尺**上，并叠上最近一次考试的本科线/特控线参考线。
+ *
+ * 旧实现把柱高按本人分数区间归一化，切线没有位置可言；统一标尺后柱与线可比，
+ * SVG 按坐标系绘制也修掉了旧版柱高溢出边框的问题。没有可绘总分时返回 null。
+ */
+export function trailChart(exams: QualityStudentExam[], width = 340, height = 200): TrailChartModel | null {
+  const totals = exams.map((exam) => exam.total).filter((item): item is number => item !== null);
+  if (exams.length === 0 || totals.length === 0) return null;
+  const latest = exams[exams.length - 1]!;
+  const lineValues = [latest.topTotal, latest.undergraduateTotal]
+    .filter((item): item is number => item !== null && item > 0);
+  const values = [...totals, ...lineValues];
+  const rawMin = Math.min(...values);
+  const rawMax = Math.max(...values);
+  const pad = Math.max(10, (rawMax - rawMin) * 0.12);
+  const floor = rawMin - pad;
+  const ceil = rawMax + pad;
+  const padTop = 16;
+  const padBottom = 24;
+  const padX = 6;
+  const innerH = height - padTop - padBottom;
+  const innerW = width - padX * 2;
+  const yOf = (value: number) => padTop + (ceil - value) / (ceil - floor) * innerH;
+  const baseline = padTop + innerH;
+  const slot = innerW / exams.length;
+  const barW = Math.min(26, slot * 0.55);
+  const bars: TrailBar[] = exams.map((exam, index) => {
+    const centerX = padX + slot * index + slot / 2;
+    const drawn = exam.total !== null;
+    return {
+      key: `${exam.exam}-${index}`,
+      short: shortExamLabel(exam.exam),
+      full: friendlyExamLabel(exam.rawLabel ?? exam.exam),
+      total: exam.total,
+      x: centerX - barW / 2,
+      y: drawn ? yOf(exam.total) : 0,
+      w: barW,
+      h: drawn ? baseline - yOf(exam.total) : 0
+    };
+  });
+  const lines: TrailLine[] = [];
+  if (latest.topTotal !== null && latest.topTotal > 0) {
+    lines.push({ kind: "top", value: latest.topTotal, y: yOf(latest.topTotal),
+      label: `特控线/一本线 ${formatScore(latest.topTotal)}` });
+  }
+  if (latest.undergraduateTotal !== null && latest.undergraduateTotal > 0) {
+    lines.push({ kind: "undergraduate", value: latest.undergraduateTotal, y: yOf(latest.undergraduateTotal),
+      label: `本科线 ${formatScore(latest.undergraduateTotal)}` });
+  }
+  return { width, height, bars, lines, baseline };
 }
 
 /** 再选科目的组合字符 → 表单科目代码。首选「物/历」不在此表，由本人 track 决定。 */

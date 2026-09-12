@@ -44,7 +44,8 @@ describe("成绩页的界面约定", () => {
     const headers = app.match(/<th scope="col">/g) ?? [];
     const rows = app.match(/<th scope="row">/g) ?? [];
     expect(headers.length).toBeGreaterThanOrEqual(20);
-    expect(rows.length).toBeGreaterThanOrEqual(4);
+    // 三张数据表（逐科/航迹/知识点）的行头都从真实行数据生成。
+    expect(rows.length).toBeGreaterThanOrEqual(3);
     expect(app).toContain('aria-label="成绩"');
     expect(app).toContain('aria-describedby="quality-hint"');
     expect(app).toContain('id="quality-hint"');
