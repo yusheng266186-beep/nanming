@@ -22,6 +22,19 @@
 
 以下条目的“当前”“下一步”及测试数字只指对应实施时点；已被本页最新条目与 PROJECT_STATUS.md 取代，不应作为当前待办。
 
+## 2026-09-12 工作区状态说明：另一路在建文件被一并提交
+
+- 提交 `206d625` 时用了 `git add -A`，把同一工作区里另一路正在写的文件一并带上了：
+  `apps/web/src/journey-model.ts`、`apps/api/src/school-access.ts`、
+  `packages/ai-gateway/src/catalog-guard.ts`、`pipelines/quality-huixi/export_identity.py`
+  及 `vite.config.ts` 的两行改动。
+- 影响范围：这些文件目前**没有被任何入口引用**（`journey-model.ts` 无 importer，
+  其余为新增模块），Vite 打包内容未变——Pages 产物哈希仍是 `index-t9FGXJGZ.js`，学生侧无变化。
+- 当前 `npm run typecheck` 与 `npm test`（1 项：`quality-presentation` 的 vite 配置断言）
+  在这批在建文件上是红的；它们属于另一路工作，本轮**没有改动**，以免覆盖对方正在写的版本。
+  那一路收尾时会一并修好；在此之前不要把 `GATE-LOCAL` 当作当前通过状态。
+- 教训：本工作区有并发写入，提交必须用显式路径 `git add <file>...`，不要用 `-A`。
+
 ## 2026-09-12 线上打通：函数访问路径、演示原话隔离、建议署证不再整轮作废
 
 - 背景：Pages 已读真实发布包，但 AI 中转函数在控制台上没有「访问路径」，学生点不动 AI。
