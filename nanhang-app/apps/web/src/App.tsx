@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  DIRECTIONS, EXCEL_NOTICE, SELECTABLE_BATCHES, comparabilityNote, excelDevelopmentRows,
-  initialState, isMatchFresh, loadPublishedRelease, recordAnswer, registerStartTool, resetLocal,
-  routeMap, runMatch, skipAnswer, summary, withForm,
-  type ExcelRow, type ModelContextLike, type WebState
+  DIRECTIONS, SELECTABLE_BATCHES, comparabilityNote, initialState, isMatchFresh,
+  loadPublishedRelease, recordAnswer, registerStartTool, resetLocal, routeMap, runMatch, skipAnswer,
+  summary, withForm, type ModelContextLike, type WebState
 } from "./model.js";
 import { initialAiPanel, askAi, disableAi, withSession, type AiPanelState } from "./ai-panel.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
@@ -14,7 +13,7 @@ import {
   type LoadedQuality, type QualityAttempts
 } from "./quality-huixi.js";
 import {
-  CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, label, majorCardFor,
+  CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
   type PageId, type QualityState
 } from "./chapters/shared.js";
 import { renderSail } from "./chapters/sail.js";
@@ -28,7 +27,6 @@ import { renderChart } from "./chapters/chart.js";
 export default function App() {
   const [state, setState] = useState(initialState);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [excel, setExcel] = useState<{ rows: ExcelRow[]; error: string | null } | null>(null);
   const [ai, setAi] = useState<AiPanelState>(initialAiPanel);
   const [qualityCode, setQualityCode] = useState("");
   const [quality, setQuality] = useState<QualityState>(initialQualityState);
@@ -178,7 +176,6 @@ export default function App() {
     setQualityCode("");
     setQuality(initialQualityState);
     setDrafts({});
-    setExcel(null);
     setTalkStep(0);
     setOnlyConfirmed(false);
     setState((current) => resetLocal(current));
@@ -194,13 +191,6 @@ export default function App() {
     anchor.download = "nanhang-exploration-profile.json";
     anchor.click();
     URL.revokeObjectURL(url);
-  };
-  const loadExcel = async () => {
-    try {
-      const response = await fetch("/dev/workbook-samples.json");
-      if (!response.ok) throw new Error(String(response.status));
-      setExcel({ rows: excelDevelopmentRows(await response.json()), error: null });
-    } catch { setExcel({ rows: [], error: "核对视图仅在本地开发服务中可用。" }); }
   };
 
   // 荣县一中增强模式：输入 6 位验证码 → 取回本人分片 → 回填表单并展示成绩面板。
@@ -323,20 +313,6 @@ export default function App() {
       {renderDirection(ctx)}
       {renderAxis(ctx)}
       {renderChart(ctx)}
-
-      <details className="developer">
-        <summary>开发核对视图：未核实 Excel 样本</summary>
-        <p>{EXCEL_NOTICE}</p>
-        <button type="button" className="btn sm ghost" onClick={loadExcel}>读取本地样本</button>
-        {excel?.error ? <p className="feedback">{excel.error}</p> : null}
-        {excel && excel.rows.length ? <div className="dev-wrap"><table className="dev-table">
-          <thead><tr><th scope="col">单元格行</th><th scope="col">类别</th><th scope="col">院校</th><th scope="col">专业</th><th scope="col">选科原文</th><th scope="col">计划</th></tr></thead>
-          <tbody>{excel.rows.slice(0, 20).map((row) => <tr key={row.sampleId}>
-            <td>{row.sourceRow}</td><td>{label(row.track)}</td><td>{row.institution}</td><td>{row.major}</td>
-            <td>{row.subjectRequirement ?? "未知"}</td><td>{row.planCount ?? "未知"}</td></tr>)}</tbody>
-        </table></div> : null}
-        <p className="muted-note">已读取 {excel?.rows.length ?? 0} 条；不会送入匹配。</p>
-      </details>
     </div>
 
     <footer className="footer">

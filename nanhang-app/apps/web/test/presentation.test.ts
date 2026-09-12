@@ -84,6 +84,5 @@ describe("TASK-09 视觉与可访问性不变量", () => {
     const print = css.slice(css.indexOf("@media print"));
     expect(print).toMatch(/\.view\s*{[^}]*display:\s*none/);
     expect(print).toMatch(/#page-chart\.view\s*{[^}]*display:\s*block/);
-    expect(print).toMatch(/\.developer/);
   });
 });

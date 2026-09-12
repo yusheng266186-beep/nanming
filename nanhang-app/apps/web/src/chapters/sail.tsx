@@ -22,10 +22,6 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
         <h1 className="song">北冥有鱼，<br />今将<em>徙于南溟。</em></h1>
         <p className="hero-quote">这不是一张志愿名单，而是一张属于你的《高考航线图》。<br />先看清此刻的海面，再决定扬帆的方向。
           <span>Every far shore begins with today&apos;s provision.</span></p>
-        <div className="hero-act">
-          <button type="button" className="btn brass" onClick={() => setPage("locate")}>开始起航<Icon name="arrow" /></button>
-          <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
-        </div>
         <div className="hero-foot">南溟用真实数据与你自己保存的原话，拼出一张能落地的航线。</div>
       </div>
       <div className="hero-art">
@@ -103,8 +99,13 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
             value={state.form.score ?? ""} placeholder="例如 600"
             onChange={(event) => setState((current) => withForm(current, { score: event.target.value ? Number(event.target.value) : null }))} />
         </label>
-        <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 18 }}>
-          <button type="button" className="btn brass" onClick={() => setPage("locate")}>定好了，去定位<Icon name="arrow" /></button>
+        {/* 行动入口放在表单之后：流程是「先定下三件事，再出发」，而不是一进门就催起航。
+            「开始起航」与原先的「定好了，去定位」同为进入定位页，只保留一个入口。 */}
+        <div className="hero-act" style={{ marginTop: 22 }}>
+          <button type="button" className="btn brass" onClick={() => setPage("locate")}>开始起航<Icon name="arrow" /></button>
+          <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
+        </div>
+        <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
           <span className="muted-note">
             {state.form.primary
               ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 情景分 ${state.form.score ?? "未填"}`
@@ -115,7 +116,9 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       </div>
     </div>
 
-    <aside className="banner" data-mode={state.release ? "published" : "synthetic"}>
+    {/* 数据横幅只在异常时出现：数据正常载入或正在载入时它是运维信息，对学生只是噪音。
+        但加载失败退回合成模式必须让学生知道，这是诚实性要求，不能静默降级。 */}
+    {(state.releaseStatus === "idle" || state.releaseStatus === "failed") && <aside className="banner" data-mode={state.release ? "published" : "synthetic"}>
       <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
         <Icon name="shield" size="lg" />
         <div>
@@ -126,7 +129,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           <p className="muted-note">{RELEASE_LABELS[state.releaseStatus]}{state.releaseMessage ? ` ${state.releaseMessage}` : ""}</p>
         </div>
       </div>
-    </aside>
+    </aside>}
 
     <div className="section">
       <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>从看清水平，到聊出方向，再拖动分数看着候选一批批变化。</p></div></div>
