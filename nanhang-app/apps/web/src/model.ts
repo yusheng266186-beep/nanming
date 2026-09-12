@@ -428,7 +428,7 @@ export async function runMatch(state: WebState, signal?: AbortSignal): Promise<W
   if (!state.form.primary) return withNotice(state, "请先选择首选科目。");
   if (state.form.additional.length !== 2) return withNotice(state, "再选科目需要正好选择2门。");
   if (state.form.score === null) {
-    return withNotice(state, "尚未填写目标情景分。你仍可探索方向；填写分数后才能运行匹配。");
+    return withNotice(state, "尚未填写高考目标分。你仍可探索方向；填写分数后才能运行匹配。");
   }
   if (state.form.batches.length === 0) {
     return withNotice(state, "请至少选择一个批次；每个批次会各自下载对应数据。");

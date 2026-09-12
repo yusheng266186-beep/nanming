@@ -32,7 +32,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
   // 位次与百分位来自官方分段表；没有表或分数不在公布范围时保持 null，页面显示未知。
   const position = scorePosition(state.release, state.form.primary, score);
   const marks = axisMarks(state.release, state.form.primary, score);
-  // 公布范围条：把学生的情景分画在「官方公布的最低分 → 最高分」这条真实区间上。
+  // 公布范围条：把学生的高考目标分画在「官方公布的最低分 → 最高分」这条真实区间上。
   const bandRange = position ? Math.max(1, position.publishedMaxScore - position.publishedMinScore) : 0;
   const bandLeft = position ? (position.score - position.publishedMinScore) / bandRange * 100 : 0;
 
@@ -63,7 +63,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
   };
   const applyEquivalent = (value: number) => {
     setState((current) => withForm(current, { score: value }));
-    notify(`已把等位分 ${value} 设为目标情景分`);
+    notify(`已把等位分 ${value} 设为高考目标分`);
   };
   const numberField = (ariaLabel: string, placeholder: string, value: number | null,
                        onChange: (value: number | null) => void) =>
@@ -84,7 +84,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     <div className="panel" style={{ marginTop: 20 }}>
       <h3><Icon name="log" />录入近几次考试</h3>
       <p className="psub">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。荣县一中的同学在「成绩」页用验证码接入后自动带入，无需重复填写。</p>
-      {exams.length === 0 ? <p className="muted-note">还没有录入考试。填了总分，稳定性与趋势才有依据；不填也不影响情景分定位。</p> : null}
+      {exams.length === 0 ? <p className="muted-note">还没有录入考试。填了总分，稳定性与趋势才有依据；不填也不影响目标分定位。</p> : null}
       {exams.map((exam, index) => {
         const diffs = examLineDiffs(exam);
         return <div className="exam-row" key={index}>
@@ -114,13 +114,13 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       <div>
         <div className="gauge">
           <div className="gauge-top">
-            <div><span className="eyebrow plain">目标情景分 · 裸分</span>
+            <div><span className="eyebrow plain">高考目标分 · 裸分</span>
               <div className="bignum num" style={{ marginTop: 12 }}>{score === null ? <span className="absent">—</span> : score}<small>分</small></div></div>
             <div style={{ textAlign: "right" }}><span className="eyebrow plain">全省位次 · 参考年</span>
               <div className="bignum num" style={{ marginTop: 12, fontSize: 40 }}>
                 {position ? position.rank.toLocaleString("zh-CN") : <span className="absent">—</span>}</div>
               {!position && <div style={{ marginTop: 4 }}>
-                <Uncharted>{score === null ? "还没填情景分" : "该分数官方未列出"}</Uncharted>
+                <Uncharted>{score === null ? "还没填高考目标分" : "该分数官方未列出"}</Uncharted>
               </div>}</div>
           </div>
           <div style={{ marginTop: 26 }}>
@@ -135,7 +135,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
                 </>
                 : <div className="band-empty">
                   {state.release
-                    ? "该科类没有可用的官方分段表，或情景分不在公布范围内 · 不插值、不外推"
+                    ? "该科类没有可用的官方分段表，或目标分不在公布范围内 · 不插值、不外推"
                     : "尚未载入发布数据 · 位次与范围保持未知"}
                 </div>}
             </div>
@@ -175,7 +175,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
             <span className="vpill">目标年份 <b>{state.form.targetYear}</b></span>
             <span className="vpill">科类 <b>{trackLabel}</b></span>
             <span className="vpill">再选 <b>{state.form.additional.length ? state.form.additional.map(label).join("、") : "未选择"}</b></span>
-            <span className="vpill">情景分 <b>{score ?? "未填写"}</b></span>
+            <span className="vpill">高考目标分 <b>{score ?? "未填写"}</b></span>
             <span className="vpill">位次表年份 <b>{position ? position.tableYear : "未知"}</b></span>
             <span className="vpill">参考年 <b>{REFERENCE_YEAR}</b></span>
           </div>
@@ -240,8 +240,8 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           {entry.item.position ? <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
             <button type="button" className="btn sm ghost"
               onClick={() => applyEquivalent(entry.item.equivalentScore)}>
-              把 {entry.item.equivalentScore} 设为情景分</button>
-            <small className="muted-note">情景分决定匹配范围，随时可在「起航」改回。</small>
+              把 {entry.item.equivalentScore} 设为高考目标分</button>
+            <small className="muted-note">高考目标分决定起点，探索区间决定匹配范围，随时可在「起航」改回。</small>
           </div> : <p className="fhint" style={{ marginTop: 10 }}>
             等位分不在官方分段表公布范围内，或尚未载入发布数据——不插值、不外推。</p>}
         </div>)}
@@ -295,7 +295,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           }}>按近几次考试换算</button>
         <button type="button" className="btn sm" disabled={score === null}
           onClick={() => {
-            if (score === null) { notify("先在「起航」填一个目标情景分。"); return; }
+            if (score === null) { notify("先在「起航」填一个高考目标分。"); return; }
             setRange({ low: Math.max(0, score - 10), high: Math.min(750, score + 10),
               basis: "目标分上下各 10 分作为初始探索范围，可自行调整；不是预测区间。" });
             notify("已按目标分 ±10 生成探索区间");

@@ -3,7 +3,17 @@ import type { Dispatch, SetStateAction } from "react";
 import { ADDITIONAL_OPTIONS, RELEASE_LABELS, SYNTHETIC_NOTICE, withForm, type WebState } from "../model.js";
 import { ArtSlot, Icon } from "../art.js";
 import { prefersReducedMotion } from "../chat.js";
-import { label, type PageId, type QualityState } from "./shared.js";
+import { CHAPTERS, label, type PageId, type QualityState } from "./shared.js";
+
+/** 六次靠岸各自的一句话介绍：标题说这站做什么，描述说它在新流程里的位置。 */
+const STOP_INTRO: Record<string, { title: string; desc: string }> = {
+  locate: { title: "圈出你的探索区间", desc: "近几次考试按各自切线换算，或围绕高考目标分 ±10——得到一段区间，用它去匹配院校。" },
+  quality: { title: "读取你的专属成绩", desc: "姓名 + 验证码接入质量慧析：逐科位置、航迹与知识短板，探索区间自动推导。" },
+  talk: { title: "先聊，再选专业", desc: "谈心必须由 AI 主持：两种聊法只从你的原话出发，聊完给出有据可依的方向建议。" },
+  direction: { title: "两条来路都算数", desc: "AI 推荐线和你的自选线同摆：一致合并为一条，不一致分两条，不打分不排先后。" },
+  axis: { title: "区间里有哪些学校", desc: "区间端点换算成历史位次，与院校录取位次取交集，筛出这段海面里可选的院校专业。" },
+  chart: { title: "两条来路，一张图", desc: "双线分列院校与专业，可下载可打印——合成你的《南溟航线图》。" }
+};
 
 export interface SailProps {
   state: WebState;
@@ -22,6 +32,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
   const [tilt, setTilt] = useState<{ x: number; y: number } | null>(null);
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const rippleSeq = useRef(0);
+  // 登船方式不再平铺在页面上：按「开始起航」后以卡片弹出，作为通向定位/成绩的桥。
+  const [boardOpen, setBoardOpen] = useState(false);
   const reducedMotion = useMemo(() => prefersReducedMotion(), []);
   const artPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedMotion || event.pointerType === "touch") return;
@@ -50,7 +62,6 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
         <div className="slot-wrap" style={tiltStyle}>
           <ArtSlot name="sea" />
         </div>
-        <div className="art-drift" aria-hidden="true"><svg className="drift-boat"><use href="#i-sail" /></svg></div>
         <div className="art-waves" aria-hidden="true">
           <svg className="wave w1" viewBox="0 0 1200 60" preserveAspectRatio="none">
             <path d="M0 34Q60 18 120 34T240 34T360 34T480 34T600 34T720 34T840 34T960 34T1080 34T1200 34V60H0Z" />
@@ -70,11 +81,16 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
 
     {/* 页面顺序（负责人定）：六章航程在前（先知道去哪），三件事居中（备好行装），登船方式收尾（选入口出发）。 */}
     <div className="section">
-      <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>先圈出探索区间，再聊出方向；两条来路都算数，最后一站合成一张航线图。</p></div></div>
+      <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>起航之后的六站，每一站都算数：先圈出探索区间，再聊出方向；两条来路都保留，最后一站合成一张航线图。</p></div></div>
       <div className="trio">
-        <div className="mini"><span className="mk"><Icon name="compass" />02 定位</span><h4>圈出你的探索区间</h4><p>近几次考试按各自切线换算，或围绕目标分 ±10——得到一段区间，用它去匹配院校，而不是一个孤零零的分数。</p></div>
-        <div className="mini"><span className="mk"><Icon name="chat" />04 谈心</span><h4>先聊，再选专业</h4><p>两种聊法由 AI 主持，只从你的原话出发；聊完它会给出有据可依的方向建议，然后你再亲自选一次专业。</p></div>
-        <div className="mini"><span className="mk"><Icon name="route" />07 航线图</span><h4>两条来路，一张图</h4><p>AI 的建议和你的自选各是一条线：一致合成一条，不一致分两条并列——区间内的院校专业按线分开给你。</p></div>
+        {CHAPTERS.filter((chapter) => chapter.id !== "sail").map((chapter) => {
+          const intro = STOP_INTRO[chapter.id]!;
+          return <div className="mini" key={chapter.id}>
+            <span className="mk"><Icon name={chapter.icon} />{chapter.num} {chapter.k}</span>
+            <h4>{intro.title}</h4>
+            <p>{intro.desc}</p>
+          </div>;
+        })}
       </div>
     </div>
 
@@ -118,46 +134,25 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           </div>
         </div>
         <label className="field" style={{ marginTop: 20, maxWidth: 320 }}>
-          <span className="flab">目标情景分（可不填）</span>
+          <span className="flab">高考目标分（可不填）</span>
           <input className="inp" type="number" min={0} max={750} inputMode="numeric"
             value={state.form.score ?? ""} placeholder="例如 600"
             onChange={(event) => setState((current) => withForm(current, { score: event.target.value ? Number(event.target.value) : null }))} />
         </label>
-        {/* 行动入口放在表单之后：流程是「先定下三件事，再出发」，而不是一进门就催起航。
-            「开始起航」与原先的「定好了，去定位」同为进入定位页，只保留一个入口。 */}
+        {/* 行动入口放在表单之后：流程是「先定下三件事，再出发」。开始起航弹出登船卡片，
+            两条入口作为通向定位/成绩的桥——不再平铺在页面上。 */}
         <div className="hero-act" style={{ marginTop: 22 }}>
-          <button type="button" className="btn brass" onClick={() => setPage("locate")}>开始起航<Icon name="arrow" /></button>
+          <button type="button" className="btn brass" onClick={() => setBoardOpen(true)}>开始起航<Icon name="arrow" /></button>
           <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
         </div>
         <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
           <span className="muted-note">
             {state.form.primary
-              ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 情景分 ${state.form.score ?? "未填"}`
+              ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 高考目标分 ${state.form.score ?? "未填"}`
               : "还没有选首选科目，位次与资格都会显示为未知。"}
           </span>
         </div>
         {toast ? <p className="feedback" aria-live="polite">{toast}</p> : null}
-      </div>
-
-      <div className="sec-head" style={{ marginTop: 38 }}><div><span className="eyebrow">Two Piers · 两条登船口</span><h2 style={{ marginTop: 12 }}>选择你的登船方式</h2><p>两条入口，都通向同一片海。荣县一中增强模式是「加分项」，不是使用前提。</p></div></div>
-      <div className="entry-grid">
-        <button type="button" className={`entry${state.form.primary ? " picked" : ""}`} onClick={() => setPage("locate")}>
-          <span className="eidx">01</span>
-          <span className="elab"><Icon name="compass" />全国通用模式</span>
-          <h3>自选科 + 自填情景分</h3>
-          <p>任何省份、任何层次的同学都能用。选择你的选科组合，填入目标情景分，南溟按发布数据与合成演示为你定位。</p>
-          <span className="efoot"><span>无需验证 · 立即开始</span><i className="carrow"><Icon name="arrow" /></i></span>
-        </button>
-        <button type="button" className={`entry deep${quality.status === "ready" ? " picked" : ""}`}
-          onClick={() => setPage("quality")}>
-          <span className="eidx">02</span>
-          <span className="elab"><Icon name="shield" />荣县一中 · 增强模式</span>
-          <h3>{quality.status === "ready" ? `已接入 · ${quality.shard?.person.classLabel ?? ""}` : "姓名 + 验证码接入质量慧析"}</h3>
-          <p>{quality.status === "ready"
-            ? "最近成绩、年级与班级位置、线差与知识点已读取，探索区间也按你的考试推导好了。你仍可修改任何一项，增强模式只提供依据，不替你决定方向。"
-            : "输入姓名和班主任发放的 6 位验证码，服务端核对后读取你自己的成绩记录，自动带入最近考试并推导探索区间。不显示任何同学的成绩。"}</p>
-          <span className="efoot"><span>{quality.status === "ready" ? "增强能力 · 已启用" : "需要 姓名 + 6 位验证码"}</span><i className="carrow"><Icon name="arrow" /></i></span>
-        </button>
       </div>
     </div>
 
@@ -175,6 +170,39 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
         </div>
       </div>
     </aside>}
+
+    {/* 登船卡片：按「开始起航」后弹出，两条入口是通向定位/成绩的桥。Esc 或点背景关闭。 */}
+    {boardOpen ? <div className="board-backdrop" role="presentation"
+      onClick={(event) => { if (event.target === event.currentTarget) setBoardOpen(false); }}
+      onKeyDown={(event) => { if (event.key === "Escape") setBoardOpen(false); }}>
+      <div className="board-card" role="dialog" aria-modal="true" aria-label="选择登船方式">
+        <button type="button" className="board-close" aria-label="关闭登船卡片" autoFocus
+          onClick={() => setBoardOpen(false)}><Icon name="close" /></button>
+        <span className="eyebrow">Two Piers · 两条登船口</span>
+        <h3 className="song" style={{ marginTop: 10 }}>两条入口，都通向同一片海</h3>
+        <p className="psub">先去把成绩与探索区间定下来，后面的谈心与航线才有依据。荣县一中增强模式是「加分项」，不是使用前提。</p>
+        <div className="entry-grid">
+          <button type="button" className={`entry${state.form.primary ? " picked" : ""}`}
+            onClick={() => { setBoardOpen(false); setPage("locate"); }}>
+            <span className="eidx">01</span>
+            <span className="elab"><Icon name="compass" />全国通用模式</span>
+            <h3>自选科 + 高考目标分</h3>
+            <p>任何省份、任何层次的同学都能用。带着刚定下的选科与目标分进入「定位」，用近几次考试或目标分圈出探索区间。</p>
+            <span className="efoot"><span>无需验证 · 去定位</span><i className="carrow"><Icon name="arrow" /></i></span>
+          </button>
+          <button type="button" className={`entry deep${quality.status === "ready" ? " picked" : ""}`}
+            onClick={() => { setBoardOpen(false); setPage("quality"); }}>
+            <span className="eidx">02</span>
+            <span className="elab"><Icon name="shield" />荣县一中 · 增强模式</span>
+            <h3>{quality.status === "ready" ? `已接入 · ${quality.shard?.person.classLabel ?? ""}` : "姓名 + 验证码接入质量慧析"}</h3>
+            <p>{quality.status === "ready"
+              ? "最近成绩、年级与班级位置、线差与知识点已读取，探索区间也按你的考试推导好了。你仍可修改任何一项，增强模式只提供依据，不替你决定方向。"
+              : "输入姓名和班主任发放的 6 位验证码，服务端核对后读取你自己的成绩记录，自动带入最近考试并推导探索区间。不显示任何同学的成绩。"}</p>
+            <span className="efoot"><span>{quality.status === "ready" ? "增强能力 · 已启用" : "需要 姓名 + 6 位验证码"}</span><i className="carrow"><Icon name="arrow" /></i></span>
+          </button>
+        </div>
+      </div>
+    </div> : null}
 
     <div className="quote-strip"><p>鲲之大，不知其几千里也；化而为鸟，其名为鹏。</p><span>—— 《庄子 · 逍遥游》</span></div>
   </section>;

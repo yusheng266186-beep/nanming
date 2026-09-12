@@ -121,12 +121,6 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 /* 首页海景的小巧思：孤帆远影横渡海平线、岸边双层浪缓移、点水涟漪、指针视差。
    装饰层全部 pointer-events:none，不挡北辰按钮；触屏滚动不受影响。 */
 .slot-wrap{position:absolute;inset:0;transition:transform 1.2s var(--ease);will-change:transform}
-.art-drift{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-.drift-boat{position:absolute;bottom:32%;left:-44px;width:30px;height:30px;color:#05161d;opacity:.8;
-  fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
-  animation:boat-cross 44s linear infinite,boat-bob 4.2s ease-in-out infinite}
-@keyframes boat-cross{from{left:-44px}to{left:calc(100% + 44px)}}
-@keyframes boat-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(3px) rotate(2deg)}}
 .art-waves{position:absolute;left:0;right:0;bottom:0;height:34px;pointer-events:none;z-index:1;overflow:hidden}
 .art-waves .wave{position:absolute;bottom:-2px;left:0;width:200%;height:100%;fill:rgba(233,222,200,.08)}
 .art-waves .w1{animation:wave-drift 9s linear infinite}
@@ -139,6 +133,19 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .sec-head h2{font-family:var(--song);font-size:22px;font-weight:500;letter-spacing:-.01em}
 .sec-head p{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.9}
 .entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+/* 登船卡片：按「开始起航」后弹出，两条入口作为通向定位/成绩的桥。
+   背板与 dialog::backdrop 同一墨色磨砂；卡片用纸面底 + 铜色描边，入场从下方轻轻浮起。 */
+.board-backdrop{position:fixed;inset:0;z-index:90;background:rgba(8,32,42,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;padding:22px}
+.board-card{position:relative;width:min(720px,100%);max-height:min(86vh,86dvh);overflow:auto;background:var(--paper);border:1px solid var(--line-2);border-radius:22px;padding:34px 34px 30px;box-shadow:0 30px 80px rgba(8,32,42,.35);animation:board-rise .5s var(--ease)}
+.board-card .entry-grid{margin-top:22px}
+.board-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);display:grid;place-items:center;transition:background .25s,transform .25s}
+.board-close:hover{background:var(--paper-2);transform:rotate(90deg)}
+@keyframes board-rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@media(max-width:560px){
+  .board-backdrop{padding:0;align-items:end}
+  .board-card{border-radius:22px 22px 0 0;max-height:92dvh;padding:26px 20px calc(20px + env(safe-area-inset-bottom));animation:board-sheet .45s var(--ease)}
+}
+@keyframes board-sheet{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
 .entry{position:relative;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:30px;overflow:hidden;display:flex;flex-direction:column;min-height:230px;transition:transform .5s var(--ease),border-color .3s,box-shadow .4s}
 .entry:hover{transform:translateY(-5px);border-color:var(--brass-line);box-shadow:var(--sh-card)}
 .entry .eidx{position:absolute;right:26px;top:22px;font:italic 500 46px/1 var(--display);color:var(--line)}
@@ -511,9 +518,9 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
 }
 @media(hover:none),(pointer:coarse){.entry:hover,.scard:hover,.dcard:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){
-  .drift-boat,.art-waves .wave{animation:none}
-  .drift-boat{left:72%;opacity:.35}
+  .art-waves .wave{animation:none}
   .slot-wrap{transition:none}
+  .board-card{animation:none}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
