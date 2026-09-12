@@ -4,7 +4,7 @@
 > 统一进度（2026-09-12，2026-09-12-chapter-gate）：本地核心流程、真实招生发布与学校成绩接入完成；千帆、学生原话链路、共享会话存储均已上线；学校成绩改为云端密文托管（对象存储里只有密文）；TASK-14 剩余线上验收与回滚演练。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：30 个测试文件、415 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：32 个测试文件、428 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -69,12 +69,17 @@
 | 2026-09-12 19:20 | 线三 | `chapters/chart.tsx`（SVG 段） | 航线图右侧标签溢出被裁、航线小结与中线相交、图内浅色文字对比度 | 已交还 |
 | 2026-09-12 19:45 | 线三 | `chapters/settings.tsx`（新）、`App.tsx`（顶栏段）、`chapters/talk.tsx`、`chapters/chart.tsx`、`test/settings.test.ts`（新） | 设置卡片收拢思考深度与清除本人数据；顶栏「溟」= 设置、品牌标记 = 逍遥游彩蛋 | 已交还 |
 | 2026-09-12 19:52 | 线三 | `tools/check_frontend_lanes.py`（新）、`docs/PARALLEL_FRONTEND.md`（新）、`AGENTS.md` | 建分工契约与越线自查脚本；登记 `test/topbar-narrow.test.ts` 归线一（据内容推定，不符请那边改登记） | 已交还 |
+| 2026-09-12 19:56 | 线一 | `chapters/chart.tsx`（底部导出区）、`style.css`（只新增导出区一条规则）、`test/settings.test.ts`（改一条过时断言） | 负责人直接指派：删掉「本人数据」面板与「打印 / 另存为 PDF」，剩余按钮重排。线三 19:45 那笔已交还，动手前重读的是含线三改动的当前内容；线三的 SVG 几何与文案改动一律保留。`test/settings.test.ts` 里「下载仍留在航线图」那条断言随面板下线一并更新（只改这一条，其余未动）。 | 已交还 |
+| 2026-09-12 20:00 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（六站卡规则与窄屏那五条） | 首页六站改抽屉式堆叠卡：收起 980→246px（390px），点开展开并推开后一张 | 已交还 |
+| 2026-09-12 20:01 | 线一 / 线二（提交 `6e3ec33`） | `chapters/chart.tsx`、`style.css`、`test/settings.test.ts`、`docs/IMPLEMENTATION_LOG.md` | 航线图底部收拢的提交把这些文件一并入库，其中航线图标签修复、抽屉卡样式、设置归属测试都是线三当时在建的内容 | 已入库（线三复核：内容完整、测试通过） |
+| 2026-09-12 20:06 | 第四会话（顶栏窄屏修复） | `style.css`（仅末尾 ≤340px 顶栏块，19:49 写入）、`test/topbar-narrow.test.ts`（新）、`docs/verification/topbar-320-fixed-2026-09-12.png`（新） | 修复 sail-compact 轮在案的 320px 顶栏溢出 18px；样式块已随 `6e3ec33` 的 style.css 整文件 add 进入 HEAD，与该提交自身改动可共存（更正 19:52 行的推定：topbar-narrow.test.ts 与顶栏块归本会话，非线一）；本轮提交只含测试、实测截图与文档 | 已交还 |
+| 2026-09-12 20:08 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（抽屉卡动效）、`test/sail-deck.test.ts` | 抽屉卡补动效：0fr→1fr 展开、正文跟进、整摞错峰入场、让位过渡、箭头回弹；正文改为常驻 DOM（读屏不丢内容） | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 
-| 2026-09-12 19:56 | 线一 | `chapters/chart.tsx`（底部导出区）、`style.css`（只新增导出区一条规则）、`test/settings.test.ts`（改一条过时断言） | 负责人直接指派：删掉「本人数据」面板与「打印 / 另存为 PDF」，剩余按钮重排。线三 19:45 那笔已交还，动手前重读的是含线三改动的当前内容；线三的 SVG 几何与文案改动一律保留。`test/settings.test.ts` 里「下载仍留在航线图」那条断言随面板下线一并更新（只改这一条，其余未动）。 | 已交还 |
-
 ## 五、机械校验
+
+后端对齐轮（2026-09-12）认领：`App.tsx` 仅成绩响应接线、`quality-huixi.ts` 仅汇总类型、`ai-client.ts` 仅网络异常收尾；不改章节布局与样式。状态：进行中。
 
 ```powershell
 cd C:\Users\yusheng\Desktop\南航
