@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Icon } from "../art.js";
-import { REFERENCE_YEAR, clamp, label, type PageId } from "./shared.js";
+import { REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, label, levelLabel, type PageId } from "./shared.js";
 import type { SchoolPool, ScoreRange } from "../journey-model.js";
 
 export interface AxisProps {
@@ -166,24 +166,35 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
           const entry = row.label;
           const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
           const interval = reference.reference_rank_interval ?? [];
-          const badge = row.candidate.eligibility.status === "PASS" ? "safe" : "plain";
-          return <article className="scard" key={entry.offeringId}>
+          // 与「航线图」同一套分层标签：历史位置关系（项目边界内不写冲稳保）、办学层次、资格。
+          const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+          const institutionTags = (entry.institutionTags ?? "").split("/")
+            .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
+          const passed = row.candidate.eligibility.status === "PASS";
+          return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={entry.offeringId}>
             <div className="scard-top">
-              <span className={`rbadge ${badge}`}>{label(row.candidate.eligibility.status)}</span>
               <span className="sc-loc"><Icon name="pin" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
               <h3 className="song">{entry.majorName}</h3>
-              <div className="sc-tags">
+              <div className="sc-chips">
+                {relation
+                  ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
+                  : <span className="sc-rel none">暂无比较依据</span>}
+                {entry.level ? <span className="sc-lv">{levelLabel(entry.level)}</span> : null}
                 <span>{entry.batch}</span>
                 {entry.categoryClass ? <span>{entry.categoryClass}</span> : null}
-                <span>招生数 {entry.planCount ?? "未知"}</span>
-                <span>学费 {entry.tuition === null || entry.tuition === undefined ? "未知" : `¥${entry.tuition}`}</span>
+                {passed ? <span className="sc-ok"><Icon name="check" />资格符合</span>
+                  : <span className="sc-warn">{label(row.candidate.eligibility.status)}</span>}
               </div>
+              {institutionTags.length ? <div className="sc-tags">
+                {institutionTags.map((tag) => <span key={tag}>{tag}</span>)}
+              </div> : null}
             </div>
             <div className="ranks">
-              <div className="rank"><div className="ry">参考年</div><div className="rv num">{reference.source_year ?? REFERENCE_YEAR}</div></div>
-              <div className="rank"><div className="ry">{row.reference === "major" ? "专业位次区间" : "专业组位次区间"}</div>
-                <div className="rv num">{interval.length ? interval.join("–") : "—"}</div></div>
-              <div className="rank"><div className="ry">资格</div><div className="rv">{label(row.candidate.eligibility.status)}</div></div>
+              <div className="rank"><div className="ry">参考 {reference.source_year ?? REFERENCE_YEAR} 位次</div>
+                <div className="rv num">{formatRankInterval(interval)}</div></div>
+              <div className="rank"><div className="ry">招生数</div><div className="rv num">{entry.planCount ?? "—"}</div></div>
+              <div className="rank"><div className="ry">学费</div>
+                <div className="rv num">{entry.tuition == null ? "未知" : `${entry.tuition} 元/年`}</div></div>
             </div>
             {row.reference === "group" ? <p className="fhint" style={{ margin: "0 20px 12px" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
             {row.candidate.eligibility.pending_requirements.length > 0

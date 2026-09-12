@@ -4,7 +4,7 @@
 > 统一进度（2026-09-12，2026-09-12-chapter-gate）：本地核心流程、真实招生发布与学校成绩接入完成；千帆、学生原话链路、共享会话存储均已上线；学校成绩改为云端密文托管（对象存储里只有密文）；TASK-14 剩余线上验收与回滚演练。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：32 个测试文件、428 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：34 个测试文件、439 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -19,9 +19,9 @@
 
 | 线 | 范围 | 独占文件（只有这条线能写） | 最后触碰证据 |
 |---|---|---|---|
-| 线一 · 定位/成绩与交付 | 成绩接入、入口考剔除、探索区间、分数轴换算、文档同步与提交 | `chapters/locate.tsx`、`chapters/axis.tsx`、`chapters/sail.tsx`、`quality-huixi.ts`、`quality-types.ts`、`exam-position.ts`、`reference-lines.ts`、`progress.ts`、`test/exam-position.test.ts`、`test/quality-huixi.test.ts`、`test/progress.test.ts`、`test/release-integration.test.ts`、`VISUAL_PROGRESS.md`、`docs/**`（本节登记处除外）、`MANIFEST.sha256`、`FILE_INDEX.md`、`releases/**` | `3f05c4d`、`4f47b1c`、`8ec3c32`、`174e2e7`（19:30–19:37） |
+| 线一 · 定位/成绩与交付 | 成绩接入、入口考剔除、探索区间、分数轴换算、文档同步与提交 | `chapters/locate.tsx`、`chapters/axis.tsx`、`chapters/sail.tsx`、`quality-huixi.ts`、`quality-types.ts`、`exam-position.ts`、`reference-lines.ts`、`progress.ts`、`test/exam-position.test.ts`、`test/quality-huixi.test.ts`、`test/progress.test.ts`、`test/release-integration.test.ts`、`chapters/chart.tsx`（20:1x 起由本线接手院校卡分层标签）、`VISUAL_PROGRESS.md`、`docs/**`（本节登记处除外）、`MANIFEST.sha256`、`FILE_INDEX.md`、`releases/**` | `3f05c4d`、`4f47b1c`、`8ec3c32`、`174e2e7`（19:30–19:37） |
 | 线二 · 方向与双线 | 「大类 → 小类」两级选择、AI 建议线与自选线的等权双线、候选按线拆分 | `chapters/direction.tsx`、`journey-model.ts`（专业类目录与分组） | `0e28a80`、`3f05c4d`（19:18–19:37） |
-| 线三 · 设置与图形 | 顶栏两枚按钮的归属、设置卡片、航线图 SVG 几何与图内文字、图形资源 | `chapters/settings.tsx`（新）、`chapters/chart.tsx`、`art.tsx`、`chat.tsx`、`test/settings.test.ts`（新） | 本轮（19:45–19:50） |
+| 线三 · 设置与图形 | 顶栏两枚按钮的归属、设置卡片、起航页六站抽屉卡与「三件事」面板、图形资源 | `chapters/settings.tsx`（新）、`chapters/sail.tsx`、`art.tsx`、`chat.tsx`、`style.css`（仅六站卡与三件事两段）、`test/settings.test.ts`、`test/sail-deck.test.ts`、`test/sail-pack.test.ts`（新） | 本轮（19:45–19:50） |
 
 `journey-model.ts` 与 `model.ts` 只列在一条线里，但它们同时被两条线用（线一改区间与院校池，线二加专业类
 目录与 `WebState.picks`）——所以按下面第二节当作**共享文件**处理，动手前必须认领。
@@ -74,6 +74,9 @@
 | 2026-09-12 20:01 | 线一 / 线二（提交 `6e3ec33`） | `chapters/chart.tsx`、`style.css`、`test/settings.test.ts`、`docs/IMPLEMENTATION_LOG.md` | 航线图底部收拢的提交把这些文件一并入库，其中航线图标签修复、抽屉卡样式、设置归属测试都是线三当时在建的内容 | 已入库（线三复核：内容完整、测试通过） |
 | 2026-09-12 20:06 | 第四会话（顶栏窄屏修复） | `style.css`（仅末尾 ≤340px 顶栏块，19:49 写入）、`test/topbar-narrow.test.ts`（新）、`docs/verification/topbar-320-fixed-2026-09-12.png`（新） | 修复 sail-compact 轮在案的 320px 顶栏溢出 18px；样式块已随 `6e3ec33` 的 style.css 整文件 add 进入 HEAD，与该提交自身改动可共存（更正 19:52 行的推定：topbar-narrow.test.ts 与顶栏块归本会话，非线一）；本轮提交只含测试、实测截图与文档 | 已交还 |
 | 2026-09-12 20:08 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（抽屉卡动效）、`test/sail-deck.test.ts` | 抽屉卡补动效：0fr→1fr 展开、正文跟进、整摞错峰入场、让位过渡、箭头回弹；正文改为常驻 DOM（读屏不丢内容） | 已交还 |
+| 2026-09-12 20:20 | 线一（负责人指派） | `chapters/chart.tsx`（推荐卡与已撤掉的「保底路线」段）、`chapters/axis.tsx`（同款推荐卡）、`chapters/shared.ts`（新增 `levelLabel`/`formatRankInterval`）、`style.css`（`.scard` 视觉与标签样式；删掉已失效的 `.safety/.srow/.sicon`）、`test/route-labels.test.ts`（新） | 负责人要求：删掉页底的「保底路线」说明段，把冲刺/保底这类分层直接做进推荐院校卡片；卡片视觉升级。按项目既有边界（不提供「冲稳保」）用历史位置关系标签实现，卡片上另给办学层次（本科/职业本科/高职）与院校标签。动手前已重读四份文件当前内容。985/211/双一流因发布包与源工作簿都没有该字段，未实现，已记入实施记录待裁决。 | 已交还 |
+| 2026-09-12 20:14 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（三件事一段 + 窄屏三行）、`test/sail-pack.test.ts`（新） | 「先定下三件事」加编号印章、n/2 计数、逐件入场、chip 盖章光环、备齐时出发按钮弹一下；满 2 门只变淡不禁用 | 已交还 |
+| 2026-09-12 20:18 | 线一（负责人指派） | `chapters/chart.tsx`（院校卡分层标签与标签行） | 航线图院校卡改用发布包的历史位置关系做分层标签 | 在建 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 

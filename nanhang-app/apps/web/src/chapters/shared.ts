@@ -49,6 +49,21 @@ export const initialQualityState: QualityState = { status: "idle", index: null, 
 export const DIRECTION_ARTS: ArtName[] = ["compass", "harbor", "lighthouse", "sea"];
 export const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
+/** 办学层次标签：发布包里的 level 原样用，「专科」在页面上写全称（与批次名同一口径）。 */
+export const levelLabel = (level: string): string => level === "专科" ? "高职（专科）" : level;
+
+/**
+ * 参考位次写法：发布库里同一个位次的上下界经常相等（一个专业只招一两人时区间退化成点），
+ * 直接 join("–") 会显示「247189–247189」，看着像脏数据。相等只写一个数，统一加千分位。
+ */
+export const formatRankInterval = (interval: readonly number[]): string => {
+  if (!interval.length) return "—";
+  const format = (value: number) => value.toLocaleString("zh-CN");
+  return interval[0] === interval[1]
+    ? format(interval[0]!)
+    : `${format(interval[0]!)}–${format(interval[1]!)}`;
+};
+
 /** The exploration experience card for a direction, and its linked professional fact card. */
 const DIRECTION_CARDS = explorationCards();
 export const experienceCardFor = (directionId: string) =>

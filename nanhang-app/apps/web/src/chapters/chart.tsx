@@ -3,7 +3,9 @@ import { makeBranches, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
 import type { WebState } from "../model.js";
 import { Icon } from "../art.js";
-import { REFERENCE_YEAR, RELATION_CLASSES, label, svgStringToPng, type PageId } from "./shared.js";
+import {
+  REFERENCE_YEAR, RELATION_CLASSES, formatRankInterval, label, levelLabel, svgStringToPng, type PageId
+} from "./shared.js";
 
 export interface ChartProps {
   state: WebState;
@@ -24,6 +26,7 @@ const ROUTE_META = [
   { kind: "ai" as const, title: "AI 建议探索", sub: "从对话中发现——只出现在 AI 建议里的专业。" },
   { kind: "self" as const, title: "我的自主选择", sub: "为自己的想法留一条路——只出现在你自选里的专业。" }
 ];
+
 
 /**
  * 图内文字的排版约束（viewBox 0 0 1000 320，导出 PNG 用同一坐标系）。
@@ -162,25 +165,38 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
                 {route.rows.slice(0, 24).map((row) => {
                   const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
                   const interval = reference.reference_rank_interval ?? [];
-                  const badge = row.candidate.eligibility.status === "PASS" ? "safe" : "plain";
-                  return <article className="scard" key={`${route.kind}-${row.label.offeringId}`}>
+                  // 分层标签直接用发布包里的历史位置关系（需更好位置 / 同分或边界重叠 / 位置较有余量）。
+                  // 项目边界不提供「冲稳保」预测，所以标签说明的是「相对历史记录的位置」，不是录取结论。
+                  const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+                  const institutionTags = (row.label.institutionTags ?? "").split("/")
+                    .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
+                  const passed = row.candidate.eligibility.status === "PASS";
+                  return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={`${route.kind}-${row.label.offeringId}`}>
                     <div className="scard-top">
-                      <span className={`rbadge ${badge}`}>{label(row.candidate.eligibility.status)}</span>
                       <span className="sc-loc"><Icon name="pin" />{row.label.institutionName}{row.label.institutionCity ? ` · ${row.label.institutionCity}` : ""}</span>
                       <h3 className="song">{row.label.majorName}</h3>
-                      <div className="sc-tags">
+                      <div className="sc-chips">
+                        {relation
+                          ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
+                          : <span className="sc-rel none">暂无比较依据</span>}
+                        {row.label.level ? <span className="sc-lv">{levelLabel(row.label.level)}</span> : null}
                         <span>{row.label.batch}</span>
                         {row.label.categoryClass ? <span>{row.label.categoryClass}</span> : null}
-                        <span>招生数 {row.label.planCount ?? "未知"}</span>
+                        {passed ? <span className="sc-ok"><Icon name="check" />资格符合</span>
+                          : <span className="sc-warn">{label(row.candidate.eligibility.status)}</span>}
                       </div>
+                      {institutionTags.length ? <div className="sc-tags">
+                        {institutionTags.map((tag) => <span key={tag}>{tag}</span>)}
+                      </div> : null}
                     </div>
                     <div className="ranks">
-                      <div className="rank"><div className="ry">参考年</div><div className="rv num">{reference.source_year ?? REFERENCE_YEAR}</div></div>
-                      <div className="rank"><div className="ry">{row.reference === "major" ? "专业位次区间" : "专业组位次区间"}</div>
-                        <div className="rv num">{interval.length ? interval.join("–") : "—"}</div></div>
-                      <div className="rank"><div className="ry">资格</div><div className="rv">{label(row.candidate.eligibility.status)}</div></div>
+                      <div className="rank"><div className="ry">参考 {reference.source_year ?? REFERENCE_YEAR} 位次</div>
+                        <div className="rv num">{formatRankInterval(interval)}</div></div>
+                      <div className="rank"><div className="ry">招生数</div><div className="rv num">{row.label.planCount ?? "—"}</div></div>
+                      <div className="rank"><div className="ry">学费</div>
+                        <div className="rv num">{row.label.tuition == null ? "未知" : `${row.label.tuition} 元/年`}</div></div>
                     </div>
-                    {row.reference === "group" ? <p className="fhint" style={{ margin: "0 20px 12px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
+                    {row.reference === "group" ? <p className="fhint" style={{ margin: "10px 20px 14px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
                   </article>;
                 })}
               </div>}
@@ -188,22 +204,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
           </div>;
         })}
 
-      <div className="panel" style={{ marginBottom: 22 }}>
-        <h3><Icon name="shield" />保底路线 · 每条路都能通向远方</h3>
-        <p className="psub">班里不止十几个人与自己有关。梦想院校 → 冲刺本科 → 普通本科 → 职业本科 → 优质高职 → 专升本，全链条都在图上。</p>
-        <div className="safety">
-          {[
-            { icon: "up", k: "冲刺本科", t: "在当前层次之上，保留少量冲一冲的选择。" },
-            { icon: "book", k: "普通本科", t: "与探索区间匹配的主力层次。" },
-            { icon: "shield", k: "职业本科", t: "与普通本科同等层次、同等学历学位，侧重产教融合与就业。" },
-            { icon: "anchor", k: "订单/定向培养", t: "部分高职有企业订单班、公费师范、定向医学生，入学即锁定就业方向。" },
-            { icon: "spark", k: "复读的取舍", t: "是否复读需结合稳定性与心理承受力，南溟不给出轻率建议。" }
-          ].map((row) => <div className="srow" key={row.k}>
-            <span className="sicon"><Icon name={row.icon} /></span>
-            <div><h4 className="song">{row.k}</h4><p>{row.t}</p></div>
-          </div>)}
-        </div>
-      </div>
     </>}
 
     <div className="blessing">

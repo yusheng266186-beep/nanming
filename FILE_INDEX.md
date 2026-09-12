@@ -4,7 +4,7 @@
 > 统一进度（2026-09-12，2026-09-12-chapter-gate）：本地核心流程、真实招生发布与学校成绩接入完成；千帆、学生原话链路、共享会话存储均已上线；学校成绩改为云端密文托管（对象存储里只有密文）；TASK-14 剩余线上验收与回滚演练。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：31 个测试文件、419 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：34 个测试文件、439 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -85,7 +85,9 @@
 | [nanhang-app/apps/web/test/quality-huixi.test.ts](nanhang-app/apps/web/test/quality-huixi.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/quality-presentation.test.ts](nanhang-app/apps/web/test/quality-presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/release-integration.test.ts](nanhang-app/apps/web/test/release-integration.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/route-labels.test.ts](nanhang-app/apps/web/test/route-labels.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/sail-deck.test.ts](nanhang-app/apps/web/test/sail-deck.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/sail-pack.test.ts](nanhang-app/apps/web/test/sail-pack.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/settings.test.ts](nanhang-app/apps/web/test/settings.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/theme-spirit.test.ts](nanhang-app/apps/web/test/theme-spirit.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/topbar-narrow.test.ts](nanhang-app/apps/web/test/topbar-narrow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -650,6 +652,7 @@
 | [nanhang-app/docs/ADR_002_LINE_EQUIVALENT_POSITIONING.md](nanhang-app/docs/ADR_002_LINE_EQUIVALENT_POSITIONING.md) | 实施进度与记录 |
 | [nanhang-app/docs/ADR_003_STUDENT_JOURNEY.md](nanhang-app/docs/ADR_003_STUDENT_JOURNEY.md) | 实施进度与记录 |
 | [nanhang-app/docs/AI_QIANFAN_SETUP.md](nanhang-app/docs/AI_QIANFAN_SETUP.md) | 实施进度与记录 |
+| [nanhang-app/docs/BACKEND_FRONTEND_ALIGNMENT.md](nanhang-app/docs/BACKEND_FRONTEND_ALIGNMENT.md) | 实施进度与记录 |
 | [nanhang-app/docs/baseline/contracts/data-release.schema.json](nanhang-app/docs/baseline/contracts/data-release.schema.json) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/contracts/match-result.schema.json](nanhang-app/docs/baseline/contracts/match-result.schema.json) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/contracts/student-profile.schema.json](nanhang-app/docs/baseline/contracts/student-profile.schema.json) | 交接包同步参考副本 |
@@ -693,7 +696,18 @@
 | [nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md](nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md) | 实施进度与记录 |
 | [nanhang-app/docs/VALIDATION_RESULT.md](nanhang-app/docs/VALIDATION_RESULT.md) | 实施进度与记录 |
 | [nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt](nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-build-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-build-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-build-latest-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-build-latest-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-focused-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-focused-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-online-2026-09-12.json](nanhang-app/docs/verification/backend-alignment-online-2026-09-12.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-smoke-2026-09-12.json](nanhang-app/docs/verification/backend-alignment-smoke-2026-09-12.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-tests-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-tests-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-tests-final-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-tests-final-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-tests-latest-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-tests-latest-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-typecheck-final-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-typecheck-final-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-typecheck-latest-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-typecheck-latest-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/backend-alignment-validate-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-validate-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-validate-recheck-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-validate-recheck-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt](nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/build-journey-2026-09-12.txt](nanhang-app/docs/verification/build-journey-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
@@ -834,6 +848,7 @@
 | [nanhang-app/README.md](nanhang-app/README.md) | 工程配置或总入口 |
 | [nanhang-app/scripts/build_function.mjs](nanhang-app/scripts/build_function.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/check_pages_config.mjs](nanhang-app/scripts/check_pages_config.mjs) | 工程配置或总入口 |
+| [nanhang-app/scripts/check_pages_config.test.mjs](nanhang-app/scripts/check_pages_config.test.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/deploy_cos.py](nanhang-app/scripts/deploy_cos.py) | 工程配置或总入口 |
 | [nanhang-app/scripts/deploy_function.py](nanhang-app/scripts/deploy_function.py) | 工程配置或总入口 |
 | [nanhang-app/scripts/deploy_school_cloud.py](nanhang-app/scripts/deploy_school_cloud.py) | 工程配置或总入口 |

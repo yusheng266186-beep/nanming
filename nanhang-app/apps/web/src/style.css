@@ -173,21 +173,41 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .banner .icon{color:var(--brass)}
 /* 六站航程：抽屉式堆叠卡。收起时每站只露一行（章号 + 站名 + 这一站做什么），
    相邻两张靠负外边距压边——压掉的只是上一张的下内边距，行内标题始终是单行（超长省略），
-   所以文字不会被下一张吃掉。展开的那一张把它后面那张推开，自己不再被压。 */
+   所以文字不会被下一张吃掉。展开的那一张把它后面那张推开，自己不再被压。
+   动效：整摞错峰入场；展开/收起用 grid-template-rows 0fr→1fr（现代浏览器逐帧插值，
+   认不出的浏览器退化为瞬时展开，功能不受影响），正文另加一层 opacity + translateY 跟进；
+   压边与让位走 margin-top 过渡，箭头用带回弹的缓动翻转。全部动效都被全局的
+   prefers-reduced-motion 规则压成瞬时（见本文件末尾那块），无需再写覆盖。 */
 .deck{margin:22px 0;position:relative}
-.stop{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;transition:border-color .3s,box-shadow .4s}
-.stop+.stop{margin-top:-14px}
+.stop{
+  position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  transition:border-color .3s,box-shadow .5s var(--ease);
+  animation:arrive .55s var(--ease) both;
+}
+.stop:nth-child(2){animation-delay:.05s}
+.stop:nth-child(3){animation-delay:.1s}
+.stop:nth-child(4){animation-delay:.15s}
+.stop:nth-child(5){animation-delay:.2s}
+.stop:nth-child(6){animation-delay:.25s}
+.stop+.stop{margin-top:-14px;box-shadow:0 -8px 18px rgba(8,32,42,.05);transition:margin-top .45s var(--ease)}
 .stop.open+.stop{margin-top:10px}
-.stop.open{z-index:2;border-color:var(--brass-line);box-shadow:var(--sh-card)}
-.stop-head{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;text-align:left}
+.stop.open{z-index:2;border-color:var(--brass-line);box-shadow:0 -16px 34px rgba(8,32,42,.11)}
+.stop-head{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;text-align:left;border-radius:11px;transition:background .3s}
+.stop-head:hover{background:#fff}
+.stop-head:active{background:var(--paper-2)}
 .stop-head .mk{font-size:10.5px;letter-spacing:.08em;color:var(--brass);display:flex;align-items:center;gap:7px;flex:0 0 auto}
-.stop-head h4{font-family:var(--song);font-size:15px;font-weight:500;margin:0;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stop-head h4{font-family:var(--song);font-size:15px;font-weight:500;margin:0;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .3s}
 .stop-head:hover h4{color:var(--brass-3)}
-.stop-cue{flex:0 0 auto;color:var(--mut);transition:transform .35s var(--ease)}
-.stop.open .stop-cue{transform:rotate(180deg)}
-.stop-body{padding:0 16px 15px}
-.stop-body p{font-size:11.5px;color:var(--mut);line-height:1.9}
-.stop-body[hidden]{display:none}
+.stop-cue{flex:0 0 auto;color:var(--mut);transition:transform .5s var(--ease-spring),color .3s}
+.stop.open .stop-cue{transform:rotate(180deg);color:var(--brass)}
+/* 抽屉本体：0fr→1fr 才能让高度跟着内容走，又不写死任何像素高度。 */
+.stop-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
+.stop.open .stop-body{grid-template-rows:1fr}
+.stop-inner{overflow:hidden;min-height:0}
+.stop-inner p{padding:0 16px 15px;font-size:11.5px;color:var(--mut);line-height:1.9;
+  opacity:0;transform:translateY(-6px);
+  transition:opacity .28s var(--ease) .1s,transform .45s var(--ease) .06s}
+.stop.open .stop-inner p{opacity:1;transform:none}
 .quote-strip{padding:40px 0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .quote-strip p{font-family:var(--song);font-size:19px;letter-spacing:.06em;color:var(--sea)}
 .quote-strip span{font:italic 400 12px/1 var(--display);letter-spacing:.16em;color:var(--mut);display:block;margin-top:12px}
@@ -365,24 +385,45 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .rfilters{display:flex;gap:8px;flex-wrap:wrap}
 .legend{display:flex;gap:16px;font-size:11px;color:var(--mut);align-items:center}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+/* 推荐卡（航线图的两条线 + 分数轴的院校池共用）。2026-09-12 负责人要求「更高级、更贴切」，
+   重排为三段：院校抬头 → 专业名 → 标签行 / 数据行。标签行承担分层信息（历史位置关系、
+   办学层次、批次、专业类、资格），不再把「符合已检查条件」在顶角徽章和底部格子里各写一遍。 */
 .schools{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.scard{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;position:relative;transition:transform .4s var(--ease),box-shadow .4s,border-color .3s;animation:msgin .5s var(--ease) both}
+.scard{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;position:relative;transition:transform .4s var(--ease),box-shadow .4s,border-color .3s;animation:msgin .5s var(--ease) both}
+.scard::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--line-2);opacity:.5}
+/* cls 取值与图上三条线、图例一致：far（需更好位置）/ main（同分或边界重叠）/ safe（位置较有余量）。 */
+.scard.rel-far::before{background:var(--reach);opacity:.85}
+.scard.rel-main::before{background:var(--steady);opacity:.85}
+.scard.rel-safe::before{background:var(--safe);opacity:.85}
 .scard:hover{transform:translateY(-5px);box-shadow:var(--sh-card);border-color:var(--brass-line)}
-.scard-top{padding:18px 20px 14px;position:relative}
+.scard-top{padding:20px 22px 16px;position:relative}
 .rbadge{position:absolute;top:16px;right:16px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:30px;letter-spacing:.08em}
 .rbadge.reach{background:rgba(176,118,58,.13);color:var(--reach);border:1px solid rgba(176,118,58,.35)}
 .rbadge.steady{background:rgba(28,85,96,.12);color:var(--steady);border:1px solid rgba(28,85,96,.3)}
 .rbadge.safe{background:rgba(125,154,134,.15);color:var(--safe);border:1px solid rgba(125,154,134,.4)}
-.sc-loc{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--foam);letter-spacing:.04em}
+.sc-loc{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--foam);letter-spacing:.06em}
 .sc-loc .icon{width:13px;height:13px}
-.scard h3{font-family:var(--song);font-size:19px;font-weight:500;margin:9px 0 4px;padding-right:56px;letter-spacing:-.01em}
+.scard h3{font-family:var(--song);font-size:19px;font-weight:500;margin:8px 0 0;letter-spacing:-.01em}
 .sc-tier{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--brass);background:var(--brass-bg);border:1px solid var(--brass-line);padding:3px 9px;border-radius:5px;letter-spacing:.04em}
-.sc-tags{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0 0}
-.sc-tags span{font-size:9.5px;padding:3px 8px;border-radius:5px;background:var(--paper-2);color:var(--mut);border:1px solid var(--line)}
+.sc-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.sc-tags span{font-size:9.5px;padding:3px 8px;border-radius:5px;background:var(--brass-bg);color:var(--brass-3);border:1px solid var(--brass-line)}
+/* 标签行：淡底胶囊，四类信息一眼分完。位置关系带颜色点，与图上的三条线同色。 */
+.sc-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 0}
+.sc-chips>span{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 9px;border-radius:999px;background:var(--paper-2);color:var(--ink-2);border:1px solid var(--line);letter-spacing:.02em}
+.sc-chips>span.sc-rel{font-weight:600}
+.sc-rel i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.sc-rel.far{background:rgba(176,118,58,.13);color:var(--reach);border-color:rgba(176,118,58,.35)}
+.sc-rel.main{background:rgba(28,85,96,.10);color:var(--steady);border-color:rgba(28,85,96,.3)}
+.sc-rel.safe{background:rgba(125,154,134,.15);color:var(--safe);border-color:rgba(125,154,134,.4)}
+.sc-rel.none{background:transparent;color:var(--mut);border-style:dashed}
+.sc-lv{color:var(--sea);border-color:var(--line-2)}
+.sc-ok{color:var(--safe)}
+.sc-ok .icon{width:12px;height:12px}
+.sc-warn{color:var(--reach);border-color:rgba(176,118,58,.35)}
 .ranks{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.rank{background:var(--card);padding:11px 8px;text-align:center}
+.rank{background:var(--card);padding:12px 8px;text-align:center}
 .rank .ry{font:italic 400 9px/1 var(--display);color:var(--mut);letter-spacing:.06em}
-.rank .rv{font-family:var(--display);font-size:17px;font-weight:500;color:var(--sea);margin-top:6px}
+.rank .rv{font-family:var(--display);font-size:17px;font-weight:500;color:var(--sea);margin-top:6px;font-variant-numeric:tabular-nums}
 .rank .rv.hi{color:var(--brass)}
 .sc-foot{padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .gap{font-size:11px;color:var(--mut)}
@@ -433,12 +474,6 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .gain-fill{display:block;height:100%;background:linear-gradient(90deg,var(--brass),var(--brass-2));width:0;transition:width 1.1s var(--ease-spring)}
 .gain-val{font-family:var(--display);font-size:20px;font-weight:500;color:var(--brass);width:52px;text-align:right;flex-shrink:0}
 .gain-note{font-size:11px;color:var(--mut);margin-top:14px;line-height:1.85;border-left:2px solid var(--brass-line);padding-left:14px}
-.safety{display:flex;flex-direction:column;gap:11px}
-.srow{display:flex;align-items:center;gap:13px;padding:14px 16px;border:1px solid var(--line);border-radius:11px;background:var(--paper);transition:transform .3s,border-color .3s}
-.srow:hover{transform:translateX(4px);border-color:var(--brass-line)}
-.srow .sicon{width:34px;height:34px;border-radius:9px;background:var(--sea);color:#cfe0da;display:grid;place-items:center;flex-shrink:0}
-.srow h4{font-family:var(--song);font-size:14px}
-.srow p{font-size:11px;color:var(--mut);margin-top:3px;line-height:1.7}
 .blessing{background:var(--sea);color:#eaf2ef;border-radius:18px;padding:40px 38px;text-align:center;position:relative;overflow:hidden;margin-top:6px}
 .blessing::before{content:"❝";position:absolute;top:16px;left:30px;font-family:var(--display);font-size:80px;color:rgba(200,155,82,.2);line-height:1}
 .blessing .eyebrow{color:var(--brass-2);justify-content:center}
@@ -742,6 +777,38 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
 .grid-2.sail-form{margin-top:4px;gap:22px}
 .field.sail-score{margin-top:20px;max-width:320px}
 .hero-act.sail-act{margin-top:22px}
+/* ── 「先定下三件事」：一件一件备齐 ──────────────────────────────
+   每件事前面一枚印章编号（01/02/03）：没备好是空心，备好变铜色并弹一下。
+   选中的 chip 在按下的那一刻盖一枚向外扩散的光环（一次性，不常驻）。
+   再选满 2 门后其余 chip 变淡，但仍然可点——点了会说明「先取消一门再选」，
+   不假装它们不能点。目标分聚焦时给铜色描边与柔光；三件事逐件入场，
+   备齐时「开始起航」弹一下，作为「可以出发了」的信号。 */
+.panel.sail-panel .flab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sail-panel .seal{width:26px;height:26px;flex:0 0 auto;border-radius:50%;border:1px solid var(--line-2);color:var(--mut);
+  font:italic 500 11px/1 var(--display);letter-spacing:.02em;display:grid;place-items:center;
+  transition:background .45s var(--ease),border-color .45s,color .45s,box-shadow .45s}
+.sail-panel .flab-n{font:500 11px/1 var(--sans);font-style:normal;color:var(--mut);background:var(--paper-2);
+  border-radius:20px;padding:5px 9px;transition:background .4s var(--ease),color .4s}
+.sail-panel .field[data-ready="true"] .seal{background:var(--brass);border-color:var(--brass);color:#fff8ec;
+  box-shadow:0 5px 14px rgba(169,123,52,.26);animation:seal-pop .55s var(--ease-spring)}
+.sail-panel .field[data-ready="true"] .flab-n{background:var(--brass-bg);color:var(--brass-3)}
+@keyframes seal-pop{from{transform:scale(.7)}to{transform:none}}
+@keyframes seal-ring{from{transform:scale(.97);opacity:.8}to{transform:scale(1.24);opacity:0}}
+.chip{position:relative}
+.chip.on::before{content:"";position:absolute;inset:-3px;border-radius:inherit;border:1.5px solid var(--brass);
+  pointer-events:none;animation:seal-ring .6s var(--ease) forwards}
+.chip:active{transform:scale(.96)}
+.chips[data-full="true"] .chip:not(.on){opacity:.45}
+.chips[data-full="true"] .chip:not(.on):hover{opacity:.75;border-color:var(--brass-line)}
+.sail-panel .sail-score .inp{transition:border-color .3s,background .3s,box-shadow .4s var(--ease)}
+.sail-panel .sail-score .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
+.sail-panel .sail-form .field{animation:arrive .5s var(--ease) both}
+.sail-panel .sail-form .field:nth-child(2){animation-delay:.07s}
+.sail-panel .sail-score{animation:arrive .5s var(--ease) both .14s}
+.sail-panel .sail-act{animation:arrive .5s var(--ease) both .2s}
+.panel.sail-panel[data-ready="true"] .sail-act .btn.brass{animation:arm .6s var(--ease-spring)}
+@keyframes arm{0%{transform:none}45%{transform:scale(1.035)}100%{transform:none}}
+.sail-live{animation:msgin .4s var(--ease)}
 @media(max-width:560px){
   #page-sail .section{padding:16px 0 18px}
   #page-sail .sec-head{margin-bottom:14px}
@@ -755,8 +822,8 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
   #page-sail .stop-head{padding:12px 13px;gap:9px}
   #page-sail .stop-head .mk{font-size:10px;gap:6px}
   #page-sail .stop-head h4{font-size:14px}
-  #page-sail .stop-body{padding:0 13px 13px}
-  #page-sail .stop-body p{font-size:11px;line-height:1.75}
+  #page-sail .stop-body{padding:0}
+  #page-sail .stop-inner p{padding:0 13px 13px;font-size:11px;line-height:1.75}
   /* 先定下三件事：面板、两栏字段与行动按钮之间的间距同步收紧。 */
   #page-sail .sail-panel{margin-top:14px}
   #page-sail .panel{padding:18px;border-radius:14px}
@@ -766,6 +833,10 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
   #page-sail .sail-score{margin-top:18px;margin-bottom:0;max-width:100%}
   #page-sail .fhint{margin-top:7px;line-height:1.7}
   #page-sail .sail-act{margin-top:16px;gap:14px}
+  /* 三件事：印章与「n/2」计数在窄屏收一圈，标题行不因此换行。 */
+  #page-sail .panel.sail-panel .flab{gap:8px;margin-bottom:9px}
+  #page-sail .seal{width:23px;height:23px;font-size:10px}
+  #page-sail .flab-n{padding:4px 8px}
 }
 
 /* ══════════ 顶栏极限窄屏（≤340px，320px 设备）══════════
