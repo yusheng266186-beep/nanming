@@ -405,8 +405,9 @@
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
     "api": "nanming-api version 8; Active; deployed ZIP verified; environment preserved",
-    "pages": "first snapshot 46a51ee deployed successfully; final frontend snapshot follows",
+    "pages": "f18f21521acc2e932e98e0de5d85f289a2b987a7; workflow34694705981 success; HTML/JS/CSS HTTP200",
     "ciphertext_objects": 881,
-    "online_report": "docs/verification/acceptance-online-2026-09-12.json"
+    "online_report": "docs/verification/acceptance-online-2026-09-12.json",
+    "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested"
   }
 }

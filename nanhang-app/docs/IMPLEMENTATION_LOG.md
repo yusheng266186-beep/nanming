@@ -8,6 +8,11 @@
 > 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
+## 2026-09-12 / acceptance-final-confirmed：最终发布结果
+
+最终源码快照f18f215已成功发布，GitHub Actions [34694705981](https://github.com/yusheng266186-beep/nanming/actions/runs/34694705981)构建与部署成功；API为版本8。公网HTML、JS、CSS请求均200。云端测试为3文件失败、33文件通过、1文件跳过（3项失败）：两处数据哈希断言不一致及学校私有分片未进入CI；按负责人要求允许半成品发布，没有把这些测试标为通过，也没有为测试上传学生明文。本轮无后续功能修改；本条仅补充实际发布结果，文档重新--package/--check后归档提交。线上48人查询、两种speed聊天和会话撤销结果见acceptance-online记录。完整功能与视觉由负责人验收。
+
+
 ## 2026-09-12 当前快照线上实测（负责人验收版本）
 
 - API版本8为Active，881密文上传及线上ZIP逐项比对成功，环境变量全部保留；[部署结果](verification/acceptance-cloud-api-2026-09-12.json)。
