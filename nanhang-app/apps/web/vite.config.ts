@@ -70,7 +70,9 @@ export default defineConfig({
   plugins: [
     excelDevelopmentView(),
     serveDataDirectory("release-data", "/data/releases", "../../data/releases"),
-    // Student shards are served only by POST /v1/school/identify.
+    // 旧前端的增强模式按「仅验证码」哈希定位分片，属校内/本机演示口径（见 quality-huixi.ts
+    // 的边界说明）；需要姓名+验证码服务端核验的走 POST /v1/school/identify（旅程壳）。
+    serveDataDirectory("quality-huixi-data", "/data/quality-huixi", "../../data/quality-huixi")
   ],
   server: { port: 5173 }
 });

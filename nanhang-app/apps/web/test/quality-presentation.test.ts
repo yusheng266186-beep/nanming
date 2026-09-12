@@ -71,10 +71,11 @@ describe("成绩页的界面约定", () => {
     expect(css).toContain("font-variant-numeric:tabular-nums");
   });
 
-  it("开发服务器不直接暴露成绩分片，公开招生目录仍做路径复检", () => {
-    // 两个数据目录共用同一个 serveDataDirectory 工厂：挂载路径与越界复检仍是钉住的约定。
-    expect(vite).not.toContain('serveDataDirectory("quality-huixi-data"');
-    expect(vite).toContain("POST /v1/school/identify");
+  it("开发服务器只读挂载成绩目录做校内演示，越界复检与两条数据通道并存", () => {
+    // 旧前端增强模式按「仅验证码」哈希读分片，走 vite 只读挂载（校内/本机演示口径）；
+    // 姓名+验证码的服务端核验通道由 POST /v1/school/identify 提供（旅程壳）。
+    expect(vite).toContain('serveDataDirectory("quality-huixi-data"');
+    expect(vite).toContain('"/data/quality-huixi"');
     expect(vite).toContain("target.startsWith(root + sep)");
   });
 
