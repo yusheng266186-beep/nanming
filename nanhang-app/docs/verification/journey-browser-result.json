@@ -1,0 +1,27 @@
+{
+  "date": "2026-09-12",
+  "status": "passed",
+  "checks": [
+    "real release score pool loaded",
+    "AI two modes, evidence, fabricated category rejection",
+    "overlap merged, divergent routes retained without duplicate offerings",
+    "score edit invalidates pool and later steps",
+    "390/320 responsive layout and reset dialog keyboard trap",
+    "exam input requires own exam line; no raw-score averaging",
+    "school name+code POST, same-track exam selection, no credential persistence"
+  ],
+  "matchingMs": 1533,
+  "protocolStats": [
+    {
+      "catalogEntries": 153,
+      "requestBytes": 9307
+    },
+    {
+      "catalogEntries": 153,
+      "requestBytes": 9626
+    }
+  ],
+  "pageErrors": [],
+  "ai": "synthetic intercepted responses; no real model invocation",
+  "screenshots": "journey-screenshots/"
+}

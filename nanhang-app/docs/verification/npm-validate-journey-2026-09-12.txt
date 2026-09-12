@@ -1,0 +1,65 @@
+
+> nanhang-app@0.1.0 validate
+> npm run generate && npm run typecheck && npm test
+
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/web-paper@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/api@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> nanhang-app@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 88ms
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 51ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 23ms
+ ✓ apps/api/test/school-access.test.ts (3 tests) 206ms
+ ✓ apps/web/test/quality-huixi.test.ts (34 tests) 1030ms
+   ✓ 发布产物与解析器输出一致 > 跨科类考试（美术班）按该场科类的分数线与位次池计算  481ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 28ms
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 50ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 35ms
+ ✓ apps/web-paper/test/paper-honesty.test.ts (12 tests) 34ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 76ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 201ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 34ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 298ms
+ ✓ packages/ai-gateway/test/redis-store.test.ts (13 tests) 420ms
+ ✓ apps/web/test/chat.test.ts (16 tests) 82ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 91ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 33ms
+ ✓ packages/domain/test/matching.test.ts (10 tests) 78ms
+ ✓ packages/ai-gateway/test/catalog-guard.test.ts (5 tests) 23ms
+ ✓ apps/web/test/theme-spirit.test.ts (10 tests) 18ms
+ ✓ apps/web/test/quality-presentation.test.ts (10 tests) 16ms
+ ✓ apps/web/test/exam-position.test.ts (11 tests) 15ms
+ ✓ apps/web/test/presentation.test.ts (8 tests) 16ms
+ ✓ apps/web/test/journey-model.test.ts (9 tests) 17ms
+ ✓ apps/api/test/api.test.ts (29 tests) 718ms
+ ✓ apps/web/test/release-integration.test.ts (12 tests) 974ms
+   ✓ published release integration > serves distribution tables whose rows carry a derivable rank interval  455ms
+
+ Test Files  26 passed (26)
+      Tests  377 passed (377)
+   Start at  12:46:41
+   Duration  4.99s (transform 9.40s, setup 0ms, collect 29.62s, tests 4.66s, environment 11ms, prepare 9.74s)
+

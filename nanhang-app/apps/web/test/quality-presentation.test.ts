@@ -71,10 +71,10 @@ describe("成绩页的界面约定", () => {
     expect(css).toContain("font-variant-numeric:tabular-nums");
   });
 
-  it("开发服务器只暴露数据目录，且路径做了越界复检", () => {
+  it("开发服务器不直接暴露成绩分片，公开招生目录仍做路径复检", () => {
     // 两个数据目录共用同一个 serveDataDirectory 工厂：挂载路径与越界复检仍是钉住的约定。
-    expect(vite).toContain('"quality-huixi-data"');
-    expect(vite).toContain('"/data/quality-huixi"');
+    expect(vite).not.toContain('serveDataDirectory("quality-huixi-data"');
+    expect(vite).toContain("POST /v1/school/identify");
     expect(vite).toContain("target.startsWith(root + sep)");
   });
 

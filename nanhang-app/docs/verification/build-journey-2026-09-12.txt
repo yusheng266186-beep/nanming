@@ -1,0 +1,42 @@
+
+> nanhang-app@0.1.0 build:all
+> npm run generate && tsc -b && npm run web:build && npm run paper:build
+
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+
+> nanhang-app@0.1.0 web:build
+> npm --workspace @nanhang/web run build
+
+
+> @nanhang/web@0.1.0 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 47 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           0.52 kB │ gzip:  0.37 kB
+dist/assets/journey-worker-CCKyGAfc.js   19.54 kB
+dist/assets/index-BvJk5aee.css           66.41 kB │ gzip: 14.87 kB
+dist/assets/index-d9G0uOca.js           195.23 kB │ gzip: 63.12 kB
+✓ built in 1.16s
+
+> nanhang-app@0.1.0 paper:build
+> npm --workspace @nanhang/web-paper run build
+
+
+> @nanhang/web-paper@0.1.0 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 18 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                54.95 kB │ gzip: 16.21 kB
+dist/assets/index-CsdMSXpn.js  53.45 kB │ gzip: 20.17 kB
+✓ built in 492ms

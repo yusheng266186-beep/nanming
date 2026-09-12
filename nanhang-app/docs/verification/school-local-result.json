@@ -1,0 +1,11 @@
+{
+  "date": "2026-09-12",
+  "status": "passed",
+  "checks": [
+    "real local identity+code pair returns its own shard",
+    "wrong name with same code is rejected"
+  ],
+  "privateDataPrinted": false,
+  "network": "loopback only",
+  "scope": "one issued identity; not a full-school audit"
+}

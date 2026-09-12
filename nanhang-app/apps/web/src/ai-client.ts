@@ -37,6 +37,7 @@ export function evidenceForRequest(registry: EvidenceRegistry): readonly AiEvide
 }
 
 export interface AiTurnRequest {
+  readonly directionCatalog?: readonly { readonly id: string; readonly name: string }[];
   readonly runId: string;
   readonly requestId: string;
   readonly inputRevision: number;
@@ -119,6 +120,7 @@ export function acceptEvent(pending: PendingTurn, active: AiRunStamp, event: Sse
  * by property names on both sides.
  */
 export interface AiTurnWireBody {
+  readonly direction_catalog?: readonly { readonly id: string; readonly name: string }[];
   readonly run_id: string;
   readonly request_id: string;
   readonly input_revision: number;
@@ -131,6 +133,7 @@ export interface AiTurnWireBody {
 
 export function toWireBody(request: AiTurnRequest): AiTurnWireBody {
   return {
+    ...(request.directionCatalog ? { direction_catalog: request.directionCatalog } : {}),
     run_id: request.runId,
     request_id: request.requestId,
     input_revision: request.inputRevision,
@@ -147,6 +150,7 @@ export interface AiClientDeps {
   readonly baseUrl: string;
   readonly token: string | null;
   readonly fetchImpl?: typeof fetch;
+  readonly signal?: AbortSignal;
 }
 
 export interface AiTurnResult {
@@ -164,6 +168,7 @@ export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active
   }
   const response = await doFetch(`${deps.baseUrl}/v1/career/turn`, {
     method: "POST",
+    ...(deps.signal ? { signal: deps.signal } : {}),
     headers: { "content-type": "application/json", authorization: `Bearer ${deps.token}` },
     body: JSON.stringify(toWireBody(request))
   });
