@@ -2,11 +2,18 @@
 //
 // 与 TASK-09 的表现检查同一套做法：对源文件做静态断言，把「必须一直成立」的界面约定钉住，
 // 这样后续改样式或改文案时，不会悄悄丢掉标签、作用域或增强模式的边界说明。
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const app = readFileSync(resolve(import.meta.dirname, "../src/App.tsx"), "utf8");
+// 成绩页的标记分布在 App.tsx 与 chapters/ 的章节文件里，静态检查拼接全部来源，
+// 这样负向断言（如「不得出现录取概率」）也覆盖所有会进入页面的源码。
+const chapterDir = resolve(import.meta.dirname, "../src/chapters");
+const app = [
+  readFileSync(resolve(import.meta.dirname, "../src/App.tsx"), "utf8"),
+  ...readdirSync(chapterDir).filter((name) => /\.tsx?$/.test(name))
+    .sort().map((name) => readFileSync(resolve(chapterDir, name), "utf8"))
+].join("\n");
 const loader = readFileSync(resolve(import.meta.dirname, "../src/quality-huixi.ts"), "utf8");
 const types = readFileSync(resolve(import.meta.dirname, "../src/quality-types.ts"), "utf8");
 const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8");
@@ -64,9 +71,10 @@ describe("成绩页的界面约定", () => {
   });
 
   it("开发服务器只暴露数据目录，且路径做了越界复检", () => {
-    expect(vite).toContain('name: "quality-huixi-data"');
+    // 两个数据目录共用同一个 serveDataDirectory 工厂：挂载路径与越界复检仍是钉住的约定。
+    expect(vite).toContain('"quality-huixi-data"');
+    expect(vite).toContain('"/data/quality-huixi"');
     expect(vite).toContain("target.startsWith(root + sep)");
-    expect(vite).toContain('server.middlewares.use("/data/quality-huixi"');
   });
 
   it("读取层不把验证码写进地址栏或本地存储", () => {

@@ -9,14 +9,20 @@
 //      （见 packages/exploration 的 PROMPT_BOUNDARY 第 2 条）。一旦有人给起点加上
 //      权重字段，这里就会失败。
 //   2. 逐字动画必须尊重 prefers-reduced-motion，且指示器/光标只在动画路径上出现。
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ANSWER_STARTERS, QUESTIONS, directionCoverage } from "../src/model.js";
 import type { OfferingLabel } from "../src/release-loader.js";
 
 const chat = readFileSync(resolve(import.meta.dirname, "../src/chat.tsx"), "utf8");
-const app = readFileSync(resolve(import.meta.dirname, "../src/App.tsx"), "utf8");
+// 谈心对话的标记已拆到 chapters/talk.tsx，检查拼接 App 与全部章节源码。
+const chapterDir = resolve(import.meta.dirname, "../src/chapters");
+const app = [
+  readFileSync(resolve(import.meta.dirname, "../src/App.tsx"), "utf8"),
+  ...readdirSync(chapterDir).filter((name) => /\.tsx?$/.test(name))
+    .sort().map((name) => readFileSync(resolve(chapterDir, name), "utf8"))
+].join("\n");
 const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8");
 
 describe("谈心对话", () => {

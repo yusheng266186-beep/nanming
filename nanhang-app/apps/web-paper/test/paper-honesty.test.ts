@@ -44,8 +44,10 @@ describe("纸感版：与主前端共用同一套数据与规则", () => {
     // 两套前端的 vite 配置指向同一个 data/releases，否则「切换前端」会顺带切换数据。
     const main = readFileSync(resolve(appDir, "../web/vite.config.ts"), "utf8");
     for (const config of [viteConfig, main]) {
-      expect(config).toContain('new URL("../../data/releases", import.meta.url)');
-      expect(config).toContain('server.middlewares.use("/data/releases"');
+      // 主前端把两个数据目录收敛进 serveDataDirectory 工厂，挂载路径与数据目录仍是
+      // 写死的字面量，两套前端必须指向同一棵发布树。
+      expect(config).toContain('"/data/releases"');
+      expect(config).toContain('"../../data/releases"');
       // 目录穿越防护必须在两边都在。
       expect(config).toContain("target.startsWith(root + sep)");
     }

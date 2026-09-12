@@ -25,60 +25,21 @@ const excelDevelopmentView = (): Plugin => ({
 });
 
 /**
- * Serve the published data release from `data/releases` during development.
+ * Serve a pipeline-produced data directory from `data/` during development.
  *
- * The release is produced by `pipelines/task03/export_release.py` and lives outside the web root,
- * so the dev server exposes it read-only under `/data/releases`. Only files below that directory
- * are reachable, and the resolved path is re-checked after normalisation so a request cannot
- * climb out of it with `..`.
+ * Both the admissions release (`pipelines/task03/export_release.py`) and the 荣县一中 quality
+ * release live outside the web root, so the dev server exposes them read-only under their mount
+ * paths. Only files below the served directory are reachable, and the resolved path is re-checked
+ * after normalisation so a request cannot climb out of it with `..`. The quality directory holds
+ * real student data, so it is never copied into the web root.
  */
-const releaseData = (): Plugin => {
-  const root = fileURLToPath(new URL("../../data/releases", import.meta.url));
+const serveDataDirectory = (name: string, mountPath: string, directory: string): Plugin => {
+  const root = fileURLToPath(new URL(directory, import.meta.url));
   return {
-    name: "release-data",
+    name,
     apply: "serve",
     configureServer(server) {
-      server.middlewares.use("/data/releases", (req, res, next) => {
-        if (req.method !== "GET" && req.method !== "HEAD") {
-          res.statusCode = 405;
-          res.end();
-          return;
-        }
-        const url = new URL(req.url ?? "/", "http://localhost");
-        const relative = decodeURIComponent(url.pathname).replace(/^\/+/, "");
-        const target = resolve(join(root, normalize(relative)));
-        if (!target.startsWith(root + sep) || !existsSync(target) || !statSync(target).isFile()) {
-          next();
-          return;
-        }
-        res.setHeader("content-type", extname(target) === ".json"
-          ? "application/json; charset=utf-8"
-          : "application/octet-stream");
-        res.setHeader("cache-control", "no-store");
-        if (req.method === "HEAD") {
-          res.end();
-          return;
-        }
-        createReadStream(target).pipe(res);
-      });
-    }
-  };
-};
-
-/**
- * Serve the 荣县一中 quality release from `data/quality-huixi` during development.
- *
- * Same shape and same containment rule as the admissions release above: only files under the
- * quality directory are reachable, and the resolved path is re-checked after normalisation. That
- * directory holds real student data, so it is never copied into the web root.
- */
-const qualityData = (): Plugin => {
-  const root = fileURLToPath(new URL("../../data/quality-huixi", import.meta.url));
-  return {
-    name: "quality-huixi-data",
-    apply: "serve",
-    configureServer(server) {
-      server.middlewares.use("/data/quality-huixi", (req, res, next) => {
+      server.middlewares.use(mountPath, (req, res, next) => {
         if (req.method !== "GET" && req.method !== "HEAD") {
           res.statusCode = 405;
           res.end();
@@ -106,6 +67,10 @@ const qualityData = (): Plugin => {
 };
 
 export default defineConfig({
-  plugins: [excelDevelopmentView(), releaseData(), qualityData()],
+  plugins: [
+    excelDevelopmentView(),
+    serveDataDirectory("release-data", "/data/releases", "../../data/releases"),
+    serveDataDirectory("quality-huixi-data", "/data/quality-huixi", "../../data/quality-huixi")
+  ],
   server: { port: 5173 }
 });

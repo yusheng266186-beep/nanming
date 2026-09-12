@@ -2,8 +2,8 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
-  MAX_CODE_ATTEMPTS, classChanges, formatGap, formatRate, formatScore, latestExam,
-  loadQualityShard, normalizeCode, recentTotals, registerFailure, subjectDistances,
+  MAX_CODE_ATTEMPTS, additionalFromCombination, classChanges, formatGap, formatRate, formatScore,
+  latestExam, loadQualityShard, normalizeCode, recentTotals, registerFailure, subjectDistances,
   weakestKnowledge, initialQualityAttempts, trailHeights
 } from "../src/quality-huixi.js";
 import type { QualityIndex, QualityShard } from "../src/quality-types.js";
@@ -396,5 +396,25 @@ describe("航迹柱高（不依赖真实验证码即可验证）", () => {
     expect(a).toEqual(b);
     // 单一已知分数的场次也不会被分数线（一本线/本科线）抬高。
     expect(trailHeights([500, 500])).toEqual([30, 30]);
+  });
+});
+
+describe("选科组合解析（回填表单用）", () => {
+  it("解析当前数据里的三种组合，再选科目取组合原文的后两字", () => {
+    expect(additionalFromCombination("物化生")).toEqual(["CHEMISTRY", "BIOLOGY"]);
+    expect(additionalFromCombination("历政地")).toEqual(["POLITICS", "GEOGRAPHY"]);
+    expect(additionalFromCombination("物化地")).toEqual(["CHEMISTRY", "GEOGRAPHY"]);
+  });
+
+  it("能解析当前数据之外的新组合，而不是按旧名单猜", () => {
+    // 学校之后可能出现「物生地」等新班级组合；解析按字符进行，天然覆盖。
+    expect(additionalFromCombination("物生地")).toEqual(["BIOLOGY", "GEOGRAPHY"]);
+    expect(additionalFromCombination("历化政")).toEqual(["CHEMISTRY", "POLITICS"]);
+  });
+
+  it("识别不足两门时返回 null，由调用方保持表单原样、让学生自己选", () => {
+    expect(additionalFromCombination("物??")).toBeNull();
+    expect(additionalFromCombination("物化")).toBeNull();
+    expect(additionalFromCombination("")).toBeNull();
   });
 });

@@ -3,12 +3,18 @@
 // 「形」是配色与排版，「神」是这套界面是否真的在讲南溟这件事：从北冥出发、以证据定位、
 // 由本人确认方向、向未测绘的海域如实留白。这些断言盯住的是后者——它们都很容易被
 // 一次「优化排版」顺手删掉，而不触发任何功能测试。
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const src = (relative: string) => readFileSync(resolve(import.meta.dirname, "../src", relative), "utf8");
-const app = src("App.tsx");
+// 页面标记分布在 App.tsx 与 chapters/ 的章节文件里，守卫检查拼接全部来源。
+const chapterDir = resolve(import.meta.dirname, "../src/chapters");
+const app = [
+  src("App.tsx"),
+  ...readdirSync(chapterDir).filter((name) => /\.tsx?$/.test(name))
+    .sort().map((name) => readFileSync(resolve(chapterDir, name), "utf8"))
+].join("\n");
 const art = src("art.tsx");
 const css = src("style.css");
 const theme = src("theme.tsx");

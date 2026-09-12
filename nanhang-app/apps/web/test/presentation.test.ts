@@ -7,12 +7,19 @@
 // The palette and markup below are the ported 南溟 demo design (`.topbar`, `.view`, `--brass`,
 // `--sea`) that now backs the six-chapter page, so the tokens these checks reference are the
 // ones actually shipped.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8");
-const app = readFileSync(resolve(import.meta.dirname, "../src/App.tsx"), "utf8");
+// 页面标记分布在 App.tsx 与 chapters/ 的章节文件里，静态检查拼接全部来源，
+// 负向断言（不得出现某段文案）也因此覆盖所有会进入页面的源码。
+const chapterDir = resolve(import.meta.dirname, "../src/chapters");
+const app = [
+  readFileSync(resolve(import.meta.dirname, "../src/App.tsx"), "utf8"),
+  ...readdirSync(chapterDir).filter((name) => /\.tsx?$/.test(name))
+    .sort().map((name) => readFileSync(resolve(chapterDir, name), "utf8"))
+].join("\n");
 
 function contrast(foreground: string, background: string): number {
   const channel = (value: number) => {

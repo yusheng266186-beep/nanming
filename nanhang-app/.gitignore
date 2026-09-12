@@ -9,5 +9,5 @@ data/admissions/*.sqlite-journal
 data/admissions/*.sqlite-wal
 
 # 荣县一中真实学生成绩、姓名与验证码摘要：只在本机存在，不进任何仓库或分发包。
-# 可由 pipelines/quality-huixi/ 重跑生成（需要 private/ 下的盐）。
+# 可由 pipelines/quality-huixi/ 重跑生成（需要 private/keystore/ 下的盐）。
 data/quality-huixi/

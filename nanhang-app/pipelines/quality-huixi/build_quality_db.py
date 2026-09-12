@@ -34,7 +34,7 @@ WORKSPACE = APP.parent
 DATASET = APP / "data/quality-huixi/dataset.json"
 DATABASE = APP / "data/quality-huixi/quality-huixi.sqlite"
 CODES = WORKSPACE / "private/quality-huixi-codes.csv"
-SALT = WORKSPACE / "private/quality-huixi-salt.txt"
+SALT = WORKSPACE / "private/keystore/quality-huixi-salt.txt"
 
 SCHEMA_VERSION = "1.0.0"
 PARSER_COMMIT = "6f70eab4e6e9ecadc00149b1387103b45b5d8e2b"

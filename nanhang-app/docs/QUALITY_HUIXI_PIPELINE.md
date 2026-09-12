@@ -1,10 +1,10 @@
 # 荣县一中质量慧析管线
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-11，2026-09-12-theme-and-spirit）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
+> 统一进度（2026-09-12，2026-09-12-refactor-and-hygiene）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：无；未开始：TASK-12、TASK-13、TASK-14。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：20 个测试文件、269 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：20 个测试文件、272 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：TASK-11 已按负责人决定跳过。可选的后续：TASK-12 数据扩容、TASK-13 本人身份（增强模式的验证码目前只是本地演示，正式上线需要服务端校验与限流）、TASK-14 部署运维。。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -55,7 +55,7 @@ py -3.12 pipelines/quality-huixi/export_release.py
 py -3.12 pipelines/quality-huixi/verify_release.py
 ```
 
-首次建库会生成 `../private/quality-huixi-salt.txt`（32 字节随机盐）与
+首次建库会生成 `../private/keystore/quality-huixi-salt.txt`（32 字节随机盐）与
 `../private/quality-huixi-codes.csv`（明文验证码）。**盐决定验证码，必须保留**：丢了盐可以重建
 数据库，但学生手里的码会全部换掉。两个文件都在工程外，不随源码包分发。
 
@@ -67,7 +67,7 @@ py -3.12 pipelines/quality-huixi/verify_release.py
 | `data/quality-huixi/quality-huixi.sqlite` | 本机成绩库（32 MB，23 张表 + 2 张视图） | 否 |
 | `data/quality-huixi/release/` | 前端读取的发布产物（index + 880 份分片 + manifest） | 否 |
 | `../private/quality-huixi-codes.csv` | 明码表，发给班主任 | 否 |
-| `../private/quality-huixi-salt.txt` | 派生码用的盐 | 否 |
+| `../private/keystore/quality-huixi-salt.txt` | 派生码用的盐 | 否 |
 | `../private/verification/` | 本机浏览器核对脚本与截图 | 否 |
 
 `nanhang-app/.gitignore` 与 `tools/sync_project_docs.py` 的 `UNMANAGED` 都把

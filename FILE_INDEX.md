@@ -1,10 +1,10 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-11，2026-09-12-theme-and-spirit）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
+> 统一进度（2026-09-12，2026-09-12-refactor-and-hygiene）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：无；未开始：TASK-12、TASK-13、TASK-14。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：20 个测试文件、269 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：20 个测试文件、272 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：TASK-11 已按负责人决定跳过。可选的后续：TASK-12 数据扩容、TASK-13 本人身份（增强模式的验证码目前只是本地演示，正式上线需要服务端校验与限流）、TASK-14 部署运维。。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -12,6 +12,7 @@
 
 | 文件 | 用途 |
 |---|---|
+| [.gitignore](.gitignore) | 工程配置或总入口 |
 | [archives/nanhang-app-source-before-task04-2026-09-10.zip](archives/nanhang-app-source-before-task04-2026-09-10.zip) | 历史归档（不作为当前进度） |
 | [archives/README.md](archives/README.md) | 历史归档（不作为当前进度） |
 | [archives/session-transcripts-2026-09-10/part-01.md](archives/session-transcripts-2026-09-10/part-01.md) | 历史归档（不作为当前进度） |
@@ -41,6 +42,14 @@
 | [nanhang-app/apps/web/src/ai-panel.ts](nanhang-app/apps/web/src/ai-panel.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/App.tsx](nanhang-app/apps/web/src/App.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/art.tsx](nanhang-app/apps/web/src/art.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/axis.tsx](nanhang-app/apps/web/src/chapters/axis.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/chart.tsx](nanhang-app/apps/web/src/chapters/chart.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/direction.tsx](nanhang-app/apps/web/src/chapters/direction.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/locate.tsx](nanhang-app/apps/web/src/chapters/locate.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/quality.tsx](nanhang-app/apps/web/src/chapters/quality.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/sail.tsx](nanhang-app/apps/web/src/chapters/sail.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/shared.ts](nanhang-app/apps/web/src/chapters/shared.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/main.tsx](nanhang-app/apps/web/src/main.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/model.ts](nanhang-app/apps/web/src/model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |

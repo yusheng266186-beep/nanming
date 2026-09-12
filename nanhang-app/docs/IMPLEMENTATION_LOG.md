@@ -1,12 +1,47 @@
 # 实施记录
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-11，2026-09-12-theme-and-spirit）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
+> 统一进度（2026-09-12，2026-09-12-refactor-and-hygiene）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：无；未开始：TASK-12、TASK-13、TASK-14。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：20 个测试文件、269 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：20 个测试文件、272 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：TASK-11 已按负责人决定跳过。可选的后续：TASK-12 数据扩容、TASK-13 本人身份（增强模式的验证码目前只是本地演示，正式上线需要服务端校验与限流）、TASK-14 部署运维。。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-12 工程卫生：学生页拆章、选科回填不猜组合、盐钥分离与版本控制
+
+本轮不改业务规则、匹配逻辑与数据管线，只做可维护性与隐私加固；全部改动由既有守卫测试与新增断言护航。
+
+**学生页拆章（App.tsx 1543 行 → 外壳 400 行 + 章节文件）**
+
+- 新增 `apps/web/src/chapters/`：`shared.ts`（标签表、章节表、历史参考配色、SVG 转 PNG 等
+  模块级内容）与 sail/locate/quality/talk/direction/axis/chart 七个章节文件。各章只声明自己
+  用到的 props，正文逐字搬移；删除无引用的死代码 `toggleSubject` 与 `escapeXml`。
+- 主题/谈心/成绩/纸感四个守卫测试改为拼接 App 与全部章节源码后做静态断言，原来钉住的约定
+  一条没少；vite 数据目录断言改为钉住工厂的挂载路径与越界复检。
+- `vite.config.ts` 中 release 与 quality 两个逐行重复的数据目录中间件合并为 `serveDataDirectory`
+  工厂，路径逃逸防护只此一份。
+
+**增强模式选科回填：不按旧名单猜组合**
+
+- 原实现把「物化地/历政地」之外的组合一律兜底成物化生；数据出现新组合时会静默填错再选科目、
+  把资格判断带偏。改为 `quality-huixi.ts` 的 `additionalFromCombination` 按组合原文逐字解析
+  （如「物生地」→ 生+地），识别不足两门返回 null、保持学生当前选择让他自己改；新增 3 项测试。
+
+**隐私加固：盐与明码表分开存放**
+
+- `private/quality-huixi-salt.txt` 移入 `private/keystore/`；`build_quality_db.py` 默认路径与
+  `QUALITY_HUIXI_PIPELINE.md` 同步更新，仍可用 `--salt` 显式指定。新增 `private/README.md`
+  记录存放规则与已知残留风险（验证脚本内置真实码；上线前必须服务端校验并限流）。
+
+**版本控制**
+
+- 工作区首次 `git init`（此前以 zip 快照 + SHA-256 清单代替版本管理）。根 `.gitignore` 排除
+  private/、真实学生数据、原始 Excel 与可重建产物；改动前先做基线提交，保证每步可回滚。
+
+**验证**：20 个测试文件、272 项通过、0 失败（净增选科组合解析 3 项）；`npm run typecheck` 通过；
+`tools/sync_project_docs.py --check` 通过。本轮未发布站点、未触碰招生与成绩数据内容。
+
 
 ## 2026-09-11 荣县一中增强模式：质量慧析接入、成绩库与发布产物
 

@@ -117,6 +117,24 @@ export function recentTotals(shard: QualityShard, limit = 5): number[] {
   return shard.exams.slice(-limit).map((exam) => exam.total);
 }
 
+/** 再选科目的组合字符 → 表单科目代码。首选「物/历」不在此表，由本人 track 决定。 */
+const ADDITIONAL_SUBJECT_CODES: Record<string, string> = {
+  化: "CHEMISTRY", 生: "BIOLOGY", 政: "POLITICS", 地: "GEOGRAPHY"
+};
+
+/**
+ * 从选科组合原文解析再选科目的表单代码。
+ *
+ * 组合形如「物化地」：首字符是首选科目，后两个字符是再选科目。只解析能识别的字符；
+ * 识别不足两门时返回 null，调用方保持表单原样、由学生自己选——成绩摘要可能出现当前
+ * 数据里没有的新组合，按旧名单猜一个出来会把资格判断悄悄带偏。
+ */
+export function additionalFromCombination(combination: string): [string, string] | null {
+  const codes = [...combination.slice(1)].map((char) => ADDITIONAL_SUBJECT_CODES[char] ?? null);
+  if (codes.length !== 2 || codes[0] === null || codes[1] === null) return null;
+  return [codes[0], codes[1]];
+}
+
 /**
  * 把分片里的科目行转成「距线差」视图。
  *
