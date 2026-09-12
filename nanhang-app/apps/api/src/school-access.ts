@@ -54,6 +54,18 @@ function locate(value: string): string {
   return isAbsolute(value) ? value : join(moduleDir(), value);
 }
 
+/**
+ * 相对本文件的路径。打包成 CJS 后 import.meta.url 是空的，这时返回 null——
+ * 调用方必须把它当成「这条路没配」而不是顺手抛一个 Invalid URL。
+ */
+function moduleRelative(relative: string): string | null {
+  try {
+    return fileURLToPath(new URL(relative, import.meta.url));
+  } catch {
+    return null;
+  }
+}
+
 const IP_LIMIT = 120;
 const NAME_LIMIT = 5;
 const WINDOW_SECONDS = 15 * 60;
@@ -176,11 +188,11 @@ export function createSchoolAccess(env: NodeJS.ProcessEnv = process.env, options
         send(503, { message: "学校成绩服务尚未配置，请联系老师或使用校外录入。" });
         return;
       }
-      const indexPath = identityPath
-        ? locate(identityPath)
-        : fileURLToPath(new URL("../../../../private/quality-identity.json", import.meta.url));
-      const directory = resolve(releaseDir ||
-        fileURLToPath(new URL("../../../data/quality-huixi/release", import.meta.url)));
+      const indexPath = identityPath ? locate(identityPath) : moduleRelative("../../../../private/quality-identity.json");
+      if (!indexPath) {
+        send(503, { message: "学校成绩服务暂不可用，请稍后重试或联系老师。" });
+        return;
+      }
       const index = JSON.parse(readFileSync(indexPath, "utf8")) as { entries: Record<string, string> };
       const shard = index.entries[schoolLookupKey(body.name, body.code)];
       if (!shard || !/^[a-f0-9]{40}\.json$/.test(shard)) {
@@ -197,6 +209,11 @@ export function createSchoolAccess(env: NodeJS.ProcessEnv = process.env, options
         }
         data = JSON.parse(decryptShard(cloudKey, Buffer.from(await fetched.arrayBuffer())));
       } else {
+        const directory = releaseDir ? resolve(releaseDir) : moduleRelative("../../../data/quality-huixi/release");
+        if (!directory) {
+          send(503, { message: "学校成绩服务暂不可用，请稍后重试或联系老师。" });
+          return;
+        }
         const path = resolve(directory, "shards", shard);
         if (!path.startsWith(directory + sep)) {
           send(401, { message: "姓名或验证码不匹配，请向老师核对。" });
@@ -208,7 +225,7 @@ export function createSchoolAccess(env: NodeJS.ProcessEnv = process.env, options
       send(200, { shard: data });
     } catch (error) {
       // 不把细节发给学生，但要留在函数日志里：这里曾经把「身份索引读不到」吞成一个看不出原因的 503。
-      console.error("school identify failed:", error instanceof Error ? error.message : String(error));
+      console.error("school identify failed:", error instanceof Error ? (error.stack ?? error.message) : String(error));
       send(503, { message: "学校成绩服务暂不可用，请稍后重试或联系老师。" });
     }
   };

@@ -6,7 +6,7 @@
 //
 // 用法：node scripts/build_function.mjs
 import { build } from "esbuild";
-import { mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -40,6 +40,16 @@ if (result.errors.length > 0) {
 // 否则 Node 会把 app.js 当 ESM 解析，启动时报 "require is not defined"。
 writeFileSync(join(outDir, "package.json"), JSON.stringify({ type: "commonjs", private: true }, null, 2) + "\n",
   "utf8");
+
+// 身份索引（880 条「姓名+验证码摘要 → 分片名」的哈希，不含姓名与验证码）随包发上去。
+// 它需要和函数同版本：换了验证码/重建成绩库后重新导出，这里自然跟着更新。
+const identity = join(repo, "..", "private", "quality-identity.json");
+if (existsSync(identity)) {
+  copyFileSync(identity, join(outDir, "quality-identity.json"));
+  console.log("已附带 private/quality-identity.json（不含姓名与验证码，只有摘要）");
+} else {
+  console.log("没有 private/quality-identity.json：学校增强模式在云端会保持关闭");
+}
 
 const size = statSync(outFile).size;
 console.log(`已生成 ${outFile}`);

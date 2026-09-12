@@ -50,7 +50,10 @@ def build_zip() -> bytes:
         bootstrap_zip.compress_type = zipfile.ZIP_DEFLATED
         archive.writestr(bootstrap_zip, BOOTSTRAP.read_bytes().replace(b"\r\n", b"\n"))
 
-        for name in ("app.js", "package.json"):
+        for name in ("app.js", "package.json", "quality-identity.json"):
+            # 身份索引来自 private/，没有它就不带（云端增强模式保持关闭），不是错误。
+            if not (BUILD_DIR / name).is_file():
+                continue
             data = (BUILD_DIR / name).read_bytes()
             info = zipfile.ZipInfo(name)
             info.external_attr = (0o644 << 16) | 0o100000
@@ -72,6 +75,16 @@ def function_environment() -> dict[str, str]:
         "NANHANG_TRIAL_ACCESS_CODE": os.environ["NANHANG_TRIAL_ACCESS_CODE"].strip(),
         "NANHANG_CORS_ORIGINS": os.environ.get("NANHANG_CORS_ORIGINS", "https://yusheng266186-beep.github.io").strip(),
     }
+    # 学校成绩（增强模式）：身份索引随包发，分片密文在对象存储里，密钥单独给。
+    # 三项齐全才写进去；缺任何一项，云端增强模式就保持关闭（学生用校外录入）。
+    identity = os.environ.get("NANHANG_SCHOOL_IDENTITY_ENTRY", "./quality-identity.json").strip()
+    school_base = os.environ.get("NANHANG_SCHOOL_CLOUD_BASE", "").strip()
+    school_key = os.environ.get("NANHANG_SCHOOL_KEY", "").strip()
+    if school_base and school_key:
+        variables["NANHANG_QUALITY_IDENTITY_FILE"] = identity
+        variables["NANHANG_SCHOOL_CLOUD_BASE"] = school_base
+        variables["NANHANG_SCHOOL_KEY"] = school_key
+
     # 共享会话存储：三项齐全才写进去，缺一项就当没配（服务端会拒绝在生产档用内存档）。
     redis_host = os.environ.get("NANHANG_REDIS_HOST", "").strip()
     redis_port = os.environ.get("NANHANG_REDIS_PORT", "").strip()
