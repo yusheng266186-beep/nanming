@@ -305,10 +305,13 @@ textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;fo
 .delta-num .cur{color:#cfe0da;font-size:26px}
 .slider-wrap{position:relative;z-index:2;margin-top:30px}
 .slider-scale{position:relative;height:34px;margin-bottom:6px}
-.stick{position:absolute;top:0;transform:translateX(-50%);text-align:center;font:italic 500 10px/1.3 var(--display);letter-spacing:.04em;color:#9fbdb6}
+.stick{position:absolute;top:0;transform:translateX(-50%);text-align:center;font:italic 500 10px/1.3 var(--display);letter-spacing:.04em;color:#9fbdb6;white-space:nowrap}
 .stick::after{content:"";display:block;width:1px;height:9px;background:#4a757c;margin:5px auto 0}
 .stick.major{color:var(--brass-2)}.stick.major::after{height:14px;background:var(--brass)}
 .stick b{display:block;font-family:var(--song);font-style:normal;font-size:10px;letter-spacing:.06em;margin-top:2px}
+/* 贴边刻度改为向内对齐：贴着 0%/100% 时 shrink-to-fit 会被可用宽度挤到竖排折行。 */
+.stick.start{transform:none;text-align:left}
+.stick.end{transform:translateX(-100%);text-align:right}
 input[type=range].axis{position:relative;-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;cursor:grab;z-index:3}
 input[type=range].axis:active{cursor:grabbing}
 input[type=range].axis::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:#2c5a63}
@@ -326,6 +329,9 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .axis-track{position:absolute;left:0;right:0;top:19px;height:6px;border-radius:6px;background:#2c5a63}
 .axis-band{position:absolute;top:8px;height:28px;border-radius:8px;border:1px solid var(--brass);background:linear-gradient(180deg,rgba(169,123,52,.30),rgba(169,123,52,.14));pointer-events:none;z-index:2}
 .slider-foot{display:flex;justify-content:space-between;font:italic 400 10px/1 var(--display);letter-spacing:.1em;color:#7fa39c;margin-top:2px;position:relative;z-index:2;flex-wrap:wrap;row-gap:4px}
+/* 轨道容器里的子元素全是绝对定位，容器自身高度为 0——轨道与金带会悬下来压住底部说明。
+   给它一份与金带（top:8 + 高28 ≈ 36px）相称的流式高度，说明文字才真正排在轴的下方。 */
+.slider-wrap>div:nth-child(2){height:40px}
 .res-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;flex-wrap:wrap}
 .res-count{font-family:var(--song);font-size:15px;color:var(--ink-2)}
 .res-count b{font-family:var(--display);font-size:26px;color:var(--brass);margin:0 3px}
@@ -516,16 +522,28 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
 .stick:not(.major):not(.own){display:none}
 /* 学生分数刻度单独占一行高度，压在刻度条上方，不与边界标签同高。 */
 .stick.own{top:auto;bottom:100%;margin-bottom:9px;color:#e3d8bf}
-.stick.own b{color:#c89b52}
-/* 两端改为贴边对齐，避免在 150/691 这类端点上把文字压到刻度数字上。 */
-.stick.start{transform:none;text-align:left}
-.stick.end{transform:translateX(-100%);text-align:right}}
+.stick.own b{color:#c89b52}}
+@media(max-width:560px){/* 分数轴英雄区窄屏专项：竖排、收重复刻度，修 390px 下的叠字与挤压。 */
+  /* 标题与区间数字上下各占整行——不再把大标题挤成一条窄柱。 */
+  .axis-hero .axis-head{flex-direction:column;gap:10px}
+  .axis-hero .axis-head h2{font-size:20px;margin-top:8px}
+  /* 区间数字改成「标签 + 数字」一行，放在最上面，字号收到手机合适的大小。 */
+  .axis-hero .delta-box{display:flex;align-items:baseline;gap:10px;text-align:left;order:-1}
+  .axis-hero .delta-num{font-size:34px;margin-top:0}
+  /* 区间上下两枚刻度收掉：数值已在这一行的数字和下面两个输入框里，留着只会相互叠字。 */
+  .axis-hero .stick.own{display:none}
+  /* 端点刻度不折行（700「公布最高」不再竖排成三行）。 */
+  .axis-hero .stick{white-space:nowrap}
+  .axis-hero .slider-foot{justify-content:center;margin-top:6px}
+  .axis-hero .slider-foot span:not(:nth-child(2)){display:none}
+  /* 深色英雄区里的字段标签提亮，别让「区间下限/上限」沉进背景。 */
+  .axis-hero .flab{color:#9fc3bc}}
 @media(max-width:400px){
   .wrap,.topbar-in,.footer{padding-left:18px;padding-right:18px}
   .hero h1{font-size:32px}.brand-name{font-size:20px}
   .bignum{font-size:44px}.stat .sv{font-size:24px}
   .gauge,.sidecard,.panel,.entry{padding:22px 20px}
-  .axis-head h2{font-size:21px}
+  .axis-head h2{font-size:19px}
 }
 @media(hover:none),(pointer:coarse){.entry:hover,.scard:hover,.dcard:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){
