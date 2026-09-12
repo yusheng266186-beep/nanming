@@ -8,9 +8,14 @@
 凭据只从环境变量读，不写进仓库：
     TENCENTCLOUD_SECRET_ID / TENCENTCLOUD_SECRET_KEY
 可选：
+    NANHANG_COS_BASE     桶名主体（默认 nanming），完整桶名是 <主体>-<APPID>
+    NANHANG_COS_APPID    账号 APPID（控制台右上角「账号信息」里那个 10 位数；注意不是账号 ID/UIN）
+    NANHANG_COS_BUCKET   直接给完整桶名，优先于上面两项
     NANHANG_COS_REGION   默认 ap-chengdu
-    NANHANG_COS_BUCKET   默认 nanming-<APPID>
     NANHANG_COS_PREFIX   默认 data/releases
+
+注意：COS 的桶名是「名称-APPID」，用的是 APPID 而不是账号 ID（UIN）。控制台创建时只需要填名称，
+它会自动补上 -<APPID>；本脚本要求显式给出 APPID，免得猜错（第一版就是拿 UIN 当 APPID，建桶必被拒）。
 
 用法：
     python scripts/deploy_cos.py --dry-run     # 只列出要上传的文件
@@ -37,12 +42,27 @@ def credentials() -> tuple[str, str]:
     return secret_id, secret_key
 
 
-def app_id(secret_id: str, secret_key: str, region: str) -> str:
+def account_uin(secret_id: str, secret_key: str, region: str) -> str:
+    """账号 ID（UIN）。只用于核对身份，**不能**拿来拼桶名。"""
     from tencentcloud.common import credential as tc_credential
     from tencentcloud.sts.v20180813 import models, sts_client
     client = sts_client.StsClient(tc_credential.Credential(secret_id, secret_key), region)
     identity = client.GetCallerIdentity(models.GetCallerIdentityRequest())
     return str(identity.__dict__.get("_AccountId"))
+
+
+def bucket_name() -> str:
+    explicit = os.environ.get("NANHANG_COS_BUCKET", "").strip()
+    if explicit:
+        return explicit
+    base = os.environ.get("NANHANG_COS_BASE", "nanming").strip() or "nanming"
+    appid = os.environ.get("NANHANG_COS_APPID", "").strip()
+    if not appid:
+        raise SystemExit(
+            "缺少 APPID：请设置 NANHANG_COS_APPID（控制台右上角「账号信息」里的 APPID，10 位数字），"
+            "或用 NANHANG_COS_BUCKET 给完整桶名。注意不要用账号 ID(UIN)。"
+        )
+    return f"{base}-{appid}"
 
 
 def local_files() -> list[tuple[Path, str]]:
@@ -76,10 +96,10 @@ def main() -> int:
 
     secret_id, secret_key = credentials()
     region = os.environ.get("NANHANG_COS_REGION", "ap-chengdu").strip() or "ap-chengdu"
-    uid = app_id(secret_id, secret_key, region)
-    bucket = os.environ.get("NANHANG_COS_BUCKET", f"nanming-{uid}").strip()
+    uin = account_uin(secret_id, secret_key, region)
+    bucket = bucket_name()
     prefix = os.environ.get("NANHANG_COS_PREFIX", "data/releases").strip().strip("/")
-    print(f"账号 APPID：{uid}\n区域：{region}\n存储桶：{bucket}\n对象前缀：{prefix}/")
+    print(f"账号 ID(UIN)：{uin}（仅核对身份用）\n区域：{region}\n存储桶：{bucket}\n对象前缀：{prefix}/")
 
     from qcloud_cos import CosConfig, CosS3Client
     client = CosS3Client(CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key, Scheme="https"))
