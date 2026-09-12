@@ -91,6 +91,18 @@ describe("航线图：海图版画的导出约束", () => {
     expect(chart).not.toMatch(/x=\{992\}|x="992"/);
   });
 
+  it("窄屏换竖排版心，不让横版一路缩到看不清", () => {
+    // 横版版心 1000×320，缩到 390 宽的手机上字号只剩 4–5px。窄屏改画 360×372 的竖排版心：
+    // 一条关系一行，字号按 1.0 倍左右渲染。
+    expect(chart).toContain("useNarrowPlate");
+    expect(chart).toContain("(max-width: 640px)");
+    expect(chart).toContain('viewBox="0 0 360 372"');
+    expect(chart).toContain('viewBox="0 0 1000 320"');
+    // 导出尺寸跟当前这张图自己的 viewBox 走，不再写死横版尺寸。
+    expect(chart).toContain("node.viewBox");
+    expect(chart).not.toContain('clone.setAttribute("width", "1000")');
+  });
+
   it("不假装分数轴：网格只有底纹，不标数值", () => {
     // 三条线用 y=78/158/238 三个横向位置表示三种位置关系，不是分数刻度；
     // 图上任何带数字的刻度都可能被读成「分数轴」，所以左侧不画带数字的尺。

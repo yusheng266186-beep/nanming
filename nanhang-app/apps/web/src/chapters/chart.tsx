@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
@@ -52,6 +53,28 @@ const PLATE = {
   lineY: (index: number) => 92 + index * 66
 } as const;
 
+/**
+ * 窄屏判定：横版版心是 1000×320，缩到 390 宽的手机上字号只剩 4–5px，根本读不出来。
+ * 窄屏改画竖排版心（360×372，一条关系一行），字号在 1.0 倍左右，读得清也不用来回拖。
+ */
+const NARROW_QUERY = "(max-width: 640px)";
+
+function useNarrowPlate(query = NARROW_QUERY): boolean {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia(query).matches
+      : false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(query);
+    const onChange = () => setNarrow(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [query]);
+  return narrow;
+}
+
 /** 航线小结的行距与首行基线（写在中间两条航路之间的空档里）。 */
 const ROUTE_TITLE_TOP_Y = 186;
 const ROUTE_TITLE_LINE_H = 17;
@@ -69,6 +92,9 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   }));
   const drawable = relationGroups.some((group) => group.items.length > 0);
   const rangeLabel = range ? `${range.low}–${range.high}` : "未生成";
+  /** 三种关系的记录总数，用来算各自占比（两个版式共用）。 */
+  const relationTotal = relationGroups.reduce((sum, group) => sum + group.items.length, 0);
+  const narrowPlate = useNarrowPlate();
 
   const copyText = async () => {
     const lines = [
@@ -94,11 +120,16 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   const savePng = async () => {
     const node = chartSvgRef.current;
     if (!node) { notify("当前浏览器无法导出图片，请改用「复制文字版」。"); return; }
+    // 尺寸取自当前这张图自己的 viewBox：宽屏是横版 1000×320，窄屏是竖版 360×372，
+    // 导出哪一张就跟哪一张一致，不再写死横版尺寸。
+    const box = node.viewBox?.baseVal;
+    const width = Math.round(box?.width || 1000);
+    const height = Math.round(box?.height || 320);
     const clone = node.cloneNode(true) as SVGSVGElement;
-    clone.setAttribute("width", "1000");
-    clone.setAttribute("height", "320");
+    clone.setAttribute("width", String(width));
+    clone.setAttribute("height", String(height));
     const svg = new XMLSerializer().serializeToString(clone);
-    const ok = await svgStringToPng(svg, 1000, 320, `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
+    const ok = await svgStringToPng(svg, width, height, `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
     notify(ok ? "已保存 PNG 航线图" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
   };
   return <section id="page-chart" className={`view${page === "chart" ? " active" : ""}`} aria-label="航线图">
@@ -132,6 +163,69 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
             （CSS 类在导出时丢失），且不引用任何 id 渐变或滤镜——旧图那块渐变底在序列化后不生效，
             导出结果会露出画布的深色垫底，正是负责人截图里那张「黑底草稿」。 */}
         <div className="routes">
+          {/* 窄屏竖排版心：一条关系一行（名字 → 计数与占比 → 一条带波纹的航路），
+              字号按 1.0 倍左右渲染，手机上读得清；数据、配色与横版完全同源。
+              横版 1000×320 缩到 390 宽时字号只剩 4–5px，那是负责人指出的「根本看不清」。 */}
+          {narrowPlate ? <svg ref={chartSvgRef} viewBox="0 0 360 372" xmlns="http://www.w3.org/2000/svg"
+            role="img" aria-label="三条历史参考关系航线示意图（竖排）">
+            <rect width="360" height="372" fill={CHART.paper} />
+            <rect x={12} y={12} width={336} height={348} fill="none" stroke={CHART.line2} strokeWidth={1} />
+            <g stroke={CHART.line} strokeWidth={0.5} opacity={0.45}>
+              {[1, 2, 3, 4].map((i) => <path key={`h${i}`} d={`M12 ${12 + i * 69.6}H348`} />)}
+            </g>
+            <g stroke={CHART.brass} strokeWidth={1.2} opacity={0.75} fill="none">
+              <path d="M12 22v-8h8M348 22v-8h-8M12 350v8h8M348 350v8h-8" />
+            </g>
+            {drawable ? <>
+              <text x={24} y={40} fontFamily={CHART.song} fontSize={12.5} fill={CHART.ink}>航线关系图</text>
+              <text x={336} y={40} textAnchor="end" fontFamily={CHART.song} fontSize={10} fill={CHART.mut}>
+                {pool?.schoolCount ?? 0} 所院校 · {(pool?.rows.length ?? 0).toLocaleString("zh-CN")} 条
+              </text>
+              {relationGroups.map((group, index) => {
+                const share = relationTotal > 0 ? group.items.length / relationTotal * 100 : 0;
+                const top = 64 + index * 84;
+                const lineY = top + 46;
+                return <g key={group.key}>
+                  <circle cx={28} cy={top + 8} r={3.2} fill="none" stroke={group.route} strokeWidth={1.4} />
+                  <text x={42} y={top + 12} fontFamily={CHART.song} fontSize={13.5} fill={CHART.ink2}>{group.label}</text>
+                  <text x={336} y={top + 14} textAnchor="end" fontFamily={CHART.display} fontSize={23}
+                    fontWeight={600} fill={group.route}>{group.items.length.toLocaleString("zh-CN")}</text>
+                  <text x={336} y={top + 30} textAnchor="end" fontFamily={CHART.display} fontStyle="italic"
+                    fontSize={10} fill={CHART.mut}>占 {share.toFixed(1)}%</text>
+                  <path d={`M24 ${lineY}C120 ${lineY - 9} 250 ${lineY + 9} 336 ${lineY}`} stroke={group.route}
+                    strokeWidth={group.width + 6} opacity={0.1} fill="none" strokeLinecap="round" />
+                  <path d={`M24 ${lineY}C120 ${lineY - 9} 250 ${lineY + 9} 336 ${lineY}`} stroke={group.route}
+                    strokeWidth={group.width + 0.6} strokeDasharray={group.dash || undefined} fill="none"
+                    strokeLinecap="round" />
+                  <circle cx={24} cy={lineY} r={3.4} fill={CHART.paper} stroke={group.route} strokeWidth={1.2} />
+                  {index === 1 ? <g transform={`translate(58,${lineY}) scale(1.15)`} stroke="none">
+                    <path d="M-14 0h28l-5 9h-18Z" fill={CHART.ink} opacity={0.9} />
+                    <path d="M0 0v-19" stroke={CHART.ink} strokeWidth={1.1} />
+                    <path d="M0-18 12-2H0Z" fill={CHART.brass2} />
+                    <path d="M-1-15 -9-3h8Z" fill={CHART.safe} opacity={0.85} />
+                  </g> : null}
+                </g>;
+              })}
+              <path d="M24 302H336" stroke={CHART.line2} strokeWidth={0.8} opacity={0.7} />
+              <text x={24} y={320} fontFamily={CHART.song} fontSize={10.5} fill={CHART.ink2}>
+                {routes.length
+                  ? routes.map((route) => `${route.title} ${route.rows.length}`).join(" · ") + " 条"
+                  : "两条线还没有内容"}
+              </text>
+              <text x={336} y={320} textAnchor="end" fontFamily={CHART.song} fontSize={12} fill={CHART.ink}>
+                {rangeLabel} 分
+              </text>
+              <text x={336} y={340} textAnchor="end" fontFamily={CHART.display} fontStyle="italic" fontSize={9.5}
+                fill={CHART.mut}>参考年 {pool?.referenceYear ?? REFERENCE_YEAR} · 按历史位置参考绘制 · 不构成录取判断</text>
+            </> : <g>
+              <text x={180} y={168} textAnchor="middle" fontFamily={CHART.song} fontSize={14} fill={CHART.ink2}>
+                {withRange ? "还没有可绘制的结果" : "尚未生成探索区间"}
+              </text>
+              <text x={180} y={192} textAnchor="middle" fontFamily={CHART.display} fontStyle="italic" fontSize={10.5}
+                fill={CHART.mut}>{withRange ? "回「分数轴」重新匹配院校" : "先在「定位」生成探索区间"}</text>
+            </g>}
+          </svg> : null}
+          {narrowPlate ? null : (
           <svg ref={chartSvgRef} viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img"
             aria-label="三条历史参考关系航线示意图">
             <rect width="1000" height="320" fill={CHART.paper} />
@@ -227,6 +321,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
               </text>
             </g>}
           </svg>
+          )}
         </div>
         <div className="route-legend">
           {RELATION_CLASSES.map((relation) => <span className={`rl ${relation.cls}`} key={relation.key}>

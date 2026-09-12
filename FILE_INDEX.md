@@ -71,6 +71,7 @@
 | [nanhang-app/apps/web/src/quality-types.ts](nanhang-app/apps/web/src/quality-types.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/reference-lines.ts](nanhang-app/apps/web/src/reference-lines.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/release-loader.ts](nanhang-app/apps/web/src/release-loader.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/scroll-lock.ts](nanhang-app/apps/web/src/scroll-lock.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/style.css](nanhang-app/apps/web/src/style.css) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/theme.tsx](nanhang-app/apps/web/src/theme.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/ai-client.test.ts](nanhang-app/apps/web/test/ai-client.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -88,6 +89,7 @@
 | [nanhang-app/apps/web/test/quality-presentation.test.ts](nanhang-app/apps/web/test/quality-presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/release-integration.test.ts](nanhang-app/apps/web/test/release-integration.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/route-labels.test.ts](nanhang-app/apps/web/test/route-labels.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/route-split.test.ts](nanhang-app/apps/web/test/route-split.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/sail-deck.test.ts](nanhang-app/apps/web/test/sail-deck.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/sail-pack.test.ts](nanhang-app/apps/web/test/sail-pack.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/settings.test.ts](nanhang-app/apps/web/test/settings.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -698,6 +700,7 @@
 | [nanhang-app/docs/TASK09_VISUAL_CHECK.md](nanhang-app/docs/TASK09_VISUAL_CHECK.md) | 实施进度与记录 |
 | [nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md](nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md) | 实施进度与记录 |
 | [nanhang-app/docs/VALIDATION_RESULT.md](nanhang-app/docs/VALIDATION_RESULT.md) | 实施进度与记录 |
+| [nanhang-app/docs/verification/acceptance-cloud-api-2026-09-12.json](nanhang-app/docs/verification/acceptance-cloud-api-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt](nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/backend-alignment-build-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-build-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/backend-alignment-build-latest-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-build-latest-2026-09-12.txt) | 本次验证原始日志 |

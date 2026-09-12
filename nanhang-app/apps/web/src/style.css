@@ -458,6 +458,16 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .rl .swatch{width:24px;height:0;border-top:2px dashed var(--brass)}
 .rl.main .swatch{border-top:2.5px solid var(--sea)}
 .rl.safe .swatch{border-top:2px dotted var(--safe)}
+/* 窄屏：航线图换成竖排版心后把卡片留白收到最小，版心尽量占满可用宽度——
+   竖版字号本就按 1.0 倍左右渲染，多给二三十像素宽度就是实打实的大一号。
+   必须放在上面几条基础规则之后：同权重下后写的才生效。 */
+@media(max-width:560px){
+  .chart-stage{border-radius:16px}
+  .chart-head{padding:24px 22px}
+  .chart-head .seal{display:none}
+  .routes{padding:10px 12px 14px}
+  .route-legend{gap:14px 20px;padding:12px 14px 18px}
+}
 .chart-cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
 .panel{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:26px}
 .panel h3{font-family:var(--song);font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:9px}
