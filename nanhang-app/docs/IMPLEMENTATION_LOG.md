@@ -1,12 +1,21 @@
 # 实施记录
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-latest-frontend-final-turn）：API版本10收尾轮在线核验通过；最新前端Pages发布中。
+> 统一进度（2026-09-13，2026-09-13-latest-frontend-deployed）：API版本10与Pages c0b2664已部署并核验；负责人进行页面验收。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：44 个测试文件、540 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：44 个测试文件、542 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-13 / serif-everywhere：全站一套宋体（正文、聊天框、输入框一起改）
+
+- 目的（负责人原文）：「我看到还有很多字体是原本的字体，就是刚才小号字体的同号字体。把这一类字体全部改为宋体，比如说像谈心里的聊天框，填写分数的框里面都还是这种字体，全部改为宋体，要做到全覆盖，不要漏掉。」——第一轮只改了 ≤12px，13px 以上的正文（聊天气泡 `.bub` 13px、输入框继承的 14px）还是无衬线。
+- 改动只有四处，但覆盖全站：① 基准字体 `body{font:14px/1.75 var(--song)}`——正文、气泡、输入框、按钮、表格都靠继承，一处改全站变；② `.num`（带等宽数字的数据位）改 `--song` 并保留 `tabular-nums`；③ `#page-direction .group-chip small` 改 `--song`；④ `--sans` 令牌保留名字、值改成宋体栈，并在注释里说明它是历史别名——以后哪怕有人手滑写 `var(--sans)` 也不会悄悄掉回无衬线；真要无衬线必须显式写字体栈。
+- 改完后样式表里的字体声明只剩两种：`var(--song)`（123 + 2 处简写）与 `var(--display)`（15 + 20 处简写，Cormorant Garamond，本身就是衬线展示体，中文回退到 `'Noto Serif SC'`）；无衬线一条不剩。
+- 守卫测试改为 `apps/web/test/serif-font.test.ts`（5 项，原 `serif-small-text.test.ts` 已删）：基准字体必须是宋体、`button,input,textarea,select` 只许 `font:inherit`、声明块里不许出现任何无衬线标记（含 `font:var(--sans)` 这种写法）、≤12px 的规则仍要写明衬线、定位页 4 处 SVG 小字写死 `SONG_FAMILY`。
+- 边界：纸版前端 `apps/web-paper` 有自己的样式表与字体令牌（`--serif`），本轮仍未动——负责人看的是主前端；`src/journey.css` 属于 `JourneyApp`（没有入口引用，是遗留件），同样未动。
+- 全量 `npm run test` 44 文件 542 项通过、0 失败；typecheck 通过（`locate.tsx` 上另有一处在建改动报 `RangeFill` 未定义，与本轮无关，未纳入提交）；工作区根 `--package` / `--check` 通过。
 
 ## 2026-09-13 / serif-small-text：全站小字改宋体（≤12px 一条不漏）
 
@@ -33,8 +42,8 @@
 - 无障碍：03 的状态签裹在 `<label>` 里，加 `aria-hidden`——否则会并进输入框的可读名称（实测快照读成「高考目标分（可不填） 可不填」）。状态由那句 aria-live 摘要统一报出。
 - 宽屏实测发现并修掉一处：状态签原来跟着行右边缘，1280px 下被 flex 推到离标题约 1000px 处，读不出属于哪一件（`.flab-t` 的 `flex:1 1 auto` 去掉，签紧跟标题）。修后实测两档宽度：1280px 签距标题 12px、面板高 629px；390×844 签距标题 9px、面板高 672px；两档 `scrollWidth` 都不超出视口。
 - 验证：`npm run typecheck` 通过；全量 `npm test` 44 文件 540 项通过、0 失败（本轮复跑时并行线又加了一个测试文件；`test/sail-pack.test.ts` 由 6 项改写为 11 项：进度口径、竖轨、状态签、深海底带、逐件入场、签距与旧结构下线守卫）。390×844 实测（DOM 与计算样式，真实坐标点击）：三件备齐后 `data-packed=3`、面板 `data-ready=true`、进度线 `scaleX(1)`、三行状态签 已定 / 已满 2 门 / 已填、印章与轨道段落转铜色、`scrollWidth=390` 无横向溢出；摘要读作「当前：物理类 · 再选 化学、生物 · 高考目标分 600（演示值）」。会话数据已重新填好。
-- 环境注记（非代码问题）：本内置浏览器的 role 点击在这块面板上一律超时（`elementFromPoint` 命中正确、坐标点击正常），DOM 断言改用页面内派发与坐标点击完成；逍遥游浮层关闭后仍留在 DOM（`opacity:0 + pointer-events:none`），不挡点击。
-- 提交归属：`style.css` 的三件事一段已被线一 00:37 的提交 `66cef28` 一并入库（与本文件第五节的既有先例相同）；工作区里 `style.css` 当前那 76 行暂存差异是另一条线正在做的全站字形调整，不是本轮的改动，未触碰。`chapters/sail.tsx`、`test/sail-pack.test.ts` 仍未提交。
+- 环境注记（非代码问题）：① 本内置浏览器的 role 点击在这块面板上一律超时（`elementFromPoint` 命中正确、坐标点击正常），DOM 断言改用页面内派发与坐标点击完成；② 标签页在后台时 rAF 不跑（`rafRan=false`），CSS 过渡停在起始值，因此「过渡之后的样子」要读内联值与规则（实测进度线内联 `scaleX(1)`、印章 `box-shadow:0 0 0 5px rgba(169,123,52,.14)`），出帧时刻的读数为 `matrix(1,0,0,1,0,0)`；③ 逍遥游浮层关闭后仍留在 DOM（`opacity:0 + pointer-events:none`），不挡点击。
+- 提交归属：本轮改动被并行线的提交整文件扫入——`style.css` 的三件事一段随 `66cef28`（00:37）入库，`chapters/sail.tsx`、`test/sail-pack.test.ts` 与本条目随 `7916f91`、`c0b2664`（00:49）入库；本轮结束时这四个路径的工作区与 HEAD 一致（与本文件第五节的既有先例相同）。同一次扫描也把另一条线正在做的全站小字改宋体带了进来，那不是本轮的改动，本轮未触碰。
 - 未做：浏览器视觉验收由负责人自行完成。
 
 ## 2026-09-13 / deck-spring-and-tighter-tail：纸堆改弹簧收尾，跑道再收短
@@ -50,7 +59,7 @@
 
 ## 2026-09-13 / latest-frontend-final-turn：继续发布前端并对齐 AI 收尾
 
-- 本提交归档：后端千帆收尾提示与选项处理、已交还的前端增量、TOTP 本地工具及测试一并纳入；根 README 与 GitHub 简介/主页已先行更新，发布后补记 Pages 工作流结果。完整快照以本提交所附的文档同步与验证日志为准。
+- 提交 `c0b2664` 归档：后端千帆收尾提示与选项处理、当时前端增量、TOTP 本地工具及测试一并纳入；根 README 与 GitHub 简介/主页已更新，公网 README 回读为当前版本。完整快照以该提交所附的文档同步与验证日志为准。
 
 - 并发增量：初次 `--package` 后，前端纸堆从直接跟手改成阻尼弹簧，`--check` 因源码变动未通过；随后源码和守卫测试继续调整。按负责人“半成品也上线”的授权，最终以再次实测和重新打包的当时快照为准；本轮没有编写该前端代码。
 
@@ -60,7 +69,7 @@
 - 后端修改：仅在 `user_text` 以当前前端固定的「【收尾】谈心到这里。」开头时使用总结提示，要求无追问、无选项、最多 4 条有证据的专业类建议；`finalize()` 即使收到模型误给的 guided 选项也清空。普通轮原规则保留。新增专项测试覆盖提示与选项落地。
 - 验证：`npm run typecheck` 通过；`npm test -- --maxWorkers=2` 为 44 文件 540 项通过、0 失败；正式 API/COS 地址下 `npm run web:build` 通过，主 JS 342.20 kB（gzip 111.08 kB）。`node scripts/build_function.mjs` 打包成功。
 - 云端：仅替换 `nanming-api` 代码并保留所有既有环境；版本 10 Active，下载 ZIP 逐文件比对一致，`/healthz`、`/readyz` 均 200。首次更新后函数已 Active 但代码下载端短时仍返回旧包，重试后校验一致，未改动环境。合成原话的真实千帆收尾轮 HTTP 200、complete、无问号、空选项、2 条建议；会话已撤销。脱敏证据见 `verification/final-turn-cloud-api-2026-09-13.json`、`verification/final-turn-online-2026-09-13.json`。
-- 当前 Pages 发布和公网资产核验待完成；本轮不声明视觉验收。TASK-13、TASK-14与未通过门禁保留。
+- Pages 工作流 `34706440514` 对提交 `c0b2664` 构建与部署成功；公网 HTML、JS、CSS 均 200，JS/CSS 与本机正式构建逐字节一致，公开 README 已更新，见 `verification/latest-pages-online-2026-09-13.json`。CI 验证仍有 3 项失败（两项既有数据哈希断言、私有学校分片未进入 CI）；按负责人半成品发布要求未阻断部署，也不记为测试通过。本轮不声明视觉验收。TASK-13、TASK-14与未通过门禁保留。
 
 ## 2026-09-13 / deck-flip-scroll-linked：纸堆收满后的留白收短、翻页改成跟着手指走
 

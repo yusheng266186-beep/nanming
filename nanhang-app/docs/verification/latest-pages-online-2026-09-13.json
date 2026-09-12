@@ -1,0 +1,29 @@
+{
+  "pages_url": "https://yusheng266186-beep.github.io/nanming/",
+  "commit": "c0b2664",
+  "html_status": 200,
+  "assets": [
+    {
+      "name": "index-BkfRD-1B.js",
+      "http_status": 200,
+      "bytes_match_local_build": true,
+      "sha256": "91f3433250c31209efec1386a8430858d4003fe6732ca226fdc5c9696e5f1e9a"
+    },
+    {
+      "name": "index-Ci-iD6NO.css",
+      "http_status": 200,
+      "bytes_match_local_build": true,
+      "sha256": "0913469f352eb9ba9869a38f62f3839de05a9576e156a785d785f973f87815f2"
+    }
+  ],
+  "readme_status": 200,
+  "readme_current": true,
+  "workflow": {
+    "id": 34706440514,
+    "status": "completed",
+    "conclusion": "success",
+    "build": "success",
+    "deploy": "success"
+  },
+  "ci_validation": "3 known failures: two data hash assertions and missing private school shard; non-blocking"
+}

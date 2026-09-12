@@ -7,7 +7,10 @@
   --reach:#b0763a;--steady:#1c5560;--safe:#7d9a86;
   --song:'Noto Serif SC','Songti SC','STSong','SimSun',serif;
   --display:'Cormorant Garamond','Noto Serif SC',Georgia,serif;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  /* 全站宋体（负责人 2026-09-13：小字先改，随后正文、聊天框、输入框一起改，要全覆盖）。
+   --sans 保留成宋体别名：它是历史名字，现在指回宋体栈——这样即便以后有人写了 var(--sans)，
+   也不会悄悄掉回无衬线；真正要无衬线的地方必须显式写字体栈。 */
+  --sans:'Noto Serif SC','Songti SC','STSong','SimSun',serif;
   --ease:cubic-bezier(.22,1,.36,1);--ease-glide:cubic-bezier(.22,.9,.3,1.05);--ease-spring:cubic-bezier(.2,1.12,.36,1);
   --sh-pop:0 30px 90px rgba(8,32,42,.30);--sh-soft:0 12px 34px rgba(8,32,42,.10);--sh-card:0 14px 34px rgba(18,69,79,.07);
   --rail-h:96px;
@@ -19,7 +22,7 @@
 html{scrollbar-width:none;scroll-behavior:smooth;scroll-padding-top:120px;-webkit-text-size-adjust:100%}
 *{scrollbar-width:none}
 *::-webkit-scrollbar{display:none;width:0;height:0}
-body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.75 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;min-height:100vh;background-image:radial-gradient(1200px 600px at 78% -8%,rgba(169,123,52,.06),transparent 60%)}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.75 var(--song);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;min-height:100vh;background-image:radial-gradient(1200px 600px at 78% -8%,rgba(169,123,52,.06),transparent 60%)}
 h1,h2,h3,h4,p{margin:0}h1,h2,h3,h4{font-weight:500}
 button,input,textarea,select{font:inherit;color:inherit}
 button,a{-webkit-tap-highlight-color:transparent}
@@ -30,7 +33,7 @@ img,svg{display:block;max-width:100%}
 ul{margin:0;padding:0;list-style:none}
 :focus-visible{outline:2px solid var(--brass);outline-offset:4px;border-radius:3px}
 ::selection{background:var(--brass-bg);color:var(--brass-3)}
-.num{font-family:var(--sans);font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
+.num{font-family:var(--song);font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
 .disp{font-family:var(--display)}.song{font-family:var(--song)}.muted{color:var(--mut)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
@@ -387,11 +390,8 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .axis-band::before,.axis-band::after{content:"";position:absolute;top:6px;bottom:6px;width:3px;border-radius:3px;background:var(--brass)}
 .axis-band::before{left:2px}
 .axis-band::after{right:2px}
-/* 深色英雄区里的表单：不用白底框（与深色卡片冲突），换成深海玻璃底 + 浅色字。 */
-.axis-hero .inp{background:rgba(9,38,44,.55);border-color:rgba(200,155,82,.32);color:#eef4f1;caret-color:#eef4f1}
-.axis-hero .inp::placeholder{color:#7fa39c}
-.axis-hero .inp:focus{border-color:var(--brass-2)}
-.axis-hero .inp:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #0a282e inset;-webkit-text-fill-color:#eef4f1;caret-color:#eef4f1}
+/* 深色英雄区里的表单：原来这里给 `.inp` 换成深海玻璃底 + 浅色字。这一页的上下限已经改用
+   共用的「区间标尺」（`#page-axis .range-fill`，同一套配方），那五条没有作用对象了，已删。 */
 .axis-hero .fhint{color:#9fc3bc}
 /* 幽灵按钮在深色卡上会隐形：描边换成金调，让「去定位生成区间」找得到。 */
 .axis-hero .btn.ghost{color:#e9dfc9;border-color:rgba(200,155,82,.6);background:rgba(200,155,82,.1)}
@@ -863,7 +863,7 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
 #page-direction .class-chip{font-size:12px;padding:0 14px;border-color:var(--brass-line);color:var(--brass-3);font-family:var(--song)}
 #page-direction .group-chip:not([aria-pressed="true"]):hover{border-color:var(--sea);background:#fff}
 #page-direction .class-chip:not([aria-pressed="true"]):hover{border-color:var(--brass);background:#fff}
-#page-direction .group-chip small{font-family:var(--sans);color:var(--mut)}
+#page-direction .group-chip small{font-family:var(--song);color:var(--mut)}
 /* 选中：大类＝实心深海（范围圈定了），小类＝实心铜（沿用既有语言）；计数小字一并提亮。
    这两条写在未选中规则之后，且用 [aria-pressed="true"] 与 .on 双保险。 */
 #page-direction .group-chip.on,#page-direction .group-chip[aria-pressed="true"]{
@@ -1319,4 +1319,48 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
   .ctx-btn>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ctx-btn .icon{width:13px;height:13px}
   .avatar{width:34px;height:34px;font-size:14px}
+}
+
+/* ══════════ 区间标尺：探索区间与分数轴的上下限（两页共用一支标尺）══════════
+   负责人指出的问题：定位页的「微调下限 / 微调上限」与分数轴的「区间下限 / 区间上限」
+   是四只一模一样的输入框——可上下限本来属于同一个值（一段区间），摊成两个字段之后
+   读不出它们是一段，也没有单位，更没和轴上的金带对上。
+   现在改成一支标尺：数字是纸面填空（无框、一条铜色细底线，聚焦时底线点亮并浮一层柔光），
+   中间一根带两个端头的细线（与分数轴那条金带上的端头同一支记号笔）读作「从下到上」，
+   单位「分」整支标尺只出现一次。深色底不另写一套标记：分数轴的深海底由
+   `#page-axis .range-fill` 换成深海玻璃底——原来那五条 `.axis-hero .inp` 随之删除，
+   因为这一页只有这两只输入框。 */
+.range-fill{display:inline-flex;align-items:flex-end;gap:18px;padding:12px 22px 14px;
+  border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--sh-card)}
+.rf-end{display:flex;flex-direction:column;align-items:center;gap:2px}
+.rf-cap{font:500 10px/1 var(--song);letter-spacing:.14em;color:var(--brass)}
+.rf-inp{width:4.6ch;border:0;border-bottom:1.5px solid var(--brass-line);background:transparent;padding:2px 2px 5px;
+  font-family:var(--display);font-size:30px;font-weight:500;line-height:1;color:var(--sea);text-align:center;
+  font-variant-numeric:tabular-nums;transition:border-color .3s,box-shadow .4s var(--ease),color .3s}
+.rf-inp:hover:not(:focus){border-bottom-color:var(--brass-2)}
+.rf-inp:focus{outline:none;border-bottom-color:var(--brass);box-shadow:0 8px 0 -6px rgba(169,123,52,.35)}
+/* 数字输入的原生步进箭头在「填空」上就是两只小三角，与 .inp 同一条规矩：吞掉。 */
+.rf-inp{-moz-appearance:textfield;appearance:textfield}
+.rf-inp::-webkit-outer-spin-button,.rf-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+/* 中间那根线两端各一道短竖头，就是这段区间的两个端点。 */
+.rf-dash{position:relative;width:26px;height:1.5px;background:var(--brass-line);margin-bottom:22px}
+.rf-dash::before,.rf-dash::after{content:"";position:absolute;top:-3px;width:1.5px;height:7.5px;border-radius:1px;background:var(--brass)}
+.rf-dash::before{left:0}
+.rf-dash::after{right:0}
+.rf-unit{font:italic 400 11px/1.6 var(--display);letter-spacing:.14em;color:var(--mut);margin-bottom:4px}
+/* 深海底（分数轴英雄区）：深海玻璃底 + 浅色字 + 铜色底线，原来那套配方原样接过来。 */
+#page-axis .range-fill{background:rgba(9,38,44,.55);border-color:rgba(200,155,82,.32);box-shadow:none}
+#page-axis .rf-cap{color:var(--brass-2)}
+#page-axis .rf-inp{color:#f2f6f3;border-bottom-color:rgba(200,155,82,.45);caret-color:#f2f6f3}
+#page-axis .rf-inp:hover:not(:focus){border-bottom-color:var(--brass-2)}
+#page-axis .rf-inp:focus{border-bottom-color:var(--brass-2);box-shadow:0 8px 0 -6px rgba(200,155,82,.5)}
+#page-axis .rf-inp:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px rgba(9,38,44,.55) inset;-webkit-text-fill-color:#f2f6f3;caret-color:#f2f6f3}
+#page-axis .rf-dash{background:rgba(200,155,82,.45)}
+#page-axis .rf-dash::before,#page-axis .rf-dash::after{background:var(--brass-2)}
+#page-axis .rf-unit{color:#9fc3bc}
+@media(max-width:560px){
+  .range-fill{gap:12px;padding:10px 16px 12px;border-radius:12px}
+  .rf-inp{font-size:25px;width:4.4ch}
+  .rf-dash{width:18px;margin-bottom:19px}
+  .rf-unit{margin-bottom:3px}
 }

@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-13",
-  "revision": "2026-09-13-latest-frontend-final-turn",
-  "stage": "API版本10收尾轮在线核验通过；最新前端Pages发布中",
+  "revision": "2026-09-13-latest-frontend-deployed",
+  "stage": "API版本10与Pages c0b2664已部署并核验；负责人进行页面验收",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -26,11 +26,11 @@
   ],
   "tests": {
     "files": 44,
-    "passed": 540,
+    "passed": 542,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 00:47，npm run test）全量 44 文件 540 项通过、0 失败；apps/web/test/serif-small-text.test.ts 3 项钉住「≤12px 一律宋体」，route-labels.test.ts 22 项覆盖院校卡的纸张堆叠，totp-code.test.ts 5 项覆盖动态码脚本一致性。",
+    "note": "本次（2026-09-13 00:54，npm run test）全量 44 文件 542 项通过、0 失败；apps/web/test/serif-font.test.ts 5 项钉住「全站一套宋体」（基准字体、--sans 只剩别名、≤12px 无衬线归零、SVG 小字写死宋体栈），route-labels.test.ts 22 项覆盖院校卡纸张堆叠。",
     "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
   },
   "runtime": {
@@ -42,7 +42,7 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练",
+  "next_task": "负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练",
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
   "workbook_data_rows": 52878,
@@ -304,12 +304,12 @@
     "legacy_note": "core_devices 与 fixes 保留此前七章版本的设计/修复记录；当前主入口以 ADR-003 和 apps/web/VISUAL_PROGRESS.md 最新段落为准"
   },
   "code_baseline": {
-    "commit": "aca9b67 + current handed-off worktree",
+    "commit": "c0b2664",
     "checked_at": "2026-09-13",
-    "note": "本轮不编辑apps/web；发布当前纸堆弹簧、起航行装清单、小字衬线、设置、谈心收尾及方向分层增量。"
+    "note": "本轮不编辑apps/web；已发布纸堆弹簧、起航行装清单、小字衬线、设置、谈心收尾及方向分层增量。"
   },
   "deployment": {
-    "status": "API_V10_READY_PAGES_DEPLOYING",
+    "status": "API_V10_PAGES_C0B2664_DEPLOYED",
     "implemented": [
       "GitHub Pages workflow",
       "COS public admissions upload",
@@ -362,7 +362,7 @@
       "密钥轮换演练",
       "正式身份生命周期"
     ],
-    "query_code_rule": "四班48人身份证后六位X转0；四班其余8人及其他班级沿用原码；新索引继续包含在API版本9"
+    "query_code_rule": "四班48人身份证后六位X转0；其余8人及其他班级沿用原码；新索引继续包含在API版本10"
   },
   "chapter_gate": {
     "rule": "按流程分段，前一段完成才解锁下一段；往回看永远允许；解锁只增不减",
@@ -378,7 +378,7 @@
     "module": "apps/web/src/progress.ts（纯逻辑，15 项测试）"
   },
   "backend_alignment": {
-    "status": "FINAL_TURN_ALIGNED_API_V10_READY_PAGES_DEPLOYING",
+    "status": "FINAL_TURN_ALIGNED_API_V10_AND_PAGES_DEPLOYED",
     "school_response": "shard + index(exams,trend), encrypted index object required before API rollout",
     "ai": "4000 chars per quote;48000 evidence total;32000 context;512KiB HTTP;network/401/503 recovery;session revoke",
     "pages": "DEV-only demo;HTTPS endpoint guard;typecheck and tests before deploy",
@@ -415,16 +415,17 @@
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
     "api": "nanming-api version 10; final AI turn and TOTP active; deployed ZIP verified; environment preserved",
-    "pages": "latest frontend commit pending; workflow result to be recorded after publish",
+    "pages": "c0b2664; workflow 34706440514 build/deploy success; public HTML/JS/CSS 200 and assets byte-equal to official local build",
     "ciphertext_objects": 881,
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
-    "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
-    "followup": "前端自动收尾轮已对齐 API 版本10；线上合成千帆请求核验通过；Pages等待本次提交发布。"
+    "ci_validation": "3 failed tests: 2 existing data hash assertions and 1 missing private school shard in CI; deployment continued under owner authorization",
+    "followup": "API版本10真实合成收尾轮通过；Pages c0b2664公网资产核验通过；实际界面验收由负责人执行。"
   },
   "repository_presentation": {
     "readme": "root and app README refreshed for current chapter app/API v10",
-    "github_about": "description and homepage read-back verified",
+    "github_about": "description and homepage read-back verified; public README current",
     "pages_url": "https://yusheng266186-beep.github.io/nanming/",
-    "source_files_moved": false
+    "source_files_moved": false,
+    "pages_online_report": "docs/verification/latest-pages-online-2026-09-13.json"
   }
 }
