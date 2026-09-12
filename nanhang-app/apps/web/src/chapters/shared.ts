@@ -130,11 +130,11 @@ export function useNarrow(query = "(max-width: 720px)"): boolean {
  *
  * 每张卡占一个 `.stack-slot`，钉在 `--deck-top + i × --deck-peek` 这条线上（CSS 用 sticky 钉住），
  * 所以后一张压在前一张上、前一张只露出抬头那一条——像抽屉里码着的一摞纸。
- * 这里只切三个 class 与一个 `--i` 序号，**不动任何布局尺寸**，所以滚动不会被顶动：
- *   is-covered  已经被后一张压住（只露抬头）
- *   is-current  钉在当前这条线上的那张，只有它的内容是完整露出来的
- *   is-arriving 正翻过来的下一张（微微翘起，落到线上就摊平）
- * 其余（is-idle）保持原样，避免整列表都翘着。
+ *
+ * 翻页的翘起**跟着手指走**：这里每帧把「离线上还有多远」写成 `--ap`（1 = 已经贴线，0 = 还差一屏行程），
+ * CSS 只用它算 rotateX / 位移 / 缩放。用连续量而不是切 class，是因为时间驱动的过渡会落在滚动后面，
+ * 快速滑动时看着发飘；跟着滚动走才是「纸被手推过去」的手感。
+ * 另有 is-current / is-covered 两个 class 管阴影与描边这类离散效果；布局尺寸一律不动。
  */
 export function useDeckStack(
   rootRef: { current: HTMLElement | null }, depsKey: string
@@ -142,46 +142,67 @@ export function useDeckStack(
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const stacks = Array.from(root.querySelectorAll<HTMLElement>(".card-stack"));
-    if (!stacks.length) return;
-    // 「线」与「纸边」都从 CSS 变量读，保证 JS 的判断与 sticky 的落点是同一组数字。
+    // 「线」「纸边」「行程」都从 CSS 变量读，保证 JS 的判断与 sticky 的落点是同一组数字。
     const style = getComputedStyle(root);
     const deckTop = Number.parseFloat(style.getPropertyValue("--deck-top")) || 72;
     const peek = Number.parseFloat(style.getPropertyValue("--deck-peek")) || 66;
+    const travel = Number.parseFloat(style.getPropertyValue("--deck-travel")) || 240;
+    const clamp01 = (value: number) => value < 0 ? 0 : value > 1 ? 1 : value;
+    let stacks: HTMLElement[] = [];
     let frame = 0;
+
+    /**
+     * 重新找一遍这一页里的纸堆。抽屉是点开才把卡片放进 DOM 的，匹配结果也可能整块换掉，
+     * 所以不能在挂载时找一次了事——找不到就白挂（这正是 2026-09-13 实测踩到的：抽屉点开后
+     * 一直没有 --ap，因为挂载时那一页还没有卡片）。用 MutationObserver 跟着 DOM 变。
+     */
+    const refresh = () => {
+      const next = Array.from(root.querySelectorAll<HTMLElement>(".card-stack"));
+      if (next.length !== stacks.length || next.some((stack, index) => stack !== stacks[index])) stacks = next;
+      return stacks;
+    };
 
     const paint = () => {
       frame = 0;
+      const vh = window.innerHeight;
+      if (!stacks.length) refresh();
       for (const stack of stacks) {
+        // 视野之外的一摞整摞跳过：不读它的布局，也就不会每帧拖一次 layout。
+        const box = stack.getBoundingClientRect();
+        if (box.bottom < -vh * 0.35 || box.top > vh * 1.35) continue;
         const slots = Array.from(stack.children).filter(
           (node): node is HTMLElement => node instanceof HTMLElement && node.classList.contains("stack-slot"));
         if (!slots.length) continue;
+        const rects = slots.map((slot) => slot.getBoundingClientRect());
         let current = -1;
-        slots.forEach((slot, index) => {
-          const rect = slot.getBoundingClientRect();
+        rects.forEach((rect, index) => {
           const line = deckTop + index * peek;
-          if (rect.bottom <= line) return;          // 整张已经翻到线上方，不再算在这一摞里
+          if (rect.bottom <= line) return;              // 整张已经翻到线上方，不再算在这一摞里
           if (rect.top <= line + 0.5) current = index;  // 已经钉在它自己的那条线上
         });
-        // 还没滚到线时（current 为 -1）让第一张当「正翻过来的那张」，其余保持安静。
-        const arriving = current < 0 ? 0 : current + 1;
-        slots.forEach((slot, index) => {
-          const state = index < current ? "covered" : index === current ? "current"
-            : index === arriving ? "arriving" : "idle";
-          const isCurrent = state === "current";
-          const isCovered = state === "covered";
-          const isArriving = state === "arriving";
+        rects.forEach((rect, index) => {
+          const slot = slots[index]!;
+          const line = deckTop + index * peek;
+          // 还差多少才贴线：卡片在线下方时 top > line，ap < 1（翘着）；贴上或越过线 ap = 1（摊平）。
+          const ap = clamp01(1 - (rect.top - line) / travel);
+          const previous = slot.style.getPropertyValue("--ap");
+          if (previous === "" || Math.abs(Number(previous) - ap) > 0.006) slot.style.setProperty("--ap", ap.toFixed(3));
+          const isCurrent = index === current;
+          const isCovered = current > index;
           if (slot.classList.contains("is-current") !== isCurrent) slot.classList.toggle("is-current", isCurrent);
           if (slot.classList.contains("is-covered") !== isCovered) slot.classList.toggle("is-covered", isCovered);
-          if (slot.classList.contains("is-arriving") !== isArriving) slot.classList.toggle("is-arriving", isArriving);
         });
       }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+    const observer = new MutationObserver(() => { refresh(); schedule(); });
+    observer.observe(root, { childList: true, subtree: true });
+    refresh();
     paint();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     return () => {
+      observer.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       if (frame) cancelAnimationFrame(frame);

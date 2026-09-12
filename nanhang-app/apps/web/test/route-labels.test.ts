@@ -270,19 +270,29 @@ describe("参考年最低分与整页海报", () => {
       expect(page).toContain('"--i": index');
       expect(page).toContain("useDeckStack(cardsRef");
     }
-    // 堆叠的行为在 shared 的钩子里：钉线 = --deck-top + i × --deck-peek，三态按「谁在线上」切
+    // 堆叠的行为在 shared 的钩子里：钉线 = --deck-top + i × --deck-peek，谁在线上切 is-current / is-covered
     expect(shared).toContain("export function useDeckStack");
     expect(shared).toContain("deckTop + index * peek");
-    expect(shared).toContain('"covered"');
-    expect(shared).toContain('"arriving"');
+    expect(shared).toContain('classList.toggle("is-covered"');
     expect(shared).toContain("requestAnimationFrame");
-    // 样式：钉住、压住的那张只露纸边、正翻过来的那张翘起来
-    expect(css).toContain(".stack-slot{position:sticky");
-    expect(css).toContain(".stack-slot.is-covered .scard{transform:scale(.994)");
-    expect(css).toContain(".stack-slot.is-current .scard{");
-    expect(css).toMatch(/\.stack-slot\.is-arriving \.scard\{transform:perspective/);
+    expect(shared).toContain("box.bottom < -vh * 0.35");   // 视野外的一摞整摞跳过，不每帧读布局
+    // 翻页的翘起跟着滚动走（--ap 连续量），不是切 class 的时间过渡
+    expect(shared).toContain('setProperty("--ap"');
+    // 在线下方时 top > line：ap < 1（翘着）；贴线/越过 ap = 1（摊平）——方向写反过一次
+    expect(shared).toContain("1 - (rect.top - line) / travel");
+    // 抽屉是点开才把卡片放进 DOM 的：找不到就白挂过一次，所以要用 MutationObserver 自己认领
+    expect(shared).toContain("new MutationObserver");
+    expect(shared).toContain("const refresh = () =>");
+    expect(shared).toContain("if (!stacks.length) refresh()");
+    expect(css).toContain("--deck-travel:240px");
+    expect(css).toContain("transform:perspective(1400px) translateY(calc((1 - var(--ap,1)) * 14px))");
+    expect(css).toContain("rotateX(calc((1 - var(--ap,1)) * -7deg))");
+    expect(css).toMatch(/\.card-stack \.scard\{[^}]*transition:box-shadow[^}]*\}/);
     // 卡片自带的入场动画是 fill:both，会压掉翻转用的 transform，堆叠里必须关掉
     expect(css).toContain(".card-stack .scard{animation:none");
+    // 一摞末尾的跑道只留「够停一下」，太长会在收满之后留一大片空白
+    expect(css).toContain(".stack-tail{height:min(13vh,116px)}");
+    expect(css).not.toContain("min(42vh,300px)");
     // 旧版「跟随滑动调暗细节」的做法不再回来
     expect(css).not.toContain(".scard.focus .sc-detail{opacity:1");
     expect(css).not.toMatch(/\.sc-detail\{[^}]*opacity:\.35/);

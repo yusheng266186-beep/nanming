@@ -460,22 +460,25 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
    「--deck-top + i × --deck-peek」这条线上：后一张压住前一张，被压住的只露出抬头那一条（像抽屉里码着的一摞纸），
    正翻过来的那张微微翘起，落到线上就摊平。只切 class、不动任何布局尺寸，卡片高度恒定，滚动不会被顶动。
    末尾的 padding-bottom 是留给这一摞最后一张的停留位——没有它，最后一张一贴线就被容器底部推走。 */
-.schools.card-stack{display:block;--deck-top:calc(var(--rail-h) + 8px);--deck-peek:66px}
+.schools.card-stack{display:block;--deck-top:calc(var(--rail-h) + 8px);--deck-peek:66px;--deck-travel:240px}
 .stack-slot{position:sticky;top:calc(var(--deck-top) + var(--i,0) * var(--deck-peek))}
 .stack-slot+.stack-slot{margin-top:14px}
 /* 这一摞末尾留出的「跑道」：sticky 只能在父元素的内容盒里活动，最后一张要停得住就得有这段空程。
-   用真实的空 div 而不是 padding——padding 不在内容盒里，钉不住最后一张。 */
-.stack-tail{height:min(42vh,300px)}
-/* .scard 自带的 msgin 动画是 fill:both，动画来源会压掉 transform——堆叠里让位给翻页。 */
+   用真实的空 div 而不是 padding——padding 不在内容盒里，钉不住最后一张。
+   长度只留「够停一下」：跑道越长，收满之后下面那段空白越大（负责人 2026-09-13 指出的留白）。 */
+.stack-tail{height:min(13vh,116px)}
+/* .scard 自带的 msgin 动画是 fill:both，动画来源会压掉 transform——堆叠里让位给翻页。
+   翻页的翘起由 --ap 连续驱动（1 = 已经贴线摊平，0 = 还差一屏行程），**不加 transform 过渡**：
+   过渡是时间驱动，快滑时会落在手指后面；跟着滚动走才不飘。阴影与描边这类离散效果仍走过渡。 */
 .card-stack .scard{animation:none;transform-origin:50% 100%;
-  transition:transform .58s var(--ease),box-shadow .5s var(--ease),border-color .4s}
-.stack-slot.is-covered .scard{transform:scale(.994);box-shadow:0 -8px 18px rgba(8,32,42,.05)}
+  transform:perspective(1400px) translateY(calc((1 - var(--ap,1)) * 14px))
+    rotateX(calc((1 - var(--ap,1)) * -7deg))
+    scale(calc(1 - (1 - var(--ap,1)) * 0.032));
+  transition:box-shadow .34s var(--ease),border-color .34s var(--ease)}
+.stack-slot.is-covered .scard{box-shadow:0 -8px 18px rgba(8,32,42,.05)}
 .stack-slot.is-current .scard{border-color:var(--brass-line);box-shadow:var(--sh-card)}
-.stack-slot.is-arriving .scard{transform:perspective(1400px) rotateX(-6.5deg) scale(.972) translateY(8px);
-  box-shadow:0 30px 46px -34px rgba(8,32,42,.55)}
 @media(prefers-reduced-motion:reduce){
-  .card-stack .scard{transition:none}
-  .stack-slot.is-arriving .scard{transform:none}
+  .card-stack .scard{transform:none}
 }
 .sc-detail{margin:0 16px 10px}
 .sc-detail-line{font-size:11px;color:var(--ink-2);line-height:1.7}
@@ -844,6 +847,33 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
 #page-chart .srow:nth-child(n+5){animation-delay:.2s}
 #page-chart .blessing{animation:arrive .6s var(--ease) both}
 #page-chart .export-row{animation:fade .5s var(--ease) .12s both}
+
+/* ══════════ 方向页：两级选择「大类 → 小类」不是同级 ══════════
+   负责人指出的问题：大类和小类原来都用同一个 .chip 样式（同为胶囊、选中同为铜色），
+   看起来像一排并列，其实是从属关系。改法是把两级在**颜色、形状、字号**上分开：
+   · 大类 = 范围：海绿（--sea）系、略方的标签（像文件夹）、衬线字、字号大一档；选中是实心深海。
+   · 小类 = 范围里的内容：铜（--brass）系、保持胶囊、字号小一档；选中是实心铜。
+   再加上结构暗示——展开的小类区整体缩进，并在左侧挂一条铜色竖线，读起来是「挂在上面那个大类底下」。 */
+/* 未选中：各自的身份配色。注意**不要在这里写 background**——带 # 作用域的规则权重高于全局的
+   选中态（`.chip[aria-pressed="true"]`），上一版就是因为在这里写了 background:var(--card)，
+   选中的大类被按回卡片底色，看起来「点了没反应」。选中态在下面单独写。 */
+#page-direction .group-chip{border-radius:10px;border-color:rgba(18,69,79,.28);
+  font-family:var(--song);font-size:13px;color:var(--sea);padding:0 15px}
+#page-direction .class-chip{font-size:12px;padding:0 14px;border-color:var(--brass-line);color:var(--brass-3)}
+#page-direction .group-chip:not([aria-pressed="true"]):hover{border-color:var(--sea);background:#fff}
+#page-direction .class-chip:not([aria-pressed="true"]):hover{border-color:var(--brass);background:#fff}
+#page-direction .group-chip small{font-family:var(--sans);color:var(--mut)}
+/* 选中：大类＝实心深海（范围圈定了），小类＝实心铜（沿用既有语言）；计数小字一并提亮。
+   这两条写在未选中规则之后，且用 [aria-pressed="true"] 与 .on 双保险。 */
+#page-direction .group-chip.on,#page-direction .group-chip[aria-pressed="true"]{
+  background:var(--sea);border-color:var(--sea);color:#eef4f1}
+#page-direction .group-chip[aria-pressed="true"] small{color:#a9c3bd}
+#page-direction .class-chip.on,#page-direction .class-chip[aria-pressed="true"]{
+  background:var(--brass);border-color:var(--brass);color:#fff8ec}
+#page-direction .class-chip[aria-pressed="true"] small{color:#f6e7cf}
+#page-direction .class-row{margin-left:14px;padding-left:16px;border-left:2px solid var(--brass-line)}
+#page-direction .class-row>.flab{color:var(--brass-3)}
+@media(max-width:640px){#page-direction .class-row{margin-left:6px;padding-left:11px}}
 
 /* ══════════ 设置卡：一行一个开关 / 读数（借北辰 .stat-row 的排法）══════════ */
 .set-rows{margin:12px 0 0}
