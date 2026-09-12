@@ -4,6 +4,7 @@ import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted, withTi
   type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
 import { ChatBubble, TypingDots } from "../chat.js";
+import type { CatalogDirection, CatalogGroup, Major } from "../journey-model.js";
 import type { PageId } from "./shared.js";
 
 export interface TalkProps {
@@ -19,7 +20,7 @@ export interface TalkProps {
   setAiDraft: Dispatch<SetStateAction<string>>;
   exchangeCode: () => Promise<void>;
   sendAi: (override?: string) => Promise<void>;
-  catalog: { majors: unknown[]; directions: readonly { readonly id: string; readonly name: string }[] } | null;
+  catalog: { majors: Major[]; directions: CatalogDirection[]; groups: CatalogGroup[] } | null;
   quoteFor: (evidenceId: string) => string | null;
   hasChatted: boolean;
 }
@@ -135,26 +136,33 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
         <button type="button" className="tbtn" disabled={!hasChatted}
           onClick={() => { setPage("direction"); notify(hasChatted ? "到「方向」看 AI 的建议，再亲自选一次专业" : "先在对话里聊几句"); }}>去方向 · 选专业<Icon name="arrow" /></button>
       </div>
-      {/* AI 的结构化建议：只能来自真实专业目录（与院校池一致），每条都引用学生自己的话。
+      {/* AI 的结构化建议：只能来自真实专业目录（与发布库一致），按大类分组展示，每条都引用学生自己的话。
           它是「AI 推荐线」的来源，与学生的自选在「方向」页同等位置。 */}
       {ai.suggestions.length ? <div className="panel" style={{ marginTop: 18 }}>
         <h3><Icon name="layers" />溟的建议（待你选择）</h3>
-        <p className="psub">这些专业类来自你刚才聊到的内容，每一条都引用你的原话。它们只是探索建议——到「方向」页看它们包含的真实专业，再决定保不保留；不和你的自选比高低。</p>
-        <div className="grid-2" style={{ marginTop: 14 }}>
-          {ai.suggestions.map((item) => {
-            const name = catalog?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId;
-            const quotes = item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null);
-            return <div className="sidecard" key={item.directionId}>
-              <span className="eyebrow plain">AI 建议 · 引用了你的话</span>
-              <h3 className="song" style={{ marginTop: 8 }}>{name}</h3>
-              {quotes.map((quote) => <blockquote className="dquote" key={quote}>{quote}</blockquote>)}
-              <p className="dwhy">{item.rationale}</p>
-            </div>;
-          })}
-        </div>
+        <p className="psub">AI 先指出你可能在哪个大类里，再给出大类下的专业类（小类），每一条都引用你的原话。它们只是探索建议——到「方向」页先选大类、再勾小类；不和你的自选比高低。</p>
+        {(catalog?.groups ?? []).map((group) => {
+          const items = ai.suggestions.filter((item) => group.classes.some((cls) => cls.id === item.directionId));
+          if (!items.length) return null;
+          return <div key={group.id} style={{ marginTop: 16 }}>
+            <span className="eyebrow plain">{group.name} · 溟建议在这一类里探索</span>
+            <div className="grid-2" style={{ marginTop: 10 }}>
+              {items.map((item) => {
+                const cls = group.classes.find((entry) => entry.id === item.directionId)!;
+                const quotes = item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null);
+                return <div className="sidecard" key={item.directionId}>
+                  <span className="eyebrow plain">AI 建议 · 引用了你的话</span>
+                  <h3 className="song" style={{ marginTop: 8 }}>{cls.name}</h3>
+                  {quotes.map((quote) => <blockquote className="dquote" key={quote}>{quote}</blockquote>)}
+                  <p className="dwhy">{item.rationale}</p>
+                </div>;
+              })}
+            </div>
+          </div>;
+        })}
         <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
           <button type="button" className="btn sm brass" onClick={() => setPage("direction")}>下一步：去方向定两条线<Icon name="arrow" /></button>
-          <small className="muted-note">在「方向」看这条建议对应的真实专业、亲自选一次；两条线定好后再去「分数轴」匹配院校。</small>
+          <small className="muted-note">在「方向」先选大类、再勾专业类，亲自选一次；两条线定好后再去「分数轴」匹配院校。</small>
         </div>
       </div> : null}
     </div>}

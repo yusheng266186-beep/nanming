@@ -102,7 +102,7 @@ export const DONE_HINT: Record<PageId, string> = {
   locate: "生成探索区间（手填考试或接入学校数据）",
   axis: "运行一次区间匹配",
   talk: "在对话里聊几句",
-  direction: "自选几个专业，或采用 AI 建议",
+  direction: "选 2–3 个大类，再勾 5–10 个专业类，或采用 AI 建议",
   chart: "完成上面的步骤"
 };
 

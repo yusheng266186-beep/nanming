@@ -124,6 +124,22 @@ describe("五步流程的区间与分路规则", () => {
     expect(a.majors).toHaveLength(1);
     expect(a.directions[0]?.name).toBe("测试类甲");
   });
+  it("目录按门类聚成大类，大类里装专业类（小类），小类里装真实专业", () => {
+    const catalog = catalogFromRows(labels);
+    // 甲乙两专业各属一个专业类，但同属「测试门类」大类。
+    expect(catalog.groups).toHaveLength(1);
+    const group = catalog.groups[0]!;
+    expect(group.name).toBe("测试门类");
+    expect(group.classes.map((cls) => cls.name).sort()).toEqual(["测试类乙", "测试类甲"]);
+    const classA = group.classes.find((cls) => cls.name === "测试类甲")!;
+    expect(classA.majors.map((major) => major.name)).toEqual(["测试专业甲"]);
+    // 扁平专业类表与分组一致（AI 的 directionCatalog 用扁平表）。
+    expect(catalog.directions).toHaveLength(2);
+    // 门类缺失的记录归入「未分类」，不发明门类名。
+    const orphan = catalogFromRows([{ ...label("测试专业丙"), category: null, categoryClass: null }]);
+    expect(orphan.groups[0]?.name).toBe("未分类");
+    expect(orphan.groups[0]?.classes[0]?.name).toBe("测试专业丙");
+  });
   it("专业已知但不在区间时，不借专业组参考混入", () =>
     expect(
       referenceOverlaps(candidate([200, 200], [100, 100]), [90, 110]),
@@ -142,20 +158,22 @@ describe("五步流程的区间与分路规则", () => {
       referenceOverlaps(candidate([111, 120], null), [90, 110]),
     ).toBeNull();
   });
-  it("相同选择只出现一次，不同选择保留两路", () => {
-    const ai = pool.majors[0]!,
-      other = pool.majors[1]!;
-    const shared = makeBranches(pool, [ai.directionId], [ai.id]);
+  it("相同选择只出现一次，不同选择保留两路；自选线按专业类（小类）算", () => {
+    const ai = pool.majors[0]!, other = pool.majors[1]!;
+    // 自选线传专业类 id（directionId），与 AI 线同颗粒度。
+    const shared = makeBranches(pool, [ai.directionId], [ai.directionId]);
     expect(shared.map((b) => b.kind)).toEqual(["shared"]);
     expect(shared[0]?.rows).toHaveLength(1);
     expect(
-      makeBranches(pool, [ai.directionId], [other.id]).map((b) => b.kind),
+      makeBranches(pool, [ai.directionId], [other.directionId]).map((b) => b.kind),
     ).toEqual(["ai", "self"]);
+    // 专业 id 不再是自选线的合法输入（颗粒度是专业类），传进去等于没选。
+    expect(makeBranches(pool, [ai.directionId], [ai.id]).map((b) => b.kind)).toEqual(["ai"]);
   });
   it("忽略模型编造或旧发布库 ID；自主选择无分数命中仍保留空路", () => {
     expect(makeBranches(pool, ["编造方向"], ["不存在的专业"])).toEqual([]);
     const narrow = { ...pool, rows: [] };
-    const result = makeBranches(narrow, [], [pool.majors[0]!.id]);
+    const result = makeBranches(narrow, [], [pool.majors[0]!.directionId]);
     expect(result[0]?.kind).toBe("self");
     expect(result[0]?.rows).toEqual([]);
   });

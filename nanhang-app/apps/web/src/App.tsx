@@ -15,7 +15,7 @@ import {
 } from "./quality-huixi.js";
 import type { QualityShard } from "./quality-types.js";
 import { buildReleaseCatalog, buildSchoolPool, makeBranches, rangeFromExams,
-  type CatalogDirection, type Major, type SchoolPool, type ScoreRange } from "./journey-model.js";
+  type CatalogDirection, type CatalogGroup, type Major, type SchoolPool, type ScoreRange } from "./journey-model.js";
 import { equivalentPosition } from "./exam-position.js";
 import { OFFICIAL_LINES_2026 } from "./reference-lines.js";
 import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from "./debug.js";
@@ -47,9 +47,13 @@ export default function App() {
   const [poolPending, setPoolPending] = useState(false);
   const [poolError, setPoolError] = useState<string | null>(null);
   const [picks, setPicks] = useState<string[]>([]);
+  // 两级方向选择（负责人裁定）：先选 2–3 个大类（学科门类），再在大类里勾 5–10 个
+  // 小类（专业类）；进入匹配的是小类，大类负责圈定范围。
+  const [pickedGroups, setPickedGroups] = useState<string[]>([]);
   // 发布包级专业类目录（与分数区间无关）：方向页的自选清单与 AI 的方向目录都用它。
   // 流程是先定方向、再按分数匹配——不能等院校池跑出来才谈方向。
-  const [catalogRun, setCatalogRun] = useState<{ key: string; data: { majors: Major[]; directions: CatalogDirection[] } } | null>(null);
+  const [catalogRun, setCatalogRun] = useState<{ key: string;
+    data: { majors: Major[]; directions: CatalogDirection[]; groups: CatalogGroup[] } } | null>(null);
   // 章节门禁：学生按下「先用通用模式」算一次显式跳过；maxStage 记住本会话解锁到哪一段（只增不减）。
   const [maxStage, setMaxStage] = useState(0);
   const [aiDraft, setAiDraft] = useState("");
@@ -226,6 +230,7 @@ export default function App() {
     setPoolRun(null);
     setRange(null);
     setPicks([]);
+    setPickedGroups([]);
     setSchoolName("");
     setAi(disableAi(ai));
     setAiDraft("");
@@ -249,9 +254,10 @@ export default function App() {
         offerings: branch.rows.length })) : [];
     const content = JSON.stringify({ exported_at: new Date().toISOString(), storage: "student_download",
       profile: state.profile, answers: state.answers, form: state.form,
-      range, picks: picks.map((id) => pool?.majors.find((major) => major.id === id)?.name ?? id),
+      range, picks: picks.map((id) => catalog?.directions.find((entry) => entry.id === id)?.name ?? id),
+      groups: pickedGroups.map((id) => catalog?.groups.find((entry) => entry.id === id)?.name ?? id),
       aiSuggestions: ai.suggestions.map((item) => ({
-        direction: pool?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId,
+        direction: catalog?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId,
         rationale: item.rationale,
         quotes: item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null) })),
       routes,
@@ -365,8 +371,10 @@ export default function App() {
       // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在发布包目录里
       // 真实存在的专业类上，引用学生的第一句原话），让「AI 推荐线」的界面能被验收。
       if (!DEBUG_MODE || merged.suggestions.length > 0 || !catalog) return merged;
-      const sample = [...catalog.directions]
-        .sort((a, b) => a.name.localeCompare(b.name, "zh-CN")).slice(0, 2);
+      // 两级示例：一个大类 + 它下面两个专业类，贴合「先大类、后小类」的选择结构。
+      const group = [...catalog.groups].sort((a, b) => a.name.localeCompare(b.name, "zh-CN"))
+        .find((entry) => entry.classes.length >= 2) ?? catalog.groups[0];
+      const sample = group ? group.classes.slice(0, 2) : [];
       return { ...merged, suggestions: sample.map((entry) => ({
         directionId: entry.id,
         evidenceIds: userTurns.length ? ["ev-chat-0"] : [],
@@ -407,12 +415,29 @@ export default function App() {
     }
   };
 
-  /** 自选专业（≤5 个）：挂在发布包目录上，与分数区间无关，匹配不清理。 */
-  const togglePick = (majorId: string) => {
+  /** 自选小类（专业类，≤10 个）：挂在发布包目录上，与分数区间无关，匹配不清理。 */
+  const togglePick = (classId: string) => {
     setPicks((current) => {
-      if (current.includes(majorId)) return current.filter((item) => item !== majorId);
-      if (current.length >= 5) { notify("最多选 5 个专业，先聚焦在最想去的几个上。"); return current; }
-      return [...current, majorId];
+      if (current.includes(classId)) return current.filter((item) => item !== classId);
+      if (current.length >= 10) { notify("最多选 10 个专业类，先聚焦在最想去的几类上。"); return current; }
+      return [...current, classId];
+    });
+  };
+
+  /**
+   * 选大类（学科门类，≤3 个）：先大类、后小类。取消一个大类时，把它里面已勾的
+   * 小类一并取消——大类是范围，范围撤了范围里的选择不再成立。
+   */
+  const toggleGroup = (groupId: string) => {
+    setPickedGroups((current) => {
+      if (current.includes(groupId)) {
+        const classIds = new Set(catalog?.groups.find((entry) => entry.id === groupId)
+          ?.classes.map((cls) => cls.id) ?? []);
+        setPicks((picked) => picked.filter((id) => !classIds.has(id)));
+        return current.filter((item) => item !== groupId);
+      }
+      if (current.length >= 3) { notify("最多选 3 个大类；先取消一个，再换别的。"); return current; }
+      return [...current, groupId];
     });
   };
 
@@ -474,7 +499,7 @@ export default function App() {
     reducedMotion, chatScrollRef, notify,
     ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
     quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
-    range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, togglePick,
+    range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, pickedGroups, togglePick, toggleGroup,
     catalog, hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,

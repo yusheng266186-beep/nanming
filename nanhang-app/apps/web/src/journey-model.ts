@@ -26,6 +26,20 @@ export interface CatalogDirection {
   id: string;
   name: string;
 }
+/** 小类（专业类，如「计算机类」）：属于一个大类，并列出类下的真实专业。 */
+export interface CatalogClass extends CatalogDirection {
+  /** 大类（学科门类）id。 */
+  groupId: string;
+  /** 大类名；个别记录缺失门类时归入「未分类」。 */
+  group: string;
+  majors: Major[];
+}
+/** 大类（学科门类，如「工学」）：方向选择的第一层。 */
+export interface CatalogGroup {
+  id: string;
+  name: string;
+  classes: CatalogClass[];
+}
 export type Candidate = NanhangMatchResult100["candidates"][number];
 export interface PoolRow {
   label: OfferingLabel;
@@ -36,6 +50,7 @@ export interface SchoolPool {
   rows: PoolRow[];
   majors: Major[];
   directions: CatalogDirection[];
+  groups: CatalogGroup[];
   rankRange: [number, number];
   referenceYear: number;
   releaseId: string;
@@ -111,36 +126,58 @@ export function rangeFromExams(
 export function catalogFromRows(labels: readonly OfferingLabel[]): {
   majors: Major[];
   directions: CatalogDirection[];
+  groups: CatalogGroup[];
 } {
-  const majors = new Map<string, Major>();
+  // 同名专业只登记一次，但门类跟随首次出现的记录（专业名在目录里跨门类重复极罕见，
+  // 真遇到时以先见者为准，不发明第二条同名专业）。
+  const majors = new Map<string, { major: Major; group: string }>();
   for (const label of labels) {
     const name = label.majorName.trim();
     if (!name) continue;
     // Missing taxonomy is represented by the real major name, never a made-up discipline.
     const category = label.categoryClass?.trim() || name;
+    const group = label.category?.trim() || "";
     const id = majorId(name);
     if (!majors.has(id))
       majors.set(id, {
-        id,
-        name,
-        category,
-        directionId: directionId(category),
+        major: { id, name, category, directionId: directionId(category) },
+        group,
       });
   }
   const sorted = [...majors.values()].sort((a, b) =>
-    a.name.localeCompare(b.name, "zh-CN"),
+    a.major.name.localeCompare(b.major.name, "zh-CN"),
   );
-  const dirs = new Map<string, CatalogDirection>();
-  for (const major of sorted)
-    dirs.set(major.directionId, {
-      id: major.directionId,
-      name: major.category,
-    });
+  // 小类（专业类）聚合出各组下的真实专业；大类（学科门类）再聚合小类——
+  // 负责人裁定：方向选择先大类、后小类，AI 建议与学生自选都走这两层。
+  const classes = new Map<string, CatalogClass>();
+  const groups = new Map<string, CatalogGroup>();
+  for (const { major, group } of sorted) {
+    const groupName = group || "未分类";
+    const groupId = directionId(groupName);
+    let cls = classes.get(major.directionId);
+    if (!cls) {
+      cls = { id: major.directionId, name: major.category, groupId, group: groupName, majors: [] };
+      classes.set(major.directionId, cls);
+      let grp = groups.get(groupId);
+      if (!grp) {
+        grp = { id: groupId, name: groupName, classes: [] };
+        groups.set(groupId, grp);
+      }
+      grp.classes.push(cls);
+    } else if (!cls.group && group) {
+      cls.group = groupName;
+      cls.groupId = groupId;
+    }
+    cls.majors.push(major);
+  }
+  const byName = (a: { name: string }, b: { name: string }) =>
+    a.name.localeCompare(b.name, "zh-CN");
   return {
-    majors: sorted,
-    directions: [...dirs.values()].sort((a, b) =>
-      a.name.localeCompare(b.name, "zh-CN"),
-    ),
+    majors: sorted.map((entry) => entry.major),
+    directions: [...classes.values()].map(({ id, name }) => ({ id, name })).sort(byName),
+    groups: [...groups.values()]
+      .map((grp) => ({ ...grp, classes: [...grp.classes].sort(byName) }))
+      .sort(byName),
   };
 }
 
@@ -248,7 +285,7 @@ export async function buildReleaseCatalog(
   additional: readonly string[],
   batches: readonly string[],
   signal?: AbortSignal,
-): Promise<{ majors: Major[]; directions: CatalogDirection[] }> {
+): Promise<{ majors: Major[]; directions: CatalogDirection[]; groups: CatalogGroup[] }> {
   if (additional.length !== 2 || new Set(additional).size !== 2)
     throw new Error("请选择两门不同的再选科目。");
   if (
@@ -295,13 +332,15 @@ export function makeBranches(
   aiDirections: readonly string[],
   selected: readonly string[],
 ): RouteBranch[] {
+  // 两条线现在同一颗粒度：都是专业类（小类）id——AI 线来自谈心建议，自选线来自
+  // 「方向」页的两级选择（大类 2–3 个、小类 5–10 个）。一致合并、不一致分路。
   const ai = new Set(
     pool.majors
       .filter((m) => aiDirections.includes(m.directionId))
-      .map((m) => m.id),
+      .map((m) => m.directionId),
   );
   const self = new Set(
-    selected.filter((id) => pool.majors.some((m) => m.id === id)),
+    selected.filter((id) => pool.majors.some((m) => m.directionId === id)),
   );
   const definitions = [
     {
@@ -321,15 +360,18 @@ export function makeBranches(
     },
   ];
   return definitions.flatMap(({ kind, title, accepts }) => {
-    const majors = pool.majors.filter((m) => accepts(m.id));
+    const majors = pool.majors.filter((m) => accepts(m.directionId));
     if (!majors.length) return [];
-    const ids = new Set(majors.map((m) => m.id));
+    const ids = new Set(majors.map((m) => m.directionId));
     return [
       {
         kind,
         title,
         majors,
-        rows: pool.rows.filter((row) => ids.has(majorId(row.label.majorName))),
+        rows: pool.rows.filter((row) => {
+          const cls = row.label.categoryClass?.trim();
+          return ids.has(directionId(cls || row.label.majorName.trim()));
+        }),
       },
     ];
   });
