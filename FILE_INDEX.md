@@ -75,6 +75,7 @@
 | [nanhang-app/apps/web/src/theme.tsx](nanhang-app/apps/web/src/theme.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/ai-client.test.ts](nanhang-app/apps/web/test/ai-client.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/ai-panel.test.ts](nanhang-app/apps/web/test/ai-panel.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/backend-alignment.test.ts](nanhang-app/apps/web/test/backend-alignment.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/chat.test.ts](nanhang-app/apps/web/test/chat.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/exam-position.test.ts](nanhang-app/apps/web/test/exam-position.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/flow.test.ts](nanhang-app/apps/web/test/flow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -692,6 +693,7 @@
 | [nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md](nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md) | 实施进度与记录 |
 | [nanhang-app/docs/VALIDATION_RESULT.md](nanhang-app/docs/VALIDATION_RESULT.md) | 实施进度与记录 |
 | [nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt](nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/backend-alignment-validate-2026-09-12.txt](nanhang-app/docs/verification/backend-alignment-validate-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt](nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/build-journey-2026-09-12.txt](nanhang-app/docs/verification/build-journey-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
@@ -831,6 +833,7 @@
 | [nanhang-app/pipelines/task03/windows_ocr.ps1](nanhang-app/pipelines/task03/windows_ocr.ps1) | 招生数据管线与历史来源工具 |
 | [nanhang-app/README.md](nanhang-app/README.md) | 工程配置或总入口 |
 | [nanhang-app/scripts/build_function.mjs](nanhang-app/scripts/build_function.mjs) | 工程配置或总入口 |
+| [nanhang-app/scripts/check_pages_config.mjs](nanhang-app/scripts/check_pages_config.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/deploy_cos.py](nanhang-app/scripts/deploy_cos.py) | 工程配置或总入口 |
 | [nanhang-app/scripts/deploy_function.py](nanhang-app/scripts/deploy_function.py) | 工程配置或总入口 |
 | [nanhang-app/scripts/deploy_school_cloud.py](nanhang-app/scripts/deploy_school_cloud.py) | 工程配置或总入口 |
