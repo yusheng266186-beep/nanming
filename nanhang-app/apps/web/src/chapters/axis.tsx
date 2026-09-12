@@ -44,7 +44,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
       <div className="axis-head">
         <div><span className="eyebrow">Score Axis · 你的探索区间</span>
           <h2 className="song">区间每宽一分，能看到的院校就多一批；区间只决定先看谁，不决定谁能录取。</h2>
-          <p>在「定位」页生成区间后，这里把它画在官方分段表上。拖不动没关系——区间本来就是一段，不是一点。</p></div>
+          <p>区间来自「定位」页的考试数据，也可以直接在这一页改上下限。它只决定先看谁，不决定谁能录取。</p></div>
         <div className="delta-box"><div className="dk">探索区间</div>
           <div className="delta-num num"><span>{range ? `${range.low}–${range.high}` : "—"}</span></div></div>
       </div>
@@ -70,7 +70,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
         </div>
         <div className="slider-foot">
           <span>{axisMin}（公布最低）</span>
-          <span>{range ? "金色带就是你的探索区间" : "还没有探索区间 · 去「定位」生成"}</span>
+          <span>{range ? "金色带就是你的探索区间" : "还没有探索区间 · 在下面填上下限"}</span>
           <span>{axisMax}（公布最高）</span>
         </div>
       </div>
@@ -80,19 +80,34 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
             value={range && Number.isFinite(range.low) ? range.low : ""}
             onChange={(event) => {
               const value = event.target.value === "" ? NaN : Number(event.target.value);
-              setRange((current) => ({ low: value, high: current?.high ?? 750, basis: "手动调整的探索区间；可随时修改。" }));
+              // 还没有区间时以「另一个端点先等于这个值」起步（原来补 750/0 会平白造出一个 0–750 的巨区间），
+              // 学生再改另一头就是一段明确的区间。
+              setRange((current) => ({ low: value, high: current?.high ?? value,
+                basis: "手动填写的探索区间（不来自考试数据）；可随时修改。" }));
             }} /></label>
         <label className="field"><span className="flab">区间上限</span>
           <input className="inp" type="number" min={0} max={750} inputMode="numeric" aria-label="探索区间上限"
             value={range && Number.isFinite(range.high) ? range.high : ""}
             onChange={(event) => {
               const value = event.target.value === "" ? NaN : Number(event.target.value);
-              setRange((current) => ({ low: current?.low ?? 0, high: value, basis: "手动调整的探索区间；可随时修改。" }));
+              setRange((current) => ({ low: current?.low ?? value, high: value,
+                basis: "手动填写的探索区间（不来自考试数据）；可随时修改。" }));
             }} /></label>
       </div>
       {range ? <p className="fhint" style={{ marginTop: 8 }}>{range.basis}</p> : null}
+      {/* 「定位」是按考试数据生成区间的地方，但区间不是只能在那边产生：这一页可以直接填上下限，
+          有目标分时还能按 ±10 生成（与「定位」页同一条规则）。已有区间时按钮改成「看区间怎么来的」，
+          不再对着已经拿着区间的学生说「去生成」——那正是负责人指出的自相矛盾。 */}
       <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
-        <button type="button" className="btn sm ghost" onClick={() => setPage("locate")}>去「定位」生成区间</button>
+        {!range && state.form.score !== null ? <button type="button" className="btn sm ghost"
+          onClick={() => {
+            const score = state.form.score!;
+            setRange({ low: Math.max(0, score - 10), high: Math.min(750, score + 10),
+              basis: "按高考目标分上下各 10 分生成；不是预测区间。" });
+            notify("已按高考目标分 ±10 生成探索区间");
+          }}>用目标分 ±10 生成区间</button> : null}
+        <button type="button" className="btn sm ghost" onClick={() => setPage("locate")}>
+          {range ? "去「定位」看区间怎么来的" : "去「定位」按考试数据生成"}</button>
       </div>
     </div>
     <div className="chain">
@@ -123,7 +138,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
       <button type="button" className="btn brass" disabled={poolPending || !range}
         onClick={() => void matchPool()}>{poolPending ? "正在匹配院校…" : "用这个区间匹配院校"}</button>
       {poolStale ? <span className="gap neg">选科、批次或区间已改变，旧结果已失效，请重新匹配。</span> : null}
-      {range ? null : <span className="gap neg">还没有探索区间——先去「定位」生成一个。</span>}
+      {range ? null : <span className="gap neg">还没有探索区间——在下面填上下限，或去「定位」按考试数据生成。</span>}
     </div>
     {poolError ? <p className="feedback" role="alert">{poolError}</p> : null}
 

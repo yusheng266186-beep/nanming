@@ -103,6 +103,16 @@ describe("内核：范围与刻度同源", () => {
     expect(css).toContain(".stick.own{");
   });
 
+  it("分数轴自己能定区间，不再对着已经拿着区间的学生说「去生成」", () => {
+    // 负责人 2026-09-12 指出的自相矛盾：这一页既能改上下限，又写着「去定位生成区间」。
+    // 现在三条路都在这页说清楚：来自考试数据 / 手动填 / 有目标分时按 ±10 生成。
+    expect(app).toContain("去「定位」看区间怎么来的");
+    expect(app).toContain("去「定位」按考试数据生成");
+    expect(app).toContain("用目标分 ±10 生成区间");
+    expect(app).toContain("手动填写的探索区间（不来自考试数据）");
+    expect(app).not.toContain("去「定位」生成区间<");
+  });
+
   it("shows the range as a band, not as a point marker", () => {
     // 负责人裁定（2026-09）：探索区间要一眼读成「一段范围」。旧设计在金带两端画
     // 「当前分」竖线（.axis-now），把区间掐成一个点——钉住它不再回来；
