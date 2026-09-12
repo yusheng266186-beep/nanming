@@ -3,9 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   MAX_CODE_ATTEMPTS, additionalFromCombination, classChanges, formatGap, formatRate, formatScore,
-  latestExam, loadQualityShard, friendlyExamLabel, normalizeCode, recentExams, registerFailure, subjectDistances,
-  trailChart,
-  weakestKnowledge, initialQualityAttempts, trailHeights
+  isEntryExam, latestExam, loadQualityShard, friendlyExamLabel, normalizeCode, recentExams, registerFailure,
+  subjectDistances, trailChart, weakestKnowledge, initialQualityAttempts, trailHeights, withoutEntryExams
 } from "../src/quality-huixi.js";
 import type { QualityIndex, QualityShard, QualityStudentExam } from "../src/quality-types.js";
 
@@ -254,6 +253,24 @@ describeRelease("发布产物与解析器输出一致", () => {
       topTotal: round1(exam.topTotal),
       undergraduateTotal: round1(exam.undergraduateTotal)
     })));
+  });
+
+  it("入学入口考试被剔除：不进考试行，也不作为「最近一次」", () => {
+    // 入口考满分口径与正考不同（校内上限 784.9、超出 750），且全校无切线；负责人裁定
+    // 不作为参考依据。这里用真实分片验证：剔除后表单行、最近一次、航迹与成绩表都看不到它。
+    const files = shardFiles();
+    const name = files.find((file) => readShard(file).exams.some((exam) => isEntryExam(exam.exam)));
+    expect(name, "发布产物里应当存在含入口场次的分片").toBeTruthy();
+    const raw = readShard(name!);
+    const shard = withoutEntryExams(raw);
+    const entryCount = raw.exams.filter((exam) => isEntryExam(exam.exam)).length;
+    expect(entryCount).toBeGreaterThan(0);
+    expect(shard.exams.length).toBe(raw.exams.length - entryCount);
+    expect(shard.exams.some((exam) => isEntryExam(exam.exam))).toBe(false);
+    expect(recentExams(shard).some((exam) => exam.label.startsWith("入口"))).toBe(false);
+    expect(latestExam(shard)?.exam).toBe(raw.exams.filter((exam) => !isEntryExam(exam.exam)).at(-1)?.exam);
+    // 原始分片不被就地改动：这是「不拿它当依据」，不是删数据。
+    expect(readShard(name!).exams.some((exam) => isEntryExam(exam.exam))).toBe(true);
   });
 
   it("最弱知识点按本人得分率升序，只取有作答的条目", () => {

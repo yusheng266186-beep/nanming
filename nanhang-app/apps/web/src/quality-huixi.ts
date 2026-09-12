@@ -88,7 +88,7 @@ export async function loadQualityShard(code: string, signal?: AbortSignal): Prom
   const normalized = normalizeCode(code);
   if (!normalized) throw new QualityError("attempts", "请输入 6 位数字验证码。");
   const name = (await sha256Hex(normalized)).slice(0, 40);
-  return getJson<QualityShard>(`${QUALITY_BASE}/release/shards/${name}.json`, signal);
+  return withoutEntryExams(await getJson<QualityShard>(`${QUALITY_BASE}/release/shards/${name}.json`, signal));
 }
 
 export interface QualityAttempts {
@@ -106,6 +106,26 @@ export function registerFailure(attempts: QualityAttempts): QualityAttempts {
 export function attemptsMessage(attempts: QualityAttempts): string {
   if (attempts.blocked) return `已连续输错 ${attempts.count} 次，本页不再重试。请向班主任核对验证码后刷新页面。`;
   return `验证码不正确，或该生不在本次数据范围内。还可尝试 ${MAX_CODE_ATTEMPTS - attempts.count} 次。`;
+}
+
+/**
+ * 不作为参考依据的场次：只有入学「入口」考试。
+ *
+ * 它的满分口径与正考不同（校内实测总分上限 784.9，超出 750 口径），而且全校都没有切线；
+ * 放进考试行、稳定性、趋势与航迹，就会把不同口径的数字并成一列（实测同一名学生跨度
+ * 240–700，稳定性 ±176.6 这类数字对老师来说一眼假）。负责人 2026-09-12 裁定：
+ * 入口成绩不作为参考依据，直接剔除，不进入界面。
+ *
+ * 注意这是「不拿它当依据」，不是删除数据来源：学校原始分片、数据库与发布产物都不动，
+ * 学生重新接入拿到的仍是同一份数据，只是界面不再消费这一场。
+ */
+export const isEntryExam = (code: string | null | undefined): boolean =>
+  typeof code === "string" && code.startsWith("入口");
+
+/** 剔除入口考试后的分片（没有入口场次时原样返回，避免无意义的新对象）。 */
+export function withoutEntryExams(shard: QualityShard): QualityShard {
+  const exams = shard.exams.filter((exam) => !isEntryExam(exam.exam));
+  return exams.length === shard.exams.length ? shard : { ...shard, exams };
 }
 
 /** 一份分片里最近的考试记录，按考试顺序的最后一个。 */

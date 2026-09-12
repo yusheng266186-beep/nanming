@@ -135,14 +135,16 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     </div>
     : <div className="panel" style={{ marginTop: 20 }}>
       <h3><Icon name="shield" />{quality.shard?.person.name} · {quality.shard?.person.classLabel}</h3>
-      <p className="psub">{quality.shard?.person.track} · {quality.shard?.person.combination} · 已接入 {quality.shard?.exams.length} 次考试记录，下面这些行来自学校数据，是固定的，不能改；要看逐科位置、航迹与知识短板，见本页下方。</p>
+      <p className="psub">{quality.shard?.person.track} · {quality.shard?.person.combination} · 已接入 {quality.shard?.exams.length} 次考试记录（入学入口考满分口径与正考不同，不作为参考，已剔除），下面这些行来自学校数据，是固定的，不能改；要看逐科位置、航迹与知识短板，见本页下方。</p>
     </div>}
 
     <div className="panel" style={{ marginTop: 22 }}>
       <h3><Icon name="log" />{schoolLocked ? "学校带入的近几次考试（只读）" : "录入近几次考试"}</h3>
       {!schoolLocked ? <p className="psub">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。位次不需要填：没有全校人数做分母，它做不了可靠的换算。</p>
         : null}
-      {exams.length === 0 ? <p className="muted-note">还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。</p> : null}
+      {exams.length === 0 ? <p className="muted-note">{schoolLocked
+        ? "学校数据里没有可用作参考的考试记录（入学入口考不计入参考）。"
+        : "还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。"}</p> : null}
       {exams.map((exam, index) => {
         const diffs = examLineDiffs(exam);
         // 两条线高低颠倒时这场不参与等位换算，必须在这一行说出来，不能静默丢掉。

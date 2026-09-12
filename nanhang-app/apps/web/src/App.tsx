@@ -10,7 +10,7 @@ import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
 import {
   additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam, loadQualityIndex,
-  normalizeCode, recentExams, registerFailure,
+  normalizeCode, recentExams, registerFailure, withoutEntryExams,
   type LoadedQuality, type QualityAttempts
 } from "./quality-huixi.js";
 import type { QualityShard } from "./quality-types.js";
@@ -283,7 +283,9 @@ export default function App() {
       const body = await response.json() as { shard?: QualityShard; message?: string };
       if (!response.ok || !body.shard) throw new Error(body.message ?? "姓名或验证码不匹配，请向老师核对。");
       if (seq !== qualitySeq.current) return;
-      const shard = body.shard;
+      // 入口考（入学测试）满分口径与正考不同且全校无切线，负责人裁定不作为参考依据：
+      // 在入口处就剔除，考试行、稳定性、趋势、航迹、知识短板一律看不到它。
+      const shard = withoutEntryExams(body.shard);
       const index = quality.index ?? await loadQualityIndex();
       if (seq !== qualitySeq.current) return;
       const exam = latestExam(shard);
