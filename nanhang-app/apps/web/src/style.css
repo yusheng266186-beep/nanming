@@ -213,14 +213,17 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
    现在由卡片给高度（跟着视口算，并留上下限），消息区用 flex 撑满剩余空间，
    头部与输入栏各自固定，输入栏自然落在卡片底部。气泡仍限宽（约四十个汉字一行），
    宽屏上不会被拉成一条长线；容器放宽到 1024px 是为了占满屏幕，不是让文字变宽。 */
-.talk{max-width:min(1024px,100%)}
-.chat{display:flex;flex-direction:column;height:clamp(420px,calc(100dvh - 300px),820px)}
-.chat-head,.dock{flex:0 0 auto}
-.chat-scroll{flex:1 1 auto;min-height:0;max-height:none}
-.bub{max-width:min(82%,560px)}
+/* 作用域必须带 #page-talk：这几条要压过下面原有的 `.chat-scroll{max-height:min(48vh,440px)}`，
+   靠源码顺序不可靠（本块在文件里更靠前，第一版就是因此被盖掉，消息区没撑开、
+   卡片下方留了一圈白）。加了页面作用域后与顺序无关。 */
+#page-talk .talk{max-width:min(1024px,100%)}
+#page-talk .chat{display:flex;flex-direction:column;height:clamp(420px,calc(100dvh - 300px),820px)}
+#page-talk .chat-head,#page-talk .dock{flex:0 0 auto}
+#page-talk .chat-scroll{flex:1 1 auto;min-height:0;max-height:none}
+#page-talk .bub{max-width:min(82%,560px)}
 @media(max-width:640px){
   /* 手机上顶栏更矮、页头更薄，卡片可以再多占一点。 */
-  .chat{height:clamp(360px,calc(100dvh - 200px),760px)}
+  #page-talk .chat{height:clamp(360px,calc(100dvh - 200px),760px)}
 }
 .quote-strip{padding:40px 0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .quote-strip p{font-family:var(--song);font-size:19px;letter-spacing:.06em;color:var(--sea)}
@@ -410,14 +413,19 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .scard.rel-main::before{background:var(--steady);opacity:.85}
 .scard.rel-safe::before{background:var(--safe);opacity:.85}
 .scard:hover{transform:translateY(-5px);box-shadow:var(--sh-card);border-color:var(--brass-line)}
-.scard-top{padding:20px 22px 16px;position:relative}
+.scard-top{padding:14px 16px 10px;position:relative}
+/* 抬头一行：左院校·城市，右位置关系——关系标签不再单独占一行。 */
+.sc-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rbadge{position:absolute;top:16px;right:16px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:30px;letter-spacing:.08em}
 .rbadge.reach{background:rgba(176,118,58,.13);color:var(--reach);border:1px solid rgba(176,118,58,.35)}
 .rbadge.steady{background:rgba(28,85,96,.12);color:var(--steady);border:1px solid rgba(28,85,96,.3)}
 .rbadge.safe{background:rgba(125,154,134,.15);color:var(--safe);border:1px solid rgba(125,154,134,.4)}
 .sc-loc{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--foam);letter-spacing:.06em}
 .sc-loc .icon{width:13px;height:13px}
-.scard h3{font-family:var(--song);font-size:19px;font-weight:500;margin:8px 0 0;letter-spacing:-.01em}
+.scard h3{font-family:var(--song);font-size:16.5px;font-weight:500;margin:5px 0 0;letter-spacing:-.01em;line-height:1.35;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.scard h3 .sc-lv{font-style:normal;font-family:var(--sans);font-size:9.5px;font-weight:400;color:var(--brass-3);background:var(--brass-bg);border:1px solid var(--brass-line);border-radius:5px;padding:1px 6px;white-space:nowrap}
+/* 批次·专业类一行小字；资格只在不符合时才追加在这行。 */
+.sc-sub{font-size:10.5px;color:var(--mut);margin:5px 0 0;line-height:1.6}
 .sc-tier{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--brass);background:var(--brass-bg);border:1px solid var(--brass-line);padding:3px 9px;border-radius:5px;letter-spacing:.04em}
 .sc-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
 .sc-tags span{font-size:9.5px;padding:3px 8px;border-radius:5px;background:var(--brass-bg);color:var(--brass-3);border:1px solid var(--brass-line)}
@@ -431,15 +439,22 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .sc-rel.safe{background:rgba(125,154,134,.15);color:var(--safe);border-color:rgba(125,154,134,.4)}
 .sc-rel.none{background:transparent;color:var(--mut);border-style:dashed}
 .sc-lv{color:var(--sea);border-color:var(--line-2)}
+.sc-rel{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--paper-2);color:var(--ink-2);border:1px solid var(--line);white-space:nowrap;flex:0 0 auto}
 .sc-ok{color:var(--safe)}
 .sc-ok .icon{width:12px;height:12px}
 .sc-warn{color:var(--reach);border-color:rgba(176,118,58,.35)}
+/* 数据条：一行放下最低分、位次、招生数与学费（旧版三格方块把卡片撑到 236px 高）。 */
+.sc-foot{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 14px;border-top:1px solid var(--line);
+  padding:8px 16px 10px;font-size:11px;color:var(--ink-2);background:var(--paper)}
+.sc-foot .sc-score{color:var(--mut)}
+.sc-foot .sc-score b{font-family:var(--display);font-size:16px;font-weight:600;color:var(--brass-3);margin:0 1px}
+.sc-foot .sc-fee{color:var(--mut)}
+.sc-tagline{margin:8px 16px 0;font-size:10px;color:var(--brass-3);letter-spacing:.02em}
 .ranks{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .rank{background:var(--card);padding:12px 8px;text-align:center}
 .rank .ry{font:italic 400 9px/1 var(--display);color:var(--mut);letter-spacing:.06em}
 .rank .rv{font-family:var(--display);font-size:17px;font-weight:500;color:var(--sea);margin-top:6px;font-variant-numeric:tabular-nums}
 .rank .rv.hi{color:var(--brass)}
-.sc-foot{padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .gap{font-size:11px;color:var(--mut)}
 .gap b{font-family:var(--display);font-size:15px;margin:0 2px}
 .gap.pos b{color:var(--reach)}.gap.neg b{color:var(--safe)}
@@ -495,6 +510,10 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 }
 .routes{padding:8px 20px 20px}
 .routes svg{width:100%;height:auto}
+/* 航线图两版版心：宽屏用横版（1000×320），窄屏用竖版（360×344，字号才够大）。
+   两版始终都在 DOM 里——导出海报取横版那张，所以不能按屏宽卸载它。 */
+.routes .rt-narrow{display:none}
+@media(max-width:640px){.routes .rt-narrow{display:block}.routes .rt-wide{display:none}}
 /* 图例与图内三条线一一对应：线样、颜色、名称取同一份定义；字体用章节衬线，
    与图签、卡片同一种语气（2026-09-12 随「海图版画」重画一起收）。 */
 .route-legend{display:flex;gap:28px;flex-wrap:wrap;padding:14px 22px 22px;border-top:1px solid var(--line);margin-top:6px}

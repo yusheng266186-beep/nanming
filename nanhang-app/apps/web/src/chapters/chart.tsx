@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
 import type { WebState } from "../model.js";
 import { Icon } from "../art.js";
 import {
-  REFERENCE_YEAR, RELATION_CLASSES, formatRankInterval, label, levelLabel, svgStringToPng, type PageId
+  REFERENCE_YEAR, RELATION_CLASSES, buildRoutePoster, formatRankInterval, label, levelLabel,
+  scoreRangeForRanks, svgStringToPng, type PageId
 } from "./shared.js";
 
 export interface ChartProps {
@@ -21,6 +22,12 @@ export interface ChartProps {
   notify: (message: string) => void;
   chartSvgRef: MutableRefObject<SVGSVGElement | null>;
 }
+
+/** 末页那段「写给你」：页面与导出海报共用同一份文本，避免两处各写一遍。 */
+const BLESSING = {
+  text: "愿你既有仰望星空的方向，也有脚踏实地的航线。远方很远，但每一次起航，都从今天这一分开始。",
+  sign: "—— 南 溟"
+} as const;
 
 const ROUTE_META = [
   { kind: "shared" as const, title: "共同方向", sub: "两条路在这里相遇——AI 的建议和你的选择都包含这些专业。" },
@@ -51,27 +58,6 @@ const PLATE = {
   lineY: (index: number) => 92 + index * 66
 } as const;
 
-/**
- * 窄屏判定：横版版心是 1000×320，缩到 390 宽的手机上字号只剩 4–5px，根本读不出来。
- * 窄屏改画竖排版心（360×372，一条关系一行），字号在 1.0 倍左右，读得清也不用来回拖。
- */
-const NARROW_QUERY = "(max-width: 640px)";
-
-function useNarrowPlate(query = NARROW_QUERY): boolean {
-  const [narrow, setNarrow] = useState(() =>
-    typeof window !== "undefined" && typeof window.matchMedia === "function"
-      ? window.matchMedia(query).matches
-      : false);
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia(query);
-    const onChange = () => setNarrow(media.matches);
-    onChange();
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, [query]);
-  return narrow;
-}
 
 /** 航线小结的行距与首行基线（写在中间两条航路之间的空档里）。 */
 const ROUTE_TITLE_TOP_Y = 186;
@@ -92,7 +78,8 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   const rangeLabel = range ? `${range.low}–${range.high}` : "未生成";
   /** 三种关系的记录总数，用来算各自占比（两个版式共用）。 */
   const relationTotal = relationGroups.reduce((sum, group) => sum + group.items.length, 0);
-  const narrowPlate = useNarrowPlate();
+  /** 海报用的宽版航线图：窄屏时被 CSS 隐藏，但始终在 DOM 里，导出时从它取内容。 */
+  const posterSvgRef = useRef<SVGSVGElement | null>(null);
   /** 学生这一次真正选了方向没有（自选专业类 + AI 建议），空结果要据此分开解释。 */
   const chosenDirections = picks.length + aiDirectionIds.length;
   /** 选了、但当前院校池里一条记录都没有的专业类名——名字从 id 里取回，池子派生目录里没有它们。 */
@@ -118,24 +105,53 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
       notify("复制失败：浏览器未提供剪贴板权限，请手动选中页面文字复制。");
     }
   };
-  // Save the drawn route chart as a real raster PNG. The on-screen SVG is serialized (so it
-  // carries the current relations and labels), given an explicit size, then drawn to a canvas.
-  // PNG export needs no dialog; when the browser refuses the blob we fall back to the text copy
-  // (打印入口已按负责人要求下线，这里不再引导去打印）。
+  /**
+   * 导出整页海报（负责人 2026-09-12：只导那张小图不够，要把航线图、两条线的院校专业清单
+   * 和末尾「写给你」一起囊括）。
+   *
+   * 图的正文取宽版那张（窄屏时被 CSS 隐藏，但一直在 DOM 里），清单只列页面展开的前 24 条，
+   * 其余条数如实写在海报里。整张海报是一个 SVG，最后交给 svgStringToPng 光栅化。
+   */
   const savePng = async () => {
-    const node = chartSvgRef.current;
+    const node = posterSvgRef.current ?? chartSvgRef.current;
     if (!node) { notify("当前浏览器无法导出图片，请改用「复制文字版」。"); return; }
-    // 尺寸取自当前这张图自己的 viewBox：宽屏是横版 1000×320，窄屏是竖版 360×372，
-    // 导出哪一张就跟哪一张一致，不再写死横版尺寸。
     const box = node.viewBox?.baseVal;
-    const width = Math.round(box?.width || 1000);
-    const height = Math.round(box?.height || 320);
-    const clone = node.cloneNode(true) as SVGSVGElement;
-    clone.setAttribute("width", String(width));
-    clone.setAttribute("height", String(height));
-    const svg = new XMLSerializer().serializeToString(clone);
-    const ok = await svgStringToPng(svg, width, height, `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
-    notify(ok ? "已保存 PNG 航线图" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
+    const chartWidth = Math.round(box?.width || 1000);
+    const chartHeight = Math.round(box?.height || 320);
+    const poster = buildRoutePoster({
+      chartBody: node.innerHTML,
+      chartWidth,
+      chartHeight,
+      contextLabel,
+      rangeLabel,
+      referenceYear: pool?.referenceYear ?? REFERENCE_YEAR,
+      routes: routes.map((route) => ({
+        title: route.title,
+        more: Math.max(0, route.rows.length - 24),
+        rows: route.rows.slice(0, 24).map((row) => {
+          const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
+          const interval = reference.reference_rank_interval ?? [];
+          const year = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
+          const scores = scoreRangeForRanks(state.release, state.form.primary, year, interval);
+          return {
+            institution: row.label.institutionName,
+            city: row.label.institutionCity,
+            major: row.label.majorName,
+            level: row.label.level ? levelLabel(row.label.level) : null,
+            score: scores ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`) : "未知",
+            rank: formatRankInterval(interval),
+            plan: row.label.planCount === null || row.label.planCount === undefined ? "未知" : `${row.label.planCount}`,
+          };
+        }),
+      })),
+      blessing: BLESSING,
+      note: `按历史位置参考绘制 · 参考年 ${pool?.referenceYear ?? REFERENCE_YEAR} · 不构成录取判断 · 正式填报以本省考试院政策与高校招生章程为准`
+    });
+    const posterWidth = 1000;
+    const posterHeight = Number((poster.match(/viewBox="0 0 1000 (\d+)"/) ?? [])[1] ?? 1400);
+    const ok = await svgStringToPng(poster, posterWidth, posterHeight,
+      `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
+    notify(ok ? "已保存 PNG 航线图（含院校专业清单与寄语）" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
   };
   return <section id="page-chart" className={`view${page === "chart" ? " active" : ""}`} aria-label="航线图">
     <div className="page-head">
@@ -171,7 +187,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
           {/* 窄屏竖排版心：一条关系一行（名字 → 计数与占比 → 一条带波纹的航路），
               字号按 1.0 倍左右渲染，手机上读得清；数据、配色与横版完全同源。
               横版 1000×320 缩到 390 宽时字号只剩 4–5px，那是负责人指出的「根本看不清」。 */}
-          {narrowPlate ? <svg ref={chartSvgRef} viewBox="0 0 360 344" xmlns="http://www.w3.org/2000/svg"
+          <svg className="rt-narrow" ref={chartSvgRef} viewBox="0 0 360 344" xmlns="http://www.w3.org/2000/svg"
             role="img" aria-label="三条历史参考关系航线示意图（竖排）">
             {/* 无底板、无版框：图直接落在页面的卡片上（此前那块纸色底比卡片略深，
                 看上去像贴了一张图）。导出 PNG 时由画布垫纸色，静态图依然完整。 */}
@@ -229,9 +245,8 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
               <text x={180} y={180} textAnchor="middle" fontFamily={CHART.display} fontStyle="italic" fontSize={10.5}
                 fill={CHART.mut}>{withRange ? "回「分数轴」重新匹配院校" : "先在「定位」生成探索区间"}</text>
             </g>}
-          </svg> : null}
-          {narrowPlate ? null : (
-          <svg ref={chartSvgRef} viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img"
+          </svg>
+          <svg className="rt-wide" ref={posterSvgRef} viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img"
             aria-label="三条历史参考关系航线示意图">
             {/* 无底板、无版框：图直接落在页面的卡片上（此前那块纸色底比卡片略深，看着像贴了一张图）。
                 版心仍按 PLATE 常量收口（44–956），三条航路 200→700，右侧 866–956 是数据栏。 */}
@@ -315,7 +330,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
               </text>
             </g>}
           </svg>
-          )}
         </div>
         <div className="route-legend">
           {RELATION_CLASSES.map((relation) => <span className={`rl ${relation.cls}`} key={relation.key}>
@@ -368,38 +382,44 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
                 {route.rows.slice(0, 24).map((row) => {
                   const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
                   const interval = reference.reference_rank_interval ?? [];
+                  const sourceYear = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
                   // 分层标签直接用发布包里的历史位置关系（需更好位置 / 同分或边界重叠 / 位置较有余量）。
                   // 项目边界不提供「冲稳保」预测，所以标签说明的是「相对历史记录的位置」，不是录取结论。
                   const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
                   const institutionTags = (row.label.institutionTags ?? "").split("/")
                     .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
                   const passed = row.candidate.eligibility.status === "PASS";
+                  // 参考年最低分由位次区间反查同年的分段表得到（合约只带位次），查不到写「未知」。
+                  const scores = scoreRangeForRanks(state.release, state.form.primary,
+                    sourceYear, interval);
+                  const scoreText = scores
+                    ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`)
+                    : "未知";
                   return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={`${route.kind}-${row.label.offeringId}`}>
                     <div className="scard-top">
-                      <span className="sc-loc"><Icon name="pin" />{row.label.institutionName}{row.label.institutionCity ? ` · ${row.label.institutionCity}` : ""}</span>
-                      <h3 className="song">{row.label.majorName}</h3>
-                      <div className="sc-chips">
+                      <div className="sc-head">
+                        <span className="sc-loc"><Icon name="pin" />{row.label.institutionName}{row.label.institutionCity ? ` · ${row.label.institutionCity}` : ""}</span>
                         {relation
                           ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
                           : <span className="sc-rel none">暂无比较依据</span>}
-                        {row.label.level ? <span className="sc-lv">{levelLabel(row.label.level)}</span> : null}
-                        <span>{row.label.batch}</span>
-                        {row.label.categoryClass ? <span>{row.label.categoryClass}</span> : null}
-                        {passed ? <span className="sc-ok"><Icon name="check" />资格符合</span>
-                          : <span className="sc-warn">{label(row.candidate.eligibility.status)}</span>}
                       </div>
-                      {institutionTags.length ? <div className="sc-tags">
-                        {institutionTags.map((tag) => <span key={tag}>{tag}</span>)}
-                      </div> : null}
+                      <h3 className="song">{row.label.majorName}
+                        {row.label.level ? <em className="sc-lv">{levelLabel(row.label.level)}</em> : null}</h3>
+                      <p className="sc-sub">
+                        {row.label.batch}{row.label.categoryClass ? ` · ${row.label.categoryClass}` : ""}
+                        {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
+                      </p>
                     </div>
-                    <div className="ranks">
-                      <div className="rank"><div className="ry">参考 {reference.source_year ?? REFERENCE_YEAR} 位次</div>
-                        <div className="rv num">{formatRankInterval(interval)}</div></div>
-                      <div className="rank"><div className="ry">招生数</div><div className="rv num">{row.label.planCount ?? "—"}</div></div>
-                      <div className="rank"><div className="ry">学费</div>
-                        <div className="rv num">{row.label.tuition == null ? "未知" : `${row.label.tuition} 元/年`}</div></div>
+                    {/* 一行数据条：最低分打头（学生最先想知道的），位次/招生数/学费跟在后面。
+                        旧版三格方块把卡片撑到 236px 高，滚动很费劲；这里压成一条。 */}
+                    <div className="sc-foot">
+                      <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
+                      <span>位次 {formatRankInterval(interval)}</span>
+                      <span>招 {row.label.planCount ?? "—"} 人</span>
+                      <span className="sc-fee">{row.label.tuition == null ? "学费未知" : `学费 ${row.label.tuition}`}</span>
                     </div>
-                    {row.reference === "group" ? <p className="fhint" style={{ margin: "10px 20px 14px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
+                    {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
+                    {row.reference === "group" ? <p className="fhint" style={{ margin: "0 16px 10px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
                   </article>;
                 })}
               </div>}
@@ -411,8 +431,8 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
 
     <div className="blessing">
       <span className="eyebrow">A Word For You · 写给你</span>
-      <p className="song">愿你既有仰望星空的方向，也有脚踏实地的航线。远方很远，但每一次起航，都从今天这一分开始。</p>
-      <div className="sign">—— 南 溟</div>
+      <p className="song">{BLESSING.text}</p>
+      <div className="sign">{BLESSING.sign}</div>
     </div>
     {/* 导出与返回（负责人 2026-09-12 定）：删掉那块个人资料面板与打印入口后，
         只剩三枚按钮——导出 PNG 独占一行当主操作，复制与返回并排当次要操作，窄屏不会挤成一团。

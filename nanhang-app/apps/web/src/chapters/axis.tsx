@@ -1,7 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Icon } from "../art.js";
-import { REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, label, levelLabel, type PageId } from "./shared.js";
+import {
+  REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, label, levelLabel, scoreRangeForRanks,
+  type PageId
+} from "./shared.js";
 import type { SchoolPool, ScoreRange } from "../journey-model.js";
 
 export interface AxisProps {
@@ -171,34 +174,37 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
           const institutionTags = (entry.institutionTags ?? "").split("/")
             .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
           const passed = row.candidate.eligibility.status === "PASS";
+          const sourceYear = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
+          // 与「航线图」同款：最低分由位次区间反查同年分段表得到，查不到写「未知」。
+          const scores = scoreRangeForRanks(state.release, state.form.primary, sourceYear, interval);
+          const scoreText = scores
+            ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`)
+            : "未知";
           return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={entry.offeringId}>
             <div className="scard-top">
-              <span className="sc-loc"><Icon name="pin" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
-              <h3 className="song">{entry.majorName}</h3>
-              <div className="sc-chips">
+              <div className="sc-head">
+                <span className="sc-loc"><Icon name="pin" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : ""}</span>
                 {relation
                   ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
                   : <span className="sc-rel none">暂无比较依据</span>}
-                {entry.level ? <span className="sc-lv">{levelLabel(entry.level)}</span> : null}
-                <span>{entry.batch}</span>
-                {entry.categoryClass ? <span>{entry.categoryClass}</span> : null}
-                {passed ? <span className="sc-ok"><Icon name="check" />资格符合</span>
-                  : <span className="sc-warn">{label(row.candidate.eligibility.status)}</span>}
               </div>
-              {institutionTags.length ? <div className="sc-tags">
-                {institutionTags.map((tag) => <span key={tag}>{tag}</span>)}
-              </div> : null}
+              <h3 className="song">{entry.majorName}
+                {entry.level ? <em className="sc-lv">{levelLabel(entry.level)}</em> : null}</h3>
+              <p className="sc-sub">
+                {entry.batch}{entry.categoryClass ? ` · ${entry.categoryClass}` : ""}
+                {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
+              </p>
             </div>
-            <div className="ranks">
-              <div className="rank"><div className="ry">参考 {reference.source_year ?? REFERENCE_YEAR} 位次</div>
-                <div className="rv num">{formatRankInterval(interval)}</div></div>
-              <div className="rank"><div className="ry">招生数</div><div className="rv num">{entry.planCount ?? "—"}</div></div>
-              <div className="rank"><div className="ry">学费</div>
-                <div className="rv num">{entry.tuition == null ? "未知" : `${entry.tuition} 元/年`}</div></div>
+            <div className="sc-foot">
+              <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
+              <span>位次 {formatRankInterval(interval)}</span>
+              <span>招 {entry.planCount ?? "—"} 人</span>
+              <span className="sc-fee">{entry.tuition == null ? "学费未知" : `学费 ${entry.tuition}`}</span>
             </div>
-            {row.reference === "group" ? <p className="fhint" style={{ margin: "0 20px 12px" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
+            {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
+            {row.reference === "group" ? <p className="fhint" style={{ margin: "8px 16px 10px" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
             {row.candidate.eligibility.pending_requirements.length > 0
-              ? <p className="fhint" style={{ margin: "0 20px 12px" }}>待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join("、")}。</p> : null}
+              ? <p className="fhint" style={{ margin: "8px 16px 10px" }}>待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join("、")}。</p> : null}
           </article>;
         })
         : <div className="empty">

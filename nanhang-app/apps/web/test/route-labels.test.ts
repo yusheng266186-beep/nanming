@@ -8,7 +8,10 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { formatRankInterval, levelLabel } from "../src/chapters/shared.js";
+import {
+  buildRoutePoster, formatRankInterval, levelLabel, scoreRangeForRanks,
+} from "../src/chapters/shared.js";
+import type { LoadedRelease } from "@nanhang/release-loader";
 
 const src = (relative: string) => readFileSync(resolve(import.meta.dirname, "../src", relative), "utf8");
 const chapterDir = resolve(import.meta.dirname, "../src/chapters");
@@ -112,15 +115,13 @@ describe("航线图：海图版画的导出约束", () => {
   });
 
   it("窄屏换竖排版心，不让横版一路缩到看不清", () => {
-    // 横版版心 1000×320，缩到 390 宽的手机上字号只剩 4–5px。窄屏改画 360×372 的竖排版心：
-    // 一条关系一行，字号按 1.0 倍左右渲染。
-    expect(chart).toContain("useNarrowPlate");
-    expect(chart).toContain("(max-width: 640px)");
+    // 横版版心 1000×320，缩到 390 宽的手机上字号只剩 4–5px。窄屏改画 360×344 的竖排版心：
+    // 一条关系一行，字号按 1.0 倍左右渲染。切换交给 CSS 的类名（不是按屏宽卸载 DOM）——
+    // 两版都要在，导出海报取的正是横版那张。
     expect(chart).toContain('viewBox="0 0 360 344"');
     expect(chart).toContain('viewBox="0 0 1000 320"');
-    // 导出尺寸跟当前这张图自己的 viewBox 走，不再写死横版尺寸。
-    expect(chart).toContain("node.viewBox");
-    expect(chart).not.toContain('clone.setAttribute("width", "1000")');
+    expect(css).toMatch(/\.routes \.rt-narrow\{display:none\}/);
+    expect(css).toMatch(/@media\(max-width:640px\)\{\.routes \.rt-narrow\{display:block\}\.routes \.rt-wide\{display:none\}\}/);
   });
 
   it("空结果说实话：选了方向但池里没有，不许说成「你还没选」", () => {
@@ -138,5 +139,70 @@ describe("航线图：海图版画的导出约束", () => {
     // 图上任何带数字的刻度都可能被读成「分数轴」，所以左侧不画带数字的尺。
     expect(chart).not.toContain("axisMarks");
     expect(chart).not.toContain("publishedMinScore");
+  });
+});
+
+describe("参考年最低分与整页海报", () => {
+  // 最小发布包：一张 2025 物理类分段表，三行就够验证位次 → 分数的反查。
+  const release = {
+    manifest: {}, index: {}, basePath: "",
+    distributions: [{
+      distributionId: "fixture-2025-PHYSICS", year: 2025, track: "PHYSICS",
+      curriculumSystem: "new_gaokao", scoreBasis: "gaokao_cultural",
+      publishedMinScore: 550, publishedMaxScore: 552,
+      rows: [
+        { score: 552, count: 10, cumulative: 10 },
+        { score: 551, count: 20, cumulative: 30 },
+        { score: 550, count: 30, cumulative: 60 }
+      ]
+    }]
+  } as unknown as LoadedRelease;
+
+  it("位次反查分数：落在哪一行就是哪个分数，两端分别是最低分与最高分", () => {
+    expect(scoreRangeForRanks(release, "PHYSICS", 2025, [1, 10])).toEqual({ min: 552, max: 552 });
+    expect(scoreRangeForRanks(release, "PHYSICS", 2025, [11, 30])).toEqual({ min: 551, max: 551 });
+    expect(scoreRangeForRanks(release, "PHYSICS", 2025, [21, 60])).toEqual({ min: 550, max: 551 });
+    // 越界、缺表、缺科类一律返回 null（不插值不外推）
+    expect(scoreRangeForRanks(release, "PHYSICS", 2025, [61, 90])).toBeNull();
+    expect(scoreRangeForRanks(release, "PHYSICS", 2024, [1, 10])).toBeNull();
+    expect(scoreRangeForRanks(release, "HISTORY", 2025, [1, 10])).toBeNull();
+    expect(scoreRangeForRanks(null, "PHYSICS", 2025, [1, 10])).toBeNull();
+  });
+
+  it("海报把航线图、两条线的清单、寄语与免责都装进去", () => {
+    const poster = buildRoutePoster({
+      chartBody: "<text>chart</text>",
+      chartWidth: 1000, chartHeight: 320,
+      contextLabel: "四川 · 物理类 · 2027", rangeLabel: "200–460", referenceYear: 2025,
+      routes: [{ title: "我的自主选择", more: 361, rows: [
+        { institution: "示例大学", city: "成都", major: "计算机科学与技术", level: "本科",
+          score: "555", rank: "8,947", plan: "2" }
+      ] }],
+      blessing: { text: "愿你既有仰望星空的方向。", sign: "—— 南 溟" },
+      note: "按历史位置参考绘制 · 不构成录取判断"
+    });
+    expect(poster).toContain("<svg");
+    expect(poster).toContain("<text>chart</text>");          // 航线图正文嵌在海报里
+    expect(poster).toContain("我的自主选择 · 362 条专业 × 院校");
+    expect(poster).toContain("示例大学 · 成都 · 计算机科学与技术（本科）");
+    expect(poster).toContain("最低 555 分 · 位次 8,947 · 招 2");
+    expect(poster).toContain("另有 361 条未逐条列出");
+    expect(poster).toContain("愿你既有仰望星空的方向。");     // 写给你
+    expect(poster).toContain("不构成录取判断");
+    // 高度写进了 viewBox，导出按它取尺寸
+    expect(poster).toMatch(/viewBox="0 0 1000 \d+"/);
+  });
+
+  it("卡片压扁了：数据条一行、关系标签进抬头行", () => {
+    for (const page of [chart, axis]) {
+      expect(page).toContain('className="sc-foot"');
+      expect(page).toContain('className="sc-head"');
+      expect(page).toContain("最低 <b>{scoreText}</b> 分");
+      expect(page).not.toContain('className="ranks"');
+    }
+    // 两版航线图都留在 DOM 里（导出取横版），显隐交给 CSS
+    expect(chart).toContain('className="rt-narrow"');
+    expect(chart).toContain('className="rt-wide" ref={posterSvgRef}');
+    expect(css).toMatch(/@media\(max-width:640px\)\{\.routes \.rt-narrow\{display:block\}/);
   });
 });
