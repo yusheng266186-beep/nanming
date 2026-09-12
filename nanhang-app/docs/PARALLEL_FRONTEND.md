@@ -4,7 +4,7 @@
 > 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：41 个测试文件、507 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：41 个测试文件、509 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -90,6 +90,7 @@
 | 2026-09-12 21:38 | 线三（负责人指派） | `chapters/talk.tsx`、`style.css`（谈心作用域与留白修复）、`test/talk-room.test.ts` | 聊完才给「去方向 · 选专业」；聊完弹方向小结卡（就业方向交 AI 现场答）；修掉聊天区下方留白（样式被旧规则盖掉） | 已交还 |
 | 2026-09-12 21:49 | 线三（负责人指派） | `chapters/talk.tsx`（开场气泡与回答起点）、`test/talk-room.test.ts` | 两个模式的开场第一句都改成问题（取自内容规格）；引航一进来就摆出可点答案，泛舟只给问题 | 已交还 |
 | 2026-09-12 21:56 | 线三（负责人指派） | `direction-quota.ts`（新）、`App.tsx`（建议合并）、`chapters/talk.tsx`（收口提示与卡片时机）、`test/direction-quota.test.ts`（新）、`test/talk-room.test.ts` | 借北辰「到量即停、之后仍可聊但画像不再变」：方向收口（5 小类 + 2 大类，8 轮兜底）、上限 6 小类 / 3 大类、收口后冻结不再新增 | 已交还 |
+| 2026-09-12 22:04 | 线三（负责人指派） | `App.tsx`（顶栏）、`style.css`（`.qopts` 网格）、`test/settings.test.ts`、`test/talk-room.test.ts` | 删掉顶栏重复的上下文按钮（样式保留给窄屏守卫）；备选按钮照北辰改成两列网格、窄屏一列 | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 

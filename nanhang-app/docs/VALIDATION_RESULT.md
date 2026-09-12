@@ -4,15 +4,15 @@
 > 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：41 个测试文件、507 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：41 个测试文件、509 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 ## 2026-09-12 最新前端与后端合同对齐
 
 - `npm run typecheck`：通过；日志见 [latest-frontend-typecheck-2026-09-12.txt](verification/latest-frontend-typecheck-2026-09-12.txt)。
-- `npm test -- --maxWorkers=2`：41个测试文件、507项通过、0失败；日志见 [latest-frontend-tests-2026-09-12.txt](verification/latest-frontend-tests-2026-09-12.txt)。
-- 使用正式 `VITE_NANHANG_API_BASE` 与 `VITE_NANHANG_RELEASE_BASE` 执行 `npm run web:build`：通过，主JS 330.00 kB（gzip 106.86 kB）；日志见 [latest-frontend-build-2026-09-12.txt](verification/latest-frontend-build-2026-09-12.txt)。
+- `npm test -- --maxWorkers=2`：41个测试文件、509项通过、0失败；日志见 [latest-frontend-tests-2026-09-12.txt](verification/latest-frontend-tests-2026-09-12.txt)。
+- 使用正式 `VITE_NANHANG_API_BASE` 与 `VITE_NANHANG_RELEASE_BASE` 执行 `npm run web:build`：通过，主JS 329.86 kB（gzip 106.84 kB）；日志见 [latest-frontend-build-2026-09-12.txt](verification/latest-frontend-build-2026-09-12.txt)。
 - 合同检查：院校分组、方向收口冻结和最新谈心交互没有新增API或数据库字段；就业方向按钮继续向 `/v1/career/turn` 发送普通学生文本，现有后端可处理。线上 `/healthz`、`/readyz` 均200，AI、Redis、千帆和公开数据就绪。
 - 本轮未修改前端源码，也未作浏览器视觉验收。Pages发布结果将在工作流完成后补记。
 

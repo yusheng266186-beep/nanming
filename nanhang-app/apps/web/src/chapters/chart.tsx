@@ -97,10 +97,18 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   const candidates = pool?.rows.map((row) => row.candidate) ?? [];
   const withRange = range !== null;
 
-  // 三条航线仍按历史参考关系分组画线——它们描述位次与参考年记录的关系，不是录取预测。
+  // 图上三个数字统计的是**两条线里的记录**（同一份记录两条线都有时只算一次）。
+  // 原来按整个院校池统计，结果换个方向、换几个自选都不会动，看着像假的——负责人 2026-09-12 问
+  // 「为什么更好的位置永远是 0、同分比例也是固定值」。另外要说清楚：那一档恒为 0 是池子的定义
+  // 决定的（院校池只收与你的位次区间有交集的记录，位置比你更靠前的记录根本不会进池子）。
+  const routeOfferings = new Map<string, PoolRow>();
+  for (const route of routes) for (const row of route.rows) routeOfferings.set(row.label.offeringId, row);
+  const routeRows = [...routeOfferings.values()];
   const relationGroups = RELATION_CLASSES.map((relation) => ({
     ...relation,
-    items: candidates.filter((candidate) => candidate.group_reference.relation === relation.key)
+    items: routeRows.filter((row) =>
+      (row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference).relation
+        === relation.key)
   }));
   const drawable = relationGroups.some((group) => group.items.length > 0);
   const rangeLabel = range ? `${range.low}–${range.high}` : "未生成";
@@ -252,7 +260,7 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
         <div className="chart-head">
           <span className="eyebrow">Chart of the Southern Deep</span>
           <h2 className="song">{withRange ? `从 ${rangeLabel} 分的海面，到你想去的那片。` : "先生成探索区间，航线才会亮起。"}</h2>
-          <p className="sub">图中三条线仍按历史参考关系分组：只反映院校池里的记录与参考年位次的关系，不是录取预测，也不代表三种分数情景。</p>
+          <p className="sub">图中三条线按历史参考关系分组，统计的是**你这两条线里**的记录（换方向、换自选都会变）；「需更好位置」一档通常为空——院校池只收与你的位次区间有交集的记录，位置比你更靠前的记录不会进池子。它只描述历史位置关系，不是录取预测，也不代表三种分数情景。</p>
           <div className="seal"><span className="song">南溟<br />航线</span></div>
         </div>
         {/* 航线图：按「海图版画」重画（2026-09-12 负责人指出旧图太廉价、与整站主题不符）。
@@ -334,7 +342,7 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
               <text x={PLATE.x0} y={46} fontFamily={CHART.display} fontStyle="italic" fontSize={10.5}
                 letterSpacing={1.8} fill={CHART.brass}>ROUTE RELATIONS · 航线关系图</text>
               <text x={PLATE.x1} y={46} textAnchor="end" fontFamily={CHART.song} fontSize={11.5} fill={CHART.ink2}>
-                区间内匹配 {pool?.schoolCount ?? 0} 所院校 · {(pool?.rows.length ?? 0).toLocaleString("zh-CN")} 条专业 × 院校
+                两条线 {routeRows.length.toLocaleString("zh-CN")} 条 · 院校池 {pool?.schoolCount ?? 0} 所 / {(pool?.rows.length ?? 0).toLocaleString("zh-CN")} 条
               </text>
               {relationGroups.map((group, index) => {
                 const total = relationGroups.reduce((sum, item) => sum + item.items.length, 0);

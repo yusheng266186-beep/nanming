@@ -24,6 +24,12 @@ describe("设置：入口与归属", () => {
     expect(app).toContain("renderSettings({ open: settingsOpen");
   });
 
+  it("顶栏不再挂「四川 · …」上下文按钮：它与航程条上的定位重复", () => {
+    expect(app).not.toContain('className="ctx-btn"');
+    // 样式刻意留在 style.css 里——另一条线的窄屏守卫仍在断言它，只是不再有标记用它。
+    expect(src("style.css")).toContain(".ctx-btn");
+  });
+
   it("思考深度只在设置里改，谈心页只显示当前档", () => {
     expect(settings).toContain("THINKING_CHOICES");
     expect(settings).toContain("withTier");

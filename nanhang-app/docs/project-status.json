@@ -26,11 +26,11 @@
   ],
   "tests": {
     "files": 41,
-    "passed": 507,
+    "passed": 509,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "最新前端合并快照本机全量41文件507项全部通过；类型检查与正式配置生产构建通过。",
+    "note": "最终最新前端合并快照本机全量41文件509项全部通过；类型检查与正式配置生产构建通过。",
     "log": "docs/verification/latest-frontend-tests-2026-09-12.txt"
   },
   "runtime": {
@@ -111,7 +111,7 @@
     "python_pipeline_tests_passed": 50,
     "score_distribution_verified": true
   },
-  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 106.86KB",
+  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 106.84KB",
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
@@ -382,9 +382,9 @@
     "school_response": "shard + index(exams,trend), encrypted index object required before API rollout",
     "ai": "4000 chars per quote;48000 evidence total;32000 context;512KiB HTTP;network/401/503 recovery;session revoke",
     "pages": "DEV-only demo;HTTPS endpoint guard;typecheck and tests before deploy",
-    "verification": "41 files / 507 tests passed; typecheck and official-config web build passed; live health/ready passed",
+    "verification": "41 files / 509 tests passed; typecheck and official-config web build passed; live health/ready passed",
     "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md",
-    "latest_scope": "sail subject gate, portrait route poster, grouped route cards, talk opening starters, direction quota/freeze, direction summary and employment follow-up",
+    "latest_scope": "sail subject gate, portrait/grouped route poster, talk opening starters, direction quota/freeze, direction summary, employment follow-up and responsive answer-option grid",
     "latest_contract": "no new endpoint/database/field; employment follow-up uses existing POST /v1/career/turn and reply/options"
   },
   "ai_totp": {

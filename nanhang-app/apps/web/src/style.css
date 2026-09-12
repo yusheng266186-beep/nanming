@@ -306,8 +306,12 @@ textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;fo
 .caret{display:inline-block;width:2px;height:1em;background:var(--brass);vertical-align:-2px;animation:blink 1s steps(2) infinite;margin-left:2px}
 @keyframes blink{50%{opacity:0}}
 .dock{border-top:1px solid var(--line);background:var(--paper);padding:12px 14px 14px}
-.qopts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.qopt{border:1px solid var(--line-2);background:var(--card);border-radius:9px;padding:11px 15px;font-size:12.5px;color:var(--ink-2);text-align:left;line-height:1.6;transition:all .3s;max-width:100%}
+/* 备选按钮排成**规整的两列网格**（借北辰 .choices 的排法：grid + repeat(2,1fr)，见其 index.html 第 262 行）。
+   原来用 flex-wrap，一行两个、一行一个、参差不齐；网格里每格等宽，选项长短不一也照样对齐。
+   文字居中——它们是「可点的答案」，不是正文；窄屏退回一列。 */
+.qopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.qopt{border:1px solid var(--line-2);background:var(--card);border-radius:9px;padding:11px 15px;font-size:12.5px;color:var(--ink-2);text-align:center;line-height:1.6;transition:all .3s;min-width:0}
+@media(max-width:640px){.qopts{grid-template-columns:minmax(0,1fr)}}
 .qopt:hover{border-color:var(--brass-line);background:#fff;transform:translateY(-1px)}
 .qopt[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-bg);color:var(--brass-3)}
 .qopt span{display:block;font-size:10.5px;color:var(--mut);margin-top:4px}
@@ -456,10 +460,17 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .sc-cat-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:6px}
 .sc-cat-head h4{font-size:15px;font-weight:500;color:var(--ink)}
 .sc-cat-head span{font-size:10.5px;color:var(--mut);white-space:nowrap}
+/* 航线图抽屉里的排布（负责人 2026-09-12：点开之后卡片排列不好看、文字贴着边）。
+   只作用于航线图页，不动首页起航那副抽屉。 */
+#page-chart .deck{margin:14px 0 0}
+#page-chart .deck .stop-body{padding:2px 14px 16px}
+#page-chart .sc-class{margin:14px 0 0;padding-top:12px;border-top:1px dashed var(--line)}
+#page-chart .sc-class:first-child{border-top:0;padding-top:4px}
+#page-chart .schools{gap:12px}
 .sc-class{margin:12px 0 0}
-.sc-class-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
-.sc-class-head span:first-child{font-size:11.5px;color:var(--brass-3);letter-spacing:.02em}
-.sc-class-head span:last-child{font-size:10.5px;color:var(--mut);white-space:nowrap}
+.sc-class-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px;padding:0 2px}
+.sc-class-head span:first-child{font-size:12px;color:var(--brass-3);letter-spacing:.02em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-class-head span:last-child{font-size:10.5px;color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
 .sc-cat-count{font-family:var(--display);font-size:12px;color:var(--mut);white-space:nowrap;margin-left:auto;margin-right:10px}
 .ranks{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .rank{background:var(--card);padding:12px 8px;text-align:center}

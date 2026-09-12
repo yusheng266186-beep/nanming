@@ -38,6 +38,14 @@ describe("谈心：进对话后的房间", () => {
     expect(css).toMatch(/#page-talk \.bub\{max-width:min\(82%,560px\)\}/);
   });
 
+  it("备选按钮排成规整的两列网格（借北辰 .choices 的排法）", () => {
+    expect(css).toMatch(/\.qopts\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\);gap:8px/);
+    expect(css).toMatch(/\.qopt\{[^}]*text-align:center/);
+    expect(css).toMatch(/@media\(max-width:640px\)\{\.qopts\{grid-template-columns:minmax\(0,1fr\)\}\}/);
+    // 不再用 flex 换行排——那正是「一行两个、一行一个」参差的来源。
+    expect(css).not.toMatch(/\.qopts\{display:flex/);
+  });
+
   it("手机上再放宽一档高度", () => {
     expect(css).toContain("#page-talk .chat{height:clamp(360px,calc(100dvh - 200px),760px)}");
   });
