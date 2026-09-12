@@ -5,6 +5,7 @@ import {
   summary, withForm, type ModelContextLike, type WebState
 } from "./model.js";
 import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUserTurn, type AiPanelState } from "./ai-panel.js";
+import { mergeSuggestions } from "./direction-quota.js";
 import { evidenceForRequest } from "./ai-client.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
@@ -395,14 +396,19 @@ export default function App() {
     if (seq !== aiSeq.current) return;
     setAi((current) => {
       const merged = applyTurnResult(current, next);
+      // 方向收口（借北辰：到量即停，之后仍可继续聊但画像不再变）：聊够之后专业类不再新增，
+      // 冻结在已经收齐的那一套上；没收齐就把这一轮的新建议并进来，并裁到上限（3 大类 / 6 小类）。
+      const groups = catalog?.groups ?? [];
+      const studentTurns = current.history.filter((turn) => turn.role === "user").length;
+      const settled = { ...merged, suggestions: mergeSuggestions(current.suggestions, merged.suggestions, groups, studentTurns) };
       // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在发布包目录里
       // 真实存在的专业类上，引用学生的第一句原话），让「AI 推荐线」的界面能被验收。
-      if (!DEBUG_MODE || merged.suggestions.length > 0 || !catalog) return merged;
+      if (!DEBUG_MODE || settled.suggestions.length > 0 || !catalog) return settled;
       // 两级示例：一个大类 + 它下面两个专业类，贴合「先大类、后小类」的选择结构。
       const group = [...catalog.groups].sort((a, b) => a.name.localeCompare(b.name, "zh-CN"))
         .find((entry) => entry.classes.length >= 2) ?? catalog.groups[0];
       const sample = group ? group.classes.slice(0, 2) : [];
-      return { ...merged, suggestions: sample.map((entry) => ({
+      return { ...settled, suggestions: sample.map((entry) => ({
         directionId: entry.id,
         evidenceIds: userTurns.length ? ["ev-chat-0"] : [],
         rationale: "（调试示例）从你聊到的内容看，可以先探索这个专业类；验收通过后请换真实模型复核。"
@@ -575,7 +581,9 @@ export default function App() {
           })}
         </nav>
         <div className="head-end">
-          <button type="button" className="ctx-btn" onClick={() => goTo("locate")}><span>{contextLabel}</span><Icon name="chevron" /></button>
+          {/* 顶栏原来这里还有一个「四川 · 物理类 · 2027」的上下文按钮（点它去「定位」）。
+              负责人 2026-09-12 让删掉：它与航程条上的「定位」重复，且读数在定位页顶部本来就有。
+              `.ctx-btn` 的样式留在 style.css 里（另一条线的窄屏守卫测试仍在断言它），只是不再有标记。 */}
           <button type="button" className="avatar" aria-label="设置" onClick={() => setSettingsOpen(true)}>溟</button>
         </div>
       </div>

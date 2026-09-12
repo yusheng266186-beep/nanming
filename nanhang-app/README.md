@@ -1,11 +1,11 @@
 # 南溟目标探索工程
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中。
+> 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：40 个测试文件、491 项通过、1 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：41 个测试文件、507 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 主入口是章节版 `apps/web/src/App.tsx`，`JourneyApp` 保留作流程参考。当前主入口通过 `POST /v1/school/identify` 核对姓名＋6 位验证码；本轮补齐响应中的匿名考试汇总，移除核验后对本机静态成绩目录的依赖。新增汇总密文必须先上传，再更新 API 与 Pages；当前后端为包含该能力与 TOTP 的 API 版本9。详见 [后端对齐与发布顺序](docs/BACKEND_FRONTEND_ALIGNMENT.md)。

@@ -12,5 +12,11 @@
   "deployed_zip_contents_verified": true,
   "secret_sha256": "28b79075bbf76ca5b42f6e56cea3077480ce1d41d7a8e792de395e1d50be753a",
   "secret_value_recorded": false,
-  "rollback_zip_private": true
+  "rollback_zip_private": true,
+  "pages_commit": "8de1983f0a8a1d1cb5a32c4822cc167cdd731c6b",
+  "pages_workflow": 34697202201,
+  "pages_deployed": true,
+  "pages_html_status": 200,
+  "pages_asset_status": 200,
+  "pages_totp_ui_verified": true
 }

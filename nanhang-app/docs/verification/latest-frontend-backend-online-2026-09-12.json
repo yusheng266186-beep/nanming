@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-09-12T21:52:00+08:00",
+  "api_base": "https://1459223409-lexj8si8uo.ap-chengdu.tencentscf.com",
+  "origin": "https://yusheng266186-beep.github.io",
+  "healthz": {
+    "http_status": 200,
+    "status": "ok",
+    "ai": true,
+    "store": "redis"
+  },
+  "readyz": {
+    "http_status": 200,
+    "public_data": true,
+    "ai": true,
+    "state_store": true,
+    "upstream": "qianfan"
+  },
+  "contract_result": "latest frontend adds no endpoint, database field, or wire-field change; API v9 already covers all calls",
+  "sensitive_values_recorded": false
+}

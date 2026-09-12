@@ -2,11 +2,34 @@ import { useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted,
   type AiPanelState } from "../ai-panel.js";
+import type { ChatMode } from "../ai-client.js";
 import { Icon } from "../art.js";
-import { ChatBubble, TypingDots } from "../chat.js";
+import { AnswerStarters, ChatBubble, TypingDots } from "../chat.js";
 import { useScrollLock } from "../scroll-lock.js";
+import { coveredGroups, directionTalkSettled } from "../direction-quota.js";
+import { QUESTIONS } from "@nanhang/exploration";
 import type { CatalogDirection, CatalogGroup, Major } from "../journey-model.js";
 import type { PageId } from "./shared.js";
+
+/**
+ * 开场白。
+ *
+ * 两个模式的第一句都必须是**问题**——负责人 2026-09-12 指出：进来只看到一句模式说明，
+ * 学生不知道自己该说什么。问题取自内容规格里的第一条（任务经历），不另造问法；
+ * `hint` 只说这个模式怎么答；`OPENING_STARTERS` 是引航用的现成答案，点一下才发出去，
+ * 属于措辞帮助——不点就什么也不算（与既有「回答起点」的约定一致）。
+ */
+const OPENING_QUESTION = QUESTIONS[0]!.text;
+const OPENING_HINT: Record<ChatMode, string> = {
+  guided: "每一步我都会摆几个现成的答案，点一下就算你答了；想自己写也可以。",
+  open: "不设路线，用你自己的话答，说多短都行。"
+};
+const OPENING_STARTERS = [
+  "整理过一份表格或清单，把重复和缺漏挑出来",
+  "给同学讲过一段流程，还写成了步骤",
+  "把一个东西拆开看结构，再装回去",
+  "为了一件事查了不少资料，最后做成一页纸"
+] as const;
 
 export interface TalkProps {
   page: PageId;
@@ -35,14 +58,20 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
   }, [page, setAi]);
 
   const tierOf = THINKING_CHOICES.find((choice) => choice.value === ai.tier);
-  // 「聊完之后」的方向小结卡：AI 第一次给出建议时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
+  // 方向收口：聊够两三个大类、五六个专业类（或轮数兜底）就算这一轮聊完了——借北辰「到量即停」的做法
+  // （它的夜航第 5 轮起评估、满 15 轮固定给出；领航满十轮自动点亮星图）。
+  // 收口之后**仍然可以接着聊**，只是专业类不再新增：冻结在 App 合并那一层（mergeSuggestions）。
+  const catalogGroups = catalog?.groups ?? [];
+  const studentTurns = ai.history.filter((turn) => turn.role === "user").length;
+  const settled = directionTalkSettled(ai.suggestions, catalogGroups, studentTurns);
+  // 「聊完之后」的方向小结卡：收口时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
   const [summaryOpen, setSummaryOpen] = useState(false);
   const summarySeen = useRef(false);
   useEffect(() => {
-    if (!ai.suggestions.length || summarySeen.current) return;
+    if (!settled || summarySeen.current) return;
     summarySeen.current = true;
     setSummaryOpen(true);
-  }, [ai.suggestions.length]);
+  }, [settled]);
   useScrollLock(summaryOpen);
 
   return <section id="page-talk" className={`view${page === "talk" ? " active" : ""}`} aria-label="谈心">
@@ -81,16 +110,28 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
           {tierOf ? <span className="ch-tier" title={tierOf.hint}>深度 {tierOf.label} · {tierOf.eta}</span> : null}
         </div>
         <div className="chat-scroll" ref={chatScrollRef}>
+          {/* 开场一定是一个问题（负责人 2026-09-12：不然学生不知道怎么聊起来）。
+              引航在问题下面直接摆几个现成答案，点一下就以学生自己的名义发出去；
+              泛舟只给问题，让学生用自己的话说。问题取自内容规格的第一条，不另造问法。 */}
           <ChatBubble from="ai">
-            {ai.mode === "guided"
-              ? "我们一句一句来。每一步我都会摆几个现成的答案，点一下就算你答了；想自己写也可以。"
-              : "泛舟开始。不设路线，想说什么说什么，说多短都行——用自己的话答，它听得更认真。"}
+            {OPENING_QUESTION}
+            <span className="whisper">{OPENING_HINT[ai.mode]}</span>
           </ChatBubble>
+          {ai.mode === "guided" && ai.history.length === 0
+            ? <AnswerStarters starters={OPENING_STARTERS} disabled={ai.pending || !ai.connected}
+              onPick={(text) => void sendAi(text)} />
+            : null}
           {ai.history.map((turn, index) => <ChatBubble key={`${turn.role}-${index}`}
             from={turn.role === "user" ? "me" : "ai"}>
             {turn.text}
           </ChatBubble>)}
           {ai.pending ? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" /></ChatBubble> : null}
+          {/* 收口提示：说清「聊完了、还能聊、但方向不再变」，并把下一步摆出来。 */}
+          {settled ? <ChatBubble from="ai">
+            方向已经收齐了——跨了 {coveredGroups(ai.suggestions, catalogGroups).length} 个大类、{ai.suggestions.length} 个专业类。
+            想接着聊随时可以，只是不再往上加新的专业类了；也可以现在就去「方向」，自己再选一次。
+            <span className="whisper">这一轮谈心到这里就算完成。</span>
+          </ChatBubble> : null}
         </div>
         <div className="dock">
           {!ai.connected ? <>
@@ -110,7 +151,9 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
             </div> : null}
             <div className="dock-row">
               <textarea className="inp" rows={2} value={aiDraft}
-                placeholder={ai.mode === "guided" ? "选项都不合适？直接写你的版本……" : "想说的话，直接写下来……"}
+                placeholder={settled
+                  ? "还想补充就接着说——方向已经收齐，不再新增专业类"
+                  : ai.mode === "guided" ? "选项都不合适？直接写你的版本……" : "想说的话，直接写下来……"}
                 onChange={(event) => setAiDraft(event.target.value)} />
               <button type="button" className="send" aria-label="发送" disabled={ai.pending}
                 onClick={() => void sendAi()}><Icon name="arrow" /></button>

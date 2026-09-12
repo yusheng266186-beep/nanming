@@ -43,6 +43,32 @@ describe("谈心：进对话后的房间", () => {
   });
 });
 
+describe("谈心：开场第一句", () => {
+  it("两个模式的第一句都是问题，问题取自内容规格的第一条而不是另造", () => {
+    expect(talk).toContain('import { QUESTIONS } from "@nanhang/exploration"');
+    expect(talk).toContain("const OPENING_QUESTION = QUESTIONS[0]!.text;");
+    expect(talk).toContain("{OPENING_QUESTION}");
+    // 模式只决定「怎么答」的那句提示，不再决定开场说什么。
+    expect(talk).toContain("OPENING_HINT[ai.mode]");
+    expect(talk).not.toContain("我们一句一句来");
+    expect(talk).not.toContain("泛舟开始。不设路线");
+  });
+
+  it("引航一进来就摆出可点的答案，点了才算学生说的", () => {
+    expect(talk).toContain('ai.mode === "guided" && ai.history.length === 0');
+    expect(talk).toContain("<AnswerStarters starters={OPENING_STARTERS}");
+    expect(talk).toContain("onPick={(text) => void sendAi(text)}");
+    expect(talk).toContain("const OPENING_STARTERS = [");
+    // 还没连上或正在等回复时不给点（点了也发不出去）。
+    expect(talk).toContain("disabled={ai.pending || !ai.connected}");
+  });
+
+  it("泛舟不给现成答案：只留问题，让学生自己说", () => {
+    // 起点只在 guided 上渲染；泛舟那条分支里没有 AnswerStarters。
+    expect(talk).toMatch(/ai\.mode === "guided" && ai\.history\.length === 0\s*\n\s*\? <AnswerStarters/);
+  });
+});
+
 describe("谈心：聊完之后才给的东西", () => {
   it("AI 给出建议之前，不出现「去方向 · 选专业」", () => {
     expect(talk).toContain('{ai.suggestions.length ? <div className="talk-meta">');
@@ -53,10 +79,25 @@ describe("谈心：聊完之后才给的东西", () => {
 
   it("聊完之后自动弹一次方向小结卡，关掉后不再打扰，可手动再看", () => {
     expect(talk).toContain("const summarySeen = useRef(false)");
-    expect(talk).toMatch(/if \(!ai\.suggestions\.length \|\| summarySeen\.current\) return;/);
+    // 触发点是「收口」（聊够方向覆盖），不是「刚拿到第一条建议」——借北辰到量即停的做法。
+    expect(talk).toMatch(/if \(!settled \|\| summarySeen\.current\) return;/);
+    expect(talk).toContain("directionTalkSettled(ai.suggestions, catalogGroups, studentTurns)");
     expect(talk).toContain('aria-label="溟听出来的方向"');
     expect(talk).toContain('className="board-backdrop"');
     expect(talk).toContain(">方向小结<");
+  });
+
+  it("聊够之后：说清「完成了、还能聊、方向不再变」，输入框仍可继续用", () => {
+    expect(talk).toContain("这一轮谈心到这里就算完成。");
+    expect(talk).toContain("只是不再往上加新的专业类了");
+    // 输入框不禁用，只换提示语。
+    expect(talk).toContain("还想补充就接着说——方向已经收齐，不再新增专业类");
+    expect(talk).not.toMatch(/textarea[^>]*disabled=\{settled\}/);
+  });
+
+  it("冻结在合并那一层做：已收口就整体不动（连顺序都不变）", () => {
+    const app = src("App.tsx");
+    expect(app).toContain("mergeSuggestions(current.suggestions, merged.suggestions, groups, studentTurns)");
   });
 
   it("小结卡按大类分组列出 AI 挑出的专业类，并带上原话与理由", () => {

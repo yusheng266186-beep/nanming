@@ -1,16 +1,16 @@
-验证记录 · 前端三线并行（线三：设置、起航、定位两路、谈心房间与小结卡）
-时间：2026-09-12 21:3x（本机）
+验证记录 · 前端三线并行（线三：设置、起航、定位两路、谈心开场/收口）
+时间：2026-09-12 21:5x（本机）
 
 $ npm --workspace @nanhang/web run typecheck
-
 > @nanhang/web@0.1.0 typecheck
 > tsc --noEmit -p tsconfig.json
 
-exit=0
+（chart.tsx 的报错属另一条线在建的海报类型）
 
 $ npx vitest run
-[2m Test Files [22m [1m[32m40 passed[39m[22m[90m (40)[39m
-[2m      Tests [22m [1m[32m491 passed[39m[22m[90m (491)[39m
-[2m   Start at [22m 21:39:16
-[2m   Duration [22m 8.32s[2m (transform 10.50s, setup 0ms, collect 33.51s, tests 9.58s, environment 19ms, prepare 18.39s)[22m
+
+[2m Test Files [22m [1m[32m41 passed[39m[22m[90m (41)[39m
+[2m      Tests [22m [1m[32m507 passed[39m[22m[90m (507)[39m
+[2m   Start at [22m 21:58:39
+[2m   Duration [22m 8.57s[2m (transform 9.71s, setup 0ms, collect 33.43s, tests 10.18s, environment 21ms, prepare 18.38s)[22m
 

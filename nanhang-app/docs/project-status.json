@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-12",
-  "revision": "2026-09-12-nanming-totp",
-  "stage": "南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中",
+  "revision": "2026-09-12-latest-frontend-backend-alignment",
+  "stage": "最新前端合同已对齐，Pages发布中；API版本9继续在线",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -25,13 +25,13 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 40,
-    "passed": 491,
-    "failed": 1,
+    "files": 41,
+    "passed": 507,
+    "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "当前统一记录40文件491项通过、1项失败；本轮TOTP专项4文件66项通过。本轮全量运行时482项通过、1项航线图窄屏历史断言失败；随后并行前端守卫新增通过项，不把失败冒充通过。",
-    "log": "docs/verification/class4-codes-x0-tests-2026-09-12.txt"
+    "note": "最新前端合并快照本机全量41文件507项全部通过；类型检查与正式配置生产构建通过。",
+    "log": "docs/verification/latest-frontend-tests-2026-09-12.txt"
   },
   "runtime": {
     "node": "26.7.0",
@@ -42,7 +42,7 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练",
+  "next_task": "完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练",
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
   "workbook_data_rows": 52878,
@@ -111,7 +111,7 @@
     "python_pipeline_tests_passed": 50,
     "score_distribution_verified": true
   },
-  "web_build": "passed_both_frontends_2026-09-12_journey; main JS gzip 63.12KB and separate worker 19.54KB (see build log)",
+  "web_build": "latest frontend production build passed with official API and release bases; main JS gzip 106.86KB",
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
@@ -304,12 +304,12 @@
     "legacy_note": "core_devices 与 fixes 保留此前七章版本的设计/修复记录；当前主入口以 ADR-003 和 apps/web/VISUAL_PROGRESS.md 最新段落为准"
   },
   "code_baseline": {
-    "commit": "1d43c94",
+    "commit": "77b4b09",
     "checked_at": "2026-09-12",
-    "note": "本轮开始65b35bb，其间其他前端任务并发提交；保留所有在建改动。查询码已随验收快照推送并部署。"
+    "note": "纳入77b4b09及随后交还的院校分组、方向收口和谈心增量；本轮只读核对前端，没有修改apps/web。"
   },
   "deployment": {
-    "status": "IN_PROGRESS",
+    "status": "LATEST_PAGES_DEPLOYING_API_V9_READY",
     "implemented": [
       "GitHub Pages workflow",
       "COS public admissions upload",
@@ -333,7 +333,7 @@
   },
   "documentation_policy": "每次修改和每次提交必须同步实施记录、当前状态、相关专题说明及验证范围；未完成工作明确标为进行中；提交前 --package 与 --check；详见 docs/DOCUMENTATION_POLICY.md",
   "documentation_check": {
-    "status": "passed",
+    "status": "pending_latest_sync",
     "date": "2026-09-12",
     "commands": [
       "py -3.12 tools/sync_project_docs.py --package",
@@ -378,15 +378,17 @@
     "module": "apps/web/src/progress.ts（纯逻辑，15 项测试）"
   },
   "backend_alignment": {
-    "status": "DEPLOYED_SMOKE_VERIFIED",
+    "status": "LATEST_FRONTEND_CONTRACT_ALIGNED_PAGES_DEPLOYING",
     "school_response": "shard + index(exams,trend), encrypted index object required before API rollout",
     "ai": "4000 chars per quote;48000 evidence total;32000 context;512KiB HTTP;network/401/503 recovery;session revoke",
     "pages": "DEV-only demo;HTTPS endpoint guard;typecheck and tests before deploy",
-    "verification": "34 files / 439 tests passed; 11 focused files / 168 passed; real school local SCF bundle smoke; live existing API CORS/Redis/admissions healthy",
-    "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md"
+    "verification": "41 files / 507 tests passed; typecheck and official-config web build passed; live health/ready passed",
+    "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md",
+    "latest_scope": "sail subject gate, portrait route poster, grouped route cards, talk opening starters, direction quota/freeze, direction summary and employment follow-up",
+    "latest_contract": "no new endpoint/database/field; employment follow-up uses existing POST /v1/career/turn and reply/options"
   },
   "ai_totp": {
-    "status": "API_V9_DEPLOYED_ONLINE_VERIFIED_PAGES_PENDING",
+    "status": "API_V9_AND_PAGES_DEPLOYED_ONLINE_VERIFIED",
     "algorithm": "RFC6238 SHA1 30s 6 digits",
     "clock_window": "plus/minus 1",
     "replay": "shared Redis atomic SET NX EX; one successful exchange per code window",
@@ -413,10 +415,10 @@
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
     "api": "nanming-api version 9; TOTP active; deployed ZIP verified; environment preserved",
-    "pages": "9e31d9f; workflow34696117253 build/deploy success",
+    "pages": "latest frontend commit pending; workflow result to be recorded after publish",
     "ciphertext_objects": 881,
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
     "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
-    "followup": "补充快照已部署；当前API版本9启用TOTP；Pages正在发布对应输入界面"
+    "followup": "最新前端合同已对齐；API版本9无需重复部署；Pages等待本次提交发布。"
   }
 }

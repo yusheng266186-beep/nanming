@@ -1,0 +1,15 @@
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/web-paper@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/api@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
