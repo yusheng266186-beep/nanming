@@ -95,6 +95,13 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   /** 三种关系的记录总数，用来算各自占比（两个版式共用）。 */
   const relationTotal = relationGroups.reduce((sum, group) => sum + group.items.length, 0);
   const narrowPlate = useNarrowPlate();
+  /** 学生这一次真正选了方向没有（自选专业类 + AI 建议），空结果要据此分开解释。 */
+  const chosenDirections = picks.length + aiDirectionIds.length;
+  /** 选了、但当前院校池里一条记录都没有的专业类名——名字从 id 里取回，池子派生目录里没有它们。 */
+  const missingNames = [...picks, ...aiDirectionIds]
+    .filter((id) => !pool?.majors.some((major) => major.directionId === id))
+    .map((id) => id.replace(/^catalog:/, ""))
+    .slice(0, 4);
 
   const copyText = async () => {
     const lines = [
@@ -333,11 +340,25 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
       {/* 双线结果：每个方向类一条路，样式对等；重叠的专业×院校在两条线里都出现，不去重。 */}
       {routes.length === 0
         ? <div className="panel">
-          <h3><Icon name="route" />两条线都还空着</h3>
-          <p className="psub">AI 建议和自选都还没有内容：回「谈心」聊出建议，或在「方向」自选几个专业，两条线就会在这里分开亮起。</p>
+          <h3><Icon name="route" />{chosenDirections === 0 ? "两条线都还空着" : "选的方向在这个区间里没有院校记录"}</h3>
+          {/* 两种空要分开说：没选方向，和「选了，但院校池里没有这些专业类」。
+              后者以前也显示「两条线都还空着」，学生会以为自己的选择丢了——2026-09-12 负责人
+              就是这么撞上的。池子按住区间、选科与批次筛出来，池里没有的类就没有卡片。 */}
+          {chosenDirections === 0
+            ? <p className="psub">AI 建议和自选都还没有内容：回「谈心」聊出建议，或在「方向」自选几个专业，两条线就会在这里分开亮起。</p>
+            : <p className="psub">
+              你选了 {picks.length} 个专业类、AI 建议 {aiDirectionIds.length} 个，但当前院校池里没有它们的记录
+              {missingNames.length ? `（${missingNames.join("、")}）` : ""}。
+              院校池是按你的探索区间、选科与批次筛出来的，池子里有的专业类才会出卡片。
+            </p>}
           <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
-            <button type="button" className="btn sm" onClick={() => setPage("talk")}>去谈心</button>
-            <button type="button" className="btn sm ghost" onClick={() => setPage("direction")}>去方向自选</button>
+            {chosenDirections === 0 ? <>
+              <button type="button" className="btn sm" onClick={() => setPage("talk")}>去谈心</button>
+              <button type="button" className="btn sm ghost" onClick={() => setPage("direction")}>去方向自选</button>
+            </> : <>
+              <button type="button" className="btn sm" onClick={() => setPage("axis")}>回分数轴放宽区间</button>
+              <button type="button" className="btn sm ghost" onClick={() => setPage("direction")}>换个方向</button>
+            </>}
           </div>
         </div>
         : routes.map((route) => {
@@ -352,7 +373,10 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
               {route.majors.length > 12 ? <span>另 {route.majors.length - 12} 个</span> : null}
             </div>
             {route.rows.length === 0
-              ? <p className="muted-note">这些专业在院校池里，但当前区间、选科和批次没有命中院校专业。这条选择会保留，不自动扩大范围去凑结果。</p>
+              // 旧文案写「这些专业在院校池里」是错的：它们只在发布库目录里，院校池是按住区间、
+              // 选科与批次筛出来的那一部分（负责人 2026-09-12 就是被这句话绕住的）。
+              // 现在说实话，并给出可操作的下一步。
+              ? <p className="muted-note">这些专业类在你这次的院校池里一条记录都没有（池子共 {pool?.rows.length ?? 0} 条 · {pool?.schoolCount ?? 0} 所院校）。院校池是按你的探索区间、选科与批次筛出来的；可以把区间放宽一点、把高职（专科）批一并勾上，或换个方向。这条选择会保留，不自动扩大范围去凑结果。</p>
               : <div className="schools" style={{ marginTop: 0 }}>
                 {route.rows.slice(0, 24).map((row) => {
                   const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
