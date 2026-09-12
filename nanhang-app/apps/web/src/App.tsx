@@ -4,7 +4,7 @@ import {
   loadPublishedRelease, recordAnswer, registerStartTool, resetLocal, routeMap, runMatch, skipAnswer,
   summary, withForm, type ModelContextLike, type WebState
 } from "./model.js";
-import { initialAiPanel, askAi, disableAi, withSession, type AiPanelState } from "./ai-panel.js";
+import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUserTurn, type AiPanelState } from "./ai-panel.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
 import {
@@ -69,7 +69,7 @@ export default function App() {
   useEffect(() => {
     const box = chatScrollRef.current;
     if (box) box.scrollTop = box.scrollHeight;
-  }, [page, talkStep, state.answers.length, thinking]);
+  }, [page, talkStep, state.answers.length, thinking, ai.history.length, ai.pending]);
   useEffect(() => () => { if (matchTimer.current !== null) clearTimeout(matchTimer.current); }, []);
 
   const runMatchSafely = (source: WebState) => {
@@ -247,15 +247,24 @@ export default function App() {
   };
   /** 点选 AI 给出的答案时用 override 直接发出，不必先写进草稿再等一轮渲染。 */
   const sendAi = async (override?: string) => {
-    const text = override ?? aiDraft;
+    const text = (override ?? aiDraft).trim();
+    if (!text) { setAi((current) => ({ ...current, status: "请先写下你想说的话。" })); return; }
     const seq = ++aiSeq.current;
     const requestId = `web-req-${state.generation}-${Date.now()}`;
-    setAi((current) => ({ ...current, pending: true, ...(override ? { options: [] } : {}) }));
-    if (override) setAiDraft(override);
-    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId);
+    // 用户消息先进入转录（等待回复时也能看到自己说了什么）；历史带最近 8 轮给模型接上下文。
+    const history = [...ai.history, { role: "user" as const, text }];
+    setAi((current) => withUserTurn({ ...current, pending: true, ...(override ? { options: [] } : {}) }, text));
+    if (!override) setAiDraft("");
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history);
     if (seq !== aiSeq.current) return;
-    setAi(next);
-    if (next.reply) setAiDraft("");
+    setAi((current) => applyTurnResult(current, next));
+  };
+
+  // 谈心对话里的「存为方向证据」：只有学生主动按下，这句原话才进入证据链。
+  // q-interest 是方向确认的主槽位；重复保存会替换上一条——转录本身始终完整保留。
+  const saveChatEvidence = (text: string) => {
+    setState((current) => recordAnswer(current, "q-interest", text));
+    notify("已把这句存为方向证据");
   };
 
   const runNow = () => {
@@ -275,7 +284,7 @@ export default function App() {
   const ctx = {
     state, setState, page, setPage, drafts, setDrafts, talkStep, setTalkStep, thinking, setThinking,
     reducedMotion, chatScrollRef, questionsDone, canConfirmDirections, saveAnswer, skip, notify,
-    ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
+    ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, saveChatEvidence,
     quality, qualityCode, setQualityCode, verifyQualityCode,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,

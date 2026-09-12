@@ -1,0 +1,27 @@
+#!/bin/bash
+# 南溟 · SCF Web 函数启动脚本。
+#
+# 平台约定：注入 PORT，进程必须监听它（app.js 里会绑 0.0.0.0）。
+# node 用运行时自带的那个：不依赖 PATH，也不引入容器里没有的东西。
+set -e
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+export PORT="${PORT:-9000}"
+
+NODE_BIN=""
+for candidate in /var/lang/node22/bin/node /var/lang/node20/bin/node /var/lang/node18/bin/node; do
+  if [ -x "${candidate}" ] && "${candidate}" -e 'process.exit(0)' 2>/dev/null; then
+    NODE_BIN="${candidate}"
+    break
+  fi
+done
+if [ -z "${NODE_BIN}" ]; then
+  echo "nanhang api: no runnable node binary found" >&2
+  exit 1
+fi
+
+ENTRY_FILE="${SCRIPT_DIR}/app.js"
+if [ ! -f "${ENTRY_FILE}" ]; then
+  echo "nanhang api: app.js not found" >&2
+  exit 1
+fi
+exec "${NODE_BIN}" "${ENTRY_FILE}"

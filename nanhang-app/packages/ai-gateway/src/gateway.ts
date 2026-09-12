@@ -94,6 +94,12 @@ export interface GatewayDeps {
   readonly store: StateStore;
   readonly upstream: Upstream;
   readonly config: AiGatewayConfig;
+  /**
+   * 显式允许在生产档下使用内存存储（试用期的单实例模式）。
+   * 默认 false：生产档遇到内存存储就把 AI 关掉，宁可不给也不按实例内存记账。
+   * 打开它的含义是「接受函数重启后会话丢失、并发实例间不复用额度」，必须写在部署说明里。
+   */
+  readonly allowMemoryStore?: boolean;
   readonly now: () => number;
   readonly registryFor: (sessionId: string) => EvidenceRegistry;
   readonly profileFor: (sessionId: string) => DirectionProfile;
@@ -155,7 +161,9 @@ export class AiGateway {
   }
 
   private aiEnabled(): boolean {
-    return this.deps.config.profile !== "production" || this.deps.store.kind !== "memory";
+    if (this.deps.config.profile !== "production") return true;
+    if (this.deps.store.kind !== "memory") return true;
+    return this.deps.allowMemoryStore === true;
   }
 
   /** Creates a session from an already-verified credential. The token value itself is never stored. */

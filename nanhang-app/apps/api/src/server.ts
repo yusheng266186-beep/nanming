@@ -11,7 +11,7 @@ import {
 import { createEvidenceRegistry, emptyDirectionProfile, type EvidenceRegistry } from "@nanhang/exploration";
 import { demoEvidence, DEMO_TRIAL_CODE, DEMO_ACADEMIC_BINDING } from "./demo-context.ts";
 import { scriptedUpstreamFromEnv } from "./dev-upstream.ts";
-import { ENV_NAMES, loadRuntimeConfig } from "./config.ts";
+import { ENV_NAMES, loadRuntimeConfig, memoryStoreAllowed } from "./config.ts";
 
 const MAX_BODY_BYTES = 64 * 1024;
 /** Past this multiple of the limit we stop draining and drop the connection instead of absorbing bytes. */
@@ -84,6 +84,24 @@ function sendAuthFailure(response: ServerResponse, code: string): void {
   sendJson(response, status, { error: { code, message: code, request_id: "", retryable: status === 503 } });
 }
 
+/**
+ * 试用访问码。线上必须由 NANHANG_TRIAL_ACCESS_CODE 给出——仓库里那个演示码是公开的，
+ * 拿它上线等于没有门。只有开发档才回落到演示码；生产档没配就当作「未配置」，不发会话。
+ */
+export function trialAccessCode(env: NodeJS.ProcessEnv = process.env): string | null {
+  const fromEnv = (env[ENV_NAMES.trialCode] ?? "").trim();
+  if (fromEnv) return fromEnv;
+  return env[ENV_NAMES.profile] === "production" ? null : DEMO_TRIAL_CODE;
+}
+
+/** 定长比较，避免用字符串比较的短路行为泄漏前缀。 */
+function secretEquals(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let index = 0; index < a.length; index += 1) diff |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  return diff === 0;
+}
+
 function bearer(request: IncomingMessage): string | null {
   const header = request.headers.authorization;
   if (typeof header !== "string" || !header.startsWith("Bearer ")) return null;
@@ -92,19 +110,27 @@ function bearer(request: IncomingMessage): string | null {
 }
 
 /**
- * CORS for the local development origin only. The API is same-origin in production
- * (SYSTEM_AND_INTERFACE_SPEC.md section 9.3), so there is deliberately no permissive
- * wildcard here and no credential-sharing with arbitrary sites.
+ * 允许的浏览器来源。开发时是 localhost 的任意端口；线上用 NANHANG_CORS_ORIGINS 逐个列出
+ * （逗号分隔，例如 Pages 站点），**不用通配符**——这个接口带凭据，来源必须点名。
  */
-const ALLOWED_ORIGINS: readonly RegExp[] = [
+const LOCAL_ORIGINS: readonly RegExp[] = [
   /^http:\/\/localhost:(5\d{3}|4\d{3})$/,
   /^http:\/\/127\.0\.0\.1:(5\d{3}|4\d{3})$/
 ];
 
+function configuredOrigins(): readonly string[] {
+  return (process.env.NANHANG_CORS_ORIGINS ?? "").split(",").map((value) => value.trim()).filter(Boolean);
+}
+
+function originAllowed(origin: string): boolean {
+  if (LOCAL_ORIGINS.some((pattern) => pattern.test(origin))) return true;
+  return configuredOrigins().includes(origin);
+}
+
 function applyCors(request: IncomingMessage, response: ServerResponse): void {
   const origin = request.headers.origin;
   if (typeof origin !== "string") return;
-  if (!ALLOWED_ORIGINS.some((pattern) => pattern.test(origin))) return;
+  if (!originAllowed(origin)) return;
   response.setHeader("access-control-allow-origin", origin);
   response.setHeader("vary", "origin");
   response.setHeader("access-control-allow-methods", "GET, POST, DELETE, OPTIONS");
@@ -145,8 +171,13 @@ export function createApiServer(deps: ServerDeps): Server {
     if (route === "POST /v1/access/exchange") {
       const body = await readBody(request);
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
+      const expected = trialAccessCode();
+      if (expected === null) {
+        sendJson(response, 503, { error: { code: "AI_DISABLED", message: "access code is not configured on this deployment", request_id: "" } });
+        return;
+      }
       const code = (body.value as { access_code?: unknown }).access_code;
-      if (typeof code !== "string" || code !== DEMO_TRIAL_CODE) {
+      if (typeof code !== "string" || !secretEquals(code.trim(), expected)) {
         sendJson(response, 401, { error: { code: "UNAUTHENTICATED", message: "access code rejected", request_id: "" } });
         return;
       }
@@ -276,6 +307,8 @@ export function buildDemoGateway(
   const profile = emptyDirectionProfile("api-profile");
   const gateway = new AiGateway({
     store, upstream, config,
+    // 试用期的单实例模式：只有显式设了开关才允许生产档用内存存储。
+    allowMemoryStore: memoryStoreAllowed(env),
     now: () => Date.now(),
     registryFor: () => registry,
     profileFor: () => profile,

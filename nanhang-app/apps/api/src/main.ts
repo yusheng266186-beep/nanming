@@ -19,9 +19,17 @@ if (!guard.ok) {
 }
 const server = createApiServer({ gateway });
 
-server.listen(config.port, "127.0.0.1", () => {
+/**
+ * 端口与监听地址。云函数（SCF Web 函数）会注入 PORT，并要求监听 0.0.0.0；
+ * 本地开发没有 PORT，就继续只听 127.0.0.1，不把开发服务暴露到局域网。
+ */
+const injectedPort = Number(process.env.PORT ?? "");
+const listeningPort = Number.isFinite(injectedPort) && injectedPort > 0 ? Math.floor(injectedPort) : config.port;
+const listeningHost = Number.isFinite(injectedPort) && injectedPort > 0 ? "0.0.0.0" : "127.0.0.1";
+
+server.listen(listeningPort, listeningHost, () => {
   console.log(JSON.stringify({
-    status: "listening", url: `http://127.0.0.1:${config.port}`, profile: config.profile,
+    status: "listening", url: `http://${listeningHost}:${listeningPort}`, profile: config.profile,
     upstream: gateway.readiness().upstream, ai: gateway.readiness().ai,
     hint: [
       `真模型：${ENV_NAMES.upstream}=qianfan + ${ENV_NAMES.qianfanApiKey} + ${ENV_NAMES.qianfanModel}`,

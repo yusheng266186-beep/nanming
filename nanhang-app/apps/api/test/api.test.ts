@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { createApiServer, buildDemoGateway, selectUpstream, DEMO_TRIAL_CODE } from "../src/server.ts";
+import { createApiServer, buildDemoGateway, selectUpstream, trialAccessCode, DEMO_TRIAL_CODE } from "../src/server.ts";
 import { parseSseStream } from "@nanhang/ai-gateway";
 import { scenarioUpstream } from "../src/dev-upstream.ts";
 import { withConfig, AiGateway, MemoryStateStore, createEvidenceRegistry } from "@nanhang/ai-gateway";
@@ -288,6 +288,45 @@ describe("上游选择", () => {
   it("端点写错时在启动阶段就停住", () => {
     expect(() => selectUpstream({ ...QIANFAN, QIANFAN_BASE_URL: "https://evil.example/v2/tokenplan/personal" }))
       .toThrow(/允许名单/);
+  });
+});
+
+describe("试用访问码不能靠仓库里的演示码上线", () => {
+  it("开发档回落到演示码，生产档没配就当作未配置", () => {
+    expect(trialAccessCode({})).toBe(DEMO_TRIAL_CODE);
+    expect(trialAccessCode({ NANHANG_AI_PROFILE: "production" })).toBeNull();
+  });
+
+  it("配了自己的码就用它，并去掉首尾空白", () => {
+    expect(trialAccessCode({ NANHANG_AI_PROFILE: "production", NANHANG_TRIAL_ACCESS_CODE: "  nanhang-2026  " }))
+      .toBe("nanhang-2026");
+  });
+
+  it("生产档下演示码被拒、自己的码放行", async () => {
+    const server = harnessServer().server;
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const previous = { profile: process.env.NANHANG_AI_PROFILE, code: process.env.NANHANG_TRIAL_ACCESS_CODE };
+    try {
+      process.env.NANHANG_AI_PROFILE = "production";
+      delete process.env.NANHANG_TRIAL_ACCESS_CODE;
+      const withoutCode = await fetch(`${base}/v1/access/exchange`, { method: "POST",
+        headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: DEMO_TRIAL_CODE }) });
+      expect(withoutCode.status).toBe(503);
+
+      process.env.NANHANG_TRIAL_ACCESS_CODE = "nanhang-2026";
+      const demoRejected = await fetch(`${base}/v1/access/exchange`, { method: "POST",
+        headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: DEMO_TRIAL_CODE }) });
+      expect(demoRejected.status).toBe(401);
+
+      const accepted = await fetch(`${base}/v1/access/exchange`, { method: "POST",
+        headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: "nanhang-2026" }) });
+      expect(accepted.status).toBe(200);
+    } finally {
+      if (previous.profile === undefined) delete process.env.NANHANG_AI_PROFILE; else process.env.NANHANG_AI_PROFILE = previous.profile;
+      if (previous.code === undefined) delete process.env.NANHANG_TRIAL_ACCESS_CODE; else process.env.NANHANG_TRIAL_ACCESS_CODE = previous.code;
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 });
 

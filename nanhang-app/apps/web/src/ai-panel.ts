@@ -35,12 +35,16 @@ export interface AiPanelState {
   readonly mode: ChatMode;
   /** 本轮可以直接点的答案；自由探索模式下恒为空。 */
   readonly options: readonly string[];
+  /** 谈心页已进入对话阶段（选完聊法、按下「开始谈心」）。 */
+  readonly started: boolean;
+  /** 对话记录，旧→新。发给模型作为上下文（只带最近几轮），也是聊天页的转录来源。 */
+  readonly history: readonly { readonly role: "user" | "assistant"; readonly text: string }[];
 }
 
 export const initialAiPanel: AiPanelState = {
   enabled: false, connected: false, apiBase: DEFAULT_API_BASE, token: null,
   pending: false, reply: null, status: null, suggestions: [], actions: [], replyRevision: null,
-  tier: DEFAULT_THINKING_TIER, mode: DEFAULT_CHAT_MODE, options: []
+  tier: DEFAULT_THINKING_TIER, mode: DEFAULT_CHAT_MODE, options: [], started: false, history: []
 };
 
 /** 档位只影响下一轮；已经拿到的回复不因为切换档位而作废。 */
@@ -95,7 +99,28 @@ export function enableAi(state: AiPanelState): AiPanelState {
 export function disableAi(state: AiPanelState): AiPanelState {
   return { ...state, enabled: false, connected: false, token: null, pending: false, reply: null,
     status: "AI 已关闭。浏览、探索、匹配与航线图不受影响。", suggestions: [], actions: [], replyRevision: null,
-    options: [] };
+    options: [], started: false, history: [] };
+}
+
+/** 按下「开始谈心」：进入对话阶段并确保 AI 已启用——谈心页以 AI 谈心为主路径。 */
+export function withStarted(state: AiPanelState): AiPanelState {
+  return { ...state, started: true, enabled: true };
+}
+
+/** 学生发出一句话：立即进入转录（等待回复时也能看到自己说了什么）。 */
+export function withUserTurn(state: AiPanelState, text: string): AiPanelState {
+  return { ...state, history: [...state.history, { role: "user" as const, text }] };
+}
+
+/**
+ * 合并一轮结果：保留当前转录（含刚发出的用户消息），追加模型回复。
+ * 出错/降级时回复为 null，转录不追加——错误原因走 status 展示。
+ */
+export function applyTurnResult(current: AiPanelState, result: AiPanelState): AiPanelState {
+  return { ...current, ...result,
+    history: result.reply
+      ? [...current.history, { role: "assistant" as const, text: result.reply }]
+      : current.history };
 }
 
 export function withSession(state: AiPanelState, token: string): AiPanelState {
@@ -119,6 +144,9 @@ export interface AiTurnDeps {
  * request is issued, and `activeStamp` is read again when the response arrives. If the student
  * edited an input while the request was in flight the two differ, and the response is discarded
  * instead of being written into a route map it no longer describes (A47).
+ *
+ * `history` 是已有的对话记录（含刚发出的这条用户消息之前的部分）；只带最近 8 轮给模型，
+ * 让多轮谈心能接得上话，同时限制请求体大小。
  */
 export async function askAi(
   state: AiPanelState,
@@ -126,7 +154,8 @@ export async function askAi(
   activeStamp: AiRunStamp,
   userText: string,
   requestId: string,
-  deps: AiTurnDeps = {}
+  deps: AiTurnDeps = {},
+  history: readonly { readonly role: "user" | "assistant"; readonly text: string }[] = []
 ): Promise<AiPanelState> {
   if (!state.enabled) return state;
   if (!state.token) return { ...state, status: "请先兑换本地访问码。" };
@@ -135,7 +164,8 @@ export async function askAi(
   const result = await runAiTurn(
     { baseUrl: state.apiBase, token: state.token, ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}) },
     pending, activeStamp,
-    { runId: sendStamp.runId, requestId, inputRevision: sendStamp.inputRevision, userText, context: [],
+    { runId: sendStamp.runId, requestId, inputRevision: sendStamp.inputRevision, userText,
+      context: history.slice(-8).map(({ role, text }) => ({ role, text })),
       tier: state.tier, mode: state.mode }
   );
   return applyOutcome(state, result.outcome, result.httpStatus, sendStamp.inputRevision);

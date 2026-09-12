@@ -10,6 +10,8 @@ export const ENV_NAMES = {
   upstream: "NANHANG_AI_UPSTREAM",
   fakeScenario: "NANHANG_FAKE_SCENARIO",
   academicBinding: "NANHANG_ACADEMIC_BINDING",
+  allowMemoryStore: "NANHANG_AI_ALLOW_MEMORY_STORE",
+  corsOrigins: "NANHANG_CORS_ORIGINS",
   // 千帆的变量名与北辰保持一致，两套系统可以共用同一份凭据说明。
   qianfanApiKey: "QIANFAN_API_KEY",
   qianfanBaseUrl: "QIANFAN_BASE_URL",
@@ -63,8 +65,21 @@ export function loadRuntimeConfig(overrides: Partial<AiGatewayConfig> & { port?:
  * store adapter is wired. That is deliberate: it is better to have AI off than to bill users
  * from per-instance memory (SYSTEM_AND_INTERFACE_SPEC.md section 8).
  */
-export function productionGuard(config: AiGatewayConfig, storeKind: string): { readonly ok: boolean; readonly reason: string | null } {
+export function productionGuard(
+  config: AiGatewayConfig, storeKind: string, env: NodeJS.ProcessEnv = process.env
+): { readonly ok: boolean; readonly reason: string | null } {
   if (config.profile !== "production") return { ok: true, reason: null };
-  if (storeKind === "memory") return { ok: false, reason: "production requires a shared state store; memory is refused" };
+  if (storeKind === "memory" && env[ENV_NAMES.allowMemoryStore] !== "1") {
+    return {
+      ok: false,
+      reason: "production requires a shared state store; memory is refused"
+        + ` (set ${ENV_NAMES.allowMemoryStore}=1 to run the single-instance trial mode and accept losing sessions on restart)`
+    };
+  }
   return { ok: true, reason: null };
+}
+
+/** 与 productionGuard 同一个开关：网关内部判定 AI 是否可用时也要看它。 */
+export function memoryStoreAllowed(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[ENV_NAMES.allowMemoryStore] === "1";
 }
