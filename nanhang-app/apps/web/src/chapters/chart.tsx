@@ -17,8 +17,6 @@ export interface ChartProps {
   contextLabel: string;
   notify: (message: string) => void;
   chartSvgRef: MutableRefObject<SVGSVGElement | null>;
-  download: () => void;
-  clear: () => void;
 }
 
 const ROUTE_META = [
@@ -27,8 +25,22 @@ const ROUTE_META = [
   { kind: "self" as const, title: "我的自主选择", sub: "为自己的想法留一条路——只出现在你自选里的专业。" }
 ];
 
+/**
+ * 图内文字的排版约束（viewBox 0 0 1000 320，导出 PNG 用同一坐标系）。
+ *
+ * 三条关系线在 y=78/158/238，每条的波形只在自己 ±14 上下浮动；因此
+ * 「线间空档」是 165–229。航线小结放在这段空档里，才不会与中间那条线相交。
+ * 右端留出一条标签栏：线画到 LABEL_COLUMN_X 之前就停，标签右对齐到 992 再向左生长，
+ * 这样计数涨到五位数也不会溢出画布被裁掉（导出 PNG 与屏幕用的是同一个画布）。
+ */
+const ROUTE_LINE_END_X = 812;
+const ROUTE_LINE_CTRL_X = 640;
+const LABEL_COLUMN_X = 992;
+const ROUTE_TITLE_TOP_Y = 186;
+const ROUTE_TITLE_LINE_H = 17;
+
 export function renderChart({ state, page, setPage, pool, poolStale, aiDirectionIds, picks, range,
-  contextLabel, notify, chartSvgRef, download, clear }: ChartProps) {
+  contextLabel, notify, chartSvgRef }: ChartProps) {
   const routes = pool ? makeBranches(pool, aiDirectionIds, [...picks]) : [];
   const candidates = pool?.rows.map((row) => row.candidate) ?? [];
   const withRange = range !== null;
@@ -55,21 +67,22 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
       await navigator.clipboard.writeText(lines.join("\n"));
       notify("已复制文字版航线图");
     } catch {
-      notify("复制失败：浏览器未提供剪贴板权限，请改用「打印 / 另存为 PDF」。");
+      notify("复制失败：浏览器未提供剪贴板权限，请手动选中页面文字复制。");
     }
   };
   // Save the drawn route chart as a real raster PNG. The on-screen SVG is serialized (so it
   // carries the current relations and labels), given an explicit size, then drawn to a canvas.
-  // PNG export needs no print dialog; when the browser refuses the blob we fall back to printing.
+  // PNG export needs no dialog; when the browser refuses the blob we fall back to the text copy
+  // (打印入口已按负责人要求下线，这里不再引导去打印）。
   const savePng = async () => {
     const node = chartSvgRef.current;
-    if (!node) { notify("当前浏览器无法导出图片，请改用「打印 / 另存为 PDF」。"); return; }
+    if (!node) { notify("当前浏览器无法导出图片，请改用「复制文字版」。"); return; }
     const clone = node.cloneNode(true) as SVGSVGElement;
     clone.setAttribute("width", "1000");
     clone.setAttribute("height", "320");
     const svg = new XMLSerializer().serializeToString(clone);
     const ok = await svgStringToPng(svg, 1000, 320, `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
-    notify(ok ? "已保存 PNG 航线图" : "图片生成失败：浏览器拒绝导出，请改用「打印 / 另存为 PDF」。");
+    notify(ok ? "已保存 PNG 航线图" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
   };
   return <section id="page-chart" className={`view${page === "chart" ? " active" : ""}`} aria-label="航线图">
     <div className="page-head">
@@ -104,14 +117,15 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
             <g stroke="#cbc4b0" strokeWidth={0.6} opacity={0.5}><path d="M0 300h1000M0 40h1000" /></g>
             {drawable ? <>
               {relationGroups.map((group) => <path key={group.key}
-                d={`M96 ${group.y}C276 ${group.y - 26} 664 ${group.y + 22} 884 ${group.y}`}
+                d={`M96 ${group.y}C276 ${group.y - 26} ${ROUTE_LINE_CTRL_X} ${group.y + 22} ${ROUTE_LINE_END_X} ${group.y}`}
                 stroke={group.route} strokeWidth={group.width} strokeDasharray={group.dash || undefined} fill="none" strokeLinecap="round" />)}
               <g transform="translate(96,238)"><path d="M-16 0h32l-6 11h-20Z" fill="#0f262e" /><path d="M0 0V-26" stroke="#0f262e" strokeWidth={2} /><path d="M0-24 15-3H0Z" fill="#a97b34" /></g>
-              <text x="90" y="272" fontSize="11" fill="#6d7f83" textAnchor="middle" fontFamily="sans-serif">区间 · {rangeLabel} 分</text>
-              {relationGroups.map((group) => <text key={group.key} x="898" y={group.y + 4} fontSize="13" fill={group.route} fontFamily="'Cormorant Garamond',serif" fontWeight={600}>{group.label} {group.items.length}</text>)}
+              <text x="90" y="272" fontSize="11" fill="#2c444c" textAnchor="middle" fontFamily="sans-serif">区间 · {rangeLabel} 分</text>
+              {relationGroups.map((group) => <text key={group.key} x={LABEL_COLUMN_X} y={group.y + 4} fontSize="13" fill="#2c444c" textAnchor="end" fontFamily="'Cormorant Garamond',serif" fontWeight={600}>{group.label} {group.items.length}</text>)}
+              {/* 航线小结写在两条线之间的空档（165–229）里：原先贴在 y=148–182，正好横穿中间那条线。 */}
               {routes.slice(0, 3).map((route, index) =>
-                <text key={route.kind} x={296} y={148 + index * 17} fontSize="12.5" fill="#2c444c" fontFamily="'Noto Serif SC',serif">{route.title} · {route.rows.length} 条</text>)}
-            </> : <text x="500" y="170" fontSize="14" fill="#6d7f83" textAnchor="middle" fontFamily="sans-serif">{withRange ? "还没有可绘制的结果，先回「分数轴」重新匹配" : "尚未生成探索区间"}</text>}
+                <text key={route.kind} x={296} y={ROUTE_TITLE_TOP_Y + index * ROUTE_TITLE_LINE_H} fontSize="12.5" fill="#2c444c" fontFamily="'Noto Serif SC',serif">{route.title} · {route.rows.length} 条</text>)}
+            </> : <text x="500" y="170" fontSize="14" fill="#2c444c" textAnchor="middle" fontFamily="sans-serif">{withRange ? "还没有可绘制的结果，先回「分数轴」重新匹配" : "尚未生成探索区间"}</text>}
           </svg>
         </div>
         <div className="route-legend">
@@ -170,7 +184,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
                   </article>;
                 })}
               </div>}
-            {route.rows.length > 24 ? <p className="fhint" style={{ marginTop: 10 }}>已展示前 24 条，其余 {route.rows.length - 24} 条请下载 JSON 或打印查看。</p> : null}
+            {route.rows.length > 24 ? <p className="fhint" style={{ marginTop: 10 }}>已展示前 24 条，其余 {route.rows.length - 24} 条未逐条展开（复制文字版含每路前 20 条的院校与专业名）。</p> : null}
           </div>;
         })}
 
@@ -197,19 +211,15 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
       <p className="song">愿你既有仰望星空的方向，也有脚踏实地的航线。远方很远，但每一次起航，都从今天这一分开始。</p>
       <div className="sign">—— 南 溟</div>
     </div>
-    <div className="panel" style={{ marginTop: 22 }}>
-      <h3><Icon name="doc" />本人数据</h3>
-      <p className="psub">默认只留在当前内存；刷新页面即清空。只有主动下载时才会写入你的设备。</p>
-      <div className="chart-actions" style={{ justifyContent: "flex-start" }}>
-        <button type="button" className="btn sm" onClick={download}>下载本人 JSON</button>
-        <button type="button" className="btn sm ghost" onClick={clear}>清除本次探索</button>
-      </div>
-    </div>
-    <div className="chart-actions">
+    {/* 导出与返回（负责人 2026-09-12 定）：删掉那块个人资料面板与打印入口后，
+        只剩三枚按钮——导出 PNG 独占一行当主操作，复制与返回并排当次要操作，窄屏不会挤成一团。
+        清除本次探索已随该面板一起下线，改由顶栏「溟」→ 设置提供。 */}
+    <div className="chart-actions chart-export">
       <button type="button" className="btn brass" disabled={!drawable} onClick={() => { void savePng(); }}><Icon name="down" />保存为 PNG 图片</button>
-      <button type="button" className="btn ghost" onClick={() => window.print()}><Icon name="doc" />打印 / 另存为 PDF</button>
-      <button type="button" className="btn ghost" onClick={copyText}><Icon name="layers" />复制文字版</button>
-      <button type="button" className="btn ghost" onClick={() => setPage("axis")}><Icon name="axis" />回去调区间</button>
+      <div className="export-row">
+        <button type="button" className="btn ghost" onClick={copyText}><Icon name="layers" />复制文字版</button>
+        <button type="button" className="btn ghost" onClick={() => setPage("axis")}><Icon name="axis" />回去调区间</button>
+      </div>
     </div>
   </section>;
 }

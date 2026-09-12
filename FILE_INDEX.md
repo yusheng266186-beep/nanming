@@ -4,7 +4,7 @@
 > 统一进度（2026-09-12，2026-09-12-chapter-gate）：本地核心流程、真实招生发布与学校成绩接入完成；千帆、学生原话链路、共享会话存储均已上线；学校成绩改为云端密文托管（对象存储里只有密文）；TASK-14 剩余线上验收与回滚演练。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：28 个测试文件、398 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 本次验证：30 个测试文件、415 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
@@ -84,8 +84,10 @@
 | [nanhang-app/apps/web/test/quality-huixi.test.ts](nanhang-app/apps/web/test/quality-huixi.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/quality-presentation.test.ts](nanhang-app/apps/web/test/quality-presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/release-integration.test.ts](nanhang-app/apps/web/test/release-integration.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/sail-deck.test.ts](nanhang-app/apps/web/test/sail-deck.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/settings.test.ts](nanhang-app/apps/web/test/settings.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/theme-spirit.test.ts](nanhang-app/apps/web/test/theme-spirit.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/topbar-narrow.test.ts](nanhang-app/apps/web/test/topbar-narrow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/tsconfig.json](nanhang-app/apps/web/tsconfig.json) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/visual-evidence/demo-sail-1440x1000.png](nanhang-app/apps/web/visual-evidence/demo-sail-1440x1000.png) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/VISUAL_PROGRESS.md](nanhang-app/apps/web/VISUAL_PROGRESS.md) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -709,6 +711,7 @@
 | [nanhang-app/docs/verification/npm-validate-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-chapter-gate.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-chapter-gate.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-doc-sync.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-doc-sync.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/npm-validate-2026-09-12-frontend-lanes.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-frontend-lanes.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-live.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-live.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-redis.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-redis.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-school-cloud.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-school-cloud.txt) | 本次验证原始日志 |
@@ -726,6 +729,7 @@
 | [nanhang-app/docs/verification/task09-screenshots/desktop-start-1440.png](nanhang-app/docs/verification/task09-screenshots/desktop-start-1440.png) | TASK-09页面视觉核对截图 |
 | [nanhang-app/docs/verification/task09-screenshots/mobile-question-390.png](nanhang-app/docs/verification/task09-screenshots/mobile-question-390.png) | TASK-09页面视觉核对截图 |
 | [nanhang-app/docs/verification/task09-screenshots/mobile-top-390.png](nanhang-app/docs/verification/task09-screenshots/mobile-top-390.png) | TASK-09页面视觉核对截图 |
+| [nanhang-app/docs/verification/topbar-320-fixed-2026-09-12.png](nanhang-app/docs/verification/topbar-320-fixed-2026-09-12.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/validation-history-before-e2001cb.md](nanhang-app/docs/verification/validation-history-before-e2001cb.md) | 本次验证原始日志 |
 | [nanhang-app/fixtures/acceptance-cases.json](nanhang-app/fixtures/acceptance-cases.json) | 冻结合同或合成案例 |
 | [nanhang-app/fixtures/match-result.invalid.json](nanhang-app/fixtures/match-result.invalid.json) | 冻结合同或合成案例 |

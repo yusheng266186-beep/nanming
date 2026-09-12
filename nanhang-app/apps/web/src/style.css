@@ -171,11 +171,23 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .banner h3{font-family:var(--song);font-size:18px;margin-bottom:6px}
 .banner p{font-size:11.5px;color:var(--mut);line-height:1.9}
 .banner .icon{color:var(--brass)}
-.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0}
-.mini{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:20px}
-.mini .mk{font-size:10.5px;letter-spacing:.08em;color:var(--brass);display:flex;align-items:center;gap:7px}
-.mini h4{font-family:var(--song);font-size:16px;margin:12px 0 6px}
-.mini p{font-size:11.5px;color:var(--mut);line-height:1.9}
+/* 六站航程：抽屉式堆叠卡。收起时每站只露一行（章号 + 站名 + 这一站做什么），
+   相邻两张靠负外边距压边——压掉的只是上一张的下内边距，行内标题始终是单行（超长省略），
+   所以文字不会被下一张吃掉。展开的那一张把它后面那张推开，自己不再被压。 */
+.deck{margin:22px 0;position:relative}
+.stop{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;transition:border-color .3s,box-shadow .4s}
+.stop+.stop{margin-top:-14px}
+.stop.open+.stop{margin-top:10px}
+.stop.open{z-index:2;border-color:var(--brass-line);box-shadow:var(--sh-card)}
+.stop-head{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;text-align:left}
+.stop-head .mk{font-size:10.5px;letter-spacing:.08em;color:var(--brass);display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.stop-head h4{font-family:var(--song);font-size:15px;font-weight:500;margin:0;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stop-head:hover h4{color:var(--brass-3)}
+.stop-cue{flex:0 0 auto;color:var(--mut);transition:transform .35s var(--ease)}
+.stop.open .stop-cue{transform:rotate(180deg)}
+.stop-body{padding:0 16px 15px}
+.stop-body p{font-size:11.5px;color:var(--mut);line-height:1.9}
+.stop-body[hidden]{display:none}
 .quote-strip{padding:40px 0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .quote-strip p{font-family:var(--song);font-size:19px;letter-spacing:.06em;color:var(--sea)}
 .quote-strip span{font:italic 400 12px/1 var(--display);letter-spacing:.16em;color:var(--mut);display:block;margin-top:12px}
@@ -433,6 +445,13 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .blessing p{font-family:var(--song);font-size:19px;line-height:2.3;color:#eef4f1;max-width:620px;margin:18px auto 0;position:relative;z-index:2}
 .blessing .sign{font:italic 400 13px/1 var(--display);letter-spacing:.2em;color:var(--brass-2);margin-top:24px}
 .chart-actions{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+/* 航线图底部导出区：主操作（导出 PNG）独占一行并给足宽度，两枚次要操作等宽并排——
+   删掉「打印 / 另存为 PDF」与「本人数据」后重新排的版，窄屏不会三枚按钮挤成一条。 */
+.chart-actions.chart-export{flex-direction:column;align-items:center;gap:10px;margin-top:22px}
+.chart-actions.chart-export>.btn{min-width:min(280px,100%)}
+.chart-export .export-row{display:flex;gap:12px;justify-content:center;width:100%;max-width:440px}
+.chart-export .export-row .btn{flex:1 1 0;min-width:0;padding:0 16px}
+@media(max-width:400px){.chart-export .export-row{flex-wrap:wrap}.chart-export .export-row .btn{flex:1 1 100%}}
 dialog{padding:0;border:0;width:min(600px,calc(100% - 40px));max-height:88vh;max-height:88dvh;color:var(--ink);background:var(--paper);border-radius:20px;box-shadow:var(--sh-pop);overscroll-behavior:contain}
 dialog::backdrop{background:rgba(8,32,42,.42);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 dialog[open]{animation:dlg-in .42s var(--ease)}
@@ -497,7 +516,7 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
   .hero{grid-template-columns:1fr;padding:24px 0 16px;gap:26px}
   .hero-art{height:270px;border-radius:96px 12px 12px 12px}
   .hero h1{font-size:38px;margin:18px 0 16px}
-  .entry-grid,.trio,.dir-grid,.schools{grid-template-columns:1fr}
+  .entry-grid,.dir-grid,.schools{grid-template-columns:1fr}
   .page-head{grid-template-columns:1fr;padding:30px 0 20px}
   .head-aside{display:none}
   .bignum{font-size:52px}
@@ -728,12 +747,16 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
   #page-sail .sec-head{margin-bottom:14px}
   #page-sail .sec-head h2{font-size:20px}
   #page-sail .sec-head p{margin-top:4px;line-height:1.7}
-  /* 六次靠岸：卡片瘦一圈，编号—标题—说明之间的空档收掉一半。 */
-  #page-sail .trio{gap:9px;margin:14px 0 0}
-  #page-sail .mini{padding:13px 15px;border-radius:11px}
-  #page-sail .mini .mk{font-size:10px;gap:6px}
-  #page-sail .mini h4{font-size:14.5px;line-height:1.35;margin:7px 0 3px}
-  #page-sail .mini p{font-size:11px;line-height:1.7}
+  /* 六次靠岸：抽屉卡在窄屏再瘦一圈（标题仍是单行，靠省略号兜底）。 */
+  #page-sail .deck{margin:14px 0 0}
+  #page-sail .stop{border-radius:11px}
+  #page-sail .stop+.stop{margin-top:-12px}
+  #page-sail .stop.open+.stop{margin-top:8px}
+  #page-sail .stop-head{padding:12px 13px;gap:9px}
+  #page-sail .stop-head .mk{font-size:10px;gap:6px}
+  #page-sail .stop-head h4{font-size:14px}
+  #page-sail .stop-body{padding:0 13px 13px}
+  #page-sail .stop-body p{font-size:11px;line-height:1.75}
   /* 先定下三件事：面板、两栏字段与行动按钮之间的间距同步收紧。 */
   #page-sail .sail-panel{margin-top:14px}
   #page-sail .panel{padding:18px;border-radius:14px}
@@ -743,4 +766,21 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
   #page-sail .sail-score{margin-top:18px;margin-bottom:0;max-width:100%}
   #page-sail .fhint{margin-top:7px;line-height:1.7}
   #page-sail .sail-act{margin-top:16px;gap:14px}
+}
+
+/* ══════════ 顶栏极限窄屏（≤340px，320px 设备）══════════
+   顶栏三个部件——品牌（flex-shrink:0）、上下文按钮、头像（.head-end 整体 flex-shrink:0）——
+   在 320px 下最小宽度加起来超出容器，页面整体横向溢出约 18px（实施记录在案的遗留问题）。
+   390px 及以上不需要任何改动，所以全部收紧只放在 ≤340px：
+   品牌字距、按钮内边距与图标、头像同步收一圈；并允许 .head-end 作为最后一道防线收缩，
+   上下文文字以省略号兜底——无论系统字体渲染偏宽多少，都不再把页面顶出横向滚动。 */
+@media(max-width:340px){
+  .topbar-in{gap:8px}
+  .brand{gap:9px}
+  .brand-name{font-size:18px;letter-spacing:.16em}
+  .head-end{flex-shrink:1;min-width:0;gap:8px}
+  .ctx-btn{min-width:0;gap:5px;padding:0 8px;font-size:10px;min-height:38px}
+  .ctx-btn>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ctx-btn .icon{width:13px;height:13px}
+  .avatar{width:34px;height:34px;font-size:14px}
 }
