@@ -1,6 +1,8 @@
+import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { ADDITIONAL_OPTIONS, RELEASE_LABELS, SYNTHETIC_NOTICE, withForm, type WebState } from "../model.js";
 import { ArtSlot, Icon } from "../art.js";
+import { prefersReducedMotion } from "../chat.js";
 import { label, type PageId, type QualityState } from "./shared.js";
 
 export interface SailProps {
@@ -15,6 +17,26 @@ export interface SailProps {
 }
 
 export function renderSail({ state, setState, page, setPage, quality, setShowKun, setToast, toast }: SailProps) {
+  // 海景的小巧思：孤帆远影、岸边双层浪是指针无关的环境动画；指针视差只在鼠标/笔上生效
+  // （触屏拖页时跟着抖），点水涟漪给触屏一个落点反馈。prefers-reduced-motion 时全部停用。
+  const [tilt, setTilt] = useState<{ x: number; y: number } | null>(null);
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+  const rippleSeq = useRef(0);
+  const reducedMotion = useMemo(() => prefersReducedMotion(), []);
+  const artPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (reducedMotion || event.pointerType === "touch") return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTilt({ x: ((event.clientX - rect.left) / rect.width) * 2 - 1, y: ((event.clientY - rect.top) / rect.height) * 2 - 1 });
+  };
+  const artLeave = () => setTilt(null);
+  const artTap = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (reducedMotion) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const id = ++rippleSeq.current;
+    setRipples((current) => [...current.slice(-4), { id, x: event.clientX - rect.left, y: event.clientY - rect.top }]);
+    window.setTimeout(() => setRipples((current) => current.filter((item) => item.id !== id)), 1300);
+  };
+  const tiltStyle = tilt ? { transform: `translate(${tilt.x * 8}px, ${tilt.y * 6}px) scale(1.06)` } : undefined;
   return <section id="page-sail" className={`view${page === "sail" ? " active" : ""}`} aria-label="起航">
     <div className="hero">
       <div className="hero-copy">
@@ -24,11 +46,25 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           <span>Every far shore begins with today&apos;s provision.</span></p>
         <div className="hero-foot">南溟用真实数据与你自己保存的原话，拼出一张能落地的航线。</div>
       </div>
-      <div className="hero-art">
-        <ArtSlot name="sea" />
+      <div className="hero-art" onPointerMove={artPointer} onPointerLeave={artLeave} onPointerDown={artTap}>
+        <div className="slot-wrap" style={tiltStyle}>
+          <ArtSlot name="sea" />
+        </div>
+        <div className="art-drift" aria-hidden="true"><svg className="drift-boat"><use href="#i-sail" /></svg></div>
+        <div className="art-waves" aria-hidden="true">
+          <svg className="wave w1" viewBox="0 0 1200 60" preserveAspectRatio="none">
+            <path d="M0 34Q60 18 120 34T240 34T360 34T480 34T600 34T720 34T840 34T960 34T1080 34T1200 34V60H0Z" />
+          </svg>
+          <svg className="wave w2" viewBox="0 0 1200 60" preserveAspectRatio="none">
+            <path d="M0 30Q80 14 160 30T320 30T480 30T640 30T800 30T960 30T1120 30T1280 30V60H0Z" />
+          </svg>
+        </div>
+        {ripples.map((ripple) => <span key={ripple.id} className="art-ripple" aria-hidden="true"
+          style={{ left: ripple.x, top: ripple.y }} />)}
         <button type="button" className="pole-star" aria-label="北辰" onClick={() => setShowKun(true)}><Icon name="star" /></button>
-        <div className="art-tag">SET SAIL — 01</div>
-        <div className="art-cap"><p>每一个远方，<br />都从今天开始准备。</p><span className="vert">南冥者，天池也</span></div>
+        <div className="art-tag" style={tilt ? { transform: `translate(${tilt.x * -6}px, ${tilt.y * -3}px)` } : undefined}>SET SAIL — 01</div>
+        <div className="art-cap" style={tilt ? { transform: `translate(${tilt.x * -5}px, ${tilt.y * -3}px)` } : undefined}>
+          <p>每一个远方，<br />都从今天开始准备。</p><span className="vert">南冥者，天池也</span></div>
       </div>
     </div>
 
