@@ -104,31 +104,42 @@ export function scoreRangeForRanks(
   return best === null || worst === null ? null : { min: worst, max: best };
 }
 
+/** 海报里的一张推荐卡：和手机端卡片同一套字段。 */
+export interface PosterCard {
+  institution: string;
+  city: string | null;
+  /** 历史位置关系（着色与页面上那条细线一致）。 */
+  relation: { label: string; color: string } | null;
+  major: string;
+  level: string | null;
+  /** 批次 · 专业类 ·（资格不符时追加） */
+  sub: string;
+  /** 参考年最低分（「未知」表示该分数不在公布范围内）。 */
+  score: string;
+  rank: string;
+  plan: string;
+  fee: string;
+  tags: readonly string[];
+}
+
 export interface PosterRoute {
   title: string;
-  rows: readonly {
-    institution: string;
-    city: string | null;
-    major: string;
-    level: string | null;
-    /** 参考年最低分（没有就写「未知」）。 */
-    score: string;
-    rank: string;
-    plan: string;
-  }[];
-  /** 页面只展示了前 N 条时，把「还有多少条」照实写进海报。 */
+  /** 这一条线总共有多少条（卡片只列前若干张，其余照实写在海报里）。 */
+  total: number;
+  cards: readonly PosterCard[];
   more: number;
 }
 
 /**
- * 整页海报（导出 PNG 用）：航线图 + 两条线的院校专业清单 + 末尾那段「写给你」。
+ * 整页海报（导出 PNG）：与手机端同一套东西——航线图 + 两条线的推荐卡 + 末尾「写给你」。
  *
- * 页面上的三样东西各自成块，导出时拼成一张竖版长图——学生要发给家长或自己留档的是整张，
- * 不是中间那块小图。文本一律用元素属性（与图内一致：序列化后 CSS 拿不到），
- * 也不引用任何 id。图片由 svgStringToPng 光栅化，尺寸由这里的 viewBox 决定。
+ * 负责人 2026-09-12：「导出的图片要和手机端的显示一致，也就是长的矩形卡片，而不是把院校
+ * 集中在一坨看起来密密麻麻的。」所以这里是**竖版卡片式**：宽度按手机版心放大一倍（720），
+ * 图用竖版那张版心，每条线一张张卡片往下排（与页面上卡片几乎同构），不是紧凑的文字行。
+ * 文本与颜色一律写元素属性（序列化后 CSS 拿不到），且不引用任何 id。
  */
 export function buildRoutePoster(input: {
-  /** 页面上那张航线图序列化后的内容（不含外层 <svg>）。 */
+  /** 竖版航线图序列化后的内容（不含外层 <svg>）。 */
   chartBody: string;
   chartWidth: number;
   chartHeight: number;
@@ -139,54 +150,71 @@ export function buildRoutePoster(input: {
   blessing: { text: string; sign: string };
   note: string;
 }): string {
-  const W = 1000;
-  const pad = 64;
-  const headerH = 116;
-  const rowH = 22;
-  const chartTop = headerH;
-  let y = chartTop + input.chartHeight + 34;
-  const blocks: string[] = [];
-  const escape = (value: string) =>
-    value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const W = 720;
+  const pad = 24;
+  const cardW = W - pad * 2;
   const song = "'Noto Serif SC', serif";
   const display = "'Cormorant Garamond', serif";
+  const escape = (value: string) =>
+    value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const chartH = Math.round(input.chartHeight * cardW / input.chartWidth);
+  const parts: string[] = [];
+  let y = 118;
+  parts.push(`<svg x="${pad}" y="${y}" width="${cardW}" height="${chartH}" viewBox="0 0 ${input.chartWidth} ${input.chartHeight}">${input.chartBody}</svg>`);
+  y += chartH + 34;
   for (const route of input.routes) {
-    blocks.push(`<text x="${pad}" y="${y}" font-family="${song}" font-size="19" fill="#0f262e">${escape(route.title)} · ${route.rows.length + route.more} 条专业 × 院校</text>`);
-    y += 12;
-    blocks.push(`<path d="M${pad} ${y}H${W - pad}" stroke="#cbc4b0" stroke-width="0.8" opacity="0.7"/>`);
-    y += rowH;
-    for (const row of route.rows) {
-      const left = escape(`${row.institution}${row.city ? ` · ${row.city}` : ""} · ${row.major}${row.level ? `（${row.level}）` : ""}`);
-      blocks.push(`<text x="${pad}" y="${y}" font-family="${song}" font-size="12.5" fill="#2c444c">${left}</text>`);
-      blocks.push(`<text x="${W - pad}" y="${y}" text-anchor="end" font-family="${display}" font-size="13" fill="#12454f">${escape(`最低 ${row.score} 分 · 位次 ${row.rank} · 招 ${row.plan}`)}</text>`);
-      y += rowH;
+    parts.push(`<text x="${pad}" y="${y}" font-family="${song}" font-size="18" fill="#0f262e">${escape(route.title)} · ${route.total} 条专业 × 院校</text>`);
+    y += 10;
+    parts.push(`<path d="M${pad} ${y}H${W - pad}" stroke="#a97b34" stroke-width="1" opacity="0.5"/>`);
+    y += 20;
+    for (const card of route.cards) {
+      const h = card.tags.length ? 136 : 116;
+      parts.push(`<rect x="${pad}" y="${y}" width="${cardW}" height="${h}" rx="14" fill="#fbf9f2" stroke="#dcd6c6"/>`);
+      if (card.relation) {
+        parts.push(`<rect x="${pad + 14}" y="${y + 1}" width="${cardW - 28}" height="3" rx="2" fill="${card.relation.color}" opacity="0.85"/>`);
+      }
+      parts.push(`<text x="${pad + 16}" y="${y + 28}" font-family="${song}" font-size="11" fill="#6d7f83">${escape(`${card.institution}${card.city ? ` · ${card.city}` : ""}`)}</text>`);
+      if (card.relation) {
+        parts.push(`<circle cx="${W - pad - 16 - Math.round(card.relation.label.length * 10.5) - 12}" cy="${y + 24}" r="3" fill="${card.relation.color}"/>`);
+        parts.push(`<text x="${W - pad - 16}" y="${y + 28}" text-anchor="end" font-family="${song}" font-size="10.5" fill="${card.relation.color}">${escape(card.relation.label)}</text>`);
+      }
+      parts.push(`<text x="${pad + 16}" y="${y + 56}" font-family="${song}" font-size="16.5" fill="#0f262e">${escape(card.major)}${card.level ? `<tspan font-family="${song}" font-size="10" fill="#8a6326">　${escape(card.level)}</tspan>` : ""}</text>`);
+      parts.push(`<text x="${pad + 16}" y="${y + 76}" font-family="${song}" font-size="11" fill="#6d7f83">${escape(card.sub)}</text>`);
+      parts.push(`<path d="M${pad} ${y + 88}H${W - pad}" stroke="#dcd6c6" stroke-width="0.8"/>`);
+      parts.push(`<text x="${pad + 16}" y="${y + 108}" font-family="${song}" font-size="11.5" fill="#6d7f83">${input.referenceYear} 最低 <tspan font-family="${display}" font-size="17" font-weight="600" fill="#8a6326">${escape(card.score)}</tspan> 分</text>`);
+      parts.push(`<text x="${W - pad - 16}" y="${y + 108}" text-anchor="end" font-family="${song}" font-size="11" fill="#2c444c">位次 ${escape(card.rank)} · 招 ${escape(card.plan)} 人 · ${escape(card.fee)}</text>`);
+      if (card.tags.length) {
+        parts.push(`<text x="${pad + 16}" y="${y + 127}" font-family="${song}" font-size="10" fill="#8a6326">${escape(card.tags.join(" · "))}</text>`);
+      }
+      y += h + 10;
     }
     if (route.more > 0) {
-      blocks.push(`<text x="${pad}" y="${y}" font-family="${song}" font-size="11" fill="#6d7f83">另有 ${route.more} 条未逐条列出（页面与海报都只展开前 ${route.rows.length} 条）。</text>`);
-      y += rowH;
+      parts.push(`<text x="${pad}" y="${y + 6}" font-family="${song}" font-size="11" fill="#6d7f83">另有 ${route.more} 条未逐条列出（页面与海报都只展开前 ${route.cards.length} 条）。</text>`);
+      y += 24;
     }
-    y += 22;
+    y += 26;
   }
-  const blessTop = y + 8;
-  const blessH = 168;
-  const total = Math.round(blessTop + blessH + 64);
-  const chartTopTag = `<svg x="0" y="${chartTop}" width="${input.chartWidth}" height="${input.chartHeight}" viewBox="0 0 ${input.chartWidth} ${input.chartHeight}">${input.chartBody}</svg>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${total}" viewBox="0 0 ${W} ${total}">
-  <rect width="${W}" height="${total}" fill="#f7f5ee"/>
-  <text x="${pad}" y="70" font-family="${display}" font-style="italic" font-size="15" letter-spacing="2" fill="#a97b34">CHART OF THE SOUTHERN DEEP</text>
-  <text x="${pad}" y="102" font-family="${song}" font-size="26" fill="#0f262e">南溟航线图</text>
-  <text x="${W - pad}" y="78" text-anchor="end" font-family="${song}" font-size="13" fill="#2c444c">${escape(input.contextLabel)}</text>
-  <text x="${W - pad}" y="102" text-anchor="end" font-family="${song}" font-size="13" fill="#2c444c">探索区间 ${escape(input.rangeLabel)} 分 · 参考年 ${input.referenceYear}</text>
-  <path d="M${pad} 116H${W - pad}" stroke="#a97b34" stroke-width="1" opacity="0.6"/>
-  ${chartTopTag}
-  ${blocks.join("\n  ")}
-  <rect x="${pad}" y="${blessTop}" width="${W - pad * 2}" height="${blessH}" fill="#12454f"/>
+  const blessTop = Math.round(y);
+  const blessH = 196;
+  const total = blessTop + blessH + 76;
+  const head = `<rect width="${W}" height="${total}" fill="#f7f5ee"/>
+  <text x="${pad}" y="46" font-family="${display}" font-style="italic" font-size="12.5" letter-spacing="2" fill="#a97b34">CHART OF THE SOUTHERN DEEP</text>
+  <text x="${pad}" y="86" font-family="${song}" font-size="27" fill="#0f262e">南溟航线图</text>
+  <text x="${W - pad}" y="52" text-anchor="end" font-family="${song}" font-size="12.5" fill="#2c444c">${escape(input.contextLabel)}</text>
+  <text x="${W - pad}" y="76" text-anchor="end" font-family="${song}" font-size="12.5" fill="#2c444c">探索区间 ${escape(input.rangeLabel)} 分 · 参考年 ${input.referenceYear}</text>
+  <path d="M${pad} 104H${W - pad}" stroke="#a97b34" stroke-width="1" opacity="0.6"/>`;
+  const bless = `<rect x="${pad}" y="${blessTop}" width="${cardW}" height="${blessH}" rx="16" fill="#12454f"/>
   <text x="${W / 2}" y="${blessTop + 62}" text-anchor="middle" font-family="${display}" font-style="italic" font-size="13" letter-spacing="2" fill="#c89b52">A WORD FOR YOU · 写给你</text>
-  <text x="${W / 2}" y="${blessTop + 104}" text-anchor="middle" font-family="${song}" font-size="18" fill="#eef4f1">${escape(input.blessing.text)}</text>
-  <text x="${W / 2}" y="${blessTop + 140}" text-anchor="middle" font-family="${display}" font-size="14" fill="#9fbdb6">${escape(input.blessing.sign)}</text>
-  <text x="${W / 2}" y="${total - 26}" text-anchor="middle" font-family="${display}" font-style="italic" font-size="11" fill="#6d7f83">${escape(input.note)}</text>
+  <text x="${W / 2}" y="${blessTop + 112}" text-anchor="middle" font-family="${song}" font-size="17" fill="#eef4f1">${escape(input.blessing.text)}</text>
+  <text x="${W / 2}" y="${blessTop + 158}" text-anchor="middle" font-family="${display}" font-size="14" fill="#9fbdb6">${escape(input.blessing.sign)}</text>
+  <text x="${W / 2}" y="${total - 30}" text-anchor="middle" font-family="${display}" font-style="italic" font-size="10.5" fill="#6d7f83">${escape(input.note)}</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${total}" viewBox="0 0 ${W} ${total}">
+  ${head}
+  ${parts.join("\n  ")}
+  ${bless}
 </svg>`;
 }
+
 
 /** The exploration experience card for a direction, and its linked professional fact card. */
 const DIRECTION_CARDS = explorationCards();

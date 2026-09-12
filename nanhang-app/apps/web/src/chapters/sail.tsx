@@ -169,7 +169,18 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
         {/* 行动入口放在表单之后：流程是「先定下三件事，再出发」。开始起航弹出登船卡片，
             两条入口作为通向定位/成绩的桥——不再平铺在页面上。 */}
         <div className="hero-act sail-act">
-          <button type="button" className="btn brass" onClick={() => setBoardOpen(true)}>开始起航<Icon name="arrow" /></button>
+          {/* 负责人 2026-09-12：选科没齐时不许拉开登船卡，只提醒去选——没有选科，后面的位次、
+              资格与匹配全是未知，先放人上船等于让他进去看一页「未知」。 */}
+          <button type="button" className="btn brass"
+            onClick={() => {
+              if (state.form.primary === null || state.form.additional.length !== 2) {
+                setToast(state.form.primary
+                  ? "再选科目要正好 2 门——先在下面选满，再开始起航。"
+                  : "先在下面选好首选科目与两门再选科目，再开始起航。");
+                return;
+              }
+              setBoardOpen(true);
+            }}>开始起航<Icon name="arrow" /></button>
           <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
         </div>
         <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>

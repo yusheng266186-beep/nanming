@@ -169,28 +169,31 @@ describe("参考年最低分与整页海报", () => {
     expect(scoreRangeForRanks(null, "PHYSICS", 2025, [1, 10])).toBeNull();
   });
 
-  it("海报把航线图、两条线的清单、寄语与免责都装进去", () => {
+  it("海报是竖版卡片式：一张张卡片、含最低分与寄语", () => {
     const poster = buildRoutePoster({
       chartBody: "<text>chart</text>",
-      chartWidth: 1000, chartHeight: 320,
+      chartWidth: 360, chartHeight: 344,
       contextLabel: "四川 · 物理类 · 2027", rangeLabel: "200–460", referenceYear: 2025,
-      routes: [{ title: "我的自主选择", more: 361, rows: [
-        { institution: "示例大学", city: "成都", major: "计算机科学与技术", level: "本科",
-          score: "555", rank: "8,947", plan: "2" }
+      routes: [{ title: "我的自主选择", total: 385, more: 361, cards: [
+        { institution: "示例大学", city: "成都", relation: { label: "历史位置较有余量", color: "#7d9a86" },
+          major: "计算机科学与技术", level: "本科", sub: "本科批B段 · 计算机类",
+          score: "444", rank: "200,565", plan: "6", fee: "学费 5000", tags: ["省部共建", "卓越工程师"] }
       ] }],
       blessing: { text: "愿你既有仰望星空的方向。", sign: "—— 南 溟" },
       note: "按历史位置参考绘制 · 不构成录取判断"
     });
     expect(poster).toContain("<svg");
-    expect(poster).toContain("<text>chart</text>");          // 航线图正文嵌在海报里
-    expect(poster).toContain("我的自主选择 · 362 条专业 × 院校");
-    expect(poster).toContain("示例大学 · 成都 · 计算机科学与技术（本科）");
-    expect(poster).toContain("最低 555 分 · 位次 8,947 · 招 2");
+    expect(poster).toContain("<text>chart</text>");                    // 竖版航线图正文嵌在海报里
+    expect(poster).toContain("我的自主选择 · 385 条专业 × 院校");
+    expect(poster).toContain("示例大学 · 成都");                       // 卡片：院校抬头
+    expect(poster).toContain("计算机科学与技术");                      // 卡片：专业
+    expect(poster).toContain("2025 最低 ");                            // 卡片：参考年最低分
+    expect(poster).toContain("位次 200,565 · 招 6 人 · 学费 5000");     // 卡片：一行数据
+    expect(poster).toContain("省部共建 · 卓越工程师");                  // 卡片：院校标签
     expect(poster).toContain("另有 361 条未逐条列出");
-    expect(poster).toContain("愿你既有仰望星空的方向。");     // 写给你
+    expect(poster).toContain("愿你既有仰望星空的方向。");               // 写给你
     expect(poster).toContain("不构成录取判断");
-    // 高度写进了 viewBox，导出按它取尺寸
-    expect(poster).toMatch(/viewBox="0 0 1000 \d+"/);
+    expect(poster).toMatch(/width="720" height="\d+"/);               // 竖版：宽 720
   });
 
   it("卡片压扁了：数据条一行、关系标签进抬头行", () => {
@@ -202,7 +205,8 @@ describe("参考年最低分与整页海报", () => {
     }
     // 两版航线图都留在 DOM 里（导出取横版），显隐交给 CSS
     expect(chart).toContain('className="rt-narrow"');
-    expect(chart).toContain('className="rt-wide" ref={posterSvgRef}');
+    expect(chart).toContain('className="rt-wide"');
+    expect(chart).toContain('ref={chartSvgRef} viewBox="0 0 360 344"');
     expect(css).toMatch(/@media\(max-width:640px\)\{\.routes \.rt-narrow\{display:block\}/);
   });
 });

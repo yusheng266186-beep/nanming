@@ -1,11 +1,11 @@
 # 前端三线并行：分工、共享文件与认领规则
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中。
+> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP；API版本9和Pages均已上线，旧固定码失效，线上核验通过。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：40 个测试文件、491 项通过、1 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：负责人保存TOTP种子并录入认证器；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 负责人要求（2026-09-12）：多个 Agent 同时改 `apps/web`，必须**明确分工、互不覆盖**。本文件是这份分工的
@@ -77,6 +77,7 @@
 | 2026-09-12 20:20 | 线一（负责人指派） | `chapters/chart.tsx`（推荐卡与已撤掉的「保底路线」段）、`chapters/axis.tsx`（同款推荐卡）、`chapters/shared.ts`（新增 `levelLabel`/`formatRankInterval`）、`style.css`（`.scard` 视觉与标签样式；删掉已失效的 `.safety/.srow/.sicon`）、`test/route-labels.test.ts`（新） | 负责人要求：删掉页底的「保底路线」说明段，把冲刺/保底这类分层直接做进推荐院校卡片；卡片视觉升级。按项目既有边界（不提供「冲稳保」）用历史位置关系标签实现，卡片上另给办学层次（本科/职业本科/高职）与院校标签。动手前已重读四份文件当前内容。985/211/双一流因发布包与源工作簿都没有该字段，未实现，已记入实施记录待裁决。 | 已交还 |
 | 2026-09-12 20:14 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（三件事一段 + 窄屏三行）、`test/sail-pack.test.ts`（新） | 「先定下三件事」加编号印章、n/2 计数、逐件入场、chip 盖章光环、备齐时出发按钮弹一下；满 2 门只变淡不禁用 | 已交还 |
 | 2026-09-12 20:18 | 线一（负责人指派） | `chapters/chart.tsx`（院校卡分层标签与标签行） | 航线图院校卡改用发布包的历史位置关系做分层标签 | 已交还（提交 `65b35bb`） |
+| 2026-09-12 21:55 | 线一（负责人指派） | `chapters/sail.tsx`（开始起航门禁）、`chapters/chart.tsx`、`chapters/shared.ts`（海报改成竖版卡片）、`test/route-labels.test.ts` | ① 选科没齐时不许拉开登船卡，只提醒；② 导出 PNG 改成与手机端一致的竖版卡片长图（720 宽：竖版航线图 + 一条条院校卡片 + 写给你） | 已交还 |
 | 2026-09-12 21:40 | 线一（负责人指派） | `chapters/chart.tsx`、`chapters/axis.tsx`、`chapters/shared.ts`、`style.css`、`test/route-labels.test.ts` | 负责人三项：卡片补参考年最低分、卡片压扁（236→148px）、导出 PNG 改成整页海报（航线图 + 双线清单 + 写给你）。新增 `scoreRangeForRanks` / `buildRoutePoster` 两个纯函数；两版版心改为 CSS 切换以便窄屏也能导出横版海报 | 已交还 |
 | 2026-09-12 20:30 | 线一（负责人指派） | `chapters/chart.tsx`（导出用的那张 SVG 重画 + 图例）、`chapters/shared.ts`（导出垫色改纸色）、`style.css`（`.route-legend`/`.rl`）、`test/route-labels.test.ts`（加 4 项导出约束断言） | 负责人指出图内 SVG 与整站主题不符：重画成海图版画（版框、四角刻线、不标数值的底纹、双描边航路与端点节点、右侧标签栏、帆船起航点、区间图签、底部小结）。顺带修掉导出 PNG 的深色底：图内不再引用任何 id（渐变/滤镜/`<use>`），垫色改纸色 | 已交还 |
 | 2026-09-12 20:21 | 线三（负责人指派） | `style.css`（定位页一段）、`test/locate-motion.test.ts`（新）；`chapters/locate.tsx` 未改动 | 定位页编排与微交互：逐块落位、位次标记落下、柱子原地长起、考试行 focus 提亮、已填格子描边转铜；并给 reduced-motion 补 `animation-delay:0s` | 已交还 |

@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
@@ -78,8 +77,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   const rangeLabel = range ? `${range.low}–${range.high}` : "未生成";
   /** 三种关系的记录总数，用来算各自占比（两个版式共用）。 */
   const relationTotal = relationGroups.reduce((sum, group) => sum + group.items.length, 0);
-  /** 海报用的宽版航线图：窄屏时被 CSS 隐藏，但始终在 DOM 里，导出时从它取内容。 */
-  const posterSvgRef = useRef<SVGSVGElement | null>(null);
   /** 学生这一次真正选了方向没有（自选专业类 + AI 建议），空结果要据此分开解释。 */
   const chosenDirections = picks.length + aiDirectionIds.length;
   /** 选了、但当前院校池里一条记录都没有的专业类名——名字从 id 里取回，池子派生目录里没有它们。 */
@@ -106,18 +103,16 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
     }
   };
   /**
-   * 导出整页海报（负责人 2026-09-12：只导那张小图不够，要把航线图、两条线的院校专业清单
-   * 和末尾「写给你」一起囊括）。
-   *
-   * 图的正文取宽版那张（窄屏时被 CSS 隐藏，但一直在 DOM 里），清单只列页面展开的前 24 条，
-   * 其余条数如实写在海报里。整张海报是一个 SVG，最后交给 svgStringToPng 光栅化。
+   * 导出整页海报（负责人 2026-09-12：导出要和手机端显示一致——竖版长图、一条条卡片，
+   * 不是把院校压成一堆文字行）。素材取竖版那张航线图（它在 DOM 里始终存在，窄屏可见），
+   * 卡片按页面的顺序与字段逐张排出，末尾接上「写给你」。
    */
   const savePng = async () => {
-    const node = posterSvgRef.current ?? chartSvgRef.current;
+    const node = chartSvgRef.current;
     if (!node) { notify("当前浏览器无法导出图片，请改用「复制文字版」。"); return; }
     const box = node.viewBox?.baseVal;
-    const chartWidth = Math.round(box?.width || 1000);
-    const chartHeight = Math.round(box?.height || 320);
+    const chartWidth = Math.round(box?.width || 360);
+    const chartHeight = Math.round(box?.height || 344);
     const poster = buildRoutePoster({
       chartBody: node.innerHTML,
       chartWidth,
@@ -127,31 +122,39 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
       referenceYear: pool?.referenceYear ?? REFERENCE_YEAR,
       routes: routes.map((route) => ({
         title: route.title,
+        total: route.rows.length,
         more: Math.max(0, route.rows.length - 24),
-        rows: route.rows.slice(0, 24).map((row) => {
+        cards: route.rows.slice(0, 24).map((row) => {
           const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
           const interval = reference.reference_rank_interval ?? [];
           const year = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
           const scores = scoreRangeForRanks(state.release, state.form.primary, year, interval);
+          const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+          const passed = row.candidate.eligibility.status === "PASS";
           return {
             institution: row.label.institutionName,
             city: row.label.institutionCity,
+            relation: relation ? { label: relation.label, color: relation.route } : null,
             major: row.label.majorName,
             level: row.label.level ? levelLabel(row.label.level) : null,
+            sub: [row.label.batch, row.label.categoryClass,
+              passed ? null : label(row.candidate.eligibility.status)].filter(Boolean).join(" · "),
             score: scores ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`) : "未知",
             rank: formatRankInterval(interval),
             plan: row.label.planCount === null || row.label.planCount === undefined ? "未知" : `${row.label.planCount}`,
+            fee: row.label.tuition === null || row.label.tuition === undefined ? "学费未知" : `学费 ${row.label.tuition}`,
+            tags: (row.label.institutionTags ?? "").split("/").map((tag) => tag.trim()).filter(Boolean).slice(0, 3),
           };
         }),
       })),
       blessing: BLESSING,
       note: `按历史位置参考绘制 · 参考年 ${pool?.referenceYear ?? REFERENCE_YEAR} · 不构成录取判断 · 正式填报以本省考试院政策与高校招生章程为准`
     });
-    const posterWidth = 1000;
-    const posterHeight = Number((poster.match(/viewBox="0 0 1000 (\d+)"/) ?? [])[1] ?? 1400);
+    const posterWidth = 720;
+    const posterHeight = Number((poster.match(/viewBox="0 0 720 (\d+)"/) ?? [])[1] ?? 2400);
     const ok = await svgStringToPng(poster, posterWidth, posterHeight,
       `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
-    notify(ok ? "已保存 PNG 航线图（含院校专业清单与寄语）" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
+    notify(ok ? "已保存 PNG 航线图（与页面同款，含院校卡片与寄语）" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
   };
   return <section id="page-chart" className={`view${page === "chart" ? " active" : ""}`} aria-label="航线图">
     <div className="page-head">
@@ -246,7 +249,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
                 fill={CHART.mut}>{withRange ? "回「分数轴」重新匹配院校" : "先在「定位」生成探索区间"}</text>
             </g>}
           </svg>
-          <svg className="rt-wide" ref={posterSvgRef} viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img"
+          <svg className="rt-wide" viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img"
             aria-label="三条历史参考关系航线示意图">
             {/* 无底板、无版框：图直接落在页面的卡片上（此前那块纸色底比卡片略深，看着像贴了一张图）。
                 版心仍按 PLATE 常量收口（44–956），三条航路 200→700，右侧 866–956 是数据栏。 */}
