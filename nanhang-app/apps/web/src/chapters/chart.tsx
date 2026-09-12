@@ -42,16 +42,17 @@ const CHART = {
 } as const;
 
 /**
- * 图内文字的排版约束（viewBox 0 0 1000 320，导出 PNG 用同一坐标系）。
- *
- * 三条关系线在 y=78/158/238，每条的波形只在自己 ±14 上下浮动；因此
- * 「线间空档」是 165–229。航线小结放在这段空档里，才不会与中间那条线相交。
- * 右端留出一条标签栏：线画到 LABEL_COLUMN_X 之前就停，标签右对齐到 992 再向左生长，
- * 这样计数涨到五位数也不会溢出画布被裁掉（导出 PNG 与屏幕用的是同一个画布）。
+ * 版心与三条航路的落位。版心左右各内缩 20（44–956），保证任何文字都不越出版框；
+ * 三条线在 y=92/158/224，中间 172–210 那段空档留给航线小结，224 以下留给图签与说明。
  */
-const ROUTE_LINE_END_X = 812;
-const ROUTE_LINE_CTRL_X = 640;
-const LABEL_COLUMN_X = 992;
+const PLATE = {
+  x0: 44,
+  x1: 956,
+  lineX1: 700,
+  lineY: (index: number) => 92 + index * 66
+} as const;
+
+/** 航线小结的行距与首行基线（写在中间两条航路之间的空档里）。 */
 const ROUTE_TITLE_TOP_Y = 186;
 const ROUTE_TITLE_LINE_H = 17;
 
@@ -145,55 +146,82 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
             <g stroke={CHART.brass} strokeWidth={1.4} opacity={0.75} fill="none">
               <path d="M24 34v-12h12M976 34v-12h-12M24 286v12h12M976 286v12h-12" />
             </g>
+            {/* 版心：左右各留 20（44–956），三条航路 200→700，右侧 866–956 是数据栏，
+                底部 252–292 是图签与统计。所有文字都落在版框里面——上一版沿用了旧图的
+                x=992 标签列，直接跑到版框外面去了。 */}
+            <g stroke={CHART.line2} strokeWidth={0.8} opacity={0.5}>
+              <path d="M200 84v140M700 84v140" />
+            </g>
             {drawable ? <>
-              {relationGroups.map((group) => <g key={group.key}>
-                {/* 光晕 + 主线：同一条航路画两遍，让线有厚度而不是一根生硬的细线。 */}
-                <path d={`M140 ${group.y}C300 ${group.y - 24} ${ROUTE_LINE_CTRL_X} ${group.y + 20} ${ROUTE_LINE_END_X} ${group.y}`}
-                  stroke={group.route} strokeWidth={group.width + 5} opacity={0.12} fill="none" strokeLinecap="round" />
-                <path d={`M140 ${group.y}C300 ${group.y - 24} ${ROUTE_LINE_CTRL_X} ${group.y + 20} ${ROUTE_LINE_END_X} ${group.y}`}
-                  stroke={group.route} strokeWidth={group.width} strokeDasharray={group.dash || undefined}
-                  fill="none" strokeLinecap="round" />
-                <circle cx={140} cy={group.y} r={3.4} fill={CHART.paper} stroke={group.route} strokeWidth={1.2} />
-                <circle cx={ROUTE_LINE_END_X} cy={group.y} r={2.6} fill={group.route} />
-                <path d={`M${ROUTE_LINE_END_X + 10} ${group.y}H900`} stroke={group.route} strokeWidth={0.7}
-                  opacity={0.45} strokeDasharray="1 3" />
-                <text x={LABEL_COLUMN_X} y={group.y - 3} textAnchor="end" fontFamily={CHART.song}
-                  fontSize={11.5} letterSpacing={0.6} fill={CHART.ink2}>{group.label}</text>
-                <text x={LABEL_COLUMN_X} y={group.y + 17} textAnchor="end" fontFamily={CHART.display}
-                  fontSize={19} fontWeight={600} fill={group.route}>{group.items.length.toLocaleString("zh-CN")}</text>
-              </g>)}
-              {/* 起航点：一枚小帆船，金铜色船身与帆，压在中线上方。 */}
-              <g transform={`translate(84,158) scale(1.25)`} stroke="none">
+              <text x={PLATE.x0} y={46} fontFamily={CHART.display} fontStyle="italic" fontSize={10.5}
+                letterSpacing={1.8} fill={CHART.brass}>ROUTE RELATIONS · 航线关系图</text>
+              <text x={PLATE.x1} y={46} textAnchor="end" fontFamily={CHART.song} fontSize={11.5} fill={CHART.ink2}>
+                区间内匹配 {pool?.schoolCount ?? 0} 所院校 · {(pool?.rows.length ?? 0).toLocaleString("zh-CN")} 条专业 × 院校
+              </text>
+              {relationGroups.map((group, index) => {
+                const total = relationGroups.reduce((sum, item) => sum + item.items.length, 0);
+                const y = PLATE.lineY(index);
+                const share = total > 0 ? group.items.length / total * 100 : 0;
+                return <g key={group.key}>
+                  {/* 左侧关系名 + 色点：名字在这一侧，右侧只留数字，两端都有落点。 */}
+                  <circle cx={PLATE.x0 + 3} cy={y - 4} r={3.2} fill="none" stroke={group.route} strokeWidth={1.4} />
+                  <text x={PLATE.x0 + 14} y={y} fontFamily={CHART.song} fontSize={13} fill={CHART.ink2}>
+                    {group.label}
+                  </text>
+                  {/* 光晕 + 主线：同一条航路画两遍，让线有厚度而不是一根生硬的细线。 */}
+                  <path d={`M200 ${y}C320 ${y - 22} ${PLATE.lineX1 - 120} ${y + 18} ${PLATE.lineX1} ${y}`}
+                    stroke={group.route} strokeWidth={group.width + 6} opacity={0.1} fill="none" strokeLinecap="round" />
+                  <path d={`M200 ${y}C320 ${y - 22} ${PLATE.lineX1 - 120} ${y + 18} ${PLATE.lineX1} ${y}`}
+                    stroke={group.route} strokeWidth={group.width + 0.6} strokeDasharray={group.dash || undefined}
+                    fill="none" strokeLinecap="round" />
+                  <circle cx={200} cy={y} r={3.6} fill={CHART.paper} stroke={group.route} strokeWidth={1.3} />
+                  <path d={`M${PLATE.lineX1 + 6} ${y}H856`} stroke={group.route} strokeWidth={0.7}
+                    opacity={0.4} strokeDasharray="1 3" />
+                  {/* 数据栏：浅底胶囊里的计数 + 下方占比——比一串裸数字更有落点。 */}
+                  <rect x={866} y={y - 15} width={90} height={30} rx={9} fill={group.route} opacity={0.1} />
+                  <text x={911} y={y + 6} textAnchor="middle" fontFamily={CHART.display} fontSize={20}
+                    fontWeight={600} fill={group.route}>{group.items.length.toLocaleString("zh-CN")}</text>
+                  <text x={PLATE.x1} y={y + 27} textAnchor="end" fontFamily={CHART.display} fontStyle="italic"
+                    fontSize={10} letterSpacing={0.6} fill={CHART.mut}>占 {share.toFixed(1)}%</text>
+                </g>;
+              })}
+              {/* 起航点：一枚小帆船压在中间那条航路的起点上。 */}
+              <g transform="translate(232,158) scale(1.3)" stroke="none">
                 <path d="M-14 0h28l-5 9h-18Z" fill={CHART.ink} opacity={0.9} />
                 <path d="M0 0v-19" stroke={CHART.ink} strokeWidth={1.1} />
                 <path d="M0-18 12-2H0Z" fill={CHART.brass2} />
                 <path d="M-1-15 -9-3h8Z" fill={CHART.safe} opacity={0.85} />
                 <path d="M-20 4c9 4 31 4 40 0" stroke={CHART.foam} strokeWidth={0.9} strokeLinecap="round" opacity={0.6} />
               </g>
-              {/* 区间图签：左下角双框小匾，写明这段航线按哪个区间、哪一年的历史位次绘制。 */}
-              <g>
-                <rect x={40} y={248} width={252} height={46} fill={CHART.card} stroke={CHART.brassLine} />
-                <rect x={44.5} y={252.5} width={243} height={37} fill="none" stroke={CHART.brassLine} strokeWidth={0.6} opacity={0.7} />
-                <text x={56} y={265} fontFamily={CHART.display} fontStyle="italic" fontSize={9} letterSpacing={1.5}
-                  fill={CHART.brass}>EXPLORATION RANGE</text>
-                <text x={56} y={284} fontFamily={CHART.song} fontSize={15} fill={CHART.ink}>{rangeLabel} 分</text>
-                <text x={276} y={284} textAnchor="end" fontFamily={CHART.display} fontSize={11} fill={CHART.mut}>
-                  参考年 {pool?.referenceYear ?? REFERENCE_YEAR}
-                </text>
-              </g>
-              {/* 航线小结：底部一行，右侧补一句它到底在说什么。 */}
+              {/* 航线小结写在中间两条线的空档里（172–210），不压线。 */}
               {routes.slice(0, 3).map((route, index) =>
-                <text key={route.kind} x={320} y={ROUTE_TITLE_TOP_Y + index * ROUTE_TITLE_LINE_H}
-                  fontFamily={CHART.song} fontSize={12} fill={CHART.ink2}>
+                <text key={route.kind} x={200} y={ROUTE_TITLE_TOP_Y + 18 + index * ROUTE_TITLE_LINE_H}
+                  fontFamily={CHART.song} fontSize={12.5} fill={CHART.ink2}>
                   {route.title} · {route.rows.length} 条专业 × 院校
                 </text>)}
-              <text x={LABEL_COLUMN_X} y={288} textAnchor="end" fontFamily={CHART.display} fontStyle="italic"
-                fontSize={10.5} letterSpacing={0.8} fill={CHART.mut}>按历史位置参考绘制 · 不构成录取判断</text>
+              {/* 左下角图签：这段航线按哪个区间、哪一年的历史位次绘制。 */}
+              <g>
+                <rect x={PLATE.x0} y={252} width={252} height={40} fill={CHART.card} stroke={CHART.brassLine} />
+                <rect x={PLATE.x0 + 4.5} y={256.5} width={243} height={31} fill="none" stroke={CHART.brassLine}
+                  strokeWidth={0.6} opacity={0.7} />
+                <text x={PLATE.x0 + 14} y={268} fontFamily={CHART.display} fontStyle="italic" fontSize={8.5}
+                  letterSpacing={1.4} fill={CHART.brass}>EXPLORATION RANGE</text>
+                <text x={PLATE.x0 + 14} y={286} fontFamily={CHART.song} fontSize={14} fill={CHART.ink}>
+                  {rangeLabel} 分
+                </text>
+                <text x={PLATE.x0 + 240} y={286} textAnchor="end" fontFamily={CHART.display} fontSize={10.5}
+                  fill={CHART.mut}>参考年 {pool?.referenceYear ?? REFERENCE_YEAR}</text>
+              </g>
+              {/* 右下角：这张图到底在说什么。 */}
+              <text x={PLATE.x1} y={270} textAnchor="end" fontFamily={CHART.display} fontStyle="italic"
+                fontSize={10.5} letterSpacing={0.8} fill={CHART.mut}>按历史位置参考绘制</text>
+              <text x={PLATE.x1} y={286} textAnchor="end" fontFamily={CHART.display} fontStyle="italic"
+                fontSize={10.5} letterSpacing={0.8} fill={CHART.mut}>不构成录取判断</text>
             </> : <g>
-              <text x={500} y={158} textAnchor="middle" fontFamily={CHART.song} fontSize={15} fill={CHART.ink2}>
+              <text x={500} y={152} textAnchor="middle" fontFamily={CHART.song} fontSize={15} fill={CHART.ink2}>
                 {withRange ? "还没有可绘制的结果" : "尚未生成探索区间"}
               </text>
-              <text x={500} y={184} textAnchor="middle" fontFamily={CHART.display} fontStyle="italic" fontSize={11}
+              <text x={500} y={178} textAnchor="middle" fontFamily={CHART.display} fontStyle="italic" fontSize={11}
                 letterSpacing={0.8} fill={CHART.mut}>
                 {withRange ? "回「分数轴」重新匹配院校，航线才会亮起" : "先在「定位」生成探索区间"}
               </text>

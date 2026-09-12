@@ -1,7 +1,7 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-backend-alignment）：章节版后端对齐已本地验证；既有千帆、Redis与成绩密文服务在线；本轮汇总接口、聊天收尾与Pages门禁未部署。
+> 统一进度（2026-09-12，2026-09-12-class4-query-code-x0）：章节版后端对齐已本地验证；既有千帆、Redis与成绩密文服务在线；本轮汇总接口、聊天收尾与Pages门禁未部署。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
@@ -679,6 +679,7 @@
 | [nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md](nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/tools/validate_contracts.py](nanhang-app/docs/baseline/tools/validate_contracts.py) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/VALIDATION.md](nanhang-app/docs/baseline/VALIDATION.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/CLASS4_QUERY_CODES.md](nanhang-app/docs/CLASS4_QUERY_CODES.md) | 实施进度与记录 |
 | [nanhang-app/docs/DOCUMENTATION_POLICY.md](nanhang-app/docs/DOCUMENTATION_POLICY.md) | 实施进度与记录 |
 | [nanhang-app/docs/FRONTENDS.md](nanhang-app/docs/FRONTENDS.md) | 实施进度与记录 |
 | [nanhang-app/docs/IMPLEMENTATION_LOG.md](nanhang-app/docs/IMPLEMENTATION_LOG.md) | 实施进度与记录 |
@@ -715,6 +716,10 @@
 | [nanhang-app/docs/verification/class4-codes-result-2026-09-12.json](nanhang-app/docs/verification/class4-codes-result-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/class4-codes-tests-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-tests-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/class4-codes-typecheck-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-typecheck-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-x0-build-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-build-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-x0-result-2026-09-12.json](nanhang-app/docs/verification/class4-codes-x0-result-2026-09-12.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-x0-tests-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-tests-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/class4-codes-x0-typecheck-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-typecheck-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/handoff-contracts-2026-09-10.txt](nanhang-app/docs/verification/handoff-contracts-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/handoff-contracts-task03-2026-09-10.txt](nanhang-app/docs/verification/handoff-contracts-task03-2026-09-10.txt) | 本次验证原始日志 |
