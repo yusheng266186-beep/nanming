@@ -64,11 +64,9 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
         </div>
         <div style={{ position: "relative" }}>
           <div className="axis-track" />
+          {/* 金带本身就是区间：实心端头标出上下限，不再画两根「当前分」竖线——
+              那对竖线会把一段区间掐成一个点。 */}
           {range ? <div className="axis-band" style={{ left: `${bandLeft}%`, width: `${bandWidth}%` }} /> : null}
-          {range ? <>
-            <div className="axis-now" style={{ left: `${bandLeft}%` }} />
-            <div className="axis-now" style={{ left: `${pct(range.high)}%` }} />
-          </> : null}
         </div>
         <div className="slider-foot">
           <span>{axisMin}（公布最低）</span>

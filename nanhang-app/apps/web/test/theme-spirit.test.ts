@@ -103,9 +103,13 @@ describe("内核：范围与刻度同源", () => {
     expect(css).toContain(".stick.own{");
   });
 
-  it("does not label the target slider as 现在", () => {
-    // 「现在」是给「当前分 / 目标分」双滑块的旧设计留的；本页只有一个目标分滑块。
-    expect(css).toContain(".axis-now::after{content:none}");
+  it("shows the range as a band, not as a point marker", () => {
+    // 负责人裁定（2026-09）：探索区间要一眼读成「一段范围」。旧设计在金带两端画
+    // 「当前分」竖线（.axis-now），把区间掐成一个点——钉住它不再回来；
+    // 金带用实心端头（::before/::after）标出上下限。
+    expect(css).not.toContain(".axis-now");
+    expect(app).not.toContain('className="axis-now"');
+    expect(css).toContain(".axis-band::before,.axis-band::after");
   });
 });
 

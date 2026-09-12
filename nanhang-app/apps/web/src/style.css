@@ -164,6 +164,10 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .entry.deep .carrow{border-color:#3f6b70;color:#cfe0da}
 .entry:hover .carrow{background:var(--brass);border-color:var(--brass);color:#fff}
 .banner{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px;margin:16px 0 8px}
+@media(max-width:560px){/* 窄屏竖排：按钮不再把标题挤成几个字一行。 */
+  .banner{flex-wrap:wrap}
+  .banner>div{flex:1 1 100%}
+  .banner .btn{margin-left:0}}
 .banner h3{font-family:var(--song);font-size:18px;margin-bottom:6px}
 .banner p{font-size:11.5px;color:var(--mut);line-height:1.9}
 .banner .icon{color:var(--brass)}
@@ -320,18 +324,26 @@ input[type=range].axis::-webkit-slider-thumb{-webkit-appearance:none;width:30px;
 input[type=range].axis::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--brass-2),var(--brass-3));border:2px solid #f2e7d3;box-shadow:0 4px 16px rgba(0,0,0,.4)}
 input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .axis-prog{position:absolute;left:0;top:19px;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--brass-3),var(--brass-2));pointer-events:none;z-index:2}
-.axis-now{position:absolute;top:8px;width:2px;height:28px;background:#cfe0da;opacity:.55;pointer-events:none;z-index:1}
-/* 滑块上方已经由 .stick.own 标出「你的分数」。原来这里还写一个「现在」，
-   那是给「当前分 / 目标分」两个滑块的旧设计留的；本页只有一个目标分滑块，
-   两个标签叠在一起既重复又会被误读成两段时间。 */
-.axis-now::after{content:none}
-/* 区间匹配后的轴：没有拖动滑块，轨道常驻，金色带就是学生的探索区间（两端有 .axis-now 立柱）。 */
+/* 区间匹配后的轴：没有拖动滑块，轨道常驻，金色带就是学生的探索区间。 */
 .axis-track{position:absolute;left:0;right:0;top:19px;height:6px;border-radius:6px;background:#2c5a63}
-.axis-band{position:absolute;top:8px;height:28px;border-radius:8px;border:1px solid var(--brass);background:linear-gradient(180deg,rgba(169,123,52,.30),rgba(169,123,52,.14));pointer-events:none;z-index:2}
+/* 探索区间要一眼读成「一段范围」：更亮的金色填充 + 实心端头标出上下限。
+   （旧设计在两端各画一根「当前分」竖线，反而把区间掐成了一个点，已删除。） */
+.axis-band{position:absolute;top:5px;height:34px;border-radius:9px;border:1.5px solid var(--brass);
+  background:linear-gradient(180deg,rgba(200,155,82,.52),rgba(200,155,82,.24));
+  box-shadow:0 2px 12px rgba(200,155,82,.28);pointer-events:none;z-index:2}
+.axis-band::before,.axis-band::after{content:"";position:absolute;top:6px;bottom:6px;width:3px;border-radius:3px;background:var(--brass)}
+.axis-band::before{left:2px}
+.axis-band::after{right:2px}
+/* 深色英雄区里的表单：输入文字继承了大区域的浅色字，白底上白字，看起来像两个空框。 */
+.axis-hero .inp{color:var(--ink)}
+.axis-hero .fhint{color:#9fc3bc}
+/* 幽灵按钮在深色卡上会隐形：描边换成金调，让「去定位生成区间」找得到。 */
+.axis-hero .btn.ghost{color:#e9dfc9;border-color:rgba(200,155,82,.6);background:rgba(200,155,82,.1)}
+.axis-hero .btn.ghost:hover{border-color:var(--brass);background:rgba(200,155,82,.2)}
 .slider-foot{display:flex;justify-content:space-between;font:italic 400 10px/1 var(--display);letter-spacing:.1em;color:#7fa39c;margin-top:2px;position:relative;z-index:2;flex-wrap:wrap;row-gap:4px}
 /* 轨道容器里的子元素全是绝对定位，容器自身高度为 0——轨道与金带会悬下来压住底部说明。
-   给它一份与金带（top:8 + 高28 ≈ 36px）相称的流式高度，说明文字才真正排在轴的下方。 */
-.slider-wrap>div:nth-child(2){height:40px}
+   给它一份与金带（top:5 + 高34 ≈ 39px）相称的流式高度，说明文字才真正排在轴的下方。 */
+.slider-wrap>div:nth-child(2){height:44px}
 .res-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;flex-wrap:wrap}
 .res-count{font-family:var(--song);font-size:15px;color:var(--ink-2)}
 .res-count b{font-family:var(--display);font-size:26px;color:var(--brass);margin:0 3px}
@@ -695,3 +707,35 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px}
 .tier-card .tc-eta{display:inline-block;font-size:10.5px;color:var(--brass-3);background:rgba(200,155,82,.12);border-radius:20px;padding:2px 9px;margin-bottom:6px}
 .tier-card .tc-hint{display:block;font-size:10.5px;color:var(--mut);line-height:1.7}
 @media(max-width:640px){.tier-pick{grid-template-columns:1fr}}
+
+/* ══════════ 起航页：六次靠岸与「先定下三件事」的紧凑排布 ══════════
+   这两处原先只有一套桌面间距：卡片内边距 20px、正文行距 1.9、区块之间 22–26px。
+   竖排到手机上（390px）六张靠岸卡要 980px、三件事面板要 560px，一屏放不下三张卡。
+   以下先把写死在 JSX 里的间距收进类名（桌面数值不变），再在窄屏逐项收紧内边距、
+   行距与区块间距——六站的说明和两条选科提示一条不减，只是不再铺开。
+   桌面三列布局本来就紧凑，所以这些收紧只在 ≤560px 生效。 */
+.panel.sail-panel{margin-top:22px}
+.grid-2.sail-form{margin-top:4px;gap:22px}
+.field.sail-score{margin-top:20px;max-width:320px}
+.hero-act.sail-act{margin-top:22px}
+@media(max-width:560px){
+  #page-sail .section{padding:16px 0 18px}
+  #page-sail .sec-head{margin-bottom:14px}
+  #page-sail .sec-head h2{font-size:20px}
+  #page-sail .sec-head p{margin-top:4px;line-height:1.7}
+  /* 六次靠岸：卡片瘦一圈，编号—标题—说明之间的空档收掉一半。 */
+  #page-sail .trio{gap:9px;margin:14px 0 0}
+  #page-sail .mini{padding:13px 15px;border-radius:11px}
+  #page-sail .mini .mk{font-size:10px;gap:6px}
+  #page-sail .mini h4{font-size:14.5px;line-height:1.35;margin:7px 0 3px}
+  #page-sail .mini p{font-size:11px;line-height:1.7}
+  /* 先定下三件事：面板、两栏字段与行动按钮之间的间距同步收紧。 */
+  #page-sail .sail-panel{margin-top:14px}
+  #page-sail .panel{padding:18px;border-radius:14px}
+  #page-sail .sail-form{gap:12px}
+  #page-sail .sail-form .field{margin-bottom:0}
+  /* 目标分与上面那条「再选科目」提示留出比字段内更大的间距，才读得出是另一件事。 */
+  #page-sail .sail-score{margin-top:18px;margin-bottom:0;max-width:100%}
+  #page-sail .fhint{margin-top:7px;line-height:1.7}
+  #page-sail .sail-act{margin-top:16px;gap:14px}
+}
