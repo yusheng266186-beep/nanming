@@ -516,7 +516,43 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
    章节内容需要的少量规则，不改动任何原有配色、字体与布局。
    ============================================================ */
 .inp{display:block}
-select.inp{min-height:50px;padding:0 14px;appearance:none;-webkit-appearance:none}
+/* ============================================================
+   表单控件与细节主题化
+   目标：页面上不出现任何「系统原生」的控件质感——下拉箭头、数字
+   上下箭头、搜索叉、自动填充黄底、深色模式原生控件、折叠三角、
+   iOS 聚焦缩放，全部换成与海图手账一致的主题样式。
+   ============================================================ */
+/* 声明浅色方案：否则 Windows/Android 深色模式下，下拉弹层与表单控件会被
+   浏览器渲染成原生暗色，与纸面质感冲突。 */
+:root{color-scheme:light}
+/* iOS 会给输入框加原生圆角与内阴影；统一拍平，边框交给 .inp 自己画。 */
+.inp{-webkit-appearance:none;appearance:none}
+.inp::placeholder{color:var(--foam);opacity:1}
+.inp:disabled{opacity:.55;cursor:not-allowed;background:var(--paper-2)}
+/* 自动填充的黄底是浏览器强加的：用同色内阴影盖掉，文字保持墨色。 */
+.inp:-webkit-autofill{-webkit-box-shadow:0 0 0 60px var(--card) inset;-webkit-text-fill-color:var(--ink-2);caret-color:var(--ink-2);transition:background-color 99999s ease-out}
+/* 数字输入：原生上下箭头是系统控件，与主题不符；数值靠键盘与输入法输入。 */
+.inp[type=number]{-moz-appearance:textfield;appearance:textfield}
+.inp[type=number]::-webkit-outer-spin-button,.inp[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+/* 搜索输入：去掉原生装饰；清除叉重绘成主题铜色，仍然可点。 */
+.inp[type=search]::-webkit-search-decoration,.inp[type=search]::-webkit-search-cancel-button{-webkit-appearance:none}
+.inp[type=search]::-webkit-search-cancel-button{width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 4.5l7 7m0-7l-7 7' stroke='%23a97b34' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center/12px no-repeat;cursor:pointer}
+/* 下拉框：外观已拍平，补一支主题铜色细箭头，文字让出箭头位置；弹层选项同底色。 */
+select.inp{min-height:50px;padding:0 40px 0 14px;cursor:pointer;
+  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23a97b34' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 15px center/11px}
+select.inp option{background:var(--card);color:var(--ink-2)}
+/* 触屏与窄屏：输入字号提到 16px，iOS 聚焦时不再整页放大。 */
+@media(pointer:coarse),(max-width:560px){
+  .inp,select.inp,textarea.inp{font-size:16px}
+}
+/* 按压反馈：触屏上没有 hover，按下时给一个轻微下沉/收缩，让每次点按都有回应。 */
+.btn:active:not(:disabled){transform:translateY(1px);box-shadow:none}
+.chip:active,.tbtn:active,.rbtn:active{transform:scale(.96)}
+/* 折叠面板的原生三角与主题不符：换成铜色细箭头，随开合旋转。 */
+details.panel>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:40px}
+details.panel>summary::-webkit-details-marker{display:none}
+details.panel>summary::before{content:"";width:7px;height:7px;border-right:1.6px solid var(--brass);border-bottom:1.6px solid var(--brass);transform:rotate(-45deg);transition:transform .25s;flex-shrink:0}
+details.panel[open]>summary::before{transform:rotate(45deg)}
 .rbadge.plain{background:var(--paper-2);color:var(--ink-2);border:1px solid var(--line)}
 .badge-status{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;padding:5px 11px;border-radius:30px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2)}
 .badge-status.CONFIRMED{background:rgba(125,154,134,.15);border-color:rgba(125,154,134,.5);color:var(--safe)}
