@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { LoadedRelease } from "@nanhang/release-loader";
 import {
-  equivalentEstimate, equivalentPosition, examLineDiffs, lineEquivalent,
-  scoreStability, scoreTrend
+  equivalentEstimate, equivalentPosition, examLineDiffs, lineEquivalent, linesInverted,
+  scoreStability, scoreTrend, usableLines
 } from "../src/exam-position.js";
 import { OFFICIAL_LINES_2026 } from "../src/reference-lines.js";
 import type { ExamRecord } from "../src/model.js";
@@ -62,6 +62,24 @@ describe("两种口径并列：缺哪条线就缺哪个口径，不互相凑", (
   it("只有一条线时另一口径为 null", () => {
     const result = equivalentEstimate(exam({ total: 540, topTotal: 480 }), official);
     expect(result.top?.equivalentScore).toBe(584);
+    expect(result.undergraduate).toBeNull();
+  });
+
+  it("切线越界（0、负数、超过 750）一律不参与换算", () => {
+    expect(usableLines(exam({ topTotal: 0, undergraduateTotal: 400 })))
+      .toEqual({ top: null, undergraduate: 400, inverted: false });
+    expect(usableLines(exam({ topTotal: -20, undergraduateTotal: 900 })))
+      .toEqual({ top: null, undergraduate: null, inverted: false });
+  });
+
+  it("本科线高于特控线时两条都作废，并标记为颠倒", () => {
+    // 真实的批次线永远是本科线更低；颠倒说明填反了，用它换算只会把区间拉偏。
+    const lines = usableLines(exam({ topTotal: 400, undergraduateTotal: 480 }));
+    expect(lines).toEqual({ top: null, undergraduate: null, inverted: true });
+    expect(linesInverted(exam({ topTotal: 400, undergraduateTotal: 480 }))).toBe(true);
+    expect(linesInverted(exam({ topTotal: 480, undergraduateTotal: 400 }))).toBe(false);
+    const result = equivalentEstimate(exam({ total: 540, topTotal: 400, undergraduateTotal: 480 }), official);
+    expect(result.top).toBeNull();
     expect(result.undergraduate).toBeNull();
   });
 });

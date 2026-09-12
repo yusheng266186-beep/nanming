@@ -69,15 +69,45 @@ export interface EquivalentEstimate {
   undergraduate: LineEquivalent | null;
 }
 
+/** 一场考试里可用的两条切线，以及它们是否高低颠倒。 */
+export interface UsableLines {
+  top: number | null;
+  undergraduate: number | null;
+  /** 两条线同时存在但本科线高于特控线——这是数据矛盾，两条都不可用。 */
+  inverted: boolean;
+}
+
+/**
+ * 判断一场考试的切线能不能用来换算。
+ *
+ * 三条规则：切线必须在 (0, 750] 内；两条线同时存在却高低颠倒（本科线 > 特控线）时
+ * 两条都作废——真实的批次线永远是本科线更低，颠倒说明填反了，用它换算会把区间拉偏；
+ * 缺哪条就只缺哪条，不互相凑。展示层据此给该行一个明确的提示，不静默丢弃。
+ */
+export function usableLines(record: ExamRecord): UsableLines {
+  const ok = (value: number | null): value is number =>
+    value !== null && Number.isFinite(value) && value > 0 && value <= 750;
+  const top = ok(record.topTotal) ? record.topTotal : null;
+  const undergraduate = ok(record.undergraduateTotal) ? record.undergraduateTotal : null;
+  if (top !== null && undergraduate !== null && undergraduate > top) {
+    return { top: null, undergraduate: null, inverted: true };
+  }
+  return { top, undergraduate, inverted: false };
+}
+
+/** 展示层用：这一场的两条线是否高低颠倒（界面必须把「未参与换算」说出来，不能静默丢）。 */
+export const linesInverted = (record: ExamRecord): boolean => usableLines(record).inverted;
+
 export function equivalentEstimate(record: ExamRecord, official: OfficialLines): EquivalentEstimate {
   const total = record.total;
+  const lines = usableLines(record);
   return {
-    top: total === null || record.topTotal === null
+    top: total === null || lines.top === null
       ? null
-      : lineEquivalent(total, record.topTotal, official.specialControl),
-    undergraduate: total === null || record.undergraduateTotal === null
+      : lineEquivalent(total, lines.top, official.specialControl),
+    undergraduate: total === null || lines.undergraduate === null
       ? null
-      : lineEquivalent(total, record.undergraduateTotal, official.undergraduate)
+      : lineEquivalent(total, lines.undergraduate, official.undergraduate)
   };
 }
 

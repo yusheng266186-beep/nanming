@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from "../model.js";
-import { examLineDiffs, equivalentPosition, scoreStability, scoreTrend } from "../exam-position.js";
+import { examLineDiffs, equivalentPosition, linesInverted, scoreStability, scoreTrend } from "../exam-position.js";
 import { rangeFromExams, type ScoreRange } from "../journey-model.js";
 import { OFFICIAL_LINES_2026 } from "../reference-lines.js";
 import {
@@ -36,7 +36,8 @@ const formatPercentile = (percentile: number) =>
 export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange,
   quality, qualityCode, setQualityCode, schoolName, setSchoolName, identifySchool }: LocateProps) {
   const exams = state.form.exams;
-  const totals = exams.map((exam) => exam.total).filter((item): item is number => item !== null);
+  // 0 分与缺考一样不参与稳定性/趋势：0 不是成绩，混进均值会同时压低均值、抬高波动。
+  const totals = exams.flatMap((exam) => exam.total !== null && exam.total > 0 ? [exam.total] : []);
   const stability = scoreStability(totals);
   const trend = scoreTrend(totals);
   // 位次与百分位来自官方分段表；没有表或分数不在公布范围时保持 null，页面显示未知。
@@ -144,6 +145,8 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       {exams.length === 0 ? <p className="muted-note">还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。</p> : null}
       {exams.map((exam, index) => {
         const diffs = examLineDiffs(exam);
+        // 两条线高低颠倒时这场不参与等位换算，必须在这一行说出来，不能静默丢掉。
+        const inverted = linesInverted(exam);
         const rowLabel = schoolLocked ? (exam.label || `第 ${index + 1} 次`) : `第 ${index + 1} 次`;
         return <div className="exam-row" key={index}>
           <span className="exam-tag" title={exam.label}>{rowLabel}</span>
@@ -152,9 +155,10 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           {numberField(`第 ${index + 1} 次本科线`, "本科线", exam.undergraduateTotal, (value) => updateExam(index, { undergraduateTotal: value }), schoolLocked)}
           {!schoolLocked && <button type="button" className="rbtn" aria-label={`删除第 ${index + 1} 次考试`}
             onClick={() => removeExam(index)}><Icon name="close" /></button>}
-          {diffs.topDiff !== null || diffs.undergraduateDiff !== null ? <span className="exam-diffs">
+          {diffs.topDiff !== null || diffs.undergraduateDiff !== null || inverted ? <span className="exam-diffs">
             {diffs.topDiff !== null ? <span>距特控线 {formatGap(diffs.topDiff)}</span> : null}
             {diffs.undergraduateDiff !== null ? <span>距本科线 {formatGap(diffs.undergraduateDiff)}</span> : null}
+            {inverted ? <span className="warn">这场本科线高于特控线，未参与等位换算</span> : null}
           </span> : null}
         </div>;
       })}

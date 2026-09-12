@@ -83,13 +83,33 @@ describe("五步流程的区间与分路规则", () => {
   });
   it("没有该场参考线时不把模考原分直接换成高考成绩", () =>
     expect(rangeFromExams([exam(580, null, null)], "PHYSICS")).toBeNull());
-  it("学校原始缺考不作为零分；两种有效口径保留外包范围", () => {
+  it("学校原始缺考不作为零分；同一场两个口径各占一半取平均", () => {
+    // 特控线口径 519 × 500/500 = 519；本科线口径 435 × 500/400 = 543.75 → 544（口径内先取整）；
+    // 平均 (519 + 544) / 2 = 531.5 → 532。两个口径不再各算一个值并列进 min–max（那会把区间撑宽），
+    // 缺考那一场完全不参与。
     const range = rangeFromExams(
       [exam(null, 500, 400), exam(500, 500, 400)],
       "PHYSICS",
     );
-    expect(range?.low).toBe(519);
-    expect(range?.high).toBe(544);
+    expect(range?.low).toBe(532);
+    expect(range?.high).toBe(532);
+  });
+  it("总分填 0 当作没有这一场，不把区间击穿到 0", () => {
+    // 0 分不是成绩：比例换算会得到 0，曾经让整段区间变成 0–555，并让院校池匹配报错。
+    const withZero = rangeFromExams([exam(0, 500, 400), exam(520, 500, 400)], "PHYSICS");
+    const without = rangeFromExams([exam(520, 500, 400)], "PHYSICS");
+    expect(withZero).toEqual(without);
+    expect(withZero!.low).toBeGreaterThan(0);
+  });
+  it("只有一条线可用时就用这一条，不拿缺失的那条当 0 平均", () => {
+    // 519 × 560/520 = 558.9 → 559；若把缺失的本科线口径当 0 平均，会得到 280。
+    const range = rangeFromExams([exam(560, 520, null)], "PHYSICS");
+    expect(range?.low).toBe(559);
+    expect(range?.high).toBe(559);
+  });
+  it("两条切线高低颠倒时这一场不参与换算", () => {
+    // 本科线 600 高于特控线 500 是数据矛盾：真实的批次线永远是本科线更低。
+    expect(rangeFromExams([exam(560, 500, 600)], "PHYSICS")).toBeNull();
   });
   it("只从实际库名建词表，同名专业在不同学校仍有稳定 ID", () => {
     const a = catalogFromRows([
