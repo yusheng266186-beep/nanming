@@ -12,8 +12,10 @@ const src = (relative: string) => readFileSync(resolve(import.meta.dirname, "../
 const css = src("style.css");
 
 const start = css.indexOf("谈心 / 方向 / 分数轴 / 航线图：动画适配");
-// 到「四页动效」这一块之后的第一个 reduced-motion 块为止（不依赖换行符，文件是 CRLF）。
-const block = css.slice(start, css.indexOf("@media(prefers-reduced-motion:reduce)", start));
+// 切到「下一个区块横幅」为止：这样以后在它后面插入别的样式块，也不会被算进这一块里
+// （按 reduced-motion 之类的位置切会在下一次插入后失效——本轮就踩过一次）。
+const nextBlock = css.indexOf("/* ══════════", start);
+const block = css.slice(start, nextBlock === -1 ? css.length : nextBlock);
 const rules = block.split("\n").map((line) => line.trim()).filter((line) => line.includes("{"));
 
 describe("四页动效：编排", () => {

@@ -35,6 +35,8 @@ GENERATED_SUFFIXES = (".tsbuildinfo", ".sqlite", ".sqlite-journal", ".sqlite-wal
 # code table is one step away from the codes, and the salt decides every student's code. Excluded
 # entirely: not synced, not indexed, not hashed, not packed.
 UNMANAGED = ("南溟.html", "nanhang-app/data/releases/", "nanhang-app/data/quality-huixi/",
+             # 本机开发用的环境变量（把 dev server 指向云端中转、本机 TOTP 密文）：不进索引、不进哈希、不进包。
+             "nanhang-app/apps/web/.env.local", "nanhang-app/apps/web/.env", "nanhang-app/apps/api/.env",
              "private/")
 START = "<!-- PROJECT-STATUS:START -->"
 END = "<!-- PROJECT-STATUS:END -->"

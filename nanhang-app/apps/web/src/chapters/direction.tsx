@@ -137,19 +137,21 @@ export function renderDirection({ page, setPage, catalog, pool, poolStale, sugge
           <p className="psub">先选 2–3 个感兴趣的大类，再在大类里勾 5–10 个专业类（小类）；最后按这些方向去「分数轴」匹配院校与专业。可以和 AI 建议选一样的，也完全可以不一样——两条线都会保留到最后的航线里。</p>
           <span className="flab">第一步 · 选大类（已选 {pickedGroups.length} / 3）</span>
           <div className="chips" style={{ marginTop: 10 }}>
+            {/* 两级不是同级：大类是「范围」（group-chip，海绿系、略方的标签），
+                小类是「范围里的内容」（class-chip，铜系胶囊）。视觉上分开，才不会读成一排并列。 */}
             {catalog.groups.map((group) => <button key={group.id} type="button"
-              className={`chip${pickedGroups.includes(group.id) ? " brass on" : ""}`}
+              className={`chip group-chip${pickedGroups.includes(group.id) ? " on" : ""}`}
               aria-pressed={pickedGroups.includes(group.id)}
               onClick={() => toggleGroup(group.id)}>
               {group.name}<small> · {group.classes.length} 类</small>
             </button>)}
           </div>
           {pickedGroups.length === 0 ? <p className="fhint" style={{ marginTop: 12 }}>先点上面的大类；选好后，这里会展开每个大类里的专业类供你勾选。</p> : null}
-          {activeGroups.map((group) => <div key={group.id} style={{ marginTop: 18 }}>
+          {activeGroups.map((group) => <div className="class-row" key={group.id} style={{ marginTop: 18 }}>
             <span className="flab">在「{group.name}」里勾专业类（已勾 {picks.length} / 10）</span>
             <div className="chips" style={{ marginTop: 10 }}>
               {group.classes.map((cls) => <button key={cls.id} type="button"
-                className={`chip${picks.includes(cls.id) ? " brass on" : ""}`}
+                className={`chip class-chip${picks.includes(cls.id) ? " brass on" : ""}`}
                 aria-pressed={picks.includes(cls.id)}
                 title={cls.majors.slice(0, 8).map((major) => major.name).join("、") + (cls.majors.length > 8 ? " 等" : "")}
                 onClick={() => togglePick(cls.id)}>

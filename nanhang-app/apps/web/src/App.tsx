@@ -5,7 +5,7 @@ import {
   summary, withForm, type ModelContextLike, type WebState
 } from "./model.js";
 import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUserTurn, type AiPanelState } from "./ai-panel.js";
-import { mergeSuggestions } from "./direction-quota.js";
+import { FINAL_TURN_INSTRUCTION, directionTalkSettled, mergeSuggestions } from "./direction-quota.js";
 import { evidenceForRequest } from "./ai-client.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
@@ -71,6 +71,13 @@ export default function App() {
   // 定位章的两条路（负责人 2026-09-12 定）：手填几次考试，或荣县一中接入学校数据。
   // 默认走通用模式；登船卡片里选哪条就跳到对应页面，两条路都通向「谈心」。
   const [route, setRoute] = useState<LocateRoute>("manual");
+  // 设置卡里的两个开关（只影响这台设备的显示，不写盘；刷新回到默认）。
+  // 低语 = 等回答时显示一行「溟在做什么」的阶段提示（不是模型思考）；动效关掉 = 与系统「减少动态效果」同一套处理。
+  const [whisperOn, setWhisperOn] = useState(true);
+  // 收尾轮是否已经落定（落定后方向集合冻结，不再增减）。
+  const [finalDone, setFinalDone] = useState(false);
+  const finalTurnRef = useRef(false);
+  const [motionOff, setMotionOff] = useState(false);
   const [onlyConfirmed, setOnlyConfirmed] = useState(false);
   const [matchPending, setMatchPending] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
@@ -79,6 +86,13 @@ export default function App() {
   const reducedMotion = useMemo(() => prefersReducedMotion(), []);
   // 设置卡片也是浮层：开着的时候一样锁住整页滚动（与登船卡片同一套做法）。
   useScrollLock(settingsOpen);
+  // 「界面动效」开关：关掉时在 html 上打一个属性，样式表里与系统「减少动态效果」同一套选择器处理。
+  useEffect(() => {
+    const root = document.documentElement;
+    if (motionOff) root.dataset.motion = "off";
+    else delete root.dataset.motion;
+    return () => { delete root.dataset.motion; };
+  }, [motionOff]);
 
   const reading = useMemo(() => summary(state), [state]);
   const map = useMemo(() => {
@@ -193,6 +207,16 @@ export default function App() {
       .then((data) => { if (seq === catalogSeq.current) setCatalogRun({ key: catalogKey, data }); })
       .catch(() => { if (seq === catalogSeq.current) setCatalogRun(null); });
   }, [state.release, state.form.primary, state.form.additional, catalogKey]);
+
+  // 收尾轮的触发：聊够（方向覆盖到量或轮数兜底）且已连上时，由界面自动发起一次，只发一次。
+  useEffect(() => {
+    if (finalTurnRef.current || finalDone) return;
+    if (!ai.enabled || !ai.connected || ai.pending) return;
+    const studentTurns = ai.history.filter((turn) => turn.role === "user").map((turn) => turn.text);
+    if (!directionTalkSettled(studentTurns, ai.suggestions, catalog?.groups ?? [])) return;
+    finalTurnRef.current = true;
+    void runFinalTurn();
+  }, [ai.enabled, ai.connected, ai.pending, ai.history, ai.suggestions, catalog, finalDone]);
 
   useEffect(() => {
     if (toast === null) return;
@@ -399,16 +423,16 @@ export default function App() {
       // 方向收口（借北辰：到量即停，之后仍可继续聊但画像不再变）：聊够之后专业类不再新增，
       // 冻结在已经收齐的那一套上；没收齐就把这一轮的新建议并进来，并裁到上限（3 大类 / 6 小类）。
       const groups = catalog?.groups ?? [];
-      const studentTurns = current.history.filter((turn) => turn.role === "user").length;
-      const settled = { ...merged, suggestions: mergeSuggestions(current.suggestions, merged.suggestions, groups, studentTurns) };
+      // 冻结的时机是「收尾轮已经落定」——收尾轮之前一直照常并入（否则它自己算出来的那套也会被挡掉）。
+      const withSuggestions = { ...merged, suggestions: mergeSuggestions(current.suggestions, merged.suggestions, groups, finalDone) };
       // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在发布包目录里
       // 真实存在的专业类上，引用学生的第一句原话），让「AI 推荐线」的界面能被验收。
-      if (!DEBUG_MODE || settled.suggestions.length > 0 || !catalog) return settled;
+      if (!DEBUG_MODE || withSuggestions.suggestions.length > 0 || !catalog) return withSuggestions;
       // 两级示例：一个大类 + 它下面两个专业类，贴合「先大类、后小类」的选择结构。
       const group = [...catalog.groups].sort((a, b) => a.name.localeCompare(b.name, "zh-CN"))
         .find((entry) => entry.classes.length >= 2) ?? catalog.groups[0];
       const sample = group ? group.classes.slice(0, 2) : [];
-      return { ...settled, suggestions: sample.map((entry) => ({
+      return { ...withSuggestions, suggestions: sample.map((entry) => ({
         directionId: entry.id,
         evidenceIds: userTurns.length ? ["ev-chat-0"] : [],
         rationale: "（调试示例）从你聊到的内容看，可以先探索这个专业类；验收通过后请换真实模型复核。"
@@ -531,6 +555,31 @@ export default function App() {
     goTo("locate");
   };
 
+  /**
+   * 收尾轮（借北辰的「报告轮」）：谈够之后**由界面发起一次专门的生成请求**，
+   * 只把学生自己的原话当素材（不重复发 AI 正文），要求一次拿到完整结果；
+   * 之后方向集合冻结——可以接着聊，但不再增减（北辰：星图生成后画像不再变）。
+   *
+   * 这条指令不是学生说的话：所以它**不进转写**（对话框里看不到），也**不进可引用证据**
+   * （否则模型会去引用一句系统指令，界面还会把它当学生的原话展示）。
+   */
+  const runFinalTurn = async () => {
+    const seq = ++aiSeq.current;
+    const userTurns = ai.history.filter((turn) => turn.role === "user");
+    const chatEvidence = userTurns.map((turn, index) => (
+      { evidenceId: `ev-chat-${index}`, quote: turn.text, kind: "student_self_report" as const }));
+    const evidence = [...evidenceForRequest(state.registry), ...chatEvidence].slice(-12);
+    const next = await askAi(ai, aiStamp(), aiStamp(), FINAL_TURN_INSTRUCTION,
+      `web-final-${state.generation}-${Date.now()}`, {}, ai.history, evidence, catalog?.directions ?? []);
+    if (seq !== aiSeq.current) return;
+    setAi((current) => {
+      const merged = applyTurnResult(current, next);
+      const suggestions = mergeSuggestions(current.suggestions, merged.suggestions, catalog?.groups ?? [], false);
+      return { ...merged, suggestions };
+    });
+    setFinalDone(true);
+  };
+
   // 每个章节只声明它真正用到的字段（结构性子集），这里一次性把页面状态交给它们。
   const ctx = {
     // 章节里所有跳转都经过 goTo：没解锁的章节点了只会得到提示，不会跳页。
@@ -543,7 +592,7 @@ export default function App() {
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,
     map, score, contextLabel, chartSvgRef, download, setShowKun, setToast, toast,
-    route, chooseRoute
+    route, chooseRoute, whisperOn
   };
 
   const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);
@@ -618,7 +667,11 @@ export default function App() {
     </nav>
 
     {/* 设置卡片：任何一页都能打开；Esc、点背景、右上角关闭按钮都能退出。 */}
-    {renderSettings({ open: settingsOpen, onClose: () => setSettingsOpen(false), ai, setAi, clear })}
+    {renderSettings({
+      open: settingsOpen, onClose: () => setSettingsOpen(false), ai, setAi, clear,
+      route, releaseId: state.release?.manifest.release_id ?? null,
+      whisperOn, setWhisperOn, motionOff, setMotionOff
+    })}
 
     <div id="kun-stage" className={showKun ? "show" : ""} role="dialog" aria-label="逍遥游">
       <div className="kun-in">

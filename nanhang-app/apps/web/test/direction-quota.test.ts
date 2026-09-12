@@ -1,10 +1,12 @@
 // 「方向收口」的判定与冻结：纯函数行为测试。
 //
-// 借北辰的做法（到量即停；之后仍可继续聊，但画像不再变）：南溟把「量」定义成方向覆盖——
-// 小类满 5 个且分属 2 个以上大类就算聊够，另有轮数兜底；收口后合并只冻结、不新增。
+// 借北辰的做法（到量即停；之后仍可继续聊，但画像不再变）：南溟把「量」定义成两条——
+// 方向覆盖（小类 5 个且跨 2 个大类）或**素材够**（纯前端判：轮数 + 学生自己写的字数）；
+// 收口由界面发起的收尾轮落定后才冻结。
 import { describe, expect, it } from "vitest";
 import {
-  DIRECTION_QUOTA, coveredGroups, directionTalkSettled, groupIdOf, mergeSuggestions, trimSuggestions
+  DIRECTION_QUOTA, MATERIAL_READY, coveredGroups, directionTalkSettled, groupIdOf, materialEnough,
+  mergeSuggestions, trimSuggestions
 } from "../src/direction-quota.js";
 import type { CatalogGroup } from "../src/journey-model.js";
 
@@ -17,29 +19,51 @@ const groups = [
 ] as unknown as CatalogGroup[];
 
 const s = (directionId: string, rationale = "理由") => ({ directionId, rationale, evidenceIds: ["ev-1"] });
+/** n 轮学生原话，每轮 chars 字——用来说明「素材够」只看轮数与字数。 */
+const turns = (n: number, chars = 50) => Array.from({ length: n }, () => "字".repeat(chars));
+/** 把「总字数」摊到 n 轮里：判据看的是总量，不是每轮多长。 */
+const total = (n: number, chars: number) =>
+  Array.from({ length: n }, () => "字".repeat(Math.max(1, Math.ceil(chars / n))));
+const few = turns(MATERIAL_READY.minTurns - 1);
+const enough = turns(MATERIAL_READY.minTurns);
+
+describe("素材够不够：纯前端判", () => {
+  it("轮数与总字数都到线才算够", () => {
+    expect(materialEnough(total(MATERIAL_READY.minTurns, MATERIAL_READY.minChars))).toBe(true);
+    // 字写得多但轮数不够：不算（少了来回问答的过程）。
+    expect(materialEnough(total(MATERIAL_READY.minTurns - 1, MATERIAL_READY.minChars * 3))).toBe(false);
+    // 轮数够但字太少：也不算。
+    expect(materialEnough(total(MATERIAL_READY.minTurns + 2, MATERIAL_READY.minChars - 10))).toBe(false);
+  });
+
+  it("满 12 轮一律算够：再聊也不会多出什么，不让学生无限聊下去", () => {
+    expect(materialEnough(turns(MATERIAL_READY.hardTurns - 1, 1))).toBe(false);
+    expect(materialEnough(turns(MATERIAL_READY.hardTurns, 1))).toBe(true);
+  });
+
+  it("没到兜底轮数时，空话不算素材：只敲回车或只答「嗯」都不算", () => {
+    expect(materialEnough(Array.from({ length: MATERIAL_READY.minTurns }, () => "   "))).toBe(false);
+    expect(materialEnough(["嗯", "还行", "不知道", "随便", "都行", "没有"])).toBe(false);
+  });
+});
 
 describe("方向收口：算不算聊够", () => {
-  it("没有建议就不算——宁可多聊一轮，也不凭空收口", () => {
-    expect(directionTalkSettled([], groups, 20)).toBe(false);
-  });
-
-  it("小类够但只在一个大类里：还不算（负责人要的是两三个大类）", () => {
-    // 目录里 g-eng 只有三个类，凑不出 5 个；这里直接构造 5 条同组建议验证判据。
-    const sameGroup = [s("c-1"), s("c-2"), s("c-3"), s("c-1"), s("c-2")];
-    expect(coveredGroups(sameGroup, groups)).toEqual(["g-eng"]);
-    expect(directionTalkSettled(sameGroup, groups, 3)).toBe(false);
-  });
-
-  it("满 5 个小类、跨 2 个大类：算聊够了", () => {
+  it("方向覆盖到量：小类满 5 个、跨 2 个大类，就算聊够（哪怕刚聊两句）", () => {
     const five = [s("c-1"), s("c-2"), s("c-3"), s("c-4"), s("c-5")];
     expect(coveredGroups(five, groups)).toEqual(["g-eng", "g-sci"]);
-    expect(directionTalkSettled(five, groups, 5)).toBe(true);
+    expect(directionTalkSettled(["刚聊一句"], five, groups)).toBe(true);
   });
 
-  it("轮数兜底：已经有建议但覆盖不够时，聊满 8 轮也收口，不让学生一直等", () => {
-    const two = [s("c-1"), s("c-2")];
-    expect(directionTalkSettled(two, groups, DIRECTION_QUOTA.readyTurns - 1)).toBe(false);
-    expect(directionTalkSettled(two, groups, DIRECTION_QUOTA.readyTurns)).toBe(true);
+  it("小类够但只在一个大类里：不算到量，交给素材判据", () => {
+    const sameGroup = [s("c-1"), s("c-2"), s("c-3"), s("c-1"), s("c-2")];
+    expect(coveredGroups(sameGroup, groups)).toEqual(["g-eng"]);
+    expect(directionTalkSettled(["刚聊一句"], sameGroup, groups)).toBe(false);
+    expect(directionTalkSettled(enough, sameGroup, groups)).toBe(true);
+  });
+
+  it("一条建议都没有也能收尾：素材够了就收（这正是负责人 14 轮没有结果的那条缺陷）", () => {
+    expect(directionTalkSettled(few, [], groups)).toBe(false);
+    expect(directionTalkSettled(enough, [], groups)).toBe(true);
   });
 
   it("目录里没有的专业类不算进覆盖，也不会被当成新大类", () => {
@@ -49,8 +73,8 @@ describe("方向收口：算不算聊够", () => {
 });
 
 describe("方向收口：合并与冻结", () => {
-  it("没收口：新建议并进来，同一专业类只留一条", () => {
-    const merged = mergeSuggestions([s("c-1")], [s("c-1"), s("c-2")], groups, 2);
+  it("没收尾：新建议并进来，同一专业类只留一条", () => {
+    const merged = mergeSuggestions([s("c-1")], [s("c-1"), s("c-2")], groups, false);
     expect(merged.map((item) => item.directionId)).toEqual(["c-1", "c-2"]);
   });
 
@@ -62,15 +86,15 @@ describe("方向收口：合并与冻结", () => {
     expect(trimmed.length).toBeLessThanOrEqual(DIRECTION_QUOTA.maxClasses);
   });
 
-  it("已收口：整体冻结——连顺序都不动，后面再给什么都不加", () => {
+  it("冻结由调用方决定（收尾轮落定后才冻）：整体不动、连顺序都不变", () => {
     const settledSet = [s("c-1"), s("c-2"), s("c-3"), s("c-4"), s("c-5")];
-    const after = mergeSuggestions(settledSet, [s("c-6"), s("c-7")], groups, 6);
+    const after = mergeSuggestions(settledSet, [s("c-6"), s("c-7")], groups, true);
     expect(after).toEqual(settledSet);
   });
 
-  it("冻结只认「已收口」这一个条件：还没收口时照常并入", () => {
+  it("收尾轮自己那一轮以「未冻结」合并：否则它算出来的那套会被旧集合挡掉", () => {
     const notYet = [s("c-1"), s("c-2")];
-    const after = mergeSuggestions(notYet, [s("c-3")], groups, 2);
+    const after = mergeSuggestions(notYet, [s("c-3")], groups, false);
     expect(after.map((item) => item.directionId)).toEqual(["c-1", "c-2", "c-3"]);
   });
 });

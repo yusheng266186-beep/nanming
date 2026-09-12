@@ -21,13 +21,50 @@ describe("设置：入口与归属", () => {
     expect(app).toContain("onClick={() => setSettingsOpen(true)}>溟</button>");
     expect(app).toMatch(/className="brand" aria-label="南溟 · 逍遥游"/);
     expect(app).toContain("onClick={() => setShowKun(true)}>");
-    expect(app).toContain("renderSettings({ open: settingsOpen");
+    // 调用写成了多行（多了 route / releaseId / 两个开关），所以拆成两条断言，不绑缩进。
+    expect(app).toContain("renderSettings({");
+    expect(app).toContain("open: settingsOpen");
   });
 
   it("顶栏不再挂「四川 · …」上下文按钮：它与航程条上的定位重复", () => {
     expect(app).not.toContain('className="ctx-btn"');
     // 样式刻意留在 style.css 里——另一条线的窄屏守卫仍在断言它，只是不再有标记用它。
     expect(src("style.css")).toContain(".ctx-btn");
+  });
+
+  it("设置卡里的两个开关：思考低语与界面动效，都接到真实状态上", () => {
+    expect(settings).toContain("等待与动效");
+    expect(settings).toContain("思考低语");
+    expect(settings).toContain("界面动效");
+    // 低语不是模型思考：卡片上必须如实写明这一点。
+    expect(settings).toContain("不是模型的内部思考");
+    // 开关落成 aria-pressed 的「开 / 关」两枚 chip（与北辰的开/关按钮同一套做法）。
+    expect(settings).toContain('aria-pressed={value}');
+    expect(settings).toContain(">开</button>");
+    expect(settings).toContain(">关</button>");
+    // 动效开关落到 html[data-motion] 上，样式与系统「减少动态效果」共用一套选择器。
+    expect(app).toMatch(/if \(motionOff\) root\.dataset\.motion = "off";/);
+    expect(src("style.css")).toContain('html[data-motion="off"] *');
+  });
+
+  it("「现在的样子」是只读一览，读数取自真实状态", () => {
+    expect(settings).toContain("现在的样子");
+    expect(settings).toContain('{route === "school" ? "荣县一中 · 增强模式" : "全国通用模式"}');
+    expect(settings).toContain('{releaseId ?? "尚未载入"}');
+    expect(settings).toContain('{ai.connected ? "已连接" : "未连接"} · {tierLabel}');
+    // 只读：这一块里没有任何按钮。
+    const block = settings.slice(settings.indexOf("现在的样子"), settings.indexOf("本人数据"));
+    expect(block).not.toContain("<button");
+  });
+
+  it("低语只在开着且真的在等回答时出现，内容是南溟自己的阶段提示", () => {
+    expect(app).toContain("whisperOn");
+    expect(talk).toContain("if (!ai.pending || !whisperOn) { setWhisperStep(0); return; }");
+    expect(talk).toMatch(/ai\.pending \? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" \/>\s*\n\s*\{whisperOn \? <span className="whisper whisper-live"/);
+    expect(talk).toContain("const WHISPERS = [");
+    expect(talk).toContain("溟在读你刚写的那句");
+    // 低语是一行「溟在做什么」，不许夹带分数或录取判断。
+    expect(talk).not.toMatch(/WHISPERS = \[[^\]]*概率/);
   });
 
   it("思考深度只在设置里改，谈心页只显示当前档", () => {

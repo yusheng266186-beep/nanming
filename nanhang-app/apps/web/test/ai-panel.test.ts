@@ -56,7 +56,8 @@ describe("AI回复的显示安全", () => {
     });
     expect(next.reply).toContain("数据整理");
     expect(next.suggestions).toHaveLength(0);
-    expect(next.status).toContain("需你本人确认");
+    // 正常一轮不再挂状态行（负责人 2026-09-12 删掉那句「待确认」声明）；真正要说的话在界面各处写了具体来源。
+    expect(next.status).toBeNull();
   });
 
   it("降级回复按降级提示展示而不是普通成功", () => {

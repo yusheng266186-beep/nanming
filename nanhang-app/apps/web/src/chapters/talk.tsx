@@ -31,6 +31,18 @@ const OPENING_STARTERS = [
   "为了一件事查了不少资料，最后做成一页纸"
 ] as const;
 
+/**
+ * 等待时的一行低语（设置里「思考低语」可关）。
+ *
+ * 写的是**溟在做什么**，不是模型的内部思考——思考内容属于草稿、不出现在学生端
+ * （北辰那一版是把模型 reasoning 的尾部显示出来，南溟当初刻意没有搬，见 AI_QIANFAN_SETUP.md）。
+ */
+const WHISPERS = [
+  "溟在读你刚写的那句……",
+  "它在把你的话和已有的方向对一遍……",
+  "不猜分数，只从你说过的事里找线索……"
+] as const;
+
 export interface TalkProps {
   page: PageId;
   setPage: Dispatch<SetStateAction<PageId>>;
@@ -47,11 +59,13 @@ export interface TalkProps {
   catalog: { majors: Major[]; directions: CatalogDirection[]; groups: CatalogGroup[] } | null;
   quoteFor: (evidenceId: string) => string | null;
   hasChatted: boolean;
+  /** 等待回答时是否显示那一行低语（设置卡里的开关，默认开）。 */
+  whisperOn: boolean;
 }
 
 export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
   aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, catalog, quoteFor,
-  hasChatted }: TalkProps) {
+  hasChatted, whisperOn }: TalkProps) {
   // 谈心以 AI 谈心为主路径：进入本页即启用 AI（其它页面的无 AI 可用性不变）。
   useEffect(() => {
     if (page === "talk") setAi((current) => current.enabled ? current : enableAi(current));
@@ -62,8 +76,15 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
   // （它的夜航第 5 轮起评估、满 15 轮固定给出；领航满十轮自动点亮星图）。
   // 收口之后**仍然可以接着聊**，只是专业类不再新增：冻结在 App 合并那一层（mergeSuggestions）。
   const catalogGroups = catalog?.groups ?? [];
-  const studentTurns = ai.history.filter((turn) => turn.role === "user").length;
-  const settled = directionTalkSettled(ai.suggestions, catalogGroups, studentTurns);
+  const studentTurns = ai.history.filter((turn) => turn.role === "user").map((turn) => turn.text);
+  const settled = directionTalkSettled(studentTurns, ai.suggestions, catalogGroups);
+  // 等待时的低语：开关在设置卡里（默认开）。开着时每 2.4 秒换一句，停下时回到第一句。
+  const [whisperStep, setWhisperStep] = useState(0);
+  useEffect(() => {
+    if (!ai.pending || !whisperOn) { setWhisperStep(0); return; }
+    const timer = window.setInterval(() => setWhisperStep((step) => (step + 1) % WHISPERS.length), 2400);
+    return () => window.clearInterval(timer);
+  }, [ai.pending, whisperOn]);
   // 「聊完之后」的方向小结卡：收口时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
   const [summaryOpen, setSummaryOpen] = useState(false);
   const summarySeen = useRef(false);
@@ -125,11 +146,20 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
             from={turn.role === "user" ? "me" : "ai"}>
             {turn.text}
           </ChatBubble>)}
-          {ai.pending ? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" /></ChatBubble> : null}
+          {ai.pending ? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" />
+            {whisperOn ? <span className="whisper whisper-live" key={whisperStep}>{WHISPERS[whisperStep]}</span> : null}
+          </ChatBubble> : null}
           {/* 收口提示：说清「聊完了、还能聊、但方向不再变」，并把下一步摆出来。 */}
           {settled ? <ChatBubble from="ai">
-            方向已经收齐了——跨了 {coveredGroups(ai.suggestions, catalogGroups).length} 个大类、{ai.suggestions.length} 个专业类。
-            想接着聊随时可以，只是不再往上加新的专业类了；也可以现在就去「方向」，自己再选一次。
+            {ai.suggestions.length
+              ? `方向已经收齐了——跨了 ${coveredGroups(ai.suggestions, catalogGroups).length} 个大类、${ai.suggestions.length} 个专业类。`
+              : "这一轮谈心到这里就完成了。"}
+            {ai.pending
+              ? "溟正在把这一轮整理成清单……"
+              : "想接着聊随时可以，只是不再往上加新的专业类了；也可以现在就去「方向」，自己再选一次。"}
+            {!ai.pending && !ai.suggestions.length && !catalog?.directions.length
+              ? "这次没有聊出可以落地的专业类：回「起航」把选科定下来，AI 才认得出专业类（选科也决定后面能报什么）。"
+              : null}
             <span className="whisper">这一轮谈心到这里就算完成。</span>
           </ChatBubble> : null}
         </div>
@@ -160,6 +190,11 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
             </div>
             {/* 聊法在进对话之前选定（负责人 2026-09-12：进来之后不再给切换按钮）；
                 当前档位仍显示在对话头部，学生知道自己这句话是按哪一档答的。 */}
+            {/* 没有专业类目录就说清楚：AI 认不出专业类，聊再多也落不到具体的类上。 */}
+            {!catalog?.directions.length ? <p className="fhint">
+              还没定选科：专业类清单按选科与批次生成，现在 AI 认不出专业类。先去「起航」把三件事定下来，
+              再回来接着聊——已经聊过的内容不受影响。
+            </p> : null}
             {ai.status ? <p className="feedback">{ai.status}</p> : null}
           </>}
         </div>
@@ -196,6 +231,16 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
                   return <li className="vpill" key={item.directionId}>{cls.name}</li>;
                 })}
               </ul>
+              {/* 收尾轮要求每条都带「为什么 + 以后主要做什么工作」，这里原样呈现，不另编。 */}
+              <dl className="set-rows" style={{ marginTop: 8 }}>
+                {items.map((item) => {
+                  const cls = group.classes.find((entry) => entry.id === item.directionId)!;
+                  return <div className="set-row tall" key={item.directionId}>
+                    <dt>{cls.name}</dt>
+                    <dd>{item.rationale}</dd>
+                  </div>;
+                })}
+              </dl>
             </div>;
           })}
           <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 18 }}>

@@ -217,6 +217,21 @@ describe("千帆请求形状", () => {
     expect(prompt).toContain("不要给出任何方向建议");
   });
 
+  it("前端收尾轮沿用同一接口，但不再提问或返回选项", async () => {
+    const req = request({ userText: "【收尾】谈心到这里。\n请根据原话给出最终结果。", mode: "guided" });
+    const prompt = buildQianfanSystemPrompt(req);
+    expect(prompt).toContain("【收尾轮】");
+    expect(prompt).toContain("正文不留问号");
+    expect(prompt).toContain("options 必须为 []");
+    expect(prompt).not.toContain("只问一个问题");
+    expect(prompt).not.toContain("选择作答给 3~4");
+    const structured = '{"suggestions":[],"actions":[],"options":["再聊一聊"]}';
+    const { upstream } = build(sseResponse([delta("我听到你喜欢整理材料。"), delta(STRUCT_MARKER + structured)]));
+    const text = await collect(upstream, req);
+    const final = await upstream.finalize(req, text) as { options: string[] };
+    expect(final.options).toEqual([]);
+  });
+
   it("借来北辰的谈话纪律：每轮只问一个、话题漏斗、不硬判、反测评腔", () => {
     const prompt = buildQianfanSystemPrompt(request());
     expect(prompt).toContain("只问一个问题");

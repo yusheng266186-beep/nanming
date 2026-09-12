@@ -89,7 +89,8 @@ describe("谈心：聊完之后才给的东西", () => {
     expect(talk).toContain("const summarySeen = useRef(false)");
     // 触发点是「收口」（聊够方向覆盖），不是「刚拿到第一条建议」——借北辰到量即停的做法。
     expect(talk).toMatch(/if \(!settled \|\| summarySeen\.current\) return;/);
-    expect(talk).toContain("directionTalkSettled(ai.suggestions, catalogGroups, studentTurns)");
+    // 素材判据吃的是学生原话与目录，不再只看轮数：
+    expect(talk).toContain("directionTalkSettled(studentTurns, ai.suggestions, catalogGroups)");
     expect(talk).toContain('aria-label="溟听出来的方向"');
     expect(talk).toContain('className="board-backdrop"');
     expect(talk).toContain(">方向小结<");
@@ -103,9 +104,40 @@ describe("谈心：聊完之后才给的东西", () => {
     expect(talk).not.toMatch(/textarea[^>]*disabled=\{settled\}/);
   });
 
-  it("冻结在合并那一层做：已收口就整体不动（连顺序都不变）", () => {
+  it("冻结发生在收尾轮落定之后：收尾轮自己算出来的那套不会被冻掉", () => {
     const app = src("App.tsx");
-    expect(app).toContain("mergeSuggestions(current.suggestions, merged.suggestions, groups, studentTurns)");
+    // 普通轮按 finalDone 决定是否冻结；收尾轮以 false 合并，落定后才置 finalDone。
+    expect(app).toContain("mergeSuggestions(current.suggestions, merged.suggestions, groups, finalDone)");
+    expect(app).toContain("mergeSuggestions(current.suggestions, merged.suggestions, catalog?.groups ?? [], false)");
+    expect(app).toContain("setFinalDone(true)");
+  });
+
+  it("收尾轮借北辰的「报告轮」：界面发起一次，只发学生原话，指令不进转写", () => {
+    const app = src("App.tsx");
+    expect(app).toContain("FINAL_TURN_INSTRUCTION");
+    expect(app).toContain("web-final-");
+    // 素材只取学生自己的话（不重复发 AI 正文，也不把整段对话原样再发一遍）。
+    expect(app).toContain("const chatEvidence = userTurns.map((turn, index) => (");
+    // 收尾轮直接调 askAi，而不是走 sendAi：那条指令不能被当成学生说的话写进转写。
+    expect(app).toMatch(/const runFinalTurn = async \(\) => \{[\s\S]*?await askAi\(ai, aiStamp\(\), aiStamp\(\), FINAL_TURN_INSTRUCTION/);
+    expect(app).toMatch(/const runFinalTurn = async \(\) => \{[\s\S]*?setFinalDone\(true\)/);
+    // 触发条件：聊够 + 已连上 + 不忙，且只发一次。
+    expect(app).toContain("if (finalTurnRef.current || finalDone) return;");
+    expect(app).toContain("if (!directionTalkSettled(studentTurns, ai.suggestions, catalog?.groups ?? [])) return;");
+  });
+
+
+  it("删掉那句每次回复都挂一遍的免责声明；真实状态照旧", () => {
+    const panel = src("ai-panel.ts");
+    expect(panel).not.toContain("AI 建议仅作待确认方向");
+    // 出错/降级/限流这些真实状态仍然写进 status（只是正常一轮不再挂话）。
+    expect(panel).toContain("AI 回复未通过安全校验，已降级为本地提示");
+    expect(panel).toContain("replyRevision: inputRevision, status: null }");
+  });
+
+  it("没有专业类目录时把原因说出来，并指向起航的选科", () => {
+    expect(talk).toContain("还没定选科：专业类清单按选科与批次生成，现在 AI 认不出专业类");
+    expect(talk).toContain("{!catalog?.directions.length ? <p className=\"fhint\">");
   });
 
   it("小结卡按大类分组列出 AI 挑出的专业类，并带上原话与理由", () => {

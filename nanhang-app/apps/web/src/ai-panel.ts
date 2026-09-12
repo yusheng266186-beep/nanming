@@ -238,7 +238,9 @@ export function applyOutcome(state: AiPanelState, outcome: AiTurnOutcome, httpSt
       suggestions: [], actions: [], options: [], replyRevision: inputRevision,
       status: `AI 回复未通过安全校验，已降级为本地提示（${outcome.reason ?? "已拒绝"}）。` };
   }
+  // 正常一轮不再挂状态行（负责人 2026-09-12：删掉那句每次回复都挂一遍的「待确认」声明——
+  // 它像一句免责声明，而真正要说的边界在各处都写出了具体来源）。
+  // 出错、降级、限流等真实状态仍然照常写进 status。
   return { ...state, pending: false, reply: outcome.reply === null ? null : safeText(outcome.reply),
-    options: outcome.options.map(safeText), replyRevision: inputRevision,
-    status: "AI 建议仅作待确认方向，需你本人确认。" };
+    options: outcome.options.map(safeText), replyRevision: inputRevision, status: null };
 }

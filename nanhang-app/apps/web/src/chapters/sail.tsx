@@ -63,6 +63,9 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
   // 状态只写在字段的印章上（铜色 = 备好），底部那句摘要同步再说一遍（aria-live），不另造第二份说明。
   const additionalFull = state.form.additional.length === 2;
   const readyToSail = state.form.primary !== null && additionalFull;
+  // 「行装清单」的备齐进度：三件里备好几件（03 是选填，也算一件事，但不算出门的门槛）。
+  const packed = (state.form.primary !== null ? 1 : 0) + (additionalFull ? 1 : 0) + (state.form.score !== null ? 1 : 0);
+  const packWord = readyToSail ? "可以出发" : `还差 ${2 - packed} 件`;
   const sailSummary = state.form.primary
     ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 高考目标分 ${state.form.score ?? "未填"}`
     : "还没有选首选科目，位次与资格都会显示为未知。";
@@ -125,69 +128,101 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       <div className="sec-head"><div><span className="eyebrow">Chapter 01 · 起航 · 北冥有鱼</span><h2 style={{ marginTop: 12 }}>先定下三件事</h2><p>首选科目与再选科目决定「这个专业我能不能报」；高考目标分给出起点，探索区间决定先看哪些院校。</p></div></div>
       {/* 选科与情景分必须在这里能设置，否则「选择你的选科组合」只是文案：
           位次、资格与匹配都依赖首选科目，没有它整页只能显示未知。 */}
-      <div className="panel sail-panel" data-ready={readyToSail ? "true" : "false"}>
-        <div className="grid-2 sail-form">
-          <div className="field" data-ready={state.form.primary !== null ? "true" : "false"}>
-            <span className="flab"><i className="seal">01</i>首选科目</span>
-            <div className="chips">
-              {(["PHYSICS", "HISTORY"] as const).map((item) => <button type="button" key={item}
-                className={`chip${state.form.primary === item ? " brass on" : ""}`}
-                aria-pressed={state.form.primary === item}
-                onClick={() => { setState((current) => withForm(current, { primary: current.form.primary === item ? null : item })); setToast(`首选科目：${label(item)}类`); }}>
-                {label(item)}类
-              </button>)}
-            </div>
-            <p className="fhint">2025 年起四川采用 3+1+2，物理类与历史类是两套独立的计划与位次。</p>
+      <div className="panel sail-panel" data-ready={readyToSail ? "true" : "false"} data-packed={packed}>
+        {/* 卡头是深海底的「备航状态带」：面板抬头 + 备齐进度 + 铜色细进度线，下面把当前选择
+            用一句原话再说一遍（aria-live）。进度线把选填的 03 也算进去，「还差几件」一眼看得出；
+            能不能出发仍只看 01 与 02（那句 packWord 说的就是这个）。 */}
+        <div className="pack-head">
+          <div className="pack-head-top">
+            <h3 className="song"><Icon name="anchor" />行装清单</h3>
+            <span className="pack-meter"><b className="num">{packed}</b><i>/3</i>
+              <em data-ready={readyToSail ? "true" : "false"}>{packWord}</em></span>
           </div>
-          <div className="field" data-ready={additionalFull ? "true" : "false"}>
-            <span className="flab"><i className="seal">02</i>再选科目（正好 2 门）
-              <em className="flab-n">{state.form.additional.length}/2</em></span>
-            <div className="chips" data-full={additionalFull ? "true" : "false"}>
-              {ADDITIONAL_OPTIONS.map((item) => {
-                const on = state.form.additional.includes(item);
-                return <button type="button" key={item}
-                  className={`chip${on ? " brass on" : ""}`} aria-pressed={on}
-                  onClick={() => {
-                    if (!on && additionalFull) { setToast("再选科目正好 2 门，先取消一门再选。"); return; }
-                    setState((current) => withForm(current, {
-                      additional: current.form.additional.includes(item)
-                        ? current.form.additional.filter((value) => value !== item)
-                        : [...current.form.additional, item],
-                    }));
-                  }}>{label(item)}</button>;
-              })}
-            </div>
-            <p className="fhint">选满 2 门才能判断资格。不确定的要求会显示「待核对」，不会被当成满足。</p>
-          </div>
-        </div>
-        <label className="field sail-score" data-ready={state.form.score !== null ? "true" : "false"}>
-          <span className="flab"><i className="seal">03</i>高考目标分（可不填）</span>
-          <input className="inp" type="number" min={0} max={750} inputMode="numeric"
-            value={state.form.score ?? ""} placeholder="例如 600"
-            onChange={(event) => setState((current) => withForm(current, { score: event.target.value ? Number(event.target.value) : null }))} />
-        </label>
-        {/* 行动入口放在表单之后：流程是「先定下三件事，再出发」。开始起航弹出登船卡片，
-            两条入口作为通向定位/成绩的桥——不再平铺在页面上。 */}
-        <div className="hero-act sail-act">
-          {/* 负责人 2026-09-12：选科没齐时不许拉开登船卡，只提醒去选——没有选科，后面的位次、
-              资格与匹配全是未知，先放人上船等于让他进去看一页「未知」。 */}
-          <button type="button" className="btn brass"
-            onClick={() => {
-              if (state.form.primary === null || state.form.additional.length !== 2) {
-                setToast(state.form.primary
-                  ? "再选科目要正好 2 门——先在下面选满，再开始起航。"
-                  : "先在下面选好首选科目与两门再选科目，再开始起航。");
-                return;
-              }
-              setBoardOpen(true);
-            }}>开始起航<Icon name="arrow" /></button>
-          <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
-        </div>
-        <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
+          {/* 进度线用 scaleX 走：只动合成层，宽度不参与布局，改选科时不会把下面的三件顶动。 */}
+          <span className="pack-track" aria-hidden="true"><i style={{ transform: `scaleX(${packed / 3})` }} /></span>
           {/* key 让摘要每次变化都重新播一遍淡入，改选科时眼睛能跟上；同一句话也读给读屏。 */}
           <span className="muted-note sail-live" aria-live="polite" key={sailSummary}>{sailSummary}</span>
         </div>
-        {toast ? <p className="feedback" aria-live="polite">{toast}</p> : null}
+        {/* 三件沿一条竖轨排开（编号印章钉在轨上，备好点亮成铜色并挂一圈光环）——
+            与顶栏那条六站航程轨同一种读法：点在自己的位置上，一眼看得出备到哪儿了。 */}
+        <div className="pack-list">
+          <div className="pack-row" data-ready={state.form.primary !== null ? "true" : "false"}>
+            <span className="pack-node"><i className="seal">01</i></span>
+            <div className="field pack-field">
+              <span className="flab"><span className="flab-t">首选科目</span>
+                <em className="pack-state">{state.form.primary !== null ? "已定" : "待定"}</em></span>
+              <div className="chips">
+                {(["PHYSICS", "HISTORY"] as const).map((item) => <button type="button" key={item}
+                  className={`chip${state.form.primary === item ? " brass on" : ""}`}
+                  aria-pressed={state.form.primary === item}
+                  onClick={() => { setState((current) => withForm(current, { primary: current.form.primary === item ? null : item })); setToast(`首选科目：${label(item)}类`); }}>
+                  {label(item)}类
+                </button>)}
+              </div>
+              <p className="fhint">2025 年起四川采用 3+1+2，物理类与历史类是两套独立的计划与位次。</p>
+            </div>
+          </div>
+          {/* 02 的状态签把「选了几门」与「够不够」合成一处：1/2 门是进行中，已满 2 门才算备好。 */}
+          <div className="pack-row" data-ready={additionalFull ? "true" : "false"}>
+            <span className="pack-node"><i className="seal">02</i></span>
+            <div className="field pack-field">
+              <span className="flab"><span className="flab-t">再选科目（正好 2 门）</span>
+                <em className="pack-state">{additionalFull ? "已满 2 门" : `${state.form.additional.length}/2 门`}</em></span>
+              <div className="chips" data-full={additionalFull ? "true" : "false"}>
+                {ADDITIONAL_OPTIONS.map((item) => {
+                  const on = state.form.additional.includes(item);
+                  return <button type="button" key={item}
+                    className={`chip${on ? " brass on" : ""}`} aria-pressed={on}
+                    onClick={() => {
+                      if (!on && additionalFull) { setToast("再选科目正好 2 门，先取消一门再选。"); return; }
+                      setState((current) => withForm(current, {
+                        additional: current.form.additional.includes(item)
+                          ? current.form.additional.filter((value) => value !== item)
+                          : [...current.form.additional, item],
+                      }));
+                    }}>{label(item)}</button>;
+                })}
+              </div>
+              <p className="fhint">选满 2 门才能判断资格。不确定的要求会显示「待核对」，不会被当成满足。</p>
+            </div>
+          </div>
+          {/* 03 是选填：备好不加门禁，只是让起点更准（区间会用它收敛）。 */}
+          <div className="pack-row" data-ready={state.form.score !== null ? "true" : "false"}>
+            <span className="pack-node"><i className="seal">03</i></span>
+            <label className="field pack-field sail-score">
+              {/* 这一枚状态签加 aria-hidden：它裹在 label 里，否则会被算进输入框的可读名称
+                  （「高考目标分（可不填） 可不填」）。状态由下面那句 aria-live 摘要统一报出。 */}
+              <span className="flab"><span className="flab-t">高考目标分（可不填）</span>
+                <em className="pack-state" aria-hidden="true">{state.form.score !== null ? "已填" : "可不填"}</em></span>
+              <span className="score-wrap">
+                <input className="inp" type="number" min={0} max={750} inputMode="numeric"
+                  value={state.form.score ?? ""} placeholder="例如 600"
+                  onChange={(event) => setState((current) => withForm(current, { score: event.target.value ? Number(event.target.value) : null }))} />
+                <span className="score-unit" aria-hidden="true">分</span>
+              </span>
+            </label>
+          </div>
+        </div>
+        {/* 行动入口放在清单之后：流程是「先定下三件事，再出发」。开始起航弹出登船卡片，
+            两条入口作为通向定位/成绩的桥——不再平铺在页面上。 */}
+        <div className="pack-foot">
+          <div className="hero-act sail-act">
+            {/* 负责人 2026-09-12：选科没齐时不许拉开登船卡，只提醒去选——没有选科，后面的位次、
+                资格与匹配全是未知，先放人上船等于让他进去看一页「未知」。 */}
+            <button type="button" className="btn brass"
+              onClick={() => {
+                if (state.form.primary === null || state.form.additional.length !== 2) {
+                  setToast(state.form.primary
+                    ? "再选科目要正好 2 门——先在下面选满，再开始起航。"
+                    : "先在下面选好首选科目与两门再选科目，再开始起航。");
+                  return;
+                }
+                setBoardOpen(true);
+              }}>开始起航<Icon name="arrow" /></button>
+            <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
+          </div>
+          {toast ? <p className="feedback" aria-live="polite">{toast}</p> : null}
+        </div>
       </div>
     </div>
 
