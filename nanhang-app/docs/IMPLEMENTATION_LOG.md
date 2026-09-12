@@ -47,6 +47,18 @@
   那一路收尾时会一并修好；在此之前不要把 `GATE-LOCAL` 当作当前通过状态。
 - 教训：本工作区有并发写入，提交必须用显式路径 `git add <file>...`，不要用 `-A`。
 
+## 2026-09-12 订正：Redis 规格从 1GB 缩到 256MB
+
+- 先前的判断是错的：`CreateInstances` 的文档写着「MemSize 数值需为 1024 的整数倍」，我把它当成了最小规格，
+  直接开了 1GB。实际询价显示 256MB / 512MB 都能买，价格按内存线性（256MB ≈ ¥0.0368/小时）。
+- 实测用量 `SizeUsed` 为 0（会话键每条几百字节到几 KB，一个班几十人也远不到 1MB），
+  256MB 完全够用。已用 `UpgradeInstance(MemSize=256, RedisReplicasNum=1, SwitchOption=2)` 原地缩容，
+  **外网地址与端口不变**（`cd-crs-bdr4f2z6.sql.tencentcdb.com:24668`），连接数上限仍为 10000。
+- 缩容后复验：函数 `/healthz` 仍为 `store:"redis"`，`/readyz` 的 `state_store` 为 true；
+  线上真跑一轮（兑换 + 引航）HTTP 200、4 个选项、0 个 error 帧。
+- 教训记在这里：腾讯云 API 文档里的「单位/倍数」说明不等于售卖规格下限，开实例前应该先用
+  `InquiryPriceCreateInstance` 逐档询价，而不是照着文档推。
+
 ## 2026-09-12 共享会话存储：Redis 接上，多实例不再踢人
 
 - 背景：函数此前跑单实例内存档，SCF 并发起来会起多个实例，学生的第二轮请求落到另一个实例就会
