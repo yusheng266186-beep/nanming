@@ -9,7 +9,7 @@ import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
 import {
   additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam, loadQualityIndex,
-  loadQualityShard, normalizeCode, recentTotals, registerFailure,
+  loadQualityShard, normalizeCode, recentExams, registerFailure,
   type LoadedQuality, type QualityAttempts
 } from "./quality-huixi.js";
 import {
@@ -221,7 +221,7 @@ export default function App() {
         const additional = additionalFromCombination(shard.person.combination);
         setState((current) => withForm(current, { primary,
           additional: additional ?? current.form.additional,
-          score: Math.round(exam.total), history: recentTotals(shard) }));
+          score: Math.round(exam.total), exams: recentExams(shard) }));
       }
       notify(`已接入质量慧析 · ${shard.person.classLabel}`);
       setPage("quality");

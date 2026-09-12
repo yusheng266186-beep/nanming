@@ -27,3 +27,6 @@ nanhang-app/data/releases/
 
 # ---- 历史快照压缩包：git 历史取代 zip 快照职能 ----
 *.zip
+
+# ---- 会话工具的本地状态目录 ----
+.zcode/

@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   MAX_CODE_ATTEMPTS, additionalFromCombination, classChanges, formatGap, formatRate, formatScore,
-  latestExam, loadQualityShard, normalizeCode, recentTotals, registerFailure, subjectDistances,
+  latestExam, loadQualityShard, normalizeCode, recentExams, registerFailure, subjectDistances,
   weakestKnowledge, initialQualityAttempts, trailHeights
 } from "../src/quality-huixi.js";
 import type { QualityIndex, QualityShard } from "../src/quality-types.js";
@@ -238,12 +238,19 @@ describeRelease("发布产物与解析器输出一致", () => {
     expect(sawKnowledge).toBe(true);
   });
 
-  it("最近一次考试取序列末尾，历史分按旧→新且不超过 5 个", () => {
+  it("最近一次考试取序列末尾，富记录保留位次与切线且不超过 5 条", () => {
     const shard = readShard(shardFiles()[0]);
     expect(latestExam(shard)).toEqual(shard.exams[shard.exams.length - 1]);
-    const totals = recentTotals(shard);
-    expect(totals.length).toBeLessThanOrEqual(5);
-    expect(totals).toEqual(shard.exams.slice(-5).map((exam) => exam.total));
+    const exams = recentExams(shard);
+    expect(exams.length).toBeLessThanOrEqual(5);
+    // 富记录逐字段对应分片：位次与两道切线不再被压扁成纯分数。
+    expect(exams).toEqual(shard.exams.slice(-5).map((exam) => ({
+      label: exam.rawLabel ?? exam.exam,
+      total: exam.total,
+      rank: exam.gradeRank,
+      topTotal: exam.topTotal,
+      undergraduateTotal: exam.undergraduateTotal
+    })));
   });
 
   it("最弱知识点按本人得分率升序，只取有作答的条目", () => {

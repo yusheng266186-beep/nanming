@@ -196,12 +196,29 @@ const errorMessage = (error: unknown): string => {
 };
 
 export interface AnswerRecord { questionId: string; text: string; evidenceId: string; kind: EvidenceKind; }
+
+/** 一次本人考试的录入记录（含增强模式自动回填）。null 表示「没填」，不是 0——与全项目的缺失约定一致。 */
+export interface ExamRecord {
+  /** 考试名称，如「三诊」「入口考」；仅为展示标签，不参与计算。 */
+  label: string;
+  /** 本次考试总分。 */
+  total: number | null;
+  /** 校内/全市位次（选填，展示用）。不得当作省位次使用。 */
+  rank: number | null;
+  /** 本次考试的特控线（部分学校沿用「一本线」称呼）与本科线；属于考试自己的切线，
+   *  由学生本人或学校数据提供，不是省控线。缺线的次不参与距线差与等位换算。 */
+  topTotal: number | null;
+  undergraduateTotal: number | null;
+}
+
 export interface WebForm {
   targetYear: number; primary: "PHYSICS" | "HISTORY" | null; additional: string[];
   score: number | null; budget: number | null;
-  /** Most recent exam scores, oldest first. Optional: with fewer than two the page says the
-   *  stability measure is unavailable instead of inventing a trend. */
-  history: number[];
+  /** Recent exam records, oldest first, at most 5. Totals feed stability/trend; with fewer than
+   *  two totals the page says the stability measure is unavailable instead of inventing a trend.
+   *  Lines (topTotal/undergraduateTotal) additionally enable line-diff and the line-ratio
+   *  equivalent-position estimate on the locate page — display only, never matching input. */
+  exams: ExamRecord[];
   /** Which batches to search. Each one is a separate set of shards to download, so the student's
    *  choice directly sets how much data the page fetches. */
   batches: string[];
@@ -227,7 +244,7 @@ export const EMPTY_RELEASE_STATE = {
 
 export function initialState(): WebState {
   return { form: { targetYear: 2027, primary: null, additional: [], score: null,
-    budget: null, history: [], batches: [...DEFAULT_BATCHES] },
+    budget: null, exams: [], batches: [...DEFAULT_BATCHES] },
     answers: [], answerSequence: 0, registry: createEvidenceRegistry([]), profile: emptyDirectionProfile("web-profile"),
     generation: 0, match: null, notice: null, ...EMPTY_RELEASE_STATE };
 }

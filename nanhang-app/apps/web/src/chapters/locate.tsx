@@ -1,29 +1,73 @@
 import type { Dispatch, SetStateAction } from "react";
-import { QUESTIONS, axisMarks, scorePosition, type WebState } from "../model.js";
+import { QUESTIONS, axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from "../model.js";
+import { examLineDiffs, equivalentPosition, scoreStability, scoreTrend } from "../exam-position.js";
+import { OFFICIAL_LINES_2026 } from "../reference-lines.js";
+import { formatGap } from "../quality-huixi.js";
 import { Provenance, Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
 import { REFERENCE_YEAR, clamp, label, type PageId } from "./shared.js";
 
 export interface LocateProps {
   state: WebState;
+  setState: Dispatch<SetStateAction<WebState>>;
   page: PageId;
   setPage: Dispatch<SetStateAction<PageId>>;
   score: number | null;
   trackLabel: string;
+  notify: (message: string) => void;
 }
 
-export function renderLocate({ state, page, setPage, score, trackLabel }: LocateProps) {
-  const history = state.form.history;
-  const stability = history.length >= 2
-    ? Math.sqrt(history.reduce((sum, item) => sum + (item - history.reduce((a, b) => a + b, 0) / history.length) ** 2, 0) / history.length)
-    : null;
-  const trend = history.length >= 2 ? history[history.length - 1]! - history[history.length - 2]! : null;
+const formatRatio = (ratio: number) => `${ratio >= 0 ? "+" : ""}${(ratio * 100).toFixed(1)}%`;
+const formatPercentile = (percentile: number) =>
+  `前 ${percentile < 1 ? percentile.toFixed(2) : percentile.toFixed(1)}%`;
+
+export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify }: LocateProps) {
+  const exams = state.form.exams;
+  const totals = exams.map((exam) => exam.total).filter((item): item is number => item !== null);
+  const stability = scoreStability(totals);
+  const trend = scoreTrend(totals);
   // 位次与百分位来自官方分段表；没有表或分数不在公布范围时保持 null，页面显示未知。
   const position = scorePosition(state.release, state.form.primary, score);
   const marks = axisMarks(state.release, state.form.primary, score);
   // 公布范围条：把学生的情景分画在「官方公布的最低分 → 最高分」这条真实区间上。
   const bandRange = position ? Math.max(1, position.publishedMaxScore - position.publishedMinScore) : 0;
   const bandLeft = position ? (position.score - position.publishedMinScore) / bandRange * 100 : 0;
+
+  // 等位换算取最近一次「有总分且有任一切线」的考试；官方线是已登记的 2026 年四川省控线。
+  // 学生没选科类或发布数据未载入时，等位分仍可算，但一分一段定位显示为未知。
+  const equivalentExam = [...exams].reverse()
+    .find((exam) => exam.total !== null && (exam.topTotal !== null || exam.undergraduateTotal !== null)) ?? null;
+  const officialLines = state.form.primary
+    ? { year: OFFICIAL_LINES_2026.year, ...OFFICIAL_LINES_2026.tracks[state.form.primary] }
+    : null;
+  const equivalent = equivalentExam && officialLines
+    ? equivalentPosition(equivalentExam, officialLines, state.release, state.form.primary)
+    : null;
+
+  const updateExam = (index: number, patch: Partial<ExamRecord>) => {
+    setState((current) => withForm(current, {
+      exams: current.form.exams.map((exam, i) => i === index ? { ...exam, ...patch } : exam)
+    }));
+  };
+  const addExam = () => {
+    setState((current) => current.form.exams.length >= 5 ? current : withForm(current, {
+      exams: [...current.form.exams,
+        { label: `第 ${current.form.exams.length + 1} 次`, total: null, rank: null, topTotal: null, undergraduateTotal: null }]
+    }));
+  };
+  const removeExam = (index: number) => {
+    setState((current) => withForm(current, { exams: current.form.exams.filter((_, i) => i !== index) }));
+  };
+  const applyEquivalent = (value: number) => {
+    setState((current) => withForm(current, { score: value }));
+    notify(`已把等位分 ${value} 设为目标情景分`);
+  };
+  const numberField = (ariaLabel: string, placeholder: string, value: number | null,
+                       onChange: (value: number | null) => void) =>
+    <input className="inp exam-num" type="number" inputMode="numeric" min={0} max={750}
+      aria-label={ariaLabel} value={value ?? ""} placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value === "" ? null : Number(event.target.value))} />;
+
   return <section id="page-locate" className={`view${page === "locate" ? " active" : ""}`} aria-label="定位">
     <div className="page-head">
       <div><span className="eyebrow">Chapter 02 · 定位 · 测深</span>
@@ -33,6 +77,36 @@ export function renderLocate({ state, page, setPage, score, trackLabel }: Locate
         <svg className="head-rose" aria-hidden="true"><use href="#rose" /></svg>
         <p>知止而后有定，<br />定而后能静，静而后能安。</p></div>
     </div>
+
+    <div className="panel" style={{ marginTop: 20 }}>
+      <h3><Icon name="log" />录入近几次考试</h3>
+      <p className="psub">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。荣县一中的同学在「成绩」页用验证码接入后自动带入，无需重复填写。</p>
+      {exams.length === 0 ? <p className="muted-note">还没有录入考试。填了总分，稳定性与趋势才有依据；不填也不影响情景分定位。</p> : null}
+      {exams.map((exam, index) => {
+        const diffs = examLineDiffs(exam);
+        return <div className="exam-row" key={index}>
+          <input className="inp exam-label" type="text" value={exam.label}
+            aria-label={`第 ${index + 1} 次考试名称`}
+            onChange={(event) => updateExam(index, { label: event.target.value })} />
+          {numberField(`第 ${index + 1} 次总分`, "总分", exam.total, (value) => updateExam(index, { total: value }))}
+          {numberField(`第 ${index + 1} 次位次（校内/全市，选填）`, "位次", exam.rank, (value) => updateExam(index, { rank: value }))}
+          {numberField(`第 ${index + 1} 次特控线/一本线`, "特控线", exam.topTotal, (value) => updateExam(index, { topTotal: value }))}
+          {numberField(`第 ${index + 1} 次本科线`, "本科线", exam.undergraduateTotal, (value) => updateExam(index, { undergraduateTotal: value }))}
+          <button type="button" className="rbtn" aria-label={`删除第 ${index + 1} 次考试`}
+            onClick={() => removeExam(index)}><Icon name="close" /></button>
+          {diffs.topDiff !== null || diffs.undergraduateDiff !== null ? <span className="exam-diffs">
+            {diffs.topDiff !== null ? <span>距特控线 {formatGap(diffs.topDiff)}</span> : null}
+            {diffs.undergraduateDiff !== null ? <span>距本科线 {formatGap(diffs.undergraduateDiff)}</span> : null}
+          </span> : null}
+        </div>;
+      })}
+      <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
+        <button type="button" className="btn sm" disabled={exams.length >= 5} onClick={addExam}>
+          {exams.length >= 5 ? "最多记录 5 次" : "添加一次考试"}</button>
+        <small className="muted-note">切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。</small>
+      </div>
+    </div>
+
     <div className="locate">
       <div>
         <div className="gauge">
@@ -68,7 +142,8 @@ export function renderLocate({ state, page, setPage, score, trackLabel }: Locate
               <span>{position ? `官方公布最高 ${position.publishedMaxScore} 分` : "官方公布最高分"}</span>
             </div>
             <Provenance icon="ruler">
-              这条区间是官方分段表实际公布的分数范围，不是本科线或特控线——发布包未提供控制线，因此不做线差计算。
+              这条区间是官方分段表实际公布的分数范围。控制线不在发布包内：学校考试的切线请在上方自行录入，
+              换算见「高考等位参考」。
             </Provenance>
           </div>
           <div className="stats">
@@ -78,16 +153,16 @@ export function renderLocate({ state, page, setPage, score, trackLabel }: Locate
                 ? `${position.tableYear} 年官方分段表 · 同分 ${position.count} 人`
                 : "该分数未在分段表中列出，或尚未载入发布数据"}</div></div>
             <div className="stat"><span className="sk"><Icon name="layers" />全省百分位</span>
-              <div className="sv num">{position ? `前 ${position.percentile < 1 ? position.percentile.toFixed(2) : position.percentile.toFixed(1)}%` : "—"}</div>
+              <div className="sv num">{position ? formatPercentile(position.percentile) : "—"}</div>
               <div className="sd">{position
                 ? `同科类约 ${position.total.toLocaleString("zh-CN")} 人中的位置`
                 : "缺少分段表时不估算百分位"}</div></div>
             <div className="stat"><span className="sk"><Icon name="wave" />近五次稳定性</span>
               <div className="sv num">{stability === null ? "—" : `±${stability.toFixed(1)}`}</div>
-              <div className="sd">{stability === null ? "尚未填写近五次成绩" : "波动越小，定位越可信"}</div></div>
+              <div className="sd">{stability === null ? "尚未录入考试成绩" : "波动越小，定位越可信"}</div></div>
             <div className="stat"><span className="sk"><Icon name="up" />近期趋势</span>
               <div className="sv num">{trend === null ? "—" : `${trend >= 0 ? "+" : ""}${trend}`}</div>
-              <div className="sd">{trend === null ? "尚未填写近五次成绩" : "相对上一次的变化"}</div></div>
+              <div className="sd">{trend === null ? "尚未录入考试成绩" : "相对上一次的变化"}</div></div>
           </div>
         </div>
         <div className="verdict">
@@ -113,15 +188,15 @@ export function renderLocate({ state, page, setPage, score, trackLabel }: Locate
           <span className="eyebrow plain">Stability · 近五次</span>
           <h3 className="song" style={{ marginTop: 10 }}>你的成绩曲线</h3>
           <div className="trend">
-            {history.length >= 2
-              ? history.map((value, index) => {
-                const max = Math.max(...history, 1);
-                return <div className={`tbar${index === history.length - 1 ? " now" : ""}`} key={index}>
+            {totals.length >= 2
+              ? totals.map((value, index) => {
+                const max = Math.max(...totals, 1);
+                return <div className={`tbar${index === totals.length - 1 ? " now" : ""}`} key={index}>
                   <span className="col" style={{ height: `${Math.round(value / max * 100)}%` }} />
                   <span className="tl">{index + 1}</span>
                 </div>;
               })
-              : <div className="empty-inline">尚未填写近五次成绩；此页不生成趋势结论。</div>}
+              : <div className="empty-inline">尚未录入考试成绩；此页不生成趋势结论。</div>}
           </div>
           <p className="fhint">曲线越平，说明当前定位越可信；起伏大时，我们用区间而非单点来表达。</p>
         </div>
@@ -138,6 +213,43 @@ export function renderLocate({ state, page, setPage, score, trackLabel }: Locate
         </div>
       </aside>
     </div>
+
+    {equivalent && (equivalent.top || equivalent.undergraduate) && <div className="panel" style={{ marginTop: 22 }}>
+      <h3><Icon name="compass" />高考等位参考（估算，不是预测）</h3>
+      <p className="psub">用最近一次带切线的考试「{equivalentExam?.label}」做线差比例换算：距线比例 =（总分 − 本次线）÷ 本次线，
+        等位分 = {OFFICIAL_LINES_2026.year} 年同口径省线 ×（1 + 距线比例），再查官方一分一段表。它假设本次考试难度与高考同比例——
+        换一次考试或换一种算法，结果就会不同，只当参照，不当结论。</p>
+      <div className="grid-2" style={{ marginTop: 14 }}>
+        {[equivalent.top && {
+          key: "top", title: "按特控线口径", item: equivalent.top
+        }, equivalent.undergraduate && {
+          key: "undergraduate", title: "按本科线口径", item: equivalent.undergraduate
+        }].map((entry) => entry && <div className="sidecard" key={entry.key}>
+          <span className="eyebrow plain">{entry.title}</span>
+          <div className="vlist" style={{ marginTop: 10 }}>
+            <span className="vpill">距线比例 <b>{formatRatio(entry.item.lineRatio)}</b></span>
+            <span className="vpill">等位分 <b>{entry.item.equivalentScore}</b></span>
+            <span className="vpill">位次区间 <b>{entry.item.position
+              ? `约 ${entry.item.position.rank.toLocaleString("zh-CN")} 名` : "—"}</b></span>
+            <span className="vpill">全省百分位 <b>{entry.item.position
+              ? formatPercentile(entry.item.position.percentile) : "—"}</b></span>
+          </div>
+          {entry.item.position ? <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
+            <button type="button" className="btn sm ghost"
+              onClick={() => applyEquivalent(entry.item.equivalentScore)}>
+              把 {entry.item.equivalentScore} 设为情景分</button>
+            <small className="muted-note">情景分决定匹配范围，随时可在「起航」改回。</small>
+          </div> : <p className="fhint" style={{ marginTop: 10 }}>
+            等位分不在官方分段表公布范围内，或尚未载入发布数据——不插值、不外推。</p>}
+        </div>)}
+      </div>
+      <Provenance icon="ruler">
+        考试切线由你本人填写；{OFFICIAL_LINES_2026.year} 年特控线与本科线来自{OFFICIAL_LINES_2026.province}
+        省教育考试院公开发布；位次区间来自官方一分一段表{equivalent.tableYear ? `（${equivalent.tableYear} 年表）` : ""}。
+        等位分是粗略参照：真实高考位置还取决于当年试题与全省人数。
+      </Provenance>
+    </div>}
+
     <div className="banner">
       <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="chat" size="lg" />
         <div><h3 className="song">看清位置之后，聊聊你想去哪</h3><p>分数决定「能到哪」，兴趣决定「想去哪」。下一步，我们用六到八个问题聊出你的专业方向。</p></div></div>

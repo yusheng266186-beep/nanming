@@ -474,19 +474,24 @@ export interface ScorePosition {
 /**
  * 用官方分段表把分数换算成位次。
  *
- * 取的是**匹配实际使用的参考年**那一张表，而不是最新一年：历史位置比较、参考记录与位次
+ * 默认取**匹配实际使用的参考年**那一张表，而不是最新一年：历史位置比较、参考记录与位次
  * 必须来自同一年，否则页面会拿 2026 年的表去解释 2025 年的记录。`rankLookup` 取最新表，
  * 因此这里显式按参考年选表，并在表里逐行核对分数是否真的被列出。
+ *
+ * `options.year` 允许调用方显式指定年份（如线差等位换算校准在 2026 年切线上，就应查
+ * 2026 年的表而不是匹配参考年）；此时 `isReferenceYear` 为 false，提示这不是匹配用的
+ * 参考年定位。
  *
  * 只读发布包里的表；分数不在公布范围、或该科类没有表时返回 null，页面据此显示未知，
  * 绝不插值或外推。这里不做「录取概率」之类推断——位次只是把分数翻译成位置。
  */
 export function scorePosition(release: LoadedRelease | null, track: "PHYSICS" | "HISTORY" | null,
-                              score: number | null): ScorePosition | null {
+                              score: number | null, options?: { year?: number }): ScorePosition | null {
   if (!release || !track || score === null) return null;
   const tables = release.distributions.filter((item) => item.track === track);
   if (tables.length === 0) return null;
-  const referenceYear = referenceYearFor(release, track, tables.map((item) => item.year));
+  const referenceYear = options?.year
+    ?? referenceYearFor(release, track, tables.map((item) => item.year));
   const table = tables.find((item) => item.year === referenceYear) ?? null;
   if (!table) return null;
   const row = table.rows.find((item) => item.score === score);
@@ -503,7 +508,7 @@ export function scorePosition(release: LoadedRelease | null, track: "PHYSICS" | 
     percentile: row.cumulative / total * 100,
     publishedMinScore: table.publishedMinScore,
     publishedMaxScore: table.publishedMaxScore,
-    isReferenceYear: true,
+    isReferenceYear: options?.year === undefined,
   };
 }
 

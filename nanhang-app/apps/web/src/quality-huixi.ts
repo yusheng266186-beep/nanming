@@ -12,6 +12,7 @@
  *     不进发布包。
  *  3. 本模块不生成任何录取结论：位次与线差只描述校内相对位置，不构成录取概率。
  */
+import type { ExamRecord } from "./model.js";
 import type { QualityIndex, QualityShard, QualityStudentExam, QualitySubjectRow, QualityKnowledgeArea } from "./quality-types.js";
 
 export const QUALITY_BASE =
@@ -112,9 +113,21 @@ export function latestExam(shard: QualityShard): QualityStudentExam | null {
   return shard.exams.length ? shard.exams[shard.exams.length - 1] : null;
 }
 
-/** 表单要用的历史分：最近 N 次的总分，旧→新。 */
-export function recentTotals(shard: QualityShard, limit = 5): number[] {
-  return shard.exams.slice(-limit).map((exam) => exam.total);
+/**
+ * 表单要用的最近 N 次考试富记录，旧→新。
+ *
+ * 保留位次与本次考试的切线（学校口径的一本线映射到特控线/一本线槽位），供定位页的
+ * 距线差与线差比例等位估算使用——不再把富数据压扁成分数数组。换算只发生在展示层，
+ * 这些记录不进入匹配输入。
+ */
+export function recentExams(shard: QualityShard, limit = 5): ExamRecord[] {
+  return shard.exams.slice(-limit).map((exam) => ({
+    label: exam.rawLabel ?? exam.exam,
+    total: exam.total,
+    rank: exam.gradeRank,
+    topTotal: exam.topTotal,
+    undergraduateTotal: exam.undergraduateTotal
+  }));
 }
 
 /** 再选科目的组合字符 → 表单科目代码。首选「物/历」不在此表，由本人 track 决定。 */
