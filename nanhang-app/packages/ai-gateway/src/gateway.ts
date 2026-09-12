@@ -147,11 +147,12 @@ export class AiGateway {
     return { status: "ok", ai: this.aiEnabled(), store: this.deps.store.kind };
   }
 
-  readiness(): { readonly public_data: boolean; readonly ai: boolean; readonly state_store: boolean; readonly upstream: string } {
+  async readiness(): Promise<{ readonly public_data: boolean; readonly ai: boolean; readonly state_store: boolean; readonly upstream: string }> {
+    const storeUp = await this.deps.store.available();
     return {
       public_data: true,
-      ai: this.aiEnabled() && this.deps.store.available(),
-      state_store: this.deps.store.available(),
+      ai: this.aiEnabled() && storeUp,
+      state_store: storeUp,
       upstream: this.deps.upstream.kind
     };
   }
@@ -163,13 +164,13 @@ export class AiGateway {
   }
 
   /** Creates a session from an already-verified credential. The token value itself is never stored. */
-  createSession(input: {
+  async createSession(input: {
     readonly token: string;
     readonly subjectId: string;
     readonly accessKind: SessionRecord["accessKind"];
     readonly sessionId?: string;
     readonly now?: number;
-  }): SessionRecord {
+  }): Promise<SessionRecord> {
     const now = input.now ?? this.deps.now();
     const record: SessionRecord = {
       sessionId: input.sessionId ?? `sess_${hashPayload(input.token).slice(0, 24)}`,
@@ -181,32 +182,32 @@ export class AiGateway {
       activeRequests: 0,
       revokedAt: null
     };
-    this.deps.store.createSession(record);
+    await this.deps.store.createSession(record);
     return record;
   }
 
   /** @deprecated helper for tests: create a session without going through a credential exchange. */
-  createTestSession(sessionId: string, subjectId: string, token: string): SessionRecord {
-    return this.createSession({ token, subjectId, accessKind: "trial_code", sessionId });
+  async createTestSession(sessionId: string, subjectId: string, token: string): Promise<SessionRecord> {
+    return await this.createSession({ token, subjectId, accessKind: "trial_code", sessionId });
   }
 
-  authenticate(token: string | null): { ok: true; session: SessionRecord } | { ok: false; code: GatewayErrorCode } {
-    if (!this.deps.store.available()) return { ok: false, code: "STATE_STORE_UNAVAILABLE" };
+  async authenticate(token: string | null): Promise<{ ok: true; session: SessionRecord } | { ok: false; code: GatewayErrorCode }> {
+    if (!(await this.deps.store.available())) return { ok: false, code: "STATE_STORE_UNAVAILABLE" };
     if (!token) return { ok: false, code: "UNAUTHENTICATED" };
-    const session = this.deps.store.findSessionByTokenHash(tokenHash(token));
+    const session = await this.deps.store.findSessionByTokenHash(tokenHash(token));
     if (!session) return { ok: false, code: "UNAUTHENTICATED" };
     if (session.revokedAt !== null || session.expiresAt <= this.deps.now()) return { ok: false, code: "UNAUTHENTICATED" };
     return { ok: true, session };
   }
 
-  revoke(sessionId: string): { deleted: number } {
-    if (!this.deps.store.available()) return { deleted: 0 };
-    return { deleted: this.deps.store.revokeSession(sessionId, this.deps.now()) };
+  async revoke(sessionId: string): Promise<{ deleted: number }> {
+    if (!(await this.deps.store.available())) return { deleted: 0 };
+    return { deleted: await this.deps.store.revokeSession(sessionId, this.deps.now()) };
   }
 
   /** GET /v1/requests/{request_id} - returns existing state so a retry never pays twice. */
-  requestStatus(session: SessionRecord, requestId: string): GatewayResponse {
-    const record = this.deps.store.getByRequestId(session.sessionId, requestId);
+  async requestStatus(session: SessionRecord, requestId: string): Promise<GatewayResponse> {
+    const record = await this.deps.store.getByRequestId(session.sessionId, requestId);
     if (!record) return { httpStatus: 404, body: errorBody("BAD_REQUEST", "request_id not found in this session", requestId) };
     return {
       httpStatus: 200,
@@ -229,7 +230,7 @@ export class AiGateway {
     }
     const requestId = typeof (raw as { request_id?: unknown })?.request_id === "string" ? (raw as { request_id: string }).request_id : "";
     const sequence = sseSequence();
-    if (!this.deps.store.available()) {
+    if (!(await this.deps.store.available())) {
       return { httpStatus: 503, frames: [sseFrame(errorEvent(requestId, sequence, "STATE_STORE_UNAVAILABLE", "state store unavailable", true))] };
     }
     const validated = validateTurnRequest(raw, this.deps.config);
@@ -237,7 +238,7 @@ export class AiGateway {
       return { httpStatus: statusFor(validated.code), frames: [sseFrame(errorEvent(requestId, sequence, validated.code, validated.detail, false))] };
     }
     const request = validated.value;
-    const claim = this.claim(session, "career_turn", request.request_id, request.run_id, hashPayload(turnPayloadHash(request)), request.input_revision);
+    const claim = await this.claim(session, "career_turn", request.request_id, request.run_id, hashPayload(turnPayloadHash(request)), request.input_revision);
     if (claim.kind === "conflict") {
       return { httpStatus: 409, frames: [sseFrame(errorEvent(request.request_id, sequence, "REQUEST_CONFLICT", "request_id reused with a different payload", false))] };
     }
@@ -287,7 +288,7 @@ export class AiGateway {
       evidence: request.direction_catalog?.length ? request.evidence : this.evidenceForRequest(session, request.evidence), thinkingTier: request.thinking_tier, mode: request.mode
     };
     const frames: string[] = [sseFrame(startEvent(request.request_id, sequence, this.deps.config.modelId))];
-    this.deps.store.transition(record.keyId, { status: "running" }, this.deps.now());
+    await this.deps.store.transition(record.keyId, { status: "running" }, this.deps.now());
 
     let streamed = "";
     try {
@@ -296,7 +297,7 @@ export class AiGateway {
       if (error instanceof OutputExposure) {
         // The unsafe text was withheld, so the client is told plainly and gets a local fallback.
         const degraded = degradedTurnOutput(error.detail);
-        this.deps.store.transition(record.keyId, {
+        await this.deps.store.transition(record.keyId, {
           status: "succeeded", resultSummary: JSON.stringify(degraded), errorCode: "OUTPUT_REJECTED", retryable: false
         }, this.deps.now());
         return {
@@ -306,7 +307,7 @@ export class AiGateway {
         };
       }
       const failure = error instanceof UpstreamFailure ? error : new UpstreamFailure("UPSTREAM_UNAVAILABLE", "upstream failed", true);
-      this.deps.store.transition(record.keyId, { status: "failed", errorCode: failure.code, retryable: true }, this.deps.now());
+      await this.deps.store.transition(record.keyId, { status: "failed", errorCode: failure.code, retryable: true }, this.deps.now());
       return { httpStatus: 503, frames: [...frames, sseFrame(errorEvent(request.request_id, sequence, failure.code, failure.message, true))] };
     }
 
@@ -314,7 +315,7 @@ export class AiGateway {
     try {
       finalObject = await this.deps.upstream.finalize(upstreamRequest, streamed);
     } catch {
-      this.deps.store.transition(record.keyId, { status: "failed", errorCode: "UPSTREAM_UNAVAILABLE", retryable: true }, this.deps.now());
+      await this.deps.store.transition(record.keyId, { status: "failed", errorCode: "UPSTREAM_UNAVAILABLE", retryable: true }, this.deps.now());
       return { httpStatus: 503, frames: [...frames, sseFrame(errorEvent(request.request_id, sequence, "UPSTREAM_UNAVAILABLE", "upstream finalize failed", true))] };
     }
 
@@ -325,7 +326,7 @@ export class AiGateway {
     if (!accepted.ok) {
       // A46/A48: the raw model text is never forwarded; the client gets an explicit degradation.
       const degraded = degradedTurnOutput(accepted.detail);
-      this.deps.store.transition(record.keyId, {
+      await this.deps.store.transition(record.keyId, {
         status: "succeeded", resultSummary: JSON.stringify(degraded), errorCode: "OUTPUT_REJECTED", retryable: false
       }, this.deps.now());
       return {
@@ -337,7 +338,7 @@ export class AiGateway {
         ]
       };
     }
-    this.deps.store.transition(record.keyId, {
+    await this.deps.store.transition(record.keyId, {
       status: "succeeded", resultSummary: JSON.stringify(accepted.value), errorCode: null, retryable: false
     }, this.deps.now());
     return {
@@ -360,10 +361,10 @@ export class AiGateway {
       return { httpStatus: statusFor(validated.code), body: errorBody(validated.code, validated.detail, requestId) };
     }
     const request: ProfileRequest = validated.value;
-    if (!this.deps.store.available()) {
+    if (!(await this.deps.store.available())) {
       return { httpStatus: 503, body: errorBody("STATE_STORE_UNAVAILABLE", "state store unavailable", request.request_id) };
     }
-    const claim = this.claim(session, "career_profile", request.request_id, request.run_id, hashPayload(profilePayloadHash(request)), request.input_revision);
+    const claim = await this.claim(session, "career_profile", request.request_id, request.run_id, hashPayload(profilePayloadHash(request)), request.input_revision);
     if (claim.kind === "conflict") return { httpStatus: 409, body: errorBody("REQUEST_CONFLICT", "request_id reused with a different payload", request.request_id) };
     if (claim.kind === "quota_exhausted") return { httpStatus: 429, body: errorBody("QUOTA_EXHAUSTED", "session quota exhausted", request.request_id) };
     if (claim.kind === "concurrency_limited") return { httpStatus: 429, body: errorBody("CONCURRENCY_LIMITED", "one concurrent AI request per session", request.request_id) };
@@ -388,7 +389,7 @@ export class AiGateway {
       inputRevision: request.input_revision, offeringId: request.offering_id, releaseId: request.release_id,
       evidence: this.evidenceForRequest(session, request.evidence), thinkingTier: null, mode: null
     };
-    this.deps.store.transition(record.keyId, { status: "running", upstreamStarted: true }, this.deps.now());
+    await this.deps.store.transition(record.keyId, { status: "running", upstreamStarted: true }, this.deps.now());
     try {
       const text = await this.pumpText(record, upstreamRequest, signal);
       const finalObject = await this.deps.upstream.finalize(upstreamRequest, text);
@@ -396,21 +397,21 @@ export class AiGateway {
       const accepted = validateCareerTurnOutput(finalObject, lookup);
       if (!accepted.ok) {
         const degraded = degradedTurnOutput(accepted.detail);
-        this.deps.store.transition(record.keyId, { status: "succeeded", resultSummary: JSON.stringify(degraded), errorCode: "OUTPUT_REJECTED" }, this.deps.now());
+        await this.deps.store.transition(record.keyId, { status: "succeeded", resultSummary: JSON.stringify(degraded), errorCode: "OUTPUT_REJECTED" }, this.deps.now());
         return { httpStatus: 200, body: { request_id: request.request_id, status: "succeeded", degraded: true, result: degraded } };
       }
-      this.deps.store.transition(record.keyId, { status: "succeeded", resultSummary: JSON.stringify(accepted.value) }, this.deps.now());
+      await this.deps.store.transition(record.keyId, { status: "succeeded", resultSummary: JSON.stringify(accepted.value) }, this.deps.now());
       return { httpStatus: 200, body: { request_id: request.request_id, status: "succeeded", result: accepted.value } };
     } catch (error) {
       if (error instanceof OutputExposure) {
         const degraded = degradedTurnOutput(error.detail);
-        this.deps.store.transition(record.keyId, { status: "succeeded", resultSummary: JSON.stringify(degraded), errorCode: "OUTPUT_REJECTED" }, this.deps.now());
+        await this.deps.store.transition(record.keyId, { status: "succeeded", resultSummary: JSON.stringify(degraded), errorCode: "OUTPUT_REJECTED" }, this.deps.now());
         return { httpStatus: 200, body: { request_id: request.request_id, status: "succeeded", degraded: true, result: degraded } };
       }
       const failure = error instanceof UpstreamFailure ? error : new UpstreamFailure("UPSTREAM_UNAVAILABLE", "upstream failed", true);
       // A conservative bound: an interrupted run may already have consumed upstream cost,
       // so it is recorded as unknown rather than auto-refunded (specification section 8).
-      this.deps.store.transition(record.keyId, { status: "unknown", errorCode: failure.code, retryable: true }, this.deps.now());
+      await this.deps.store.transition(record.keyId, { status: "unknown", errorCode: failure.code, retryable: true }, this.deps.now());
       return { httpStatus: 503, body: errorBody(failure.code, failure.message, request.request_id) };
     }
   }
@@ -439,9 +440,9 @@ export class AiGateway {
       .map((message) => ({ evidenceId: message.evidenceId, quote: message.quote, kind: message.kind }));
   }
 
-  private claim(session: SessionRecord, taskType: TaskType, requestId: string, runId: string, payloadHash: string, inputRevision: number): ClaimOutcome {
+  private async claim(session: SessionRecord, taskType: TaskType, requestId: string, runId: string, payloadHash: string, inputRevision: number): Promise<ClaimOutcome> {
     const key: ReservationKey = { sessionId: session.sessionId, runId, taskType, requestId };
-    return this.deps.store.claim({
+    return await this.deps.store.claim({
       key, payloadHash, inputRevision, now: this.deps.now(),
       limits: { sessionConcurrency: this.deps.config.sessionConcurrency, maxAttempts: this.deps.config.maxAttempts }
     });
@@ -453,7 +454,7 @@ export class AiGateway {
     let lastFailure: UpstreamFailure | null = null;
     while (attempts < this.deps.config.maxAttempts) {
       attempts += 1;
-      this.deps.store.transition(record.keyId, { attempts, status: "running" }, this.deps.now());
+      await this.deps.store.transition(record.keyId, { attempts, status: "running" }, this.deps.now());
       const controller = new AbortController();
       const onOuterAbort = () => controller.abort();
       outer?.addEventListener("abort", onOuterAbort, { once: true });
@@ -467,7 +468,7 @@ export class AiGateway {
           if (!gotText) {
             gotText = true;
             clearTimeout(firstByteTimer);
-            this.deps.store.transition(record.keyId, { upstreamStarted: true }, this.deps.now());
+            await this.deps.store.transition(record.keyId, { upstreamStarted: true }, this.deps.now());
           }
           // Scan before emitting: unsafe text must never reach the client, not even in a delta frame.
           const exposure = scanStreamedText(text + chunk.text);

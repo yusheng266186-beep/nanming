@@ -1,9 +1,10 @@
 // TASK-08: idempotency, quota and session state.
 //
-// The interface is intentionally small and every mutating call is a single atomic step:
-// a production Redis adapter must implement `claim`, `transition` and `revokeSession`
-// with atomic scripts (SET NX / Lua) so that multi-instance deployments keep the same
-// guarantees. The in-memory store is development-only and is refused in production.
+// The interface is intentionally small and every mutating call is a single atomic step.
+// It is async because the production adapter is a shared store over the network (Redis):
+// `claim`, `transition` and `revokeSession` there run as Lua scripts so that concurrent
+// requests from different function instances keep the same guarantees. The in-memory store
+// is development-only and is refused in production.
 import type {
   GatewayErrorCode, ReservationKey, ReservationRecord, RequestStatus, SessionRecord
 } from "./types.js";
@@ -35,23 +36,23 @@ export interface TransitionPatch {
 export interface StateStore {
   readonly kind: string;
   /** False when the shared store cannot be reached. The AI path fails closed; public flow is unaffected. */
-  available(): boolean;
-  createSession(record: SessionRecord): void;
-  findSessionByTokenHash(tokenHash: string): SessionRecord | null;
-  getSession(sessionId: string): SessionRecord | null;
+  available(): Promise<boolean>;
+  createSession(record: SessionRecord): Promise<void>;
+  findSessionByTokenHash(tokenHash: string): Promise<SessionRecord | null>;
+  getSession(sessionId: string): Promise<SessionRecord | null>;
   /** Revokes the session and deletes its temporary request records. Returns deleted record count. */
-  revokeSession(sessionId: string, now: number): number;
+  revokeSession(sessionId: string, now: number): Promise<number>;
   claim(input: {
     readonly key: ReservationKey;
     readonly payloadHash: string;
     readonly inputRevision: number;
     readonly now: number;
     readonly limits: ClaimLimits;
-  }): ClaimOutcome;
-  transition(keyId: string, patch: TransitionPatch, now: number): ReservationRecord | null;
-  get(keyId: string): ReservationRecord | null;
-  getByRequestId(sessionId: string, requestId: string): ReservationRecord | null;
-  countRecords(): number;
+  }): Promise<ClaimOutcome>;
+  transition(keyId: string, patch: TransitionPatch, now: number): Promise<ReservationRecord | null>;
+  get(keyId: string): Promise<ReservationRecord | null>;
+  getByRequestId(sessionId: string, requestId: string): Promise<ReservationRecord | null>;
+  countRecords(): Promise<number>;
 }
 
 /**
@@ -69,24 +70,24 @@ export class MemoryStateStore implements StateStore {
     this.reachable = value;
   }
 
-  available(): boolean {
+  async available(): Promise<boolean> {
     return this.reachable;
   }
 
-  createSession(record: SessionRecord): void {
+  async createSession(record: SessionRecord): Promise<void> {
     this.sessions.set(record.sessionId, record);
   }
 
-  findSessionByTokenHash(tokenHash: string): SessionRecord | null {
+  async findSessionByTokenHash(tokenHash: string): Promise<SessionRecord | null> {
     for (const session of this.sessions.values()) if (session.tokenHash === tokenHash) return session;
     return null;
   }
 
-  getSession(sessionId: string): SessionRecord | null {
+  async getSession(sessionId: string): Promise<SessionRecord | null> {
     return this.sessions.get(sessionId) ?? null;
   }
 
-  revokeSession(sessionId: string, now: number): number {
+  async revokeSession(sessionId: string, now: number): Promise<number> {
     const session = this.sessions.get(sessionId);
     if (!session) return 0;
     session.revokedAt = now;
@@ -99,13 +100,13 @@ export class MemoryStateStore implements StateStore {
     return deleted;
   }
 
-  claim(input: {
+  async claim(input: {
     readonly key: ReservationKey;
     readonly payloadHash: string;
     readonly inputRevision: number;
     readonly now: number;
     readonly limits: ClaimLimits;
-  }): ClaimOutcome {
+  }): Promise<ClaimOutcome> {
     if (!this.reachable) return { kind: "unavailable" };
     const keyId = reservationKeyId(input.key);
     const existing = this.records.get(keyId);
@@ -128,7 +129,7 @@ export class MemoryStateStore implements StateStore {
     return { kind: "created", record };
   }
 
-  transition(keyId: string, patch: TransitionPatch, now: number): ReservationRecord | null {
+  async transition(keyId: string, patch: TransitionPatch, now: number): Promise<ReservationRecord | null> {
     const record = this.records.get(keyId);
     if (!record) return null;
     const before = record.status;
@@ -153,18 +154,18 @@ export class MemoryStateStore implements StateStore {
     return record;
   }
 
-  get(keyId: string): ReservationRecord | null {
+  async get(keyId: string): Promise<ReservationRecord | null> {
     return this.records.get(keyId) ?? null;
   }
 
-  getByRequestId(sessionId: string, requestId: string): ReservationRecord | null {
+  async getByRequestId(sessionId: string, requestId: string): Promise<ReservationRecord | null> {
     for (const record of this.records.values()) {
       if (record.key.sessionId === sessionId && record.key.requestId === requestId) return record;
     }
     return null;
   }
 
-  countRecords(): number {
+  async countRecords(): Promise<number> {
     return this.records.size;
   }
 }

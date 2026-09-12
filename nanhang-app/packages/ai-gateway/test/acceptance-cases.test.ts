@@ -38,7 +38,7 @@ const MESSAGES = [
     kind: "student_task_attempt" as const }
 ];
 
-function harness(script: ConstructorParameters<typeof FakeUpstream>[0] = {}, overrides: Partial<GatewayDeps> = {}) {
+async function harness(script: ConstructorParameters<typeof FakeUpstream>[0] = {}, overrides: Partial<GatewayDeps> = {}) {
   const store = new MemoryStateStore();
   const upstream = new FakeUpstream(script);
   const registry = createEvidenceRegistry(MESSAGES);
@@ -49,8 +49,8 @@ function harness(script: ConstructorParameters<typeof FakeUpstream>[0] = {}, ove
     constraintsFor: () => [],
     ...overrides
   });
-  gateway.createTestSession("s1", "student-A", "token-a");
-  const session = gateway.authenticate("token-a");
+  await gateway.createTestSession("s1", "student-A", "token-a");
+  const session = await gateway.authenticate("token-a");
   if (!session.ok) throw new Error("session expected");
   return { gateway, store, upstream, registry, session: session.session };
 }
@@ -83,12 +83,12 @@ describe("A42 重复请求不重复付费", () => {
     const item = testCase("A42");
     expect(item.input.same_request_id).toBe(true);
     expect(item.input.same_payload).toBe(true);
-    const h = harness();
+    const h = await harness();
     const body = { run_id: "run-1", request_id: "req-1", input_revision: 1, user_text: "同一段话", context: [] };
     await h.gateway.careerTurn(h.session, body);
     await h.gateway.careerTurn(h.session, body);
     expect(h.upstream.streamCalls).toBe(item.expected.upstream_calls);
-    const settlements = h.gateway.config.quotaPerSession - h.store.getSession("s1")!.quotaRemaining;
+    const settlements = h.gateway.config.quotaPerSession - (await h.store.getSession("s1"))!.quotaRemaining;
     expect(settlements).toBe(item.expected.settlements);
     expect(item.forbidden).toContain("重复付费调用");
   });
@@ -99,7 +99,7 @@ describe("A43 同键不同负载返回409", () => {
     const item = testCase("A43");
     expect(item.input.same_request_id).toBe(true);
     expect(item.input.same_payload).toBe(false);
-    const h = harness();
+    const h = await harness();
     await h.gateway.careerTurn(h.session, { run_id: "run-1", request_id: "req-1", input_revision: 1, user_text: "第一版", context: [] });
     const conflict = await h.gateway.careerTurn(h.session, { run_id: "run-1", request_id: "req-1", input_revision: 1, user_text: "第二版", context: [] });
     expect(conflict.httpStatus).toBe(item.expected.http_status);
@@ -112,11 +112,11 @@ describe("A44 Redis故障时AI降级而公共匹配继续", () => {
     const item = testCase("A44");
     expect(item.input.redis_available).toBe(false);
     const store = new MemoryStateStore();
-    const h = harness({}, { store });
+    const h = await harness({}, { store });
     store.setReachable(false);
     const turn = await h.gateway.careerTurn(h.session, { run_id: "r", request_id: "q", input_revision: 1, user_text: "在吗", context: [] });
     expect(turn.httpStatus).toBe(item.expected.ai_http_status);
-    expect(h.gateway.readiness().public_data).toBe(item.expected.public_matching_available);
+    expect((await h.gateway.readiness()).public_data).toBe(item.expected.public_matching_available);
     expect(h.upstream.streamCalls).toBe(0);
     expect(item.forbidden).toContain("生产自动回退内存扣费");
   });
@@ -148,7 +148,7 @@ describe("A46 模型HTML不执行", () => {
   });
 
   it("脚本文本在流式阶段就被拦截，不出现在任何SSE帧中", async () => {
-    const h = harness({ chunks: [String(testCase("A46").input.model_text)] });
+    const h = await harness({ chunks: [String(testCase("A46").input.model_text)] });
     const result = await h.gateway.careerTurn(h.session, { run_id: "r", request_id: "q", input_revision: 1, user_text: "看看", context: [] });
     const raw = result.frames.join("");
     expect(raw).not.toContain("<script>");
@@ -170,7 +170,7 @@ describe("A48 AI虚构录取概率不被当作事实", () => {
   });
 
   it("概率声明被替换为不含事实断言的本地提示", async () => {
-    const h = harness({ chunks: [String(testCase("A48").input.model_claim)],
+    const h = await harness({ chunks: [String(testCase("A48").input.model_claim)],
       final: { reply: String(testCase("A48").input.model_claim), suggestions: [], actions: [] } });
     const result = await h.gateway.careerTurn(h.session, { run_id: "r", request_id: "q", input_revision: 1, user_text: "我能上吗", context: [] });
     const raw = result.frames.join("");

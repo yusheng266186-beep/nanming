@@ -14,6 +14,9 @@ export const ENV_NAMES = {
   allowDemoEvidence: "NANHANG_ALLOW_DEMO_EVIDENCE",
   corsOrigins: "NANHANG_CORS_ORIGINS",
   // 千帆的变量名与北辰保持一致，两套系统可以共用同一份凭据说明。
+  redisHost: "NANHANG_REDIS_HOST",
+  redisPort: "NANHANG_REDIS_PORT",
+  redisPassword: "NANHANG_REDIS_PASSWORD",
   qianfanApiKey: "QIANFAN_API_KEY",
   qianfanBaseUrl: "QIANFAN_BASE_URL",
   qianfanModel: "QIANFAN_MODEL",
@@ -45,6 +48,20 @@ function timeoutDefaults(env: NodeJS.ProcessEnv): { firstByte: number; total: nu
   return thinking
     ? { firstByte: 120000, total: 300000 }
     : { firstByte: DEFAULT_CONFIG.firstByteTimeoutMs, total: DEFAULT_CONFIG.totalTimeoutMs };
+}
+
+/**
+ * 共享存储（Redis）的连接参数。三项齐全才算配置好：
+ * 少一项就继续用内存档，并在生产档下按既有规则拒绝启动（宁可 AI 关闭，也不要
+ * 悄悄退回单实例内存——那样学生在多实例之间会被踢下线）。
+ */
+export function redisOptionsFromEnv(env: NodeJS.ProcessEnv = process.env):
+{ host: string; port: number; password: string } | null {
+  const host = (env[ENV_NAMES.redisHost] ?? "").trim();
+  const portRaw = Number((env[ENV_NAMES.redisPort] ?? "").trim());
+  const password = (env[ENV_NAMES.redisPassword] ?? "").trim();
+  if (!host || !password || !Number.isFinite(portRaw) || portRaw <= 0) return null;
+  return { host, port: Math.floor(portRaw), password };
 }
 
 export function loadRuntimeConfig(overrides: Partial<AiGatewayConfig> & { port?: number } = {}, env: NodeJS.ProcessEnv = process.env): RuntimeConfig {

@@ -13,7 +13,7 @@ const MESSAGES = [
     kind: "student_task_attempt" as const }
 ];
 
-function harness(overrides: Partial<GatewayDeps> = {}) {
+async function harness(overrides: Partial<GatewayDeps> = {}) {
   const store = new MemoryStateStore();
   const upstream = new FakeUpstream({ chunks: ["看起来你对"], final: {
     reply: "看起来你对数据整理有兴趣，可以先做一次小体验。",
@@ -70,9 +70,9 @@ describe("A41 知道ID不等于能读别人", () => {
 
 describe("A42/A43 幂等键与冲突", () => {
   it("A42 同键同负载只调用一次上游、只结算一次", async () => {
-    const h = harness();
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness();
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const first = await h.gateway.careerTurn(session.session, turnBody());
     const second = await h.gateway.careerTurn(session.session, turnBody());
@@ -80,32 +80,32 @@ describe("A42/A43 幂等键与冲突", () => {
     expect(second.httpStatus).toBe(200);
     expect(h.upstream.streamCalls).toBe(1);
     expect(h.upstream.finalizeCalls).toBe(1);
-    const quotaSpent = h.gateway.config.quotaPerSession - h.store.getSession("s1")!.quotaRemaining;
+    const quotaSpent = h.gateway.config.quotaPerSession - (await h.store.getSession("s1"))!.quotaRemaining;
     expect(quotaSpent).toBe(1);
     const replay = parseSseStream(second.frames.join(""));
     expect(replay.some((event) => event.event === "complete")).toBe(true);
   });
 
   it("A43 同键不同负载返回409，且不消耗额度", async () => {
-    const h = harness();
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness();
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     await h.gateway.careerTurn(session.session, turnBody());
     const conflict = await h.gateway.careerTurn(session.session, turnBody({ user_text: "换一个完全不同的说法" }));
     expect(conflict.httpStatus).toBe(409);
     expect(h.upstream.streamCalls).toBe(1);
-    const quotaSpent = h.gateway.config.quotaPerSession - h.store.getSession("s1")!.quotaRemaining;
+    const quotaSpent = h.gateway.config.quotaPerSession - (await h.store.getSession("s1"))!.quotaRemaining;
     expect(quotaSpent).toBe(1);
   });
 
   it("请求状态查询返回既有结果而不重新生成", async () => {
-    const h = harness();
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness();
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     await h.gateway.careerTurn(session.session, turnBody());
-    const status = h.gateway.requestStatus(session.session, "req-1");
+    const status = await h.gateway.requestStatus(session.session, "req-1");
     expect(status.httpStatus).toBe(200);
     expect((status.body as { status: string }).status).toBe("succeeded");
     expect(h.upstream.streamCalls).toBe(1);
@@ -115,9 +115,9 @@ describe("A42/A43 幂等键与冲突", () => {
 describe("A44 共享状态不可用时AI关闭，公共匹配不受影响", () => {
   it("Redis故障时AI返回503，并禁止回退内存扣费", async () => {
     const store = new MemoryStateStore();
-    const h = harness({ store });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ store });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     store.setReachable(false);
     const result = await h.gateway.careerTurn(session.session, turnBody());
@@ -125,16 +125,16 @@ describe("A44 共享状态不可用时AI关闭，公共匹配不受影响", () =
     const events = parseSseStream(result.frames.join(""));
     expect(events.at(-1)?.data.error).toMatchObject({ code: "STATE_STORE_UNAVAILABLE" });
     expect(h.upstream.streamCalls).toBe(0);
-    expect(h.gateway.readiness().ai).toBe(false);
-    expect(h.gateway.readiness().public_data).toBe(true);
+    expect((await h.gateway.readiness()).ai).toBe(false);
+    expect((await h.gateway.readiness()).public_data).toBe(true);
     const profile = await h.gateway.careerProfile(session.session, { run_id: "run-1", request_id: "req-2", input_revision: 1 });
     expect(profile.httpStatus).toBe(503);
   });
 
-  it("生产启动拒绝内存存储，AI保持关闭", () => {
+  it("生产启动拒绝内存存储，AI保持关闭", async () => {
     const store = new MemoryStateStore();
-    const h = harness({ store, config: withConfig({ profile: "production" }) });
-    expect(h.gateway.readiness().ai).toBe(false);
+    const h = await harness({ store, config: withConfig({ profile: "production" }) });
+    expect((await h.gateway.readiness()).ai).toBe(false);
   });
 });
 
@@ -171,11 +171,11 @@ describe("A46/A48 模型输出不得执行脚本或虚构概率", () => {
   const lookup = { allowedEvidenceIds: () => ["ev-q-interest-1"] };
 
   it("A46 含脚本标记的输出被拒绝，客户端得到降级文本", async () => {
-    const h = harness({ upstream: new FakeUpstream({ chunks: ["<script>alert(1)</script>"], final: {
+    const h = await harness({ upstream: new FakeUpstream({ chunks: ["<script>alert(1)</script>"], final: {
       reply: "<script>alert(1)</script>", suggestions: [], actions: []
     } }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerTurn(session.session, turnBody());
     const events = parseSseStream(result.frames.join(""));
@@ -221,9 +221,9 @@ describe("A46/A48 模型输出不得执行脚本或虚构概率", () => {
   });
 
   it("完整回复经安全校验后返回引用已登记证据的建议", async () => {
-    const h = harness();
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness();
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerTurn(session.session, turnBody());
     const events = parseSseStream(result.frames.join(""));
@@ -237,9 +237,9 @@ describe("A46/A48 模型输出不得执行脚本或虚构概率", () => {
 
 describe("额度、并发与故障降级", () => {
   it("额度耗尽返回429且不再调用上游", async () => {
-    const h = harness({ config: withConfig({ quotaPerSession: 1 }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ config: withConfig({ quotaPerSession: 1 }) });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     await h.gateway.careerTurn(session.session, turnBody({ request_id: "req-1" }));
     const second = await h.gateway.careerTurn(session.session, turnBody({ request_id: "req-2" }));
@@ -249,9 +249,9 @@ describe("额度、并发与故障降级", () => {
 
   it("并发上限为1时第二个请求被拒绝", async () => {
     const store = new MemoryStateStore();
-    const h = harness({ store, config: withConfig({ sessionConcurrency: 1 }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ store, config: withConfig({ sessionConcurrency: 1 }) });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     store.claim({ key: { sessionId: "s1", runId: "run-x", taskType: "career_turn", requestId: "req-x" },
       payloadHash: "h", inputRevision: 1, now: h.now(), limits: { sessionConcurrency: 1, maxAttempts: 3 } });
@@ -263,9 +263,9 @@ describe("额度、并发与故障降级", () => {
     const upstream = new FakeUpstream();
     upstream.enqueue({ hang: true });
     upstream.enqueue({ hang: true });
-    const h = harness({ upstream, config: withConfig({ firstByteTimeoutMs: 30, maxAttempts: 2 }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ upstream, config: withConfig({ firstByteTimeoutMs: 30, maxAttempts: 2 }) });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerTurn(session.session, turnBody());
     expect(result.httpStatus).toBe(503);
@@ -277,9 +277,9 @@ describe("额度、并发与故障降级", () => {
   it("收到文本后中断不重试，只报错不重复生成", async () => {
     const upstream = new FakeUpstream();
     upstream.enqueue({ chunks: ["已显示的一段", "第二段"], failAfterChunks: 1 });
-    const h = harness({ upstream, config: withConfig({ maxAttempts: 3 }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ upstream, config: withConfig({ maxAttempts: 3 }) });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerTurn(session.session, turnBody());
     expect(result.httpStatus).toBe(503);
@@ -290,44 +290,44 @@ describe("额度、并发与故障降级", () => {
   it("上游失败被记录为unknown而不是自动退款后无限重试", async () => {
     const upstream = new FakeUpstream();
     upstream.enqueue({ chunks: ["部分文本", "更多"], failAfterChunks: 1 });
-    const h = harness({ upstream });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ upstream });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerProfile(session.session, { run_id: "run-1", request_id: "req-1", input_revision: 1 });
     expect(result.httpStatus).toBe(503);
-    const record = h.store.getByRequestId("s1", "req-1");
+    const record = await h.store.getByRequestId("s1", "req-1");
     expect(record?.status).toBe("unknown");
     expect(record?.retryable).toBe(true);
   });
 
   it("会话撤销后凭证失效并删除临时结果", async () => {
-    const h = harness();
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness();
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     await h.gateway.careerTurn(session.session, turnBody());
-    expect(h.store.countRecords()).toBe(1);
-    const revoked = h.gateway.revoke("s1");
+    expect(await h.store.countRecords()).toBe(1);
+    const revoked = await h.gateway.revoke("s1");
     expect(revoked.deleted).toBe(1);
-    expect(h.store.countRecords()).toBe(0);
-    expect(h.gateway.authenticate("token-a").ok).toBe(false);
+    expect(await h.store.countRecords()).toBe(0);
+    expect((await h.gateway.authenticate("token-a")).ok).toBe(false);
   });
 
-  it("会话过期后凭证失效", () => {
-    const h = harness({ config: withConfig({ sessionTtlMs: 1000 }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    expect(h.gateway.authenticate("token-a").ok).toBe(true);
+  it("会话过期后凭证失效", async () => {
+    const h = await harness({ config: withConfig({ sessionTtlMs: 1000 }) });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    expect((await h.gateway.authenticate("token-a")).ok).toBe(true);
     h.advance(1001);
-    expect(h.gateway.authenticate("token-a").ok).toBe(false);
+    expect((await h.gateway.authenticate("token-a")).ok).toBe(false);
   });
 });
 
 describe("SSE 与载荷哈希", () => {
   it("事件顺序为start/delta/complete并带request_id与seq", async () => {
-    const h = harness();
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness();
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerTurn(session.session, turnBody());
     const events = parseSseStream(result.frames.join(""));
@@ -337,9 +337,9 @@ describe("SSE 与载荷哈希", () => {
   });
 
   it("心跳是注释行，不作为业务增量", async () => {
-    const h = harness({ config: withConfig({ heartbeatMs: 5 }) });
-    h.gateway.createTestSession("s1", "student-A", "token-a");
-    const session = h.gateway.authenticate("token-a");
+    const h = await harness({ config: withConfig({ heartbeatMs: 5 }) });
+    await h.gateway.createTestSession("s1", "student-A", "token-a");
+    const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     h.upstream.enqueue({ chunks: ["一", "二"], chunkDelayMs: 20 });
     const result = await h.gateway.careerTurn(session.session, turnBody());

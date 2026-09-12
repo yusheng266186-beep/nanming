@@ -1,14 +1,17 @@
 # 南溟目标探索工程
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-live-wiring）：本地核心流程、真实招生发布和学校成绩接入完成；千帆及学生原话请求链路已实现；TASK-14 部署运维进行中，线上 AI 链路已打通（函数访问路径、真实模型三轮实测），Pages 端到端点击验收与共享会话存储尚未完成。
-> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-14；未开始：TASK-12、TASK-13。
+> 统一进度（2026-09-12，2026-09-12-redis-store）：本地核心流程、真实招生发布和学校成绩接入完成；千帆与学生原话链路已实现；共享会话存储（Redis）已接上，线上多实例并发可用；TASK-14 剩余线上验收与回滚演练。
+> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：22 个测试文件、347 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：共享会话存储（Redis）、线上 Pages 端到端点击验收、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：26 个测试文件、377 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
-先读 [当前进度](docs/PROJECT_STATUS.md) 与 [文档同步与接手规范](docs/DOCUMENTATION_POLICY.md)。招生数据 51,878 条已发布并接入网页，学校成绩管线已完成；千帆、学生原话链路和部署脚本已提交。TASK-14 进行中；身份鉴权、共享状态与线上验收尚未完成。TASK-11 按负责人决定跳过。
+当前主界面已重构为五步：**选科 → 双成绩入口/区间院校池 → 两种 AI 聊天 → 库内自主选专业 → 合并/分路结果**。主入口是 JourneyApp；旧七章组件不再挂载。姓名＋验证码的本地服务端识别已实现，正式身份仍在推进。新界面及协议本轮未部署，见 [流程决策与接手](docs/ADR_003_STUDENT_JOURNEY.md)。
+
+
+先读 [当前进度](docs/PROJECT_STATUS.md) 与 [文档同步与接手规范](docs/DOCUMENTATION_POLICY.md)。招生数据 51,878 条已发布并接入网页，学校成绩管线已完成；千帆、学生原话链路和部署脚本已提交。TASK-14 进行中；本地姓名＋码识别已接通；正式身份生命周期、共享状态与新流程线上验收尚未完成。TASK-11 按负责人决定跳过。
 
 每次修改、暂停和提交都必须同步实施记录、当前状态、验证范围和相关专题正文，不能只刷新顶部摘要。工程内 [AGENTS.md](AGENTS.md) 同样适用于单独源码包接手。
 
@@ -40,7 +43,7 @@ py -3.12 pipelines/quality-huixi/verify_release.py
 |---|---|
 | packages/contracts | 冻结 Schema、生成类型、结构和语义验证 |
 | packages/exploration | TASK-06问题、画像、活动、专业卡和行动模板 |
-| apps/web | TASK-07无AI学生页面、合成匹配、航线图、打印与本地数据控制；TASK-08可选AI面板（默认关闭）；第三章「成绩」为荣县一中增强模式 |
+| apps/web | 五步主旅程、后台区间匹配、仅 AI 谈方向、专业分路、打印与清除；学校入口走服务端识别 |
 | pipelines/task03 | Excel主输入解析与验证；旧OCR仅作历史回归/可选补证 |
 | packages/domain | 纯 TypeScript 规则核心及确定性 MatchResult 构建器 |
 | packages/school-adapter | 固定 accuracy-v1.2 单人摘要适配、冲突拒绝和合成回归；真实学校工作簿已由质量慧析管线接通，鉴权仍待 TASK-13 |

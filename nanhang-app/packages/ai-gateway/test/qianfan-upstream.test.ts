@@ -441,7 +441,7 @@ describe("网关与千帆上游合起来跑一轮", () => {
       profileFor: () => ({ profileId: "p", revision: 0, entries: [], revisions: [] }),
       constraintsFor: () => []
     });
-    const session = gateway.createTestSession("sess-1", "subject-1", "token-1");
+    const session = await gateway.createTestSession("sess-1", "subject-1", "token-1");
     const result = await gateway.careerTurn(session, {
       run_id: "run-1", request_id: "req-1", input_revision: 1, user_text: "我喜欢整理数据", context: []
     });
@@ -461,7 +461,7 @@ describe("网关与千帆上游合起来跑一轮", () => {
     expect(output.suggestions).toHaveLength(1);
     expect(output.actions).toHaveLength(1);
     // 这一轮已经结算成功，重连同一个 request_id 不会再花一次钱
-    expect(gateway.requestStatus(session, "req-1").httpStatus).toBe(200);
+    expect((await gateway.requestStatus(session, "req-1")).httpStatus).toBe(200);
   });
 
   it("学生选的档位从请求一路传到上游；取值非法则直接拒绝", async () => {
@@ -474,7 +474,7 @@ describe("网关与千帆上游合起来跑一轮", () => {
       profileFor: () => ({ profileId: "p", revision: 0, entries: [], revisions: [] }),
       constraintsFor: () => []
     });
-    const session = gateway.createTestSession("sess-tier", "subject-tier", "token-tier");
+    const session = await gateway.createTestSession("sess-tier", "subject-tier", "token-tier");
     const body = { run_id: "run-t", request_id: "req-t", input_revision: 1, user_text: "你好", context: [] };
 
     const accepted = await gateway.careerTurn(session, { ...body, thinking_tier: "speed" });
@@ -519,7 +519,7 @@ describe("学生自己的原话（证据）", () => {
       profileFor: () => ({ profileId: "p", revision: 0, entries: [], revisions: [] }),
       constraintsFor: () => []
     });
-    const session = gateway.createTestSession("s-own", "sub-own", "t-own");
+    const session = await gateway.createTestSession("s-own", "sub-own", "t-own");
     const result = await gateway.careerTurn(session, {
       run_id: "r", request_id: "q", input_revision: 1, user_text: "我自己的话", context: [],
       evidence: [{ evidenceId: "ev-mine-1", quote: "我自己的原话", kind: "student_preference_statement" }]
@@ -547,7 +547,7 @@ describe("学生自己的原话（证据）", () => {
       profileFor: () => ({ profileId: "p", revision: 0, entries: [], revisions: [] }),
       constraintsFor: () => []
     });
-    const session = gateway.createTestSession("s-mine", "sub-mine", "t-mine");
+    const session = await gateway.createTestSession("s-mine", "sub-mine", "t-mine");
     const result = await gateway.careerTurn(session, {
       run_id: "r", request_id: "q", input_revision: 1, user_text: "我自己的话", context: [],
       evidence: [{ evidenceId: "ev-mine-1", quote: "我自己的原话", kind: "student_preference_statement" }]

@@ -11,7 +11,8 @@
     NANHANG_TRIAL_ACCESS_CODE                          必需（线上访问码；不要用仓库里的演示码）
     NANHANG_CORS_ORIGINS                               默认 https://yusheng266186-beep.github.io
     NANHANG_SCF_REGION / NANHANG_SCF_FUNCTION          默认 ap-chengdu / nanming-api
-    NANHANG_AI_ALLOW_MEMORY_STORE                      默认 1（试用期单实例模式）
+    NANHANG_REDIS_HOST / _PORT / _PASSWORD             共享会话存储；不设则退回单实例内存档
+    NANHANG_AI_ALLOW_MEMORY_STORE                      默认 0；只有在没有 Redis 的临时单实例模式下才设 1
 
 用法：
     python scripts/deploy_function.py --dry-run    # 只打包，不上传
@@ -60,17 +61,26 @@ def build_zip() -> bytes:
 
 def function_environment() -> dict[str, str]:
     """函数的环境变量。线上密钥只存在这里，不进仓库。"""
-    return {
+    variables = {
         "QIANFAN_API_KEY": os.environ["QIANFAN_API_KEY"].strip(),
         "QIANFAN_MODEL": os.environ.get("QIANFAN_MODEL", "qianfan-code-latest").strip(),
         "NANHANG_AI_UPSTREAM": "qianfan",
         "NANHANG_AI_PROFILE": "production",
-        # 试用期的单实例内存档：函数重启后学生要重新兑换访问码。
-        # 接上共享存储（Redis 等）后删掉这一项，生产档就会恢复正常要求。
-        "NANHANG_AI_ALLOW_MEMORY_STORE": os.environ.get("NANHANG_AI_ALLOW_MEMORY_STORE", "1").strip(),
+        # 没有 Redis 时才允许单实例内存档（函数重启/多实例都会让学生掉线）。
+        # 默认 0：配了共享存储就不再需要这个开关，生产档也恢复正常要求。
+        "NANHANG_AI_ALLOW_MEMORY_STORE": os.environ.get("NANHANG_AI_ALLOW_MEMORY_STORE", "0").strip(),
         "NANHANG_TRIAL_ACCESS_CODE": os.environ["NANHANG_TRIAL_ACCESS_CODE"].strip(),
         "NANHANG_CORS_ORIGINS": os.environ.get("NANHANG_CORS_ORIGINS", "https://yusheng266186-beep.github.io").strip(),
     }
+    # 共享会话存储：三项齐全才写进去，缺一项就当没配（服务端会拒绝在生产档用内存档）。
+    redis_host = os.environ.get("NANHANG_REDIS_HOST", "").strip()
+    redis_port = os.environ.get("NANHANG_REDIS_PORT", "").strip()
+    redis_password = os.environ.get("NANHANG_REDIS_PASSWORD", "").strip()
+    if redis_host and redis_port and redis_password:
+        variables["NANHANG_REDIS_HOST"] = redis_host
+        variables["NANHANG_REDIS_PORT"] = redis_port
+        variables["NANHANG_REDIS_PASSWORD"] = redis_password
+    return variables
 
 
 def main() -> int:

@@ -1,11 +1,11 @@
 # 荣县一中质量慧析管线
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-live-wiring）：本地核心流程、真实招生发布和学校成绩接入完成；千帆及学生原话请求链路已实现；TASK-14 部署运维进行中，线上 AI 链路已打通（函数访问路径、真实模型三轮实测），Pages 端到端点击验收与共享会话存储尚未完成。
-> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-14；未开始：TASK-12、TASK-13。
+> 统一进度（2026-09-12，2026-09-12-redis-store）：本地核心流程、真实招生发布和学校成绩接入完成；千帆与学生原话链路已实现；共享会话存储（Redis）已接上，线上多实例并发可用；TASK-14 剩余线上验收与回滚演练。
+> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：22 个测试文件、347 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：共享会话存储（Redis）、线上 Pages 端到端点击验收、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：26 个测试文件、377 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 本文件说明如何从学校复盘工作簿得到「成绩数据库 + 前端发布产物」，以及这条链路上每一处
@@ -159,7 +159,7 @@ data/quality-huixi/release/
   shards/<40位十六进制>.json   一名学生一份，文件名 = sha256(6位验证码)[:40]
 ```
 
-页面流程：读 `index.json` → 把学生输入的 6 位码做 SHA-256 → 取前 40 位作为文件名请求分片。
+当前主页面流程：姓名与六位码 POST 到服务端 → 校验私有映射并限流 → 只返回本人分片。分片的哈希文件名仍是内部存储格式，不再是浏览器权限机制。
 分片只含该生自己的成绩行 + 班级/年级匿名汇总。**同一场考试里所有学生的班级临界生名单留在数据库，
 不进发布包。**
 
@@ -167,38 +167,24 @@ data/quality-huixi/release/
 冲突记录只保留条数与处理方式。位次字段同时给出重算值与源值，并附
 `sourceRankNote` 说明源列语义不一致。
 
-## 8. 前端接入
+## 8. 当前主前端接入（ADR-003）
 
-两套前端（`apps/web` 的 React 版与 `apps/web-paper` 的纸感版）读同一份发布产物。React 版已接好
-（第三章「成绩」，读取层 `apps/web/src/quality-huixi.ts`）。其他前端按三步接：
+主前端在五步旅程的成绩入口使用姓名＋验证码；纸感备选没有接入学校识别。旧前端哈希取静态文件的示例不再作为新接入指引。
 
-```js
-// 1) 启动时读一次共享索引（约 2.2 MB，全年级聚合，无姓名）
-const index = await fetch("/data/quality-huixi/release/index.json").then((r) => r.json());
+在工程目录生成私有映射：
 
-// 2) 学生输入 6 位码后取该生分片；文件名是码的 SHA-256 前 40 位
-const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256",
-  new TextEncoder().encode(code6)));
-const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-const shard = await fetch(`/data/quality-huixi/release/shards/${hex.slice(0, 40)}.json`)
-  .then((r) => r.json());
-
-// 3) 每场考试自带分数线、位次池大小、逐科距线差与知识点得分率，直接渲染
-const exam = shard.exams[shard.exams.length - 1];
+```powershell
+py -3.12 pipelines/quality-huixi/export_identity.py
 ```
 
-必须遵守三点：
+产物 `../private/quality-identity.json` 只包含姓名标准化值与验证码哈希组合的摘要到分片文件名的映射，880 条，不进索引/源码包。每次重建成绩库或更换验证码后，必须重新导出并复验。
 
-- **不要按姓名查询。** 数据通路只有「验证码 → 摘要文件名」一条，前端不要另建姓名索引。
-- **拿不到就说不确定。** 分片里为 `null` 的字段（缺分数线、该科无成绩、无小题明细）显示「—」，
-  不要回落成 0，也不要写成「预计」。
-- **位次是校内位次。** 不要把它接到招生发布包的省位次轴，更不要换算成录取概率。
+客户端 POST `/v1/school/identify`，JSON 仅为 `name` 与 `code`。服务端响应只有本人 `shard`，不提供姓名搜索或全班名单；错名与错码同样拒绝。选科和源记录不符时页面要求返回核对，同科类的最近考试才用于区间估算。
 
-缺失分片在静态托管下是 404，在带 SPA 回落的开发服务器上是 200 + HTML；读取层按内容识别，
-两种情况都提示「查无此人」，不报成数据损坏。
+生产环境必须显式配置 `NANHANG_QUALITY_IDENTITY_FILE` 和 `NANHANG_QUALITY_RELEASE_DIR` 指向服务端私有文件，否则返回 503；本机开发按模块路径定位现有私有数据。当前限流单姓名 5 次/15 分钟、单 IP 120 次/15 分钟，为单进程实现；正式共享限流与身份生命周期待完成。
 
-开发服务器：`apps/web/vite.config.ts` 的 `qualityData()` 只暴露 `data/quality-huixi` 目录。
-纸感版若要接入，把同一个中间件加进它的 vite 配置即可。
+Vite 已移除学校成绩静态目录挂载，只保留公开招生数据。不要将学校分片与公开招生数据一起上传 COS/Pages。本轮真实本地接口抽验一人成功且未打印隐私，见 [核验记录](verification/school-local-result.json)。
+
 
 ## 9. 已知限制
 

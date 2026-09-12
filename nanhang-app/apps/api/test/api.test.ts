@@ -225,7 +225,7 @@ describe("TASK-08 HTTP 适配层", () => {
       const revoked = await fetch(`${url}/v1/session`, { method: "DELETE", headers });
       expect(revoked.status).toBe(200);
       expect((await revoked.json() as { deleted_records: number }).deleted_records).toBe(1);
-      expect(h.store.countRecords()).toBe(0);
+      expect(await h.store.countRecords()).toBe(0);
       const after = await fetch(`${url}/v1/requests/req-del`, { headers });
       expect(after.status).toBe(401);
     } finally {
@@ -246,17 +246,17 @@ function scenarioUpstreamCalls(gateway: AiGateway): number {
 }
 
 describe("演示网关与配置", () => {
-  it("buildDemoGateway 使用假上游且AI在开发档可用", () => {
+  it("buildDemoGateway 使用假上游且AI在开发档可用", async () => {
     const { gateway } = buildDemoGateway({}, {});
-    expect(gateway.readiness().upstream).toBe("fake-local");
-    expect(gateway.readiness().ai).toBe(true);
-    expect(gateway.readiness().public_data).toBe(true);
+    expect((await gateway.readiness()).upstream).toBe("fake-local");
+    expect((await gateway.readiness()).ai).toBe(true);
+    expect((await gateway.readiness()).public_data).toBe(true);
   });
 
-  it("生产档下内存存储使AI关闭，公共数据仍可用", () => {
+  it("生产档下内存存储使AI关闭，公共数据仍可用", async () => {
     const { gateway } = buildDemoGateway({ profile: "production" }, {});
-    expect(gateway.readiness().ai).toBe(false);
-    expect(gateway.readiness().public_data).toBe(true);
+    expect((await gateway.readiness()).ai).toBe(false);
+    expect((await gateway.readiness()).public_data).toBe(true);
   });
 });
 
@@ -271,9 +271,9 @@ describe("演示原话只在演示档出现", () => {
     expect(demoEvidenceAllowed(QIANFAN, selectUpstream(QIANFAN))).toBe(false);
   });
 
-  it("接真模型时服务端注册表是空的，学生原话只从客户端上行", () => {
+  it("接真模型时服务端注册表是空的，学生原话只从客户端上行", async () => {
     const { gateway, registry } = buildDemoGateway({}, { ...QIANFAN, NANHANG_AI_ALLOW_MEMORY_STORE: "1" });
-    expect(gateway.readiness().upstream).toBe("qianfan");
+    expect((await gateway.readiness()).upstream).toBe("qianfan");
     expect(registry.messages).toEqual([]);
   });
 

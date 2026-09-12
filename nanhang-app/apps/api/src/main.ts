@@ -28,15 +28,15 @@ const listeningPort = Number.isFinite(injectedPort) && injectedPort > 0 ? Math.f
 const listeningHost = Number.isFinite(injectedPort) && injectedPort > 0 ? "0.0.0.0" : "127.0.0.1";
 
 server.listen(listeningPort, listeningHost, () => {
-  console.log(JSON.stringify({
+  void gateway.readiness().then((ready) => console.log(JSON.stringify({
     status: "listening", url: `http://${listeningHost}:${listeningPort}`, profile: config.profile,
-    upstream: gateway.readiness().upstream, ai: gateway.readiness().ai,
+    upstream: ready.upstream, ai: ready.ai, state_store: ready.state_store,
     hint: [
       `真模型：${ENV_NAMES.upstream}=qianfan + ${ENV_NAMES.qianfanApiKey} + ${ENV_NAMES.qianfanModel}`,
       `假上游场景：${ENV_NAMES.fakeScenario}=timeout|fail-after-text|unsafe-output|probability-output|link-output|empty-output`,
       `开启思考档位后请同时放宽 ${ENV_NAMES.firstByteTimeoutMs} / ${ENV_NAMES.totalTimeoutMs}`
     ].join("；")
-  }));
+  })));
 });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {

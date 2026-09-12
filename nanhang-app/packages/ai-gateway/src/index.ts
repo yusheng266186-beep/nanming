@@ -9,3 +9,5 @@ export * from "./sse.js";
 export * from "./gateway.js";
 export * from "./fake-upstream.js";
 export * from "./qianfan-upstream.js";
+export * from "./redis-client.js";
+export * from "./redis-store.js";

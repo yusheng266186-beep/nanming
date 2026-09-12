@@ -1,4 +1,4 @@
-import { createSchoolAccess } from "./school-access.js";
+import { createSchoolAccess } from "./school-access.ts";
 // TASK-08: HTTP adapter for the AI gateway.
 //
 // Transport concerns only: routing, JSON parsing limits, status codes and the SSE response.
@@ -6,13 +6,13 @@ import { createSchoolAccess } from "./school-access.js";
 // so the same rules hold for any future SCF/Express host.
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import {
-  AiGateway, FakeUpstream, MemoryStateStore, QianfanUpstream, newSessionId, newSessionToken, newSubjectId,
-  qianfanOptionsFromEnv, type SessionRecord, type Upstream
+  AiGateway, FakeUpstream, MemoryStateStore, QianfanUpstream, RedisStateStore, newSessionId, newSessionToken,
+  newSubjectId, qianfanOptionsFromEnv, type SessionRecord, type StateStore, type Upstream
 } from "@nanhang/ai-gateway";
 import { createEvidenceRegistry, emptyDirectionProfile, type EvidenceRegistry } from "@nanhang/exploration";
 import { demoEvidence, DEMO_TRIAL_CODE, DEMO_ACADEMIC_BINDING } from "./demo-context.ts";
 import { scriptedUpstreamFromEnv } from "./dev-upstream.ts";
-import { ENV_NAMES, loadRuntimeConfig, memoryStoreAllowed } from "./config.ts";
+import { ENV_NAMES, loadRuntimeConfig, memoryStoreAllowed, redisOptionsFromEnv } from "./config.ts";
 
 const MAX_BODY_BYTES = 64 * 1024;
 /** Past this multiple of the limit we stop draining and drop the connection instead of absorbing bytes. */
@@ -145,8 +145,8 @@ export function createApiServer(deps: ServerDeps): Server {
   const { gateway } = deps;
   const sessionsByToken = new Map<string, SessionRecord>();
 
-  const authenticate = (request: IncomingMessage) =>
-    gateway.authenticate(bearer(request));
+  const authenticate = async (request: IncomingMessage) =>
+    await gateway.authenticate(bearer(request));
 
   const server = createServer((request, response) => {
     applyCors(request, response);
@@ -168,7 +168,7 @@ export function createApiServer(deps: ServerDeps): Server {
       return;
     }
     if (route === "GET /readyz") {
-      sendJson(response, 200, gateway.readiness());
+      sendJson(response, 200, await gateway.readiness());
       return;
     }
     if (route === "POST /v1/access/exchange") {
@@ -186,7 +186,7 @@ export function createApiServer(deps: ServerDeps): Server {
       }
       const token = newSessionToken();
       const sessionId = newSessionId();
-      const session = gateway.createSession({
+      const session = await gateway.createSession({
         token, subjectId: newSubjectId(), accessKind: "trial_code", sessionId
       });
       sessionsByToken.set(token, session);
@@ -197,7 +197,7 @@ export function createApiServer(deps: ServerDeps): Server {
     if (route === "POST /v1/school/identify") { await schoolAccess(request, response); return; }
 
     if (route === "POST /v1/career/turn") {
-      const auth = authenticate(request);
+      const auth = await authenticate(request);
       if (!auth.ok) { sendAuthFailure(response, auth.code); return; }
       const body = await readBody(request);
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
@@ -214,7 +214,7 @@ export function createApiServer(deps: ServerDeps): Server {
     }
 
     if (route === "POST /v1/career/profile") {
-      const auth = authenticate(request);
+      const auth = await authenticate(request);
       if (!auth.ok) { sendAuthFailure(response, auth.code); return; }
       const body = await readBody(request);
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
@@ -226,27 +226,27 @@ export function createApiServer(deps: ServerDeps): Server {
     }
 
     if (request.method === "GET" && url.pathname.startsWith("/v1/requests/")) {
-      const auth = authenticate(request);
+      const auth = await authenticate(request);
       if (!auth.ok) { sendAuthFailure(response, auth.code); return; }
       const requestId = decodeURIComponent(url.pathname.slice("/v1/requests/".length));
-      const result = gateway.requestStatus(auth.session, requestId);
+      const result = await gateway.requestStatus(auth.session, requestId);
       sendJson(response, result.httpStatus, result.body);
       return;
     }
 
     if (route === "DELETE /v1/session") {
-      const auth = authenticate(request);
+      const auth = await authenticate(request);
       if (!auth.ok) { sendAuthFailure(response, auth.code); return; }
       const token = bearer(request);
       if (token) sessionsByToken.delete(token);
-      const revoked = gateway.revoke(auth.session.sessionId);
+      const revoked = await gateway.revoke(auth.session.sessionId);
       sendJson(response, 200, { revoked: true, deleted_records: revoked.deleted });
       return;
     }
 
     // P4 endpoints stay closed: no issuance path exists and no session kind can read grades (A40).
     if (request.method === "GET" && url.pathname === "/v1/me/academic-profile") {
-      const auth = authenticate(request);
+      const auth = await authenticate(request);
       if (!auth.ok) { sendAuthFailure(response, auth.code); return; }
       sendJson(response, 403, {
         error: {
@@ -317,11 +317,21 @@ export function demoEvidenceAllowed(env: NodeJS.ProcessEnv, upstream: Upstream):
   return upstream instanceof FakeUpstream;
 }
 
+/**
+ * 状态存储的选择：配了 Redis 三项就用共享存储，否则退回单实例内存档。
+ * 生产档下内存档需要显式开关（productionGuard），所以漏配 Redis 不会被静默容忍。
+ */
+export function buildStateStore(env: NodeJS.ProcessEnv = process.env): StateStore {
+  const redis = redisOptionsFromEnv(env);
+  const ttlSeconds = Math.ceil(loadRuntimeConfig({}, env).sessionTtlMs / 1000);
+  return redis ? new RedisStateStore({ ...redis, ttlSeconds }) : new MemoryStateStore();
+}
+
 export function buildDemoGateway(
   overrides: Record<string, unknown> = {}, env: NodeJS.ProcessEnv = process.env
-): { gateway: AiGateway; registry: EvidenceRegistry; store: MemoryStateStore } {
+): { gateway: AiGateway; registry: EvidenceRegistry; store: StateStore } {
   const config = loadRuntimeConfig(overrides, env);
-  const store = new MemoryStateStore();
+  const store = buildStateStore(env);
   const upstream = selectUpstream(env);
   const registry = createEvidenceRegistry(demoEvidenceAllowed(env, upstream) ? demoEvidence() : []);
   const profile = emptyDirectionProfile("api-profile");
