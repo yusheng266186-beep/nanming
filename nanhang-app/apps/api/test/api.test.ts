@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { createApiServer, buildDemoGateway, demoEvidenceAllowed, selectUpstream, trialAccessCode, DEMO_TRIAL_CODE } from "../src/server.ts";
+import { createApiServer, buildDemoGateway, demoEvidenceAllowed, selectUpstream, totpCode, matchingTotpCounter, DEMO_TRIAL_CODE } from "../src/server.ts";
 import { parseSseStream } from "@nanhang/ai-gateway";
 import { scenarioUpstream } from "../src/dev-upstream.ts";
 import { withConfig, AiGateway, MemoryStateStore, createEvidenceRegistry } from "@nanhang/ai-gateway";
@@ -16,7 +16,7 @@ function harnessServer(scenario: Parameters<typeof scenarioUpstream>[0] = "norma
     profileFor: () => ({ profileId: "api-profile", revision: 0, entries: [], revisions: [] }),
     constraintsFor: () => []
   });
-  return { server: createApiServer({ gateway }), store, gateway };
+  return { server: createApiServer({ gateway, store }), store, gateway };
 }
 
 describe("TASK-08 HTTP 适配层", () => {
@@ -110,7 +110,7 @@ describe("TASK-08 HTTP 适配层", () => {
 
   it("A42 重复的相同请求不重复调用上游，A43 同ID不同内容返回409", async () => {
     const h = harnessServer();
-    const local = createApiServer({ gateway: h.gateway });
+    const local = createApiServer({ gateway: h.gateway, store: h.store });
     await new Promise<void>((resolve) => local.listen(0, "127.0.0.1", resolve));
     const port = (local.address() as AddressInfo).port;
     const url = `http://127.0.0.1:${port}`;
@@ -156,7 +156,7 @@ describe("TASK-08 HTTP 适配层", () => {
 
   it("A44 共享状态故障时AI返回503，公共数据接口继续可用", async () => {
     const h = harnessServer();
-    const local = createApiServer({ gateway: h.gateway });
+    const local = createApiServer({ gateway: h.gateway, store: h.store });
     await new Promise<void>((resolve) => local.listen(0, "127.0.0.1", resolve));
     const port = (local.address() as AddressInfo).port;
     const url = `http://127.0.0.1:${port}`;
@@ -183,7 +183,7 @@ describe("TASK-08 HTTP 适配层", () => {
   it("A46/A48 上游返回脚本或概率时，客户端只收到降级文本", async () => {
     for (const scenario of ["unsafe-output", "probability-output", "link-output", "empty-output"] as const) {
       const h = harnessServer(scenario);
-      const local = createApiServer({ gateway: h.gateway });
+      const local = createApiServer({ gateway: h.gateway, store: h.store });
       await new Promise<void>((resolve) => local.listen(0, "127.0.0.1", resolve));
       const port = (local.address() as AddressInfo).port;
       const url = `http://127.0.0.1:${port}`;
@@ -210,7 +210,7 @@ describe("TASK-08 HTTP 适配层", () => {
 
   it("A47 旧请求的结果不会覆盖新run：状态查询按request_id隔离", async () => {
     const h = harnessServer();
-    const local = createApiServer({ gateway: h.gateway });
+    const local = createApiServer({ gateway: h.gateway, store: h.store });
     await new Promise<void>((resolve) => local.listen(0, "127.0.0.1", resolve));
     const port = (local.address() as AddressInfo).port;
     const url = `http://127.0.0.1:${port}`;
@@ -234,7 +234,7 @@ describe("TASK-08 HTTP 适配层", () => {
 
   it("DELETE /v1/session 撤销凭证并删除临时结果", async () => {
     const h = harnessServer();
-    const local = createApiServer({ gateway: h.gateway });
+    const local = createApiServer({ gateway: h.gateway, store: h.store });
     await new Promise<void>((resolve) => local.listen(0, "127.0.0.1", resolve));
     const port = (local.address() as AddressInfo).port;
     const url = `http://127.0.0.1:${port}`;
@@ -337,40 +337,50 @@ describe("上游选择", () => {
   });
 });
 
-describe("试用访问码不能靠仓库里的演示码上线", () => {
-  it("开发档回落到演示码，生产档没配就当作未配置", () => {
-    expect(trialAccessCode({})).toBe(DEMO_TRIAL_CODE);
-    expect(trialAccessCode({ NANHANG_AI_PROFILE: "production" })).toBeNull();
+describe("TOTP 动态访问码", () => {
+  const secret = "JBSWY3DPEHPK3PXP";
+
+  it("按 SHA1/30秒/6位生成，并允许前后一个窗口", () => {
+    expect(totpCode("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", 1)).toBe("287082");
+    const now = 1_700_000_000_000;
+    const counter = Math.floor(now / 30_000);
+    const current = totpCode(secret, counter)!;
+    expect(current).toMatch(/^\d{6}$/);
+    expect(matchingTotpCounter(current, { NANHANG_TOTP_SECRET: secret }, now)).toBe(counter);
+    expect(matchingTotpCounter(totpCode(secret, counter - 1)!, { NANHANG_TOTP_SECRET: secret }, now)).toBe(counter - 1);
+    expect(matchingTotpCounter("12345", { NANHANG_TOTP_SECRET: secret }, now)).toBeNull();
+    expect(totpCode("not-base32", counter)).toBeNull();
   });
 
-  it("配了自己的码就用它，并去掉首尾空白", () => {
-    expect(trialAccessCode({ NANHANG_AI_PROFILE: "production", NANHANG_TRIAL_ACCESS_CODE: "  nanhang-2026  " }))
-      .toBe("nanhang-2026");
-  });
-
-  it("生产档下演示码被拒、自己的码放行", async () => {
-    const server = harnessServer().server;
+  it("生产档必须配置TOTP；正确码只可兑换一次", async () => {
+    const h = harnessServer();
+    const server = h.server;
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-    const previous = { profile: process.env.NANHANG_AI_PROFILE, code: process.env.NANHANG_TRIAL_ACCESS_CODE };
+    const previous = { profile: process.env.NANHANG_AI_PROFILE, secret: process.env.NANHANG_TOTP_SECRET };
     try {
       process.env.NANHANG_AI_PROFILE = "production";
-      delete process.env.NANHANG_TRIAL_ACCESS_CODE;
+      delete process.env.NANHANG_TOTP_SECRET;
       const withoutCode = await fetch(`${base}/v1/access/exchange`, { method: "POST",
         headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: DEMO_TRIAL_CODE }) });
       expect(withoutCode.status).toBe(503);
 
-      process.env.NANHANG_TRIAL_ACCESS_CODE = "nanhang-2026";
+      process.env.NANHANG_TOTP_SECRET = secret;
       const demoRejected = await fetch(`${base}/v1/access/exchange`, { method: "POST",
         headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: DEMO_TRIAL_CODE }) });
       expect(demoRejected.status).toBe(401);
 
+      const current = totpCode(secret, Math.floor(Date.now() / 30_000))!;
       const accepted = await fetch(`${base}/v1/access/exchange`, { method: "POST",
-        headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: "nanhang-2026" }) });
+        headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: current }) });
       expect(accepted.status).toBe(200);
+      const replay = await fetch(`${base}/v1/access/exchange`, { method: "POST",
+        headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: current }) });
+      expect(replay.status).toBe(401);
+      expect((await replay.json() as { error: { code: string } }).error.code).toBe("TOTP_REPLAYED");
     } finally {
       if (previous.profile === undefined) delete process.env.NANHANG_AI_PROFILE; else process.env.NANHANG_AI_PROFILE = previous.profile;
-      if (previous.code === undefined) delete process.env.NANHANG_TRIAL_ACCESS_CODE; else process.env.NANHANG_TRIAL_ACCESS_CODE = previous.code;
+      if (previous.secret === undefined) delete process.env.NANHANG_TOTP_SECRET; else process.env.NANHANG_TOTP_SECRET = previous.secret;
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
   });

@@ -39,7 +39,7 @@ describe("AI面板默认关闭且可完全回退", () => {
 
   it("启用但没有访问码时给出提示且不发请求", async () => {
     const next = await askAi(enableAi(initialAiPanel), stamp, stamp, "你好", "req");
-    expect(next.status).toContain("访问码");
+    expect(next.status).toContain("动态码");
   });
 });
 

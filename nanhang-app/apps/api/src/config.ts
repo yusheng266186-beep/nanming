@@ -6,7 +6,7 @@ import { DEFAULT_CONFIG, qianfanOptionsFromEnv, withConfig, type AiGatewayConfig
 export const ENV_NAMES = {
   profile: "NANHANG_AI_PROFILE",
   port: "NANHANG_API_PORT",
-  trialCode: "NANHANG_TRIAL_ACCESS_CODE",
+  totpSecret: "NANHANG_TOTP_SECRET",
   upstream: "NANHANG_AI_UPSTREAM",
   fakeScenario: "NANHANG_FAKE_SCENARIO",
   academicBinding: "NANHANG_ACADEMIC_BINDING",

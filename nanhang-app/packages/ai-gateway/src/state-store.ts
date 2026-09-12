@@ -37,6 +37,8 @@ export interface StateStore {
   readonly kind: string;
   /** False when the shared store cannot be reached. The AI path fails closed; public flow is unaffected. */
   available(): Promise<boolean>;
+  /** Atomically consumes a short-lived authentication proof. False means it was already used. */
+  consumeOnce(key: string, ttlSeconds: number): Promise<boolean>;
   createSession(record: SessionRecord): Promise<void>;
   findSessionByTokenHash(tokenHash: string): Promise<SessionRecord | null>;
   getSession(sessionId: string): Promise<SessionRecord | null>;
@@ -63,6 +65,7 @@ export class MemoryStateStore implements StateStore {
   readonly kind = "memory";
   private readonly sessions = new Map<string, SessionRecord>();
   private readonly records = new Map<string, ReservationRecord>();
+  private readonly consumed = new Map<string, number>();
   private reachable = true;
 
   /** Test helper: simulate a shared-store outage (A44). */
@@ -72,6 +75,15 @@ export class MemoryStateStore implements StateStore {
 
   async available(): Promise<boolean> {
     return this.reachable;
+  }
+
+  async consumeOnce(key: string, ttlSeconds: number): Promise<boolean> {
+    if (!this.reachable) throw new Error("state store unavailable");
+    const now = Date.now();
+    for (const [item, expiresAt] of this.consumed) if (expiresAt <= now) this.consumed.delete(item);
+    if (this.consumed.has(key)) return false;
+    this.consumed.set(key, now + ttlSeconds * 1000);
+    return true;
   }
 
   async createSession(record: SessionRecord): Promise<void> {

@@ -17,7 +17,7 @@ if (!guard.ok) {
   console.error(`refusing to start: ${guard.reason}`);
   process.exit(1);
 }
-const server = createApiServer({ gateway });
+const server = createApiServer({ gateway, store });
 
 /**
  * 端口与监听地址。云函数（SCF Web 函数）会注入 PORT，并要求监听 0.0.0.0；

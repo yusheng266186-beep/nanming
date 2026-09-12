@@ -1,0 +1,16 @@
+{
+  "function": "nanming-api",
+  "status": "Active",
+  "version": "9",
+  "authentication": "TOTP-SHA1-30s-6digits-window-plus-minus-1",
+  "shared_replay_guard": true,
+  "old_fixed_code_rejected": true,
+  "online_exchange_passed": true,
+  "online_replay_rejected": true,
+  "session_revoke_passed": true,
+  "environment_preserved": true,
+  "deployed_zip_contents_verified": true,
+  "secret_sha256": "28b79075bbf76ca5b42f6e56cea3077480ce1d41d7a8e792de395e1d50be753a",
+  "secret_value_recorded": false,
+  "rollback_zip_private": true
+}

@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-12",
-  "revision": "2026-09-12-acceptance-cloud-snapshot",
-  "stage": "当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过",
+  "revision": "2026-09-12-nanming-totp",
+  "stage": "南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 39,
-    "passed": 481,
-    "failed": 0,
+    "files": 40,
+    "passed": 491,
+    "failed": 1,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本轮最终类型检查通过，全量36文件454通过，另Python查询码4项通过；历史结果保留原日志。 两路定位与浮层锁滚动另有守卫 6 项（apps/web/test/route-split.test.ts）。 谈心房形态另有守卫 5 项（apps/web/test/talk-room.test.ts）。 四页动画适配另有守卫 7 项（apps/web/test/page-motion.test.ts）。",
+    "note": "当前统一记录40文件491项通过、1项失败；本轮TOTP专项4文件66项通过。本轮全量运行时482项通过、1项航线图窄屏历史断言失败；随后并行前端守卫新增通过项，不把失败冒充通过。",
     "log": "docs/verification/class4-codes-x0-tests-2026-09-12.txt"
   },
   "runtime": {
@@ -42,7 +42,7 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留",
+  "next_task": "完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练",
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
   "workbook_data_rows": 52878,
@@ -362,7 +362,7 @@
       "密钥轮换演练",
       "正式身份生命周期"
     ],
-    "query_code_rule": "四班48人身份证后六位X转0；四班其余8人及其他班级沿用原码；新索引已部署API版本8"
+    "query_code_rule": "四班48人身份证后六位X转0；四班其余8人及其他班级沿用原码；新索引继续包含在API版本9"
   },
   "chapter_gate": {
     "rule": "按流程分段，前一段完成才解锁下一段；往回看永远允许；解锁只增不减",
@@ -385,6 +385,15 @@
     "verification": "34 files / 439 tests passed; 11 focused files / 168 passed; real school local SCF bundle smoke; live existing API CORS/Redis/admissions healthy",
     "guide": "docs/BACKEND_FRONTEND_ALIGNMENT.md"
   },
+  "ai_totp": {
+    "status": "API_V9_DEPLOYED_ONLINE_VERIFIED_PAGES_PENDING",
+    "algorithm": "RFC6238 SHA1 30s 6 digits",
+    "clock_window": "plus/minus 1",
+    "replay": "shared Redis atomic SET NX EX; one successful exchange per code window",
+    "old_fixed_code": "removed from cloud environment and rejected online",
+    "secret_storage": "private/nanming-totp-secret.txt and SCF NANHANG_TOTP_SECRET; excluded from Git and source package",
+    "online_report": "docs/verification/nanming-totp-online-2026-09-12.json"
+  },
   "class4_query_codes": {
     "status": "DEPLOYED_48_ONLINE_VERIFIED",
     "rule": "身份证后六位，X替换为0，保留前导零；仍需姓名",
@@ -403,11 +412,11 @@
     "scope": "all current tracked and untracked project source; private credentials and student files excluded from Git",
     "owner_authorized_unfinished": true,
     "validation_nonblocking": true,
-    "api": "nanming-api version 8; Active; deployed ZIP verified; environment preserved",
+    "api": "nanming-api version 9; TOTP active; deployed ZIP verified; environment preserved",
     "pages": "9e31d9f; workflow34696117253 build/deploy success",
     "ciphertext_objects": 881,
     "online_report": "docs/verification/acceptance-online-2026-09-12.json",
     "ci_validation": "3 failed test files,33 passed,1 skipped; 3 failed tests; deployment continued as owner requested",
-    "followup": "补充快照已部署；沿用API版本8；CI仍有原三处失败，依授权不阻断"
+    "followup": "补充快照已部署；当前API版本9启用TOTP；Pages正在发布对应输入界面"
   }
 }

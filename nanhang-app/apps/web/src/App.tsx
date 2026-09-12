@@ -358,11 +358,17 @@ export default function App() {
     try {
       const response = await fetch(`${ai.apiBase}/v1/access/exchange`, { method: "POST",
         headers: { "content-type": "application/json" }, body: JSON.stringify({ access_code: aiCode }) });
-      if (!response.ok) { setAi((current) => ({ ...current, status: "访问码被拒绝，或本地服务未启动。" })); return; }
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null) as { error?: { code?: string } } | null;
+        const replayed = detail?.error?.code === "TOTP_REPLAYED";
+        setAi((current) => ({ ...current,
+          status: replayed ? "这个动态码已经使用过，请向老师获取当前新码。" : "动态码无效或已过期，请向老师获取当前新码。" }));
+        return;
+      }
       const body = await response.json() as { token: string };
       setAi((current) => withSession(current, body.token));
       setAiCode("");
-    } catch { setAi((current) => ({ ...current, status: "无法连接本地 AI 服务；无 AI 流程不受影响。" })); }
+    } catch { setAi((current) => ({ ...current, status: "暂时无法连接 AI 服务；无 AI 流程不受影响。" })); }
   };
   /** 点选 AI 给出的答案时用 override 直接发出，不必先写进草稿再等一轮渲染。 */
   const sendAi = async (override?: string) => {

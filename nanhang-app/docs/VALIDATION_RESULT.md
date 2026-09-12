@@ -1,12 +1,19 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过。
+> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：39 个测试文件、481 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：40 个测试文件、491 项通过、1 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-12 南溟 TOTP
+
+- `npm run typecheck`：通过；`npm test -- --run apps/api/test/api.test.ts packages/ai-gateway/test/redis-store.test.ts apps/web/test/ai-panel.test.ts apps/web/test/backend-alignment.test.ts --maxWorkers=2`：4文件66项通过。
+- `npm test -- --maxWorkers=2`：40文件，482项通过、1项失败。失败为航线图窄屏断言仍要求 `useNarrowPlate`，当前并行实现已无该符号；与认证代码无关，未宣称全量通过。`npm run web:build` 通过。
+- 云端 API 版本9：动态码兑换200、同码重放401 `TOTP_REPLAYED`、旧固定码401、会话撤销200、线上ZIP内容一致、旧环境配置保留。见 [脱敏报告](verification/nanming-totp-online-2026-09-12.json)。本轮未打印或记录原始种子。
+- Pages 前端尚待本轮提交触发构建；未作页面视觉验收、学生规模发码或回滚演练。
 
 ## 2026-09-12 / acceptance-followup-complete
 

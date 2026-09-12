@@ -1,11 +1,11 @@
 # TASK-03 本地招生数据库
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过。
+> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：39 个测试文件、481 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：40 个测试文件、491 项通过、1 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 两份根目录 Excel 清洗后写入一个可重建的 SQLite 库，并提供按考生输入快速匹配的查询入口。库是离线整理与本地匹配的工作产物，**不是**数据发布：`publication_status = NOT_PUBLISHED`、`human_review_performed = 0`，与 `DATA_AND_MATCHING_SPEC.md` 的状态流程一致。

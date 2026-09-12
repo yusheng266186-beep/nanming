@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted,
   type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
 import { ChatBubble, TypingDots } from "../chat.js";
+import { useScrollLock } from "../scroll-lock.js";
 import type { CatalogDirection, CatalogGroup, Major } from "../journey-model.js";
 import type { PageId } from "./shared.js";
 
@@ -34,6 +35,15 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
   }, [page, setAi]);
 
   const tierOf = THINKING_CHOICES.find((choice) => choice.value === ai.tier);
+  // 「聊完之后」的方向小结卡：AI 第一次给出建议时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const summarySeen = useRef(false);
+  useEffect(() => {
+    if (!ai.suggestions.length || summarySeen.current) return;
+    summarySeen.current = true;
+    setSummaryOpen(true);
+  }, [ai.suggestions.length]);
+  useScrollLock(summaryOpen);
 
   return <section id="page-talk" className={`view${page === "talk" ? " active" : ""}`} aria-label="谈心">
     <div className="page-head">
@@ -60,7 +70,7 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
       <p className="fhint" style={{ marginTop: 14 }}>回答的思考深度在顶栏右上角的「溟」→ 设置里，开始前后都可以换。</p>
       <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 18 }}>
         <button type="button" className="btn brass" onClick={() => setAi(withStarted(ai))}>开始谈心<Icon name="arrow" /></button>
-        <small className="muted-note">连接需要访问码，由老师发放。</small>
+        <small className="muted-note">连接需要 6 位动态码，由老师现场发放。</small>
       </div>
     </div>
     : <div className="talk">
@@ -85,13 +95,14 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
         <div className="dock">
           {!ai.connected ? <>
             <div className="dock-row connect">
-              <input className="inp" type="text" value={aiCode} placeholder="输入访问码（老师发放）"
-                aria-label="AI 服务访问码"
-                onChange={(event) => setAiCode(event.target.value)}
+              <input className="inp" type="text" inputMode="numeric" autoComplete="one-time-code"
+                maxLength={6} pattern="[0-9]{6}" value={aiCode} placeholder="输入 6 位动态码"
+                aria-label="AI 服务动态码"
+                onChange={(event) => setAiCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(event) => { if (event.key === "Enter") void exchangeCode(); }} />
               <button type="button" className="btn sm" onClick={() => void exchangeCode()}>连接</button>
             </div>
-            <p className="fhint">{ai.status ?? "连接后即可开始对话；连不上请检查本地服务或向老师核对访问码。"}</p>
+            <p className="fhint">{ai.status ?? "动态码每 30 秒更新且只能使用一次；请使用老师刚刚发放的当前码。"}</p>
           </> : <>
             {ai.mode === "guided" && ai.options.length > 0 ? <div className="qopts">
               {ai.options.map((option) => <button key={option} type="button" className="qopt"
@@ -110,10 +121,51 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
           </>}
         </div>
       </div>
-      <div className="talk-meta">
-        <button type="button" className="tbtn" disabled={!hasChatted}
-          onClick={() => { setPage("direction"); notify(hasChatted ? "到「方向」看 AI 的建议，再亲自选一次专业" : "先在对话里聊几句"); }}>去方向 · 选专业<Icon name="arrow" /></button>
-      </div>
+      {/* 聊完之前不出现：AI 还没给出建议时，去「方向」也看不到 AI 那条线，点了等于没反应。
+          AI 一给出建议，这一行和上面的小结卡同时出现（负责人 2026-09-12 的要求）。 */}
+      {ai.suggestions.length ? <div className="talk-meta">
+        <button type="button" className="tbtn" onClick={() => setSummaryOpen(true)}>方向小结</button>
+        <button type="button" className="tbtn"
+          onClick={() => { setPage("direction"); notify("到「方向」看 AI 的建议，再亲自选一次专业"); }}>去方向 · 选专业<Icon name="arrow" /></button>
+      </div> : null}
+
+      {/* 聊完之后自动弹出的方向小结（与登船卡片同一套浮层）：把 AI 从学生原话里读出来的
+          大类 / 小类摆清楚，引用的原话与理由照原样带上。就业方向不在这里编——那要 AI 现场答，
+          所以这里只给一个「让溟讲讲」的入口，答案落在对话里。 */}
+      {summaryOpen ? <div className="board-backdrop" role="presentation"
+        onClick={(event) => { if (event.target === event.currentTarget) setSummaryOpen(false); }}
+        onKeyDown={(event) => { if (event.key === "Escape") setSummaryOpen(false); }}>
+        <div className="board-card" role="dialog" aria-modal="true" aria-label="溟听出来的方向">
+          <button type="button" className="board-close" aria-label="关闭方向小结" autoFocus
+            onClick={() => setSummaryOpen(false)}><Icon name="close" /></button>
+          <span className="eyebrow">After The Talk · 聊完之后</span>
+          <h3 className="song" style={{ marginTop: 10 }}>溟从你的原话里，听出了这几个方向</h3>
+          <p className="psub">下面这些专业类是 AI 在你自己的话里挑出来的，每条都带着那句话；它只做整理与筛选，
+            不替你决定，也不给录取判断。想了解这些方向以后做什么，让它接着讲。</p>
+          {(catalog?.groups ?? []).map((group) => {
+            const items = ai.suggestions.filter((item) => group.classes.some((cls) => cls.id === item.directionId));
+            if (!items.length) return null;
+            return <div key={group.id} style={{ marginTop: 14 }}>
+              <span className="eyebrow plain">{group.name}</span>
+              <ul className="vlist" style={{ marginTop: 8 }}>
+                {items.map((item) => {
+                  const cls = group.classes.find((entry) => entry.id === item.directionId)!;
+                  return <li className="vpill" key={item.directionId}>{cls.name}</li>;
+                })}
+              </ul>
+            </div>;
+          })}
+          <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 18 }}>
+            <button type="button" className="btn brass"
+              onClick={() => { setSummaryOpen(false); setPage("direction"); }}>去方向 · 选专业<Icon name="arrow" /></button>
+            <button type="button" className="btn sm ghost"
+              onClick={() => {
+                setSummaryOpen(false);
+                void sendAi("这些方向以后主要做什么工作？用你自己的话简单讲讲，不要说录取结论。");
+              }}>让溟讲讲就业方向</button>
+          </div>
+        </div>
+      </div> : null}
       {/* AI 的结构化建议：只能来自真实专业目录（与发布库一致），按大类分组展示，每条都引用学生自己的话。
           它是「AI 推荐线」的来源，与学生的自选在「方向」页同等位置。 */}
       {ai.suggestions.length ? <div className="panel" style={{ marginTop: 18 }}>

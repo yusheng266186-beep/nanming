@@ -8,7 +8,7 @@
     TENCENTCLOUD_SECRET_ID / TENCENTCLOUD_SECRET_KEY   必需
     QIANFAN_API_KEY                                    必需（真模型的钥匙）
     QIANFAN_MODEL                                      默认 qianfan-code-latest
-    NANHANG_TRIAL_ACCESS_CODE                          必需（线上访问码；不要用仓库里的演示码）
+    NANHANG_TOTP_SECRET                               必需（Base32 原始种子；只存私有材料与云端）
     NANHANG_CORS_ORIGINS                               默认 https://yusheng266186-beep.github.io
     NANHANG_SCF_REGION / NANHANG_SCF_FUNCTION          默认 ap-chengdu / nanming-api
     NANHANG_REDIS_HOST / _PORT / _PASSWORD             共享会话存储；不设则退回单实例内存档
@@ -32,7 +32,7 @@ REPO = Path(__file__).resolve().parent.parent
 BUILD_DIR = REPO / "apps" / "api" / "dist-scf"
 BOOTSTRAP = REPO / "apps" / "api" / "scf_bootstrap"
 
-REQUIRED = ("TENCENTCLOUD_SECRET_ID", "TENCENTCLOUD_SECRET_KEY", "QIANFAN_API_KEY", "NANHANG_TRIAL_ACCESS_CODE")
+REQUIRED = ("TENCENTCLOUD_SECRET_ID", "TENCENTCLOUD_SECRET_KEY", "QIANFAN_API_KEY", "NANHANG_TOTP_SECRET")
 
 
 def build_zip() -> bytes:
@@ -72,7 +72,7 @@ def function_environment() -> dict[str, str]:
         # 没有 Redis 时才允许单实例内存档（函数重启/多实例都会让学生掉线）。
         # 默认 0：配了共享存储就不再需要这个开关，生产档也恢复正常要求。
         "NANHANG_AI_ALLOW_MEMORY_STORE": os.environ.get("NANHANG_AI_ALLOW_MEMORY_STORE", "0").strip(),
-        "NANHANG_TRIAL_ACCESS_CODE": os.environ["NANHANG_TRIAL_ACCESS_CODE"].strip(),
+        "NANHANG_TOTP_SECRET": os.environ["NANHANG_TOTP_SECRET"].strip(),
         "NANHANG_CORS_ORIGINS": os.environ.get("NANHANG_CORS_ORIGINS", "https://yusheng266186-beep.github.io").strip(),
     }
     # 学校成绩（增强模式）：身份索引随包发，分片密文在对象存储里，密钥单独给。

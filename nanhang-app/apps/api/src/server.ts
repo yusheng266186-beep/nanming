@@ -5,6 +5,7 @@ import { createSchoolAccess } from "./school-access.ts";
 // Every decision (idempotency, quota, validation, degradation) lives in @nanhang/ai-gateway,
 // so the same rules hold for any future SCF/Express host.
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import {
   AiGateway, FakeUpstream, MemoryStateStore, QianfanUpstream, RedisStateStore, newSessionId, newSessionToken,
   newSubjectId, qianfanOptionsFromEnv, type SessionRecord, type StateStore, type Upstream
@@ -20,6 +21,7 @@ const DRAIN_MULTIPLIER = 8;
 
 export interface ServerDeps {
   readonly gateway: AiGateway;
+  readonly store: StateStore;
   readonly sessionFor?: (token: string) => SessionRecord | null;
 }
 
@@ -85,22 +87,57 @@ function sendAuthFailure(response: ServerResponse, code: string): void {
   sendJson(response, status, { error: { code, message: code, request_id: "", retryable: status === 503 } });
 }
 
-/**
- * 试用访问码。线上必须由 NANHANG_TRIAL_ACCESS_CODE 给出——仓库里那个演示码是公开的，
- * 拿它上线等于没有门。只有开发档才回落到演示码；生产档没配就当作「未配置」，不发会话。
- */
-export function trialAccessCode(env: NodeJS.ProcessEnv = process.env): string | null {
-  const fromEnv = (env[ENV_NAMES.trialCode] ?? "").trim();
-  if (fromEnv) return fromEnv;
-  return env[ENV_NAMES.profile] === "production" ? null : DEMO_TRIAL_CODE;
-}
-
 /** 定长比较，避免用字符串比较的短路行为泄漏前缀。 */
 function secretEquals(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let index = 0; index < a.length; index += 1) diff |= a.charCodeAt(index) ^ b.charCodeAt(index);
   return diff === 0;
+}
+
+/** RFC 6238 compatible with 北辰: Base32 secret, SHA-1, 30 seconds, six digits. */
+function base32Decode(value: string): Buffer | null {
+  const clean = value.replace(/[\s-]/g, "").toUpperCase();
+  if (clean.length < 16 || !/^[A-Z2-7]+$/.test(clean)) return null;
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let buffer = 0;
+  const output: number[] = [];
+  for (const character of clean) {
+    buffer = (buffer << 5) | alphabet.indexOf(character);
+    bits += 5;
+    if (bits >= 8) {
+      bits -= 8;
+      output.push((buffer >>> bits) & 0xff);
+    }
+  }
+  return Buffer.from(output);
+}
+
+export function totpCode(secret: string, counter: number): string | null {
+  const key = base32Decode(secret);
+  if (!key || key.length < 10 || !Number.isSafeInteger(counter) || counter < 0) return null;
+  const message = Buffer.alloc(8);
+  message.writeBigUInt64BE(BigInt(counter));
+  const digest = createHmac("sha1", key).update(message).digest();
+  const offset = digest[digest.length - 1]! & 0x0f;
+  const number = (digest.readUInt32BE(offset) & 0x7fffffff) % 1_000_000;
+  return String(number).padStart(6, "0");
+}
+
+export function matchingTotpCounter(
+  code: string, env: NodeJS.ProcessEnv = process.env, now = Date.now()
+): number | null {
+  if (!/^\d{6}$/.test(code)) return null;
+  const secret = (env[ENV_NAMES.totpSecret] ?? "").trim();
+  if (!base32Decode(secret)) return null;
+  const current = Math.floor(now / 30_000);
+  const supplied = Buffer.from(code);
+  for (const counter of [current - 1, current, current + 1]) {
+    const expected = totpCode(secret, counter);
+    if (expected && timingSafeEqual(supplied, Buffer.from(expected))) return counter;
+  }
+  return null;
 }
 
 function bearer(request: IncomingMessage): string | null {
@@ -176,13 +213,31 @@ export function createApiServer(deps: ServerDeps): Server {
     if (route === "POST /v1/access/exchange") {
       const body = await readBody(request);
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
-      const expected = trialAccessCode();
-      if (expected === null) {
-        sendJson(response, 503, { error: { code: "AI_DISABLED", message: "access code is not configured on this deployment", request_id: "" } });
-        return;
-      }
       const code = (body.value as { access_code?: unknown } | null)?.access_code;
-      if (typeof code !== "string" || !secretEquals(code.trim(), expected)) {
+      const normalized = typeof code === "string" ? code.trim() : "";
+      const secret = (process.env[ENV_NAMES.totpSecret] ?? "").trim();
+      if (!secret) {
+        if (process.env[ENV_NAMES.profile] === "production") {
+          sendJson(response, 503, { error: { code: "AI_DISABLED", message: "TOTP is not configured on this deployment", request_id: "" } });
+          return;
+        }
+        if (!secretEquals(normalized, DEMO_TRIAL_CODE)) {
+          sendJson(response, 401, { error: { code: "UNAUTHENTICATED", message: "access code rejected", request_id: "" } });
+          return;
+        }
+      } else {
+        const counter = matchingTotpCounter(normalized);
+        if (counter === null) {
+          sendJson(response, 401, { error: { code: "UNAUTHENTICATED", message: "dynamic code rejected", request_id: "" } });
+          return;
+        }
+        const proof = createHash("sha256").update(`${counter}:${normalized}`).digest("hex");
+        if (!await deps.store.consumeOnce(`totp:${proof}`, 120)) {
+          sendJson(response, 401, { error: { code: "TOTP_REPLAYED", message: "dynamic code already used", request_id: "" } });
+          return;
+        }
+      }
+      if (!normalized) {
         sendJson(response, 401, { error: { code: "UNAUTHENTICATED", message: "access code rejected", request_id: "" } });
         return;
       }

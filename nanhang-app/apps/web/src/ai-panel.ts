@@ -99,7 +99,7 @@ export function isReplyStale(state: AiPanelState, currentRevision: number): bool
 
 export function enableAi(state: AiPanelState): AiPanelState {
   // Enabling is a deliberate user action and never happens implicitly on page load.
-  return { ...state, enabled: true, status: "AI 已启用；仍需连接本地服务并兑换访问码。" };
+  return { ...state, enabled: true, status: "AI 已启用；请输入老师刚刚发放的 6 位动态码。" };
 }
 
 export function disableAi(state: AiPanelState): AiPanelState {
@@ -172,7 +172,7 @@ export async function askAi(
   directionCatalog: readonly { readonly id: string; readonly name: string }[] = []
 ): Promise<AiPanelState> {
   if (!state.enabled) return state;
-  if (!state.token) return { ...state, status: "请先兑换本地访问码。" };
+  if (!state.token) return { ...state, status: "请先输入 6 位动态码。" };
   if (!userText.trim()) return { ...state, status: "请先写下你想说的话。" };
   const pending = beginTurn(sendStamp, requestId);
   const result = await runAiTurn(
@@ -229,7 +229,7 @@ export function applyOutcome(state: AiPanelState, outcome: AiTurnOutcome, httpSt
       ...(httpStatus === 401 ? { connected: false, token: null } : {}),
       status: httpStatus === 503
         ? "AI 当前不可用，无 AI 的浏览、探索与匹配仍可正常使用。"
-        : httpStatus === 401 ? "会话已过期，请重新输入老师发放的访问码。"
+        : httpStatus === 401 ? "会话已过期，请重新输入老师刚刚发放的动态码。"
         : httpStatus === 0 ? "连接中断或等待超时，请稍后重新发送。"
         : `AI 未完成：${outcome.reason ?? "未知原因"}` };
   }

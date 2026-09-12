@@ -1,21 +1,21 @@
 # 南溟目标探索工程
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：当前前后端验收快照已上线；API版本8、881密文、48人新查询码和两种真实AI聊天线上核验通过。
+> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP并部署API版本9；旧固定码失效，前端发布进行中。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：39 个测试文件、481 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练；未完成门禁保留。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：40 个测试文件、491 项通过、1 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：完成TOTP前端Pages发布并由负责人保存种子；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
-主入口是章节版 `apps/web/src/App.tsx`，`JourneyApp` 保留作流程参考。当前主入口通过 `POST /v1/school/identify` 核对姓名＋6 位验证码；本轮补齐响应中的匿名考试汇总，移除核验后对本机静态成绩目录的依赖。新增汇总密文必须先上传，再更新 API 与 Pages；本轮已随验收快照推送并部署至API版本8和Pages。详见 [后端对齐与发布顺序](docs/BACKEND_FRONTEND_ALIGNMENT.md)。
+主入口是章节版 `apps/web/src/App.tsx`，`JourneyApp` 保留作流程参考。当前主入口通过 `POST /v1/school/identify` 核对姓名＋6 位验证码；本轮补齐响应中的匿名考试汇总，移除核验后对本机静态成绩目录的依赖。新增汇总密文必须先上传，再更新 API 与 Pages；当前后端为包含该能力与 TOTP 的 API 版本9。详见 [后端对齐与发布顺序](docs/BACKEND_FRONTEND_ALIGNMENT.md)。
 
 
 先读 [当前进度](docs/PROJECT_STATUS.md) 与 [文档同步与接手规范](docs/DOCUMENTATION_POLICY.md)。招生数据 51,878 条已发布并接入网页，学校成绩管线已完成；千帆、学生原话链路和部署脚本已提交。TASK-14 进行中；本地姓名＋码识别已接通；正式身份生命周期与新流程线上验收尚未完成；共享会话存储已接上（云函数跑 Redis，多实例并发不再把学生踢下线）。TASK-11 按负责人决定跳过。
 
 每次修改、暂停和提交都必须同步实施记录、当前状态、验证范围和相关专题正文，不能只刷新顶部摘要。工程内 [AGENTS.md](AGENTS.md) 同样适用于单独源码包接手。
 
-四班查询码已上线：48人使用身份证后六位（X改填0），其余8人保留原码；API版本8已部署。重建与上线步骤见[查询码规则](docs/CLASS4_QUERY_CODES.md)。
+四班查询码已上线：48人使用身份证后六位（X改填0），其余8人保留原码；该能力继续包含在API版本9。重建与上线步骤见[查询码规则](docs/CLASS4_QUERY_CODES.md)。
 
 ## 线上部署（2026-09-12）
 
@@ -25,6 +25,8 @@
 | AI 中转 | https://1459223409-lexj8si8uo.ap-chengdu.tencentscf.com | SCF Web 函数 `nanming-api`；控制台那行「访问路径」就是它的 http 触发器；`/healthz`、`/readyz` 自检 |
 | 数据 | COS 桶 `nanming-100051087352-1459223409` | `data/releases/` 招生发布包（`current.json` 指针，前端不重建即可换版）+ `school/objects/` 学校成绩**密文** |
 | 会话存储 | 腾讯云 Redis `crs-bdr4f2z6`（256MB，按量 ≈¥0.0368/小时） | 多实例共享会话；试用结束在控制台销毁，并把函数里的 `NANHANG_REDIS_*` 一并删掉 |
+
+AI 谈心入口已在 API 版本 9 改用 TOTP：SHA-1、30 秒、6 位、允许前后一个时间窗口；同一码经 Redis 原子消费后不能再次兑换。原始 Base32 种子只保存在 `private/nanming-totp-secret.txt` 和云函数 `NANHANG_TOTP_SECRET`，不进入仓库或源码包；旧固定访问码已从云端移除。
 
 密钥与连接串只走环境变量，本机副本在 `private/`（不进仓库、不进源码包）。部署细节见
 [AI 接入与部署](docs/AI_QIANFAN_SETUP.md)，学校成绩的密文托管见 [质量慧析管线](docs/QUALITY_HUIXI_PIPELINE.md)。

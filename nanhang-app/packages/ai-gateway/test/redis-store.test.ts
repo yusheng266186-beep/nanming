@@ -137,6 +137,24 @@ describe("连接行为", () => {
 });
 
 describe("RedisStateStore 的键与 TTL", () => {
+  it("一次性动态码用 SET NX EX 原子消费，重复使用返回 false", async () => {
+    active = await fakeRedis();
+    let first = true;
+    active.reply = (args) => {
+      if (args[0] === "SET" && args[1] === "nm:once:totp:proof") {
+        if (first) { first = false; return "+OK\r\n"; }
+        return "$-1\r\n";
+      }
+      return "+OK\r\n";
+    };
+    const store = new RedisStateStore({ host: "127.0.0.1", port: active.port });
+    expect(await store.consumeOnce("totp:proof", 120)).toBe(true);
+    expect(await store.consumeOnce("totp:proof", 120)).toBe(false);
+    const command = active.commands.find((args) => args[1] === "nm:once:totp:proof")!;
+    expect(command).toEqual(["SET", "nm:once:totp:proof", "1", "NX", "EX", "120"]);
+    store.close();
+  });
+
   it("建会话时写会话键与 token 索引，都带过期时间", async () => {
     active = await fakeRedis();
     const store = new RedisStateStore({ host: "127.0.0.1", port: active.port, ttlSeconds: 120 });

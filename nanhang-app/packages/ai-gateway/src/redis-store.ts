@@ -18,6 +18,7 @@ const tokenKey = (tokenHash: string) => `${PREFIX}tok:${tokenHash}`;
 const recordKey = (keyId: string) => `${PREFIX}req:${keyId}`;
 const sessionIndexKey = (sessionId: string) => `${PREFIX}sidx:${sessionId}`;
 const requestIndexKey = (sessionId: string, requestId: string) => `${PREFIX}ridx:${sessionId}:${requestId}`;
+const consumedKey = (key: string) => `${PREFIX}once:${key}`;
 
 /**
  * 占位（claim）。返回值是一个数组，第一项是结果类型：
@@ -124,6 +125,13 @@ export class RedisStateStore implements StateStore {
     this.lastValue = await this.connection.ping();
     this.lastCheck = now;
     return this.lastValue;
+  }
+
+  async consumeOnce(key: string, ttlSeconds: number): Promise<boolean> {
+    const result = await this.connection.command([
+      "SET", consumedKey(key), "1", "NX", "EX", String(Math.max(1, Math.floor(ttlSeconds)))
+    ]);
+    return result === "OK";
   }
 
   async createSession(record: SessionRecord): Promise<void> {

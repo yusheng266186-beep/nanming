@@ -1,8 +1,8 @@
-// 谈心：进对话之后的房间形态。
+// 谈心：进对话之后的房间形态，以及「聊完之后」才出现的东西。
 //
 // 负责人 2026-09-12 定：选好聊法进到聊天界面之后，不再给切换引航 / 泛舟的按钮；
-// 聊天区要放大到接近整屏，不再只显示一两句。这些断言钉住「按钮不回来」与
-// 「高度跟着视口算、消息区 flex 撑满」两件事——它们最容易被一次排版调整改回去。
+// 聊天区要放大到接近整屏、输入框贴底；「去方向 · 选专业」只在 AI 聊出建议之后才出现
+// （之前给了按钮点了没反应），并像登船卡片那样弹一张方向小结卡。
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -25,18 +25,54 @@ describe("谈心：进对话后的房间", () => {
     expect(talk).toContain('className="ch-tier"');
   });
 
-  it("聊天区跟着视口给高度，消息区撑满剩余空间", () => {
-    expect(css).toMatch(/\.chat\{display:flex;flex-direction:column;height:clamp\(\d+px,calc\(100dvh - \d+px\),\d+px\)\}/);
-    expect(css).toMatch(/\.chat-head,\.dock\{flex:0 0 auto\}/);
-    expect(css).toMatch(/\.chat-scroll\{flex:1 1 auto;min-height:0;max-height:none\}/);
+  it("聊天区跟着视口给高度，消息区撑满剩余空间、输入栏贴底", () => {
+    // 这几条必须带 #page-talk：页面原有的 `.chat-scroll{max-height:min(48vh,440px)}` 在文件里更靠后，
+    // 不带作用域会被它盖掉——第一版就是这样，消息区没撑开、卡片下方留了一圈白。
+    expect(css).toMatch(/#page-talk \.chat\{display:flex;flex-direction:column;height:clamp\(\d+px,calc\(100dvh - \d+px\),\d+px\)\}/);
+    expect(css).toMatch(/#page-talk \.chat-head,#page-talk \.dock\{flex:0 0 auto\}/);
+    expect(css).toMatch(/#page-talk \.chat-scroll\{flex:1 1 auto;min-height:0;max-height:none\}/);
   });
 
   it("放大的是房间不是每一行：容器放宽但气泡仍限宽", () => {
-    expect(css).toMatch(/\.talk\{max-width:min\(1024px,100%\)\}/);
-    expect(css).toMatch(/\.bub\{max-width:min\(82%,560px\)\}/);
+    expect(css).toMatch(/#page-talk \.talk\{max-width:min\(1024px,100%\)\}/);
+    expect(css).toMatch(/#page-talk \.bub\{max-width:min\(82%,560px\)\}/);
   });
 
   it("手机上再放宽一档高度", () => {
-    expect(css).toContain(".chat{height:clamp(360px,calc(100dvh - 200px),760px)}");
+    expect(css).toContain("#page-talk .chat{height:clamp(360px,calc(100dvh - 200px),760px)}");
+  });
+});
+
+describe("谈心：聊完之后才给的东西", () => {
+  it("AI 给出建议之前，不出现「去方向 · 选专业」", () => {
+    expect(talk).toContain('{ai.suggestions.length ? <div className="talk-meta">');
+    // 旧写法是按 hasChatted 灰着按钮——点了没反应，正是负责人指出的问题。
+    expect(talk).not.toContain("disabled={!hasChatted}");
+    expect(talk).toContain(">去方向 · 选专业<");
+  });
+
+  it("聊完之后自动弹一次方向小结卡，关掉后不再打扰，可手动再看", () => {
+    expect(talk).toContain("const summarySeen = useRef(false)");
+    expect(talk).toMatch(/if \(!ai\.suggestions\.length \|\| summarySeen\.current\) return;/);
+    expect(talk).toContain('aria-label="溟听出来的方向"');
+    expect(talk).toContain('className="board-backdrop"');
+    expect(talk).toContain(">方向小结<");
+  });
+
+  it("小结卡按大类分组列出 AI 挑出的专业类，并带上原话与理由", () => {
+    expect(talk).toMatch(/\(catalog\?\.groups \?\? \[\]\)\.map\(\(group\) => \{[\s\S]*?className="vpill"/);
+    expect(talk).toContain("每条都带着那句话");
+  });
+
+  it("就业方向不在这里编：卡片只给一个入口，答案由 AI 在对话里现场给出", () => {
+    expect(talk).toContain(">让溟讲讲就业方向<");
+    expect(talk).toContain("这些方向以后主要做什么工作");
+    // 卡片里不许出现写死的「就业方向」清单式内容。
+    expect(talk).not.toMatch(/就业方向[:：]\s*[「"']/);
+  });
+
+  it("小结卡也锁住整页滚动（与登船卡片同一套浮层做法）", () => {
+    expect(talk).toContain("useScrollLock(summaryOpen)");
+    expect(talk).toContain("if (event.target === event.currentTarget) setSummaryOpen(false)");
   });
 });
