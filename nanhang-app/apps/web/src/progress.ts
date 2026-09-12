@@ -17,12 +17,12 @@ import type { PageId } from "./chapters/shared.js";
  * 顺序按实际流程而不是导航条上的编号：定位与成绩都通向「区间」，区间匹配完成后才去谈心。
  */
 export const STAGES: readonly (readonly PageId[])[] = [
-  ["sail"],     // 先选科：没有选科，位次与资格都无从谈起
-  ["locate"],   // 拿到成绩（手填或荣县一中接入，都在这一页）并生成探索区间
-  ["axis"],     // 探索区间 → 区间匹配院校
-  ["talk"],     // 有院校池了再谈心，聊的是「想去哪」
-  ["direction"],// 聊过之后再自选专业
-  ["chart"]     // 最后合成航线图
+  ["sail"],      // 先选科：没有选科，位次与资格都无从谈起
+  ["locate"],    // 拿到成绩（手填或荣县一中接入，都在这一页）并生成探索区间
+  ["talk"],      // 定位的下一步是谈心（负责人 2026-09-12 定）：先聊想去哪
+  ["axis"],      // 再用探索区间匹配院校，给自选提供落点
+  ["direction"], // 有院校池、聊过之后，才自选专业
+  ["chart"]      // 最后合成航线图
 ];
 
 export interface ProgressInput {

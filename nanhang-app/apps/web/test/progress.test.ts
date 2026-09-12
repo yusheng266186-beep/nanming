@@ -20,13 +20,13 @@ function form(patch: Partial<WebState["form"]>): WebState {
   return { ...initialState(), form: { ...initialState().form, ...patch } };
 }
 
-/** 按顺序完成各段，返回每一步之后的输入。 */
+/** 按顺序完成各段，返回每一步之后的输入。段号：0 起航 1 定位 2 谈心 3 分数轴 4 方向 5 航线图。 */
 function completedThrough(stage: number): ProgressInput {
   return withInput({
     state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"], score: 600 }),
     rangeKnown: stage >= 1,
-    poolReady: stage >= 2,
-    chatted: stage >= 3,
+    chatted: stage >= 2,
+    poolReady: stage >= 3,
     picks: stage >= 4 ? 2 : 0
   });
 }
@@ -68,20 +68,20 @@ describe("解锁顺序", () => {
     }
   });
 
-  it("选完科之后定位解锁；分数轴仍然锁着", () => {
+  it("选完科之后定位解锁；谈心仍锁着", () => {
     const input = completedThrough(0);
     expect(unlockedStage(input)).toBe(1);
     expect(canOpen("locate", input, 1)).toBe(true);
-    expect(canOpen("axis", input, 1)).toBe(false);
     expect(canOpen("talk", input, 1)).toBe(false);
+    expect(canOpen("axis", input, 1)).toBe(false);
     expect(canOpen("chart", input, 1)).toBe(false);
   });
 
-  it("一段一段往前开：区间 → 匹配 → 谈心 → 自选 → 航线图", () => {
+  it("一段一段往前开：区间 → 谈心 → 匹配 → 自选 → 航线图", () => {
     expect(unlockedStage(completedThrough(1))).toBe(2);
-    expect(canOpen("axis", completedThrough(1), 2)).toBe(true);
-    expect(canOpen("talk", completedThrough(1), 2)).toBe(false);
-    expect(canOpen("talk", completedThrough(2), 3)).toBe(true);
+    expect(canOpen("talk", completedThrough(1), 2)).toBe(true);
+    expect(canOpen("axis", completedThrough(1), 2)).toBe(false);
+    expect(canOpen("axis", completedThrough(2), 3)).toBe(true);
     expect(canOpen("direction", completedThrough(2), 3)).toBe(false);
     expect(canOpen("direction", completedThrough(3), 4)).toBe(true);
     expect(canOpen("chart", completedThrough(3), 4)).toBe(false);
@@ -94,7 +94,7 @@ describe("解锁顺序", () => {
       rangeKnown: true
     });
     expect(unlockedStage(generic)).toBe(2);
-    expect(canOpen("axis", generic, 2)).toBe(true);
+    expect(canOpen("talk", generic, 2)).toBe(true);
   });
 
   it("同一个数据不许跳步：直接点航线图会被挡下（未解锁）", () => {
@@ -124,10 +124,10 @@ describe("锁定提示指名道姓", () => {
   });
 
   it("缺的是单入口段时只说那一个", () => {
-    const hint = lockHint("direction", completedThrough(2)); // 缺谈心
-    expect(hint).toContain("谈心");
+    const hint = lockHint("chart", completedThrough(3)); // 缺方向（聊过、匹配过，但还没自选）
+    expect(hint).toContain("方向");
     expect(hint).not.toContain("定位");
-    expect(hint).toContain(DONE_HINT.talk);
+    expect(hint).toContain(DONE_HINT.direction);
   });
 
   it("每一段都缺的时候先指最早的那一段", () => {

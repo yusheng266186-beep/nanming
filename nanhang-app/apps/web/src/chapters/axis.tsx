@@ -193,9 +193,9 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
     <p className="fhint" style={{ margin: "22px 2px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
       <Icon name="doc" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。超过 60 条时先展示前 60 条，完整结果在「航线图」按你的两条线分别给出。</span></p>
     <div className="banner">
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="chat" size="lg" />
-        <div><h3 className="song">能选的院校都在海面上了，聊聊想去哪</h3><p>下一步由 AI 主持一场谈心：两种聊法，只从你的原话出发；聊完你再亲自选一次专业。</p></div></div>
-      <button type="button" className="btn sm brass" style={{ flexShrink: 0 }} onClick={() => setPage("talk")}>去谈心<Icon name="arrow" /></button>
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="layers" size="lg" />
+        <div><h3 className="song">院校池有了，去「方向」定两条线</h3><p>AI 的建议和你的自选各是一条线：一致合并，不一致分路，最后在「航线图」按线出结果。</p></div></div>
+      <button type="button" className="btn sm brass" style={{ flexShrink: 0 }} onClick={() => setPage("direction")}>去方向 · 选专业<Icon name="arrow" /></button>
     </div>
   </section>;
 }
