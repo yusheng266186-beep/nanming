@@ -185,6 +185,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
         };
       }),
       blessing: BLESSING,
+      chartNote: "三条线统计的是这两条线里的记录；「需更好位置」为空属正常——院校池只收与你的位次区间有交集的记录。",
       note: `按历史位置参考绘制 · 参考年 ${pool?.referenceYear ?? REFERENCE_YEAR} · 不构成录取判断 · 正式填报以本省考试院政策与高校招生章程为准`
     });
     const posterWidth = 720;
@@ -279,7 +280,7 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
             {drawable ? <>
               <text x={2} y={16} fontFamily={CHART.song} fontSize={12.5} fill={CHART.ink}>航线关系图</text>
               <text x={358} y={16} textAnchor="end" fontFamily={CHART.song} fontSize={10} fill={CHART.mut}>
-                {pool?.schoolCount ?? 0} 所院校 · {(pool?.rows.length ?? 0).toLocaleString("zh-CN")} 条
+                两条线 {routeRows.length.toLocaleString("zh-CN")} 条 · 池 {pool?.schoolCount ?? 0} 所 / {(pool?.rows.length ?? 0).toLocaleString("zh-CN")} 条
               </text>
               {relationGroups.map((group, index) => {
                 const share = relationTotal > 0 ? group.items.length / relationTotal * 100 : 0;

@@ -213,6 +213,8 @@ export function buildRoutePoster(input: {
   routes: readonly PosterRoute[];
   blessing: { text: string; sign: string };
   note: string;
+  /** 图下面的一行小字：解释这张图的统计口径（导出后看不到页面上的说明，所以要跟着图走）。 */
+  chartNote?: string;
 }): string {
   const W = 720;
   const pad = 24;
@@ -225,7 +227,13 @@ export function buildRoutePoster(input: {
   const parts: string[] = [];
   let y = 118;
   parts.push(`<svg x="${pad}" y="${y}" width="${cardW}" height="${chartH}" viewBox="0 0 ${input.chartWidth} ${input.chartHeight}">${input.chartBody}</svg>`);
-  y += chartH + 34;
+  y += chartH + 18;
+  if (input.chartNote) {
+    parts.push(`<text x="${pad}" y="${y}" font-family="${song}" font-size="10.5" fill="#6d7f83">${escape(input.chartNote)}</text>`);
+    y += 20;
+  } else {
+    y += 16;
+  }
   for (const route of input.routes) {
     parts.push(`<text x="${pad}" y="${y}" font-family="${song}" font-size="18" fill="#0f262e">${escape(route.title)} · ${route.total} 条专业 × 院校</text>`);
     y += 10;

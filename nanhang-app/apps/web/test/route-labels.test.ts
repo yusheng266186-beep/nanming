@@ -235,6 +235,17 @@ describe("参考年最低分与整页海报", () => {
     expect(chart).toContain("posterWidth * PNG_SCALE");
   });
 
+  it("图上三个数字按「两条线」统计，并说明「需更好位置」为何恒为空", () => {
+    // 负责人 2026-09-12 问：更好的位置永远是 0、同分比例像固定值，难道不会变？
+    // 原来按整个院校池统计——换方向、换自选都不动；现在按两条线里的记录统计，
+    // 并把「那一档为空是池子定义决定的」写在页面上与导出图上。
+    expect(chart).toContain("routeRows.filter((row) =>");
+    expect(chart).toContain("两条线 {routeRows.length");
+    expect(chart).toContain("院校池只收与你的位次区间有交集的记录");
+    expect(chart).toContain("chartNote:");
+    expect(shared).toContain("chartNote?: string");
+  });
+
   it("复制文字版按钮已按负责人要求删掉", () => {
     expect(chart).not.toContain("复制文字版");
     expect(chart).not.toContain("copyText");
