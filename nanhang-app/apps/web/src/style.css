@@ -1262,7 +1262,7 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
 #page-sail .pack-field .chip{min-height:42px;padding:0 20px;border-radius:10px;font-size:13px}
 .sail-panel .score-wrap{position:relative;display:block;max-width:260px}
 /* 目标分是「一个数字」：用显示衬线、纸底收窄，右边跟一个「分」做单位。 */
-.sail-panel .score-wrap .inp{padding-right:42px;background:var(--paper);font-family:var(--display);font-size:19px;
+.sail-panel .score-wrap .inp{padding-right:42px;background:var(--paper);font-family:var(--song);font-size:19px;
   letter-spacing:.03em;transition:border-color .3s,background .3s,box-shadow .4s var(--ease)}
 .sail-panel .score-wrap .inp:focus{border-color:var(--brass);background:#fff;box-shadow:0 0 0 4px rgba(169,123,52,.15)}
 .sail-panel .score-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;

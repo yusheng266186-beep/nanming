@@ -21,9 +21,10 @@ const SMALL_PX = 12;
 const SERIF_TOKENS = ["var(--song)", "var(--display)"];
 const SANS_MARKERS = ["var(--sans)", "sans-serif", "PingFang", "Segoe UI", "-apple-system", "Microsoft YaHei"];
 
-/** 把样式表切成最内层的声明块（跳过注释、@media 这类容器）。 */
-function declarationBlocks(stylesheet: string): string[] {
+/** 把样式表切成最内层的声明块（跳过注释、@media 这类容器），带上选择器。 */
+function declarationBlocks(stylesheet: string): { selector: string; body: string }[] {
   const blocks: string[] = [];
+  const spans: [number, number][] = [];
   const stack: number[] = [];
   let index = 0;
   while (index < stylesheet.length) {
@@ -41,11 +42,17 @@ function declarationBlocks(stylesheet: string): string[] {
     if (char === "{") stack.push(index + 1);
     else if (char === "}") {
       const start = stack.pop();
-      if (start !== undefined) blocks.push(stylesheet.slice(start, index));
+      if (start !== undefined) { blocks.push(stylesheet.slice(start, index)); spans.push([start, index]); }
     }
     index += 1;
   }
-  return blocks.filter((body) => !body.includes("{") && !body.includes("}"));
+  return spans
+    .map(([start, end], position) => {
+      const body = blocks[position]!;
+      const selector = stylesheet.slice(0, start).split(/[{}]/).pop() ?? "";
+      return { selector: selector.trim(), body };
+    })
+    .filter((entry) => !entry.body.includes("{") && !entry.body.includes("}"));
 }
 
 describe("全站宋体", () => {
@@ -69,7 +76,7 @@ describe("全站宋体", () => {
 
   it("≤12px 的规则没有一条落在无衬线上", () => {
     const offenders: string[] = [];
-    for (const body of declarationBlocks(css)) {
+    for (const { body } of declarationBlocks(css)) {
       const size = /font-size:\s*([\d.]+)px/.exec(body);
       const shorthand = /font:\s*(?:italic\s+)?(?:\d+\s+)?([\d.]+)px\//.exec(body);
       const px = size ? Number(size[1]) : shorthand ? Number(shorthand[1]) : null;
@@ -81,6 +88,17 @@ describe("全站宋体", () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  it("能打字的地方都用宋体：输入类规则不许写展示字体", () => {
+    // 负责人点名的「填写分数的框」：起航页的高考目标分输入框原本写死 var(--display)（数字走 Cormorant/Georgia），
+    // 现在改成宋体——能打字的地方（input/textarea/select）一律宋体，写进守则。
+    const offenders = declarationBlocks(css)
+      .filter((entry) => /input|textarea|select/.test(entry.selector))
+      .filter((entry) => entry.body.includes("var(--display)"))
+      .map((entry) => entry.selector.slice(0, 80));
+    expect(offenders).toEqual([]);
+    expect(css).toContain(".sail-panel .score-wrap .inp{padding-right:42px;background:var(--paper);font-family:var(--song);font-size:19px;");
   });
 
   it("SVG 里的小字写死了同一串宋体栈（presentation attribute 不认 var()）", () => {

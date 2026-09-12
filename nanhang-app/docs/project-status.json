@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 44,
-    "passed": 542,
+    "files": 45,
+    "passed": 549,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 00:54，npm run test）全量 44 文件 542 项通过、0 失败；apps/web/test/serif-font.test.ts 5 项钉住「全站一套宋体」（基准字体、--sans 只剩别名、≤12px 无衬线归零、SVG 小字写死宋体栈），route-labels.test.ts 22 项覆盖院校卡纸张堆叠。",
+    "note": "本次（2026-09-13 00:58，npm run test）全量 45 文件 549 项通过、0 失败；apps/web/test/serif-font.test.ts 6 项钉住「全站一套宋体」（基准字体、--sans 只剩别名、输入框不许用展示字体、≤12px 无衬线归零、SVG 小字写死宋体栈）。",
     "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
   },
   "runtime": {

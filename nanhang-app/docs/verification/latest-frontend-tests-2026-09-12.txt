@@ -1,23 +1,19 @@
 
 [1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mC:/Users/yusheng/Desktop/南航/nanhang-app[39m
 
- [32m✓[39m packages/contracts/test/task03-data.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 47[2mms[22m[39m
- [32m✓[39m packages/contracts/test/workbook-data.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 164[2mms[22m[39m
- [32m✓[39m apps/web/test/route-labels.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 79[2mms[22m[39m
- [32m✓[39m apps/web/test/chat.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 47[2mms[22m[39m
- [32m✓[39m apps/web/test/quality-huixi.test.ts [2m([22m[2m36 tests[22m[2m)[22m[33m 1217[2mms[22m[39m
-   [33m[2m✓[22m[39m 发布产物与解析器输出一致[2m > [22m跨科类考试（美术班）按该场科类的分数线与位次池计算 [33m 506[2mms[22m[39m
- [32m✓[39m apps/web-paper/test/paper-honesty.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 46[2mms[22m[39m
- [32m✓[39m packages/contracts/test/contracts.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 57[2mms[22m[39m
- [32m✓[39m apps/web/test/flow.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 61[2mms[22m[39m
- [32m✓[39m packages/ai-gateway/test/gateway.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 199[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/task03-data.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/workbook-data.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 184[2mms[22m[39m
+ [32m✓[39m apps/web/test/route-labels.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 87[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/contracts.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 92[2mms[22m[39m
 [90mstderr[2m | apps/api/test/school-cloud.test.ts[2m > [22m[2m云端密文分片[2m > [22m[2m汇总密文缺失时明确503，不交付一个无法完成定位的成功响应
 [22m[39mschool identify failed: Error: SCHOOL_SUMMARY_UNAVAILABLE
     at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:215:38)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
 
- [32m✓[39m apps/api/test/school-access.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 306[2mms[22m[39m
- [32m✓[39m packages/school-adapter/test/school-adapter.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 87[2mms[22m[39m
+ [32m✓[39m apps/web/test/quality-huixi.test.ts [2m([22m[2m36 tests[22m[2m)[22m[33m 1326[2mms[22m[39m
+   [33m[2m✓[22m[39m 发布产物与解析器输出一致[2m > [22m跨科类考试（美术班）按该场科类的分数线与位次池计算 [33m 558[2mms[22m[39m
+ [32m✓[39m apps/web-paper/test/paper-honesty.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m apps/api/test/school-access.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 250[2mms[22m[39m
 [90mstderr[2m | apps/api/test/school-cloud.test.ts[2m > [22m[2m云端密文分片[2m > [22m[2m密文被改过一个字节就拒绝（GCM 认证失败），不会把坏数据发给学生
 [22m[39mschool identify failed: Error: Unsupported state or unable to authenticate data
     at Decipheriv.final (node:internal/crypto/cipher:174:29)
@@ -25,44 +21,50 @@
     at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:211:27)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
 
- [32m✓[39m packages/ai-gateway/test/qianfan-upstream.test.ts [2m([22m[2m35 tests[22m[2m)[22m[33m 401[2mms[22m[39m
- [32m✓[39m packages/ai-gateway/test/redis-store.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 543[2mms[22m[39m
- [32m✓[39m apps/api/test/school-cloud.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 514[2mms[22m[39m
- [32m✓[39m packages/ai-gateway/test/acceptance-cases.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 62[2mms[22m[39m
- [32m✓[39m apps/api/test/api.test.ts [2m([22m[2m30 tests[22m[2m)[22m[33m 878[2mms[22m[39m
- [32m✓[39m apps/web/test/exam-position.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 19[2mms[22m[39m
- [32m✓[39m apps/web/test/talk-room.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 24[2mms[22m[39m
- [32m✓[39m apps/web/test/journey-model.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 23[2mms[22m[39m
- [32m✓[39m packages/exploration/test/exploration.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 44[2mms[22m[39m
- [32m✓[39m apps/web/test/ai-client.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 47[2mms[22m[39m
- [32m✓[39m apps/web/test/page-motion.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 24[2mms[22m[39m
- [32m✓[39m apps/web/test/ai-panel.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 36[2mms[22m[39m
- [32m✓[39m apps/web/test/direction-quota.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 24[2mms[22m[39m
- [32m✓[39m packages/domain/test/acceptance.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 35[2mms[22m[39m
- [32m✓[39m apps/web/test/theme-spirit.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 108[2mms[22m[39m
- [32m✓[39m packages/domain/test/matching.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 47[2mms[22m[39m
- [32m✓[39m apps/web/test/sail-pack.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 29[2mms[22m[39m
- [32m✓[39m apps/api/test/totp-code.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m apps/web/test/backend-alignment.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
- [32m✓[39m packages/ai-gateway/test/catalog-guard.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
- [32m✓[39m apps/web/test/quality-presentation.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m apps/web/test/serif-small-text.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
- [32m✓[39m apps/web/test/locate-motion.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m apps/web/test/progress.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m apps/web/test/presentation.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m apps/web/test/sail-deck.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/school-adapter/test/school-adapter.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m apps/api/test/school-cloud.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 418[2mms[22m[39m
+ [32m✓[39m packages/ai-gateway/test/gateway.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 203[2mms[22m[39m
+ [32m✓[39m packages/ai-gateway/test/qianfan-upstream.test.ts [2m([22m[2m35 tests[22m[2m)[22m[33m 303[2mms[22m[39m
+ [32m✓[39m packages/ai-gateway/test/redis-store.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 516[2mms[22m[39m
+ [32m✓[39m packages/ai-gateway/test/acceptance-cases.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m apps/web/test/flow.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m apps/web/test/chat.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m apps/api/test/api.test.ts [2m([22m[2m30 tests[22m[2m)[22m[33m 905[2mms[22m[39m
+ [32m✓[39m packages/domain/test/matching.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m apps/web/test/theme-spirit.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m packages/domain/test/acceptance.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m apps/web/test/ai-panel.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m apps/web/test/quality-presentation.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m apps/web/test/ai-client.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 85[2mms[22m[39m
+ [32m✓[39m apps/web/test/settings.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/exploration/test/exploration.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m apps/web/test/locate-motion.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m apps/web/test/page-motion.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m apps/web/test/serif-font.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 614[2mms[22m[39m
  [32m✓[39m apps/web/test/topbar-narrow.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m apps/web/test/settings.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m apps/web/test/direction-levels.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m apps/web/test/class4-codes.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/ai-gateway/test/catalog-guard.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m apps/web/test/backend-alignment.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m apps/web/test/talk-room.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m apps/web/test/exam-position.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m apps/web/test/sail-pack.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m apps/web/test/direction-levels.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m apps/web/test/range-fill.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m apps/web/test/journey-model.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m apps/web/test/sail-deck.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m apps/web/test/direction-quota.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m apps/web/test/progress.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m apps/web/test/presentation.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 17[2mms[22m[39m
  [32m✓[39m apps/web/test/route-split.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m apps/web/test/totp-access.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m apps/web/test/release-integration.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 5161[2mms[22m[39m
-   [33m[2m✓[22m[39m published release integration[2m > [22mserves distribution tables whose rows carry a derivable rank interval [33m 494[2mms[22m[39m
-   [33m[2m✓[22m[39m published release integration[2m > [22m发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业 [33m 4042[2mms[22m[39m
+ [32m✓[39m apps/web/test/class4-codes.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m apps/web/test/totp-access.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m apps/api/test/totp-code.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m apps/web/test/release-integration.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 4154[2mms[22m[39m
+   [33m[2m✓[22m[39m published release integration[2m > [22mserves distribution tables whose rows carry a derivable rank interval [33m 522[2mms[22m[39m
+   [33m[2m✓[22m[39m published release integration[2m > [22mlimits a match to the batches the student selected [33m 406[2mms[22m[39m
+   [33m[2m✓[22m[39m published release integration[2m > [22m发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业 [33m 2854[2mms[22m[39m
 
-[2m Test Files [22m [1m[32m44 passed[39m[22m[90m (44)[39m
-[2m      Tests [22m [1m[32m540 passed[39m[22m[90m (540)[39m
-[2m   Start at [22m 00:47:49
-[2m   Duration [22m 9.33s[2m (transform 13.15s, setup 0ms, collect 38.01s, tests 10.58s, environment 20ms, prepare 20.32s)[22m
+[2m Test Files [22m [1m[32m45 passed[39m[22m[90m (45)[39m
+[2m      Tests [22m [1m[32m549 passed[39m[22m[90m (549)[39m
+[2m   Start at [22m 00:58:35
+[2m   Duration [22m 9.40s[2m (transform 13.82s, setup 0ms, collect 39.20s, tests 10.08s, environment 23ms, prepare 19.28s)[22m
 
