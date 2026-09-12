@@ -335,7 +335,11 @@ export class AiGateway {
     this.deps.store.transition(record.keyId, {
       status: "succeeded", resultSummary: JSON.stringify(accepted.value), errorCode: null, retryable: false
     }, this.deps.now());
-    return { httpStatus: 200, frames: [...frames, sseFrame(completeEvent(request.request_id, sequence, accepted.value))] };
+    return {
+      httpStatus: 200,
+      frames: [...frames, sseFrame(completeEvent(request.request_id, sequence, accepted.value,
+        accepted.droppedSuggestions ? { dropped_suggestions: accepted.droppedSuggestions } : {}))]
+    };
   }
 
   /**

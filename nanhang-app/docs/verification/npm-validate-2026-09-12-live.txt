@@ -1,0 +1,61 @@
+
+> nanhang-app@0.1.0 validate
+> npm run generate && npm run typecheck && npm test
+
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/web-paper@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/api@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> nanhang-app@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 122ms
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 65ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 48ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 38ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 45ms
+ ✓ apps/web/test/quality-huixi.test.ts (34 tests) 1419ms
+   ✓ 发布产物与解析器输出一致 > 跨科类考试（美术班）按该场科类的分数线与位次池计算  595ms
+ ✓ apps/web-paper/test/paper-honesty.test.ts (12 tests) 47ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 215ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 381ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 35ms
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 67ms
+ ✓ packages/domain/test/matching.test.ts (10 tests) 47ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 38ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 82ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 59ms
+ ✓ apps/web/test/chat.test.ts (16 tests) 55ms
+ ✓ apps/web/test/exam-position.test.ts (11 tests) 22ms
+ ✓ apps/web/test/theme-spirit.test.ts (10 tests) 58ms
+ ✓ apps/web/test/presentation.test.ts (8 tests) 15ms
+ ✓ apps/web/test/quality-presentation.test.ts (10 tests) 61ms
+ ✓ apps/api/test/api.test.ts (29 tests) 875ms
+ ✓ apps/web/test/release-integration.test.ts (12 tests) 1068ms
+   ✓ published release integration > serves distribution tables whose rows carry a derivable rank interval  571ms
+
+ Test Files  22 passed (22)
+      Tests  347 passed (347)
+   Start at  12:12:10
+   Duration  5.51s (transform 9.62s, setup 0ms, collect 30.56s, tests 4.86s, environment 10ms, prepare 11.59s)
+

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { createApiServer, buildDemoGateway, selectUpstream, trialAccessCode, DEMO_TRIAL_CODE } from "../src/server.ts";
+import { createApiServer, buildDemoGateway, demoEvidenceAllowed, selectUpstream, trialAccessCode, DEMO_TRIAL_CODE } from "../src/server.ts";
 import { parseSseStream } from "@nanhang/ai-gateway";
 import { scenarioUpstream } from "../src/dev-upstream.ts";
 import { withConfig, AiGateway, MemoryStateStore, createEvidenceRegistry } from "@nanhang/ai-gateway";
@@ -257,6 +257,29 @@ describe("演示网关与配置", () => {
     const { gateway } = buildDemoGateway({ profile: "production" }, {});
     expect(gateway.readiness().ai).toBe(false);
     expect(gateway.readiness().public_data).toBe(true);
+  });
+});
+
+describe("演示原话只在演示档出现", () => {
+  const QIANFAN = { QIANFAN_API_KEY: "test-key", QIANFAN_MODEL: "glm-5.2" };
+
+  it("假上游（本地联调与验收脚本）允许用演示原话", () => {
+    expect(demoEvidenceAllowed({}, selectUpstream({}))).toBe(true);
+  });
+
+  it("接真模型时不允许：还没存过原话的学生不会听到自己没说过的话", () => {
+    expect(demoEvidenceAllowed(QIANFAN, selectUpstream(QIANFAN))).toBe(false);
+  });
+
+  it("接真模型时服务端注册表是空的，学生原话只从客户端上行", () => {
+    const { gateway, registry } = buildDemoGateway({}, { ...QIANFAN, NANHANG_AI_ALLOW_MEMORY_STORE: "1" });
+    expect(gateway.readiness().upstream).toBe("qianfan");
+    expect(registry.messages).toEqual([]);
+  });
+
+  it("显式开关可以覆盖默认判断", () => {
+    expect(demoEvidenceAllowed({ ...QIANFAN, NANHANG_ALLOW_DEMO_EVIDENCE: "1" }, selectUpstream(QIANFAN))).toBe(true);
+    expect(demoEvidenceAllowed({ NANHANG_ALLOW_DEMO_EVIDENCE: "0" }, selectUpstream({}))).toBe(false);
   });
 });
 

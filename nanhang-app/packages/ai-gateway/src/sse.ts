@@ -34,8 +34,13 @@ export function deltaEvent(requestId: string, sequence: SseSequence, text: strin
   return { event: "delta", request_id: requestId, seq: sequence.next(), data: { text } };
 }
 
-export function completeEvent(requestId: string, sequence: SseSequence, output: unknown): SseEvent {
-  return { event: "complete", request_id: requestId, seq: sequence.next(), data: { output } };
+/**
+ * `notes` 是给运维排查用的附加字段（例如本轮丢掉了哪几条没有署证的建议）。
+ * 学生端只读 data.output，多出来的键不改变任何展示。
+ */
+export function completeEvent(requestId: string, sequence: SseSequence, output: unknown,
+  notes: Record<string, unknown> = {}): SseEvent {
+  return { event: "complete", request_id: requestId, seq: sequence.next(), data: { output, ...notes } };
 }
 
 export function errorEvent(requestId: string, sequence: SseSequence, code: string, message: string, retryable: boolean): SseEvent {

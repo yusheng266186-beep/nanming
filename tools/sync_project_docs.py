@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "nanhang-app"
 HANDOFF = ROOT / "nanhang-handoff"
 BASELINE = APP / "docs/baseline"
-EXCLUDED = {"node_modules", "dist", ".git", "__pycache__", ".venv-contracts", "coverage"}
+EXCLUDED = {"node_modules", "dist", ".git", "__pycache__", ".venv-contracts", "coverage", "dist-scf", ".zcode"}
 # Regenerable build outputs that are too large for the index, manifest and release ZIP.
 GENERATED_SUFFIXES = (".tsbuildinfo", ".sqlite", ".sqlite-journal", ".sqlite-wal")
 # Paths the owner asked to leave alone: not synced, not indexed, not hashed. They stay on disk
@@ -94,7 +94,7 @@ def notice(path):
         f"> 已完成：{completed}；进行中：{in_progress}；未开始：{not_started}。\n"
         f"{skipped_line}"
         f"> 本次验证：{s['tests']['files']} 个测试文件、{s['tests']['passed']} 项通过、{s['tests']['failed']} 失败；真实招生发布记录为 {s['published_admission_records']}；{gates}。\n"
-        f"> 下一步：{s['next_task']}。完整进度及操作见[项目进度]({relative})。历史验证记录不代表当前状态。\n"
+        f"> 下一步：{s['next_task'].rstrip('。')}。完整进度及操作见[项目进度]({relative})。历史验证记录不代表当前状态。\n"
         f"{END}"
     )
 
@@ -157,12 +157,12 @@ def verify_links():
 
 def category(path):
     p = path.relative_to(ROOT).as_posix()
-    if path.suffix.lower() in {".xlsx", ".xls"}: return "用户提供的只读招生主输入；来源与口径待核实"
+    if path.suffix.lower() in {".xlsx", ".xls"}: return "用户提供的只读招生主输入；核实与发布见 TASK-03 记录"
     if p.startswith("nanhang-app/pipelines/"): return "招生数据管线与历史来源工具"
     if p.startswith("nanhang-app/apps/web/"): return "TASK-07无AI学生页面与TASK-08 AI面板"
-    if p.startswith("nanhang-app/apps/api/"): return "TASK-08本地AI中转HTTP适配层（仅开发）"
+    if p.startswith("nanhang-app/apps/api/"): return "TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记）"
     if p.startswith("nanhang-app/packages/ai-gateway/"): return "TASK-08 AI中转纯核（幂等/额度/SSE/安全）"
-    if p.startswith("nanhang-app/data/task03/workbooks/"): return "Excel证据样本（非发布）"
+    if p.startswith("nanhang-app/data/task03/workbooks/"): return "Excel 已核实证据样本（全量发布另见 data/releases）"
     if p.startswith("nanhang-app/data/task03/source-snapshots/"): return "官方来源快照（不可变，含一分一段表全量图）"
     if "/score-distribution/ocr/" in p: return "一分一段表OCR原始输出（可重算）"
     if "/score-distribution/" in p: return "一分一段表抽取结果（官方来源，已核实）"
@@ -187,7 +187,7 @@ def inventory(check):
     target = ROOT / "FILE_INDEX.md"
     paths = set(files(ROOT)) | {target, ROOT / "MANIFEST.sha256"}
     rows = ["# 文件总索引", "", notice(target), "",
-            "本表逐项覆盖项目受管文件；node_modules、dist、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。", "",
+            "本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。", "",
             "| 文件 | 用途 |", "|---|---|"]
     for p in sorted(paths):
         name = p.relative_to(ROOT).as_posix()

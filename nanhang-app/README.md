@@ -1,32 +1,34 @@
 # 南溟目标探索工程
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-refactor-and-hygiene）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
-> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：无；未开始：TASK-12、TASK-13、TASK-14。
+> 统一进度（2026-09-12，2026-09-12-live-wiring）：本地核心流程、真实招生发布和学校成绩接入完成；千帆及学生原话请求链路已实现；TASK-14 部署运维进行中，线上 AI 链路已打通（函数访问路径、真实模型三轮实测），Pages 端到端点击验收与共享会话存储尚未完成。
+> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-14；未开始：TASK-12、TASK-13。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：20 个测试文件、272 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：TASK-11 已按负责人决定跳过。可选的后续：TASK-12 数据扩容、TASK-13 本人身份（增强模式的验证码目前只是本地演示，正式上线需要服务端校验与限流）、TASK-14 部署运维。。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：22 个测试文件、347 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：共享会话存储（Redis）、线上 Pages 端到端点击验收、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
-先读[项目当前进度与下一步操作](docs/PROJECT_STATUS.md)。当前工程完成TASK-01、TASK-02、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09，并通过TASK-10本地阶段验收，GATE-LOCAL已通过；TASK-03的36条Excel样本仍待来源和人工核实，旧链路17条样本保留作历史记录。AI中转层默认关闭、仅本机、使用本地假上游，现有无AI页面可独立运行。下一步TASK-11小范围试用阻塞于TASK-03人工核实。
+先读 [当前进度](docs/PROJECT_STATUS.md) 与 [文档同步与接手规范](docs/DOCUMENTATION_POLICY.md)。招生数据 51,878 条已发布并接入网页，学校成绩管线已完成；千帆、学生原话链路和部署脚本已提交。TASK-14 进行中；身份鉴权、共享状态与线上验收尚未完成。TASK-11 按负责人决定跳过。
+
+每次修改、暂停和提交都必须同步实施记录、当前状态、验证范围和相关专题正文，不能只刷新顶部摘要。工程内 [AGENTS.md](AGENTS.md) 同样适用于单独源码包接手。
 
 ## 环境与命令
 
-- Node.js >=22；本次使用 Node 24.19.0 / npm 11.19.0。当前电脑默认 Node 20 不满足要求，切换方法见项目进度。
+- Node.js >=22；本次使用 Node 26.7.0 / npm 11.19.0；以 node --version 实测，勿根据安装目录名判断版本。
 - `npm ci`：按锁文件安装依赖。
 - `npm run validate`：生成合同类型、TypeScript 类型检查并运行自动测试。
 - `npm run build`：生成合同类型并构建 TypeScript 包。
 - `npm run web:dev`：启动本地学生页面，默认地址 `http://localhost:5173/`。
 - `npm run web:build`：构建学生页面静态产物。
 - `npm run dev`：启动 TypeScript 包编译监视。
-- `npm run api:start`：启动本机AI中转服务，默认 `http://127.0.0.1:8790`；仅开发用，默认关闭AI面板前不会发起请求。
+- `npm run api:start`：启动本机AI中转服务，默认 `http://127.0.0.1:8790`；上游选择与生产配置见 docs/AI_QIANFAN_SETUP.md。
 - `py -3.12 pipelines/task03/fetch_official_samples.py --verify-local`：复核官方快照哈希。
 - `py -3.12 pipelines/task03/validate_task03_samples.py`：运行 TASK-03 独立数据语义检查。
 
 荣县一中增强模式（需要先按 [质量慧析管线](docs/QUALITY_HUIXI_PIPELINE.md) 第 2 节导出数据）：
 
 ```
-node --max-old-space-size=6144 --import tsx ../.nanhang-ref/zhiliang-huixi/../../nanhang-app/pipelines/quality-huixi/export_dataset.ts <workbook.xlsx> data/quality-huixi/dataset.json
+node --max-old-space-size=6144 --import tsx pipelines/quality-huixi/export_dataset.ts <workbook.xlsx> data/quality-huixi/dataset.json
 py -3.12 pipelines/quality-huixi/build_quality_db.py
 py -3.12 pipelines/quality-huixi/export_release.py
 py -3.12 pipelines/quality-huixi/verify_release.py
@@ -41,10 +43,10 @@ py -3.12 pipelines/quality-huixi/verify_release.py
 | apps/web | TASK-07无AI学生页面、合成匹配、航线图、打印与本地数据控制；TASK-08可选AI面板（默认关闭）；第三章「成绩」为荣县一中增强模式 |
 | pipelines/task03 | Excel主输入解析与验证；旧OCR仅作历史回归/可选补证 |
 | packages/domain | 纯 TypeScript 规则核心及确定性 MatchResult 构建器 |
-| packages/school-adapter | 固定 accuracy-v1.2 单人摘要适配、冲突拒绝和合成回归；真实工作簿尚未验证 |
+| packages/school-adapter | 固定 accuracy-v1.2 单人摘要适配、冲突拒绝和合成回归；真实学校工作簿已由质量慧析管线接通，鉴权仍待 TASK-13 |
 | packages/ai-gateway | TASK-08 AI中转纯核：幂等、额度、限长、SSE、输出安全校验与降级 |
-| apps/api | TASK-08 本机HTTP适配层与本地假上游；无生产密钥、无付费模型、未部署 |
-| data/task03 | workbooks下36条Excel证据样本；历史官方快照、OCR与17条非发布样本 |
+| apps/api | 本机/SCF HTTP 入口、千帆与假上游；部署脚本已备，线上验收未确认 |
+| data/task03 | workbooks下36条已核实Excel证据样本；官方快照、OCR与历史回归样本 |
 | pipelines/quality-huixi | 荣县一中成绩管线：用固定 accuracy-v1.2 解析学校复盘工作簿，建本地成绩库并出按人分片的发布产物；**含真实学生数据，不进源码包**（见 docs/QUALITY_HUIXI_PIPELINE.md） |
 | data/quality-huixi | 成绩库、解析输出与前端发布产物；被 .gitignore 与 tools/sync_project_docs.py 的 UNMANAGED 排除 |
 | fixtures | 合成正反例和 52 项验收规格 |

@@ -203,10 +203,17 @@ describe("A46/A48 模型输出不得执行脚本或虚构概率", () => {
     expect(degraded.reply).toContain("无 AI");
   });
 
-  it("未登记的证据ID与受保护字段被拒绝", () => {
-    expect(validateCareerTurnOutput({ reply: "好的", suggestions: [
+  it("未登记的证据ID只丢掉那条建议，受保护字段整轮拒绝", () => {
+    // 正文已经过安全扫描、伪造引用也不会展示，所以为一条建议作废整轮不值当。
+    const ungrounded = validateCareerTurnOutput({ reply: "好的", suggestions: [
       { directionId: "d", evidenceIds: ["ev-not-registered"], rationale: "", openQuestions: [] }
-    ], actions: [] }, lookup).ok).toBe(false);
+    ], actions: [] }, lookup);
+    expect(ungrounded.ok).toBe(true);
+    if (ungrounded.ok) {
+      expect(ungrounded.value.suggestions).toEqual([]);
+      expect(ungrounded.value.reply).toBe("好的");
+      expect(ungrounded.droppedSuggestions?.[0]).toContain("ev-not-registered");
+    }
     expect(validateCareerTurnOutput({ reply: "好的", eligibility: "PASS", suggestions: [], actions: [] }, lookup).ok).toBe(false);
     expect(validateCareerTurnOutput({ reply: "好的", suggestions: [
       { directionId: "d", evidenceIds: ["ev-q-interest-1"], rationale: "", openQuestions: [] }

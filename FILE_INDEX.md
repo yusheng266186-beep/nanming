@@ -1,18 +1,20 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-refactor-and-hygiene）：TASK-03 数据核实与发布完成；荣县一中增强模式接入完成（质量慧析 accuracy-v1.2 固定版本解析学校复盘工作簿，建成本地成绩库与按人分片的发布产物）；TASK-11 小范围试用经负责人决定跳过，GATE-PILOT 未通过。
-> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：无；未开始：TASK-12、TASK-13、TASK-14。
+> 统一进度（2026-09-12，2026-09-12-live-wiring）：本地核心流程、真实招生发布和学校成绩接入完成；千帆及学生原话请求链路已实现；TASK-14 部署运维进行中，线上 AI 链路已打通（函数访问路径、真实模型三轮实测），Pages 端到端点击验收与共享会话存储尚未完成。
+> 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-14；未开始：TASK-12、TASK-13。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：20 个测试文件、272 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：TASK-11 已按负责人决定跳过。可选的后续：TASK-12 数据扩容、TASK-13 本人身份（增强模式的验证码目前只是本地演示，正式上线需要服务端校验与限流）、TASK-14 部署运维。。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：22 个测试文件、347 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：共享会话存储（Redis）、线上 Pages 端到端点击验收、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
-本表逐项覆盖项目受管文件；node_modules、dist、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。
+本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。
 
 | 文件 | 用途 |
 |---|---|
+| [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) | 工程配置或总入口 |
 | [.gitignore](.gitignore) | 工程配置或总入口 |
+| [AGENTS.md](AGENTS.md) | 工程配置或总入口 |
 | [archives/nanhang-app-source-before-task04-2026-09-10.zip](archives/nanhang-app-source-before-task04-2026-09-10.zip) | 历史归档（不作为当前进度） |
 | [archives/README.md](archives/README.md) | 历史归档（不作为当前进度） |
 | [archives/session-transcripts-2026-09-10/part-01.md](archives/session-transcripts-2026-09-10/part-01.md) | 历史归档（不作为当前进度） |
@@ -28,14 +30,16 @@
 | [FILE_INDEX.md](FILE_INDEX.md) | 工程配置或总入口 |
 | [MANIFEST.sha256](MANIFEST.sha256) | 工程配置或总入口 |
 | [nanhang-app/.gitignore](nanhang-app/.gitignore) | 工程配置或总入口 |
-| [nanhang-app/apps/api/package.json](nanhang-app/apps/api/package.json) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/src/config.ts](nanhang-app/apps/api/src/config.ts) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/src/demo-context.ts](nanhang-app/apps/api/src/demo-context.ts) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/src/dev-upstream.ts](nanhang-app/apps/api/src/dev-upstream.ts) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/src/main.ts](nanhang-app/apps/api/src/main.ts) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/src/server.ts](nanhang-app/apps/api/src/server.ts) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/test/api.test.ts](nanhang-app/apps/api/test/api.test.ts) | TASK-08本地AI中转HTTP适配层（仅开发） |
-| [nanhang-app/apps/api/tsconfig.json](nanhang-app/apps/api/tsconfig.json) | TASK-08本地AI中转HTTP适配层（仅开发） |
+| [nanhang-app/AGENTS.md](nanhang-app/AGENTS.md) | 工程配置或总入口 |
+| [nanhang-app/apps/api/package.json](nanhang-app/apps/api/package.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/scf_bootstrap](nanhang-app/apps/api/scf_bootstrap) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/src/config.ts](nanhang-app/apps/api/src/config.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/src/demo-context.ts](nanhang-app/apps/api/src/demo-context.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/src/dev-upstream.ts](nanhang-app/apps/api/src/dev-upstream.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/src/main.ts](nanhang-app/apps/api/src/main.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/src/server.ts](nanhang-app/apps/api/src/server.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/test/api.test.ts](nanhang-app/apps/api/test/api.test.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/api/tsconfig.json](nanhang-app/apps/api/tsconfig.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/web/index.html](nanhang-app/apps/web/index.html) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/package.json](nanhang-app/apps/web/package.json) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/ai-client.ts](nanhang-app/apps/web/src/ai-client.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -51,16 +55,19 @@
 | [nanhang-app/apps/web/src/chapters/shared.ts](nanhang-app/apps/web/src/chapters/shared.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/exam-position.ts](nanhang-app/apps/web/src/exam-position.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/main.tsx](nanhang-app/apps/web/src/main.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/model.ts](nanhang-app/apps/web/src/model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/quality-huixi.ts](nanhang-app/apps/web/src/quality-huixi.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/quality-types.ts](nanhang-app/apps/web/src/quality-types.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/reference-lines.ts](nanhang-app/apps/web/src/reference-lines.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/release-loader.ts](nanhang-app/apps/web/src/release-loader.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/style.css](nanhang-app/apps/web/src/style.css) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/theme.tsx](nanhang-app/apps/web/src/theme.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/ai-client.test.ts](nanhang-app/apps/web/test/ai-client.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/ai-panel.test.ts](nanhang-app/apps/web/test/ai-panel.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/chat.test.ts](nanhang-app/apps/web/test/chat.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/exam-position.test.ts](nanhang-app/apps/web/test/exam-position.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/flow.test.ts](nanhang-app/apps/web/test/flow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/presentation.test.ts](nanhang-app/apps/web/test/presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/quality-huixi.test.ts](nanhang-app/apps/web/test/quality-huixi.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -618,13 +625,15 @@
 | [nanhang-app/data/task03/structured-samples.json](nanhang-app/data/task03/structured-samples.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/verification-records.json](nanhang-app/data/task03/verification-records.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/workbook-input-register.json](nanhang-app/data/task03/workbook-input-register.json) | 工程配置或总入口 |
-| [nanhang-app/data/task03/workbooks/workbook-samples.json](nanhang-app/data/task03/workbooks/workbook-samples.json) | Excel证据样本（非发布） |
+| [nanhang-app/data/task03/workbooks/workbook-samples.json](nanhang-app/data/task03/workbooks/workbook-samples.json) | Excel 已核实证据样本（全量发布另见 data/releases） |
 | [nanhang-app/data/task06/nku-trade.html](nanhang-app/data/task06/nku-trade.html) | 专业卡官方来源快照与登记 |
 | [nanhang-app/data/task06/source-register.json](nanhang-app/data/task06/source-register.json) | 专业卡官方来源快照与登记 |
 | [nanhang-app/data/task06/ustb-cs.html](nanhang-app/data/task06/ustb-cs.html) | 专业卡官方来源快照与登记 |
 | [nanhang-app/data/task06/ustb-me.html](nanhang-app/data/task06/ustb-me.html) | 专业卡官方来源快照与登记 |
 | [nanhang-app/docs/ACCURACY_V1_2_FIELD_MAPPING.md](nanhang-app/docs/ACCURACY_V1_2_FIELD_MAPPING.md) | 实施进度与记录 |
 | [nanhang-app/docs/ADR_001_EXCEL_PRIMARY.md](nanhang-app/docs/ADR_001_EXCEL_PRIMARY.md) | 实施进度与记录 |
+| [nanhang-app/docs/ADR_002_LINE_EQUIVALENT_POSITIONING.md](nanhang-app/docs/ADR_002_LINE_EQUIVALENT_POSITIONING.md) | 实施进度与记录 |
+| [nanhang-app/docs/AI_QIANFAN_SETUP.md](nanhang-app/docs/AI_QIANFAN_SETUP.md) | 实施进度与记录 |
 | [nanhang-app/docs/baseline/contracts/data-release.schema.json](nanhang-app/docs/baseline/contracts/data-release.schema.json) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/contracts/match-result.schema.json](nanhang-app/docs/baseline/contracts/match-result.schema.json) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/contracts/student-profile.schema.json](nanhang-app/docs/baseline/contracts/student-profile.schema.json) | 交接包同步参考副本 |
@@ -649,6 +658,7 @@
 | [nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md](nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/tools/validate_contracts.py](nanhang-app/docs/baseline/tools/validate_contracts.py) | 交接包同步参考副本 |
 | [nanhang-app/docs/baseline/VALIDATION.md](nanhang-app/docs/baseline/VALIDATION.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/DOCUMENTATION_POLICY.md](nanhang-app/docs/DOCUMENTATION_POLICY.md) | 实施进度与记录 |
 | [nanhang-app/docs/FRONTENDS.md](nanhang-app/docs/FRONTENDS.md) | 实施进度与记录 |
 | [nanhang-app/docs/IMPLEMENTATION_LOG.md](nanhang-app/docs/IMPLEMENTATION_LOG.md) | 实施进度与记录 |
 | [nanhang-app/docs/project-status.json](nanhang-app/docs/project-status.json) | 实施进度与记录 |
@@ -666,10 +676,13 @@
 | [nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md](nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md) | 实施进度与记录 |
 | [nanhang-app/docs/VALIDATION_RESULT.md](nanhang-app/docs/VALIDATION_RESULT.md) | 实施进度与记录 |
 | [nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt](nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt](nanhang-app/docs/verification/build-all-2026-09-12-doc-sync.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/handoff-contracts-2026-09-10.txt](nanhang-app/docs/verification/handoff-contracts-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/handoff-contracts-task03-2026-09-10.txt](nanhang-app/docs/verification/handoff-contracts-task03-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-2026-09-10.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/npm-validate-2026-09-12-doc-sync.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-doc-sync.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/npm-validate-2026-09-12-live.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-live.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-excel-task06-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-excel-task06-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt) | 本次验证原始日志 |
@@ -681,6 +694,7 @@
 | [nanhang-app/docs/verification/task09-screenshots/desktop-start-1440.png](nanhang-app/docs/verification/task09-screenshots/desktop-start-1440.png) | TASK-09页面视觉核对截图 |
 | [nanhang-app/docs/verification/task09-screenshots/mobile-question-390.png](nanhang-app/docs/verification/task09-screenshots/mobile-question-390.png) | TASK-09页面视觉核对截图 |
 | [nanhang-app/docs/verification/task09-screenshots/mobile-top-390.png](nanhang-app/docs/verification/task09-screenshots/mobile-top-390.png) | TASK-09页面视觉核对截图 |
+| [nanhang-app/docs/verification/validation-history-before-e2001cb.md](nanhang-app/docs/verification/validation-history-before-e2001cb.md) | 本次验证原始日志 |
 | [nanhang-app/fixtures/acceptance-cases.json](nanhang-app/fixtures/acceptance-cases.json) | 冻结合同或合成案例 |
 | [nanhang-app/fixtures/match-result.invalid.json](nanhang-app/fixtures/match-result.invalid.json) | 冻结合同或合成案例 |
 | [nanhang-app/fixtures/match-result.valid.json](nanhang-app/fixtures/match-result.valid.json) | 冻结合同或合成案例 |
@@ -697,11 +711,13 @@
 | [nanhang-app/packages/ai-gateway/src/index.ts](nanhang-app/packages/ai-gateway/src/index.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/input-guard.ts](nanhang-app/packages/ai-gateway/src/input-guard.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/output-guard.ts](nanhang-app/packages/ai-gateway/src/output-guard.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
+| [nanhang-app/packages/ai-gateway/src/qianfan-upstream.ts](nanhang-app/packages/ai-gateway/src/qianfan-upstream.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/sse.ts](nanhang-app/packages/ai-gateway/src/sse.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/state-store.ts](nanhang-app/packages/ai-gateway/src/state-store.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/src/types.ts](nanhang-app/packages/ai-gateway/src/types.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/test/acceptance-cases.test.ts](nanhang-app/packages/ai-gateway/test/acceptance-cases.test.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/test/gateway.test.ts](nanhang-app/packages/ai-gateway/test/gateway.test.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
+| [nanhang-app/packages/ai-gateway/test/qianfan-upstream.test.ts](nanhang-app/packages/ai-gateway/test/qianfan-upstream.test.ts) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/ai-gateway/tsconfig.json](nanhang-app/packages/ai-gateway/tsconfig.json) | TASK-08 AI中转纯核（幂等/额度/SSE/安全） |
 | [nanhang-app/packages/contracts/package.json](nanhang-app/packages/contracts/package.json) | 工程配置或总入口 |
 | [nanhang-app/packages/contracts/schema/data-release.schema.json](nanhang-app/packages/contracts/schema/data-release.schema.json) | 冻结合同或合成案例 |
@@ -772,6 +788,9 @@
 | [nanhang-app/pipelines/task03/verified_score_rows.py](nanhang-app/pipelines/task03/verified_score_rows.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/windows_ocr.ps1](nanhang-app/pipelines/task03/windows_ocr.ps1) | 招生数据管线与历史来源工具 |
 | [nanhang-app/README.md](nanhang-app/README.md) | 工程配置或总入口 |
+| [nanhang-app/scripts/build_function.mjs](nanhang-app/scripts/build_function.mjs) | 工程配置或总入口 |
+| [nanhang-app/scripts/deploy_cos.py](nanhang-app/scripts/deploy_cos.py) | 工程配置或总入口 |
+| [nanhang-app/scripts/deploy_function.py](nanhang-app/scripts/deploy_function.py) | 工程配置或总入口 |
 | [nanhang-app/scripts/generate-contract-types.mjs](nanhang-app/scripts/generate-contract-types.mjs) | 工程配置或总入口 |
 | [nanhang-app/tsconfig.base.json](nanhang-app/tsconfig.base.json) | 工程配置或总入口 |
 | [nanhang-app/tsconfig.json](nanhang-app/tsconfig.json) | 工程配置或总入口 |
@@ -806,5 +825,5 @@
 | [releases/nanhang-app-source-2026-09-10.zip.sha256](releases/nanhang-app-source-2026-09-10.zip.sha256) | 当前源码分发与哈希 |
 | [releases/README.md](releases/README.md) | 当前源码分发与哈希 |
 | [tools/sync_project_docs.py](tools/sync_project_docs.py) | 目录与文档维护工具 |
-| [历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx](历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx) | 用户提供的只读招生主输入；来源与口径待核实 |
-| [物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx](物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx) | 用户提供的只读招生主输入；来源与口径待核实 |
+| [历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx](历史类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx) | 用户提供的只读招生主输入；核实与发布见 TASK-03 记录 |
+| [物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx](物理类 四川2026年高考填报数据招生考试报+近三年22-25年历史录取数据.xlsx) | 用户提供的只读招生主输入；核实与发布见 TASK-03 记录 |

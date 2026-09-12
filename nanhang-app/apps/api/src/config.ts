@@ -11,6 +11,7 @@ export const ENV_NAMES = {
   fakeScenario: "NANHANG_FAKE_SCENARIO",
   academicBinding: "NANHANG_ACADEMIC_BINDING",
   allowMemoryStore: "NANHANG_AI_ALLOW_MEMORY_STORE",
+  allowDemoEvidence: "NANHANG_ALLOW_DEMO_EVIDENCE",
   corsOrigins: "NANHANG_CORS_ORIGINS",
   // 千帆的变量名与北辰保持一致，两套系统可以共用同一份凭据说明。
   qianfanApiKey: "QIANFAN_API_KEY",

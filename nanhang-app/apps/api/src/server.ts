@@ -297,13 +297,28 @@ export function selectUpstream(env: NodeJS.ProcessEnv = process.env): Upstream {
   return qianfan ? new QianfanUpstream(qianfan) : demoFakeUpstream();
 }
 
+/**
+ * 演示原话（demoEvidence）能不能顶替学生自己的原话。
+ *
+ * 演示档（本地假上游、验收脚本）需要它，否则本地跑不出带引用的建议。
+ * 真模型下一律用不上：演示原话会被模型当成学生的真实经历引用，
+ * 于是刚上手、还没存过原话的学生会听到「你之前说过搭过纸桥……」这种假记忆。
+ * 显式设置 NANHANG_ALLOW_DEMO_EVIDENCE=1/0 可以覆盖上面的默认判断。
+ */
+export function demoEvidenceAllowed(env: NodeJS.ProcessEnv, upstream: Upstream): boolean {
+  const explicit = (env[ENV_NAMES.allowDemoEvidence] ?? "").trim();
+  if (explicit === "1") return true;
+  if (explicit === "0") return false;
+  return upstream instanceof FakeUpstream;
+}
+
 export function buildDemoGateway(
   overrides: Record<string, unknown> = {}, env: NodeJS.ProcessEnv = process.env
 ): { gateway: AiGateway; registry: EvidenceRegistry; store: MemoryStateStore } {
   const config = loadRuntimeConfig(overrides, env);
   const store = new MemoryStateStore();
   const upstream = selectUpstream(env);
-  const registry = createEvidenceRegistry(demoEvidence());
+  const registry = createEvidenceRegistry(demoEvidenceAllowed(env, upstream) ? demoEvidence() : []);
   const profile = emptyDirectionProfile("api-profile");
   const gateway = new AiGateway({
     store, upstream, config,

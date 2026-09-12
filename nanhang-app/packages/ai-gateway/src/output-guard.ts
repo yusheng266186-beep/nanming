@@ -43,7 +43,12 @@ export type OutputRejection = {
   readonly code: "OUTPUT_REJECTED";
   readonly detail: string;
 };
-export type OutputAcceptance<T> = { readonly ok: true; readonly value: T };
+/**
+ * `droppedSuggestions` 记下被丢掉的、没有署证的建议及原因。丢掉而不是整轮作废，
+ * 是因为正文本身已经过安全扫描、且没有任何伪造引用会被展示；为了 JSON 里一条建议
+ * 把学生刚等到的一整段回复换成「未通过安全校验」，代价大于收益。
+ */
+export type OutputAcceptance<T> = { readonly ok: true; readonly value: T; readonly droppedSuggestions?: readonly string[] };
 
 /** Claims that would present an admission forecast as fact. */
 const PROBABILITY_PATTERNS: readonly RegExp[] = [
@@ -146,6 +151,7 @@ export function validateCareerTurnOutput(raw: unknown, lookup: EvidenceLookup): 
   if (!Array.isArray(rawSuggestions)) return { ok: false, code: "OUTPUT_REJECTED", detail: "suggestions must be an array" };
   if (rawSuggestions.length > MAX_SUGGESTIONS) return { ok: false, code: "OUTPUT_REJECTED", detail: "too many suggestions" };
   const suggestions: CareerSuggestion[] = [];
+  const droppedSuggestions: string[] = [];
   for (const item of rawSuggestions) {
     const suggestion = asRecord(item);
     if (!suggestion) return { ok: false, code: "OUTPUT_REJECTED", detail: "suggestion must be an object" };
@@ -156,15 +162,19 @@ export function validateCareerTurnOutput(raw: unknown, lookup: EvidenceLookup): 
     if (rejectedRationale) return rejectedRationale;
     const evidenceIds = suggestion.evidenceIds;
     if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
-      // Every claim must cite a registered evidence ID; an uncited suggestion is discarded as ungrounded.
-      return { ok: false, code: "OUTPUT_REJECTED", detail: "suggestion must cite registered evidence" };
+      // 每一条建议都必须引用一条登记在案的原话；引用不到的建议整条丢掉，绝不展示。
+      droppedSuggestions.push(`${directionId}: 没有引用任何已登记的原话`);
+      continue;
     }
     const resolved: string[] = [];
+    let unregistered: string | null = null;
     for (const id of evidenceIds) {
-      if (typeof id !== "string" || !allowed.has(id)) {
-        return { ok: false, code: "OUTPUT_REJECTED", detail: `evidence id ${String(id)} is not registered` };
-      }
+      if (typeof id !== "string" || !allowed.has(id)) { unregistered = String(id); break; }
       resolved.push(id);
+    }
+    if (unregistered !== null) {
+      droppedSuggestions.push(`${directionId}: 引用了不存在的原话 ${unregistered}`);
+      continue;
     }
     const openQuestions = Array.isArray(suggestion.openQuestions)
       ? suggestion.openQuestions.filter((value): value is string => typeof value === "string")
@@ -203,7 +213,11 @@ export function validateCareerTurnOutput(raw: unknown, lookup: EvidenceLookup): 
     if (rejectedOption) return rejectedOption;
     options.push(trimmed);
   }
-  return { ok: true, value: { reply: body.reply.trim(), suggestions, actions, options } };
+  return {
+    ok: true,
+    value: { reply: body.reply.trim(), suggestions, actions, options },
+    ...(droppedSuggestions.length ? { droppedSuggestions } : {})
+  };
 }
 
 /**

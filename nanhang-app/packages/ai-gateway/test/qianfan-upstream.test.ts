@@ -392,15 +392,35 @@ describe("与网关输出校验的一致性", () => {
     }
   });
 
-  it("负向对照：编造证据 ID 的建议会被网关拦下", async () => {
+  it("负向对照：编造证据 ID 的建议会被丢掉，正文保留给学生", async () => {
     const fabricated = STRUCTURED.replace("ev-q-interest-1", "ev-我猜的");
     const { upstream } = build(sseResponse([delta("正文。"), delta(STRUCT_MARKER + fabricated)]));
     const req = request();
     const text = await collect(upstream, req);
     const final = await upstream.finalize(req, text);
     const accepted = validateCareerTurnOutput(final, registryLookup(createEvidenceRegistry(MESSAGES)));
-    expect(accepted.ok).toBe(false);
-    if (!accepted.ok) expect(accepted.detail).toContain("not registered");
+    expect(accepted.ok).toBe(true);
+    if (accepted.ok) {
+      // 没有署证的建议一条都不展示，但学生等到的那段正文不会被整轮作废。
+      expect(accepted.value.suggestions).toEqual([]);
+      expect(accepted.value.reply).toBe("正文。");
+      expect(accepted.droppedSuggestions?.[0]).toContain("不存在的原话");
+    }
+  });
+
+  it("没有保存过原话时：一条建议都不带的学生也能拿到正文", async () => {
+    const uncited = STRUCTURED.replace('"evidenceIds":["ev-q-interest-1"]', '"evidenceIds":[]');
+    const { upstream } = build(sseResponse([delta("正文。"), delta(STRUCT_MARKER + uncited)]));
+    const req = request();
+    const text = await collect(upstream, req);
+    const final = await upstream.finalize(req, text);
+    const accepted = validateCareerTurnOutput(final, registryLookup(createEvidenceRegistry([])));
+    expect(accepted.ok).toBe(true);
+    if (accepted.ok) {
+      expect(accepted.value.suggestions).toEqual([]);
+      expect(accepted.value.reply).toBe("正文。");
+      expect(accepted.droppedSuggestions?.[0]).toContain("没有引用任何已登记的原话");
+    }
   });
 });
 
@@ -488,7 +508,7 @@ describe("学生自己的原话（证据）", () => {
     if (accepted.ok) expect(accepted.value.evidence).toEqual([]);
   });
 
-  it("客户端给了自己的原话，模型引用演示原话会被拦下并降级", async () => {
+  it("客户端给了自己的原话，模型引用演示原话的建议被丢掉、正文留下", async () => {
     const fabricated = STRUCTURED.replace("ev-q-interest-1", "ev-q-interest-1"); // 演示注册表里的 ID
     const stub = stubFetch(sseResponse([delta("正文。"), delta(STRUCT_MARKER + fabricated)]));
     const upstream = new QianfanUpstream({ apiKey: KEY, model: "glm-5.2", fetchImpl: stub.impl });
@@ -504,10 +524,13 @@ describe("学生自己的原话（证据）", () => {
       run_id: "r", request_id: "q", input_revision: 1, user_text: "我自己的话", context: [],
       evidence: [{ evidenceId: "ev-mine-1", quote: "我自己的原话", kind: "student_preference_statement" }]
     });
-    const output = parseSseStream(result.frames.join(""))
-      .find((item) => item.event === "complete")?.data.output as { reply: string; suggestions: unknown[] };
+    const complete = parseSseStream(result.frames.join(""))
+      .find((item) => item.event === "complete");
+    const output = complete?.data.output as { reply: string; suggestions: unknown[] };
     expect(output.suggestions).toEqual([]);
-    expect(output.reply).toContain("未通过安全校验");
+    // 引用不到的原话既不展示也不作废整轮；学生等到的那段正文原样留下。
+    expect(output.reply).toBe("正文。");
+    expect(complete?.data.dropped_suggestions).toEqual([expect.stringContaining("ev-q-interest-1")]);
     // 提示词里也只该出现学生自己的原话，不该带上演示注册表那几条
     expect(String(bodyOf(stub.calls[0]!).messages && (bodyOf(stub.calls[0]!).messages as { content: string }[])[0]?.content))
       .toContain("ev-mine-1");
