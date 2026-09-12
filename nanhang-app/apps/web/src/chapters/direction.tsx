@@ -56,8 +56,8 @@ export function renderDirection({ page, setPage, pool, poolStale, suggestions, p
     </div>
 
     {!hasChatted ? <>
-      <div className="empty-inline">先到「谈心」和 AI 聊几句（或用经典问答保存一句你自己的话）——
-        聊过之后，这里才会解锁：AI 给出有原话依据的建议，你再亲自选一次专业。这一步不能跳过，跳过它，选专业就失去了认识自己的前提。</div>
+      <div className="empty-inline">先到「谈心」和 AI 聊几句——聊过之后，这里才会解锁：AI 给出有原话依据的建议，你再亲自选一次专业。
+        这一步不能跳过，跳过它，选专业就失去了认识自己的前提。</div>
       <div className="banner">
         <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="chat" size="lg" />
           <div><h3 className="song">先聊，再选</h3><p>谈心有两种聊法：引航一步步给你现成的答案起点，泛舟不设路线随便说。说多短都行。</p></div></div>

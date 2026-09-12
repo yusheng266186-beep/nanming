@@ -75,9 +75,11 @@ describe("TASK-09 视觉与可访问性不变量", () => {
     expect(css).toMatch(/\.ctx-btn\s*{[^}]*min-height:\s*42px/);
   });
 
-  it("每个问题输入框都有可读标签，表头带作用域", () => {
-    expect(app).toMatch(/aria-label=\{current\.text\}/);
-    expect(app).toMatch(/<th scope="col">/);
+  it("每个输入控件都有可读标签，表头带作用域", () => {
+    // 谈心的输入框用包裹式 label（flab 提供可读名称）；定位页考试逐项经 numberField 带 aria-label；表头仍需 scope。
+    expect(app).toMatch(/<label className="field"[^>]*>\s*<span className="flab">/);
+    expect(app).toContain('aria-label={ariaLabel}');
+    expect(app).toContain('<th scope="col">');
   });
 
   it("打印样式隐藏交互面板但保留航线图", () => {

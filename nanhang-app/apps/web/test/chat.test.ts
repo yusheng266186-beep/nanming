@@ -86,11 +86,9 @@ describe("谈心对话", () => {
     expect(chat).toContain("animate");
     // With animation off the full text is shown immediately: no interval is scheduled.
     expect(chat).toMatch(/if\s*\(!animate\)\s*\{\s*setShown\(main\.length\)/);
-    // The page asks for the preference and passes it down.
+    // The page asks for the preference; waiting is shown with TypingDots, not a text animation.
     expect(app).toContain("prefersReducedMotion()");
-    expect(app).toContain("animate={!reducedMotion}");
-    // The typing indicator is only entered on the animated path.
-    expect(app).toMatch(/if\s*\(reducedMotion\)\s*\{[^}]*setThinking\(false\)/);
+    expect(app).toContain("<TypingDots");
   });
 
   it("keeps the typing indicator and caret out of the accessible text", () => {
@@ -141,17 +139,14 @@ describe("提问起点（只帮开口，不参与计算）", () => {
     }
   });
 
-  it("does not feed starters into any direction decision", () => {
-    // Starters may only reach the draft state. They must never be passed to recordAnswer,
-    // confirm or any profile function — the student's own saved words are the only evidence.
-    const uses = app.match(/ANSWER_STARTERS[^\n]*/g) ?? [];
+  it("AI 提供的可点选项不进入方向结论", () => {
+    // 引航模式的现成答案只经 sendAi 作为学生发言上行；它们不是证据槽位，也不触碰 profile。
+    // 学生亲手按下的「存为方向证据」仍然是唯一把原话写进证据链的入口。
+    const uses = app.match(/void sendAi\(option\)/g) ?? [];
     expect(uses.length).toBeGreaterThan(0);
-    for (const line of uses) {
-      expect(line).not.toContain("recordAnswer");
-      expect(line).not.toContain("confirm(");
-    }
-    // The picker only writes into the drafts map.
-    expect(app).toMatch(/onPick=\{\(text\)\s*=>\s*setDrafts/);
+    expect(app).not.toContain("recordAnswer(option");
+    // 本地的 ANSWER_STARTERS 起点列表已随经典问答移除；开口帮助由 AI 的选项承担。
+    expect(app).not.toContain("ANSWER_STARTERS");
   });
 });
 

@@ -15,6 +15,7 @@ import {
 } from "./quality-huixi.js";
 import type { QualityShard } from "./quality-types.js";
 import { buildSchoolPool, makeBranches, rangeFromExams, type SchoolPool, type ScoreRange } from "./journey-model.js";
+import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from "./debug.js";
 import {
   CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
   type PageId, type QualityState
@@ -48,7 +49,8 @@ export default function App() {
   const [schoolSkipped, setSchoolSkipped] = useState(false);
   const [maxStage, setMaxStage] = useState(0);
   const [aiDraft, setAiDraft] = useState("");
-  const [aiCode, setAiCode] = useState("");
+  // 调试模式预填本地演示访问码：点「连接」就能进对话，不用手敲。
+  const [aiCode, setAiCode] = useState(DEBUG_MODE ? DEBUG_ACCESS_CODE : "");
   const [page, setPage] = useState<PageId>("sail");
   const [talkStep, setTalkStep] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
@@ -135,6 +137,13 @@ export default function App() {
   useEffect(() => {
     reloadRelease();
     return () => releaseAbort.current?.abort();
+  }, []);
+
+  // 调试模式：预置一段示例探索区间，让院校池/方向/航线图不用先填成绩就能看视觉效果。
+  useEffect(() => {
+    if (!DEBUG_MODE) return;
+    setRange((current) => current ?? { low: DEBUG_SAMPLE_RANGE.low, high: DEBUG_SAMPLE_RANGE.high,
+      basis: "（调试模式）示例区间，仅供验收界面使用，不是真实数据。" });
   }, []);
 
   useEffect(() => {
@@ -319,7 +328,19 @@ export default function App() {
     const evidence = [...evidenceForRequest(state.registry), ...chatEvidence].slice(-12);
     const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, poolRun?.data.directions ?? []);
     if (seq !== aiSeq.current) return;
-    setAi((current) => applyTurnResult(current, next));
+    setAi((current) => {
+      const merged = applyTurnResult(current, next);
+      // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在院校池里
+      // 真实存在的专业类上，引用学生的第一句原话），让「AI 推荐线」的界面能被验收。
+      if (!DEBUG_MODE || merged.suggestions.length > 0 || !poolRun) return merged;
+      const sample = [...poolRun.data.directions]
+        .sort((a, b) => a.name.localeCompare(b.name, "zh-CN")).slice(0, 2);
+      return { ...merged, suggestions: sample.map((entry) => ({
+        directionId: entry.id,
+        evidenceIds: userTurns.length ? ["ev-chat-0"] : [],
+        rationale: "（调试示例）从你聊到的内容看，可以先探索这个专业类；验收通过后请换真实模型复核。"
+      })) };
+    });
   };
 
   // 谈心对话里的「存为方向证据」：只有学生主动按下，这句原话才进入证据链。
@@ -389,8 +410,9 @@ export default function App() {
   const questionsDone = state.answers.length;
   const canConfirmDirections = state.answers.some((item) => item.questionId === "q-interest");
   // 学生是否已经和 AI 聊过：AI 转录里有发言，或经典问答存过原话，都算「聊过」。
-  // 自选专业在这一步之后才解锁——这是流程设计：先聊过、认识自己，再选专业。
-  const hasChatted = userTurns.length > 0 || canConfirmDirections;
+  // 学生是否已经和 AI 聊过：AI 转录里有发言即算；聊过之后才解锁自选专业（流程设计）。
+  // 调试模式下直接放行，让「方向」「航线图」不必先走完对话也能验收。
+  const hasChatted = userTurns.length > 0 || DEBUG_MODE;
   const aiDirectionIds = ai.suggestions.map((item) => item.directionId);
   const fresh = isMatchFresh(state) ? state.match?.result ?? null : null;
 
@@ -406,6 +428,8 @@ export default function App() {
     setMaxStage((current) => (derivedStage > current ? derivedStage : current));
   }, [derivedStage]);
   const openStage = Math.max(maxStage, derivedStage);
+  // 调试模式旁路门禁：验收时每个章节都要能直接进；产品态判定保留在 progress.ts 不动。
+  const gateOpen = (id: PageId) => DEBUG_MODE || canOpen(id, progress, openStage);
 
   /**
    * 唯一的页面切换入口：章节里的按钮、导航条、页头全部走这里。
@@ -414,7 +438,7 @@ export default function App() {
    */
   const goTo: Dispatch<SetStateAction<PageId>> = (value) => {
     const id = typeof value === "function" ? value(page) : value;
-    if (canOpen(id, progress, openStage)) { setPage(id); return; }
+    if (gateOpen(id)) { setPage(id); return; }
     notify(lockHint(id, progress));
   };
 
@@ -433,15 +457,16 @@ export default function App() {
   };
 
   const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);
-  /** 导航条上每一步的状态：locked（还没轮到）/ done（已完成，可以回看）/ 当前。 */
+  /** 导航条上每一步的状态：locked（还没轮到）/ done（已完成，可以回看）/ 当前。调试模式全部视为 open。 */
   const stepState = (id: PageId) => ({
-    open: canOpen(id, progress, openStage),
+    open: gateOpen(id),
     done: isDone(id, progress),
-    hint: canOpen(id, progress, openStage) ? null : lockHint(id, progress)
+    hint: gateOpen(id) ? null : lockHint(id, progress)
   });
 
   return <main>
     <Sprite />
+    {DEBUG_MODE ? <div className="debug-flag" role="status" aria-label="调试模式开启中">调试模式 · 示例数据</div> : null}
     <header className="topbar">
       <div className="topbar-in">
         <button type="button" className="brand" aria-label="南溟 · 回到起航" onClick={() => goTo("sail")}>
