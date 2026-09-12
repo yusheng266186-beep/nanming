@@ -454,23 +454,33 @@ input[type=range].axis:active::-webkit-slider-thumb{transform:scale(1.14)}
 .sc-foot .sc-score b{font-family:var(--display);font-size:16px;font-weight:600;color:var(--brass-3);margin:0 1px}
 .sc-foot .sc-fee{color:var(--mut)}
 .sc-tagline{margin:8px 16px 0;font-size:10px;color:var(--brass-3);letter-spacing:.02em}
-/* ══════════ 推荐卡的「当前这张」 ══════════
-   滑到视野中间的那一张浮出细节（位次/招生数/学费/院校标签），其余只留抬头、专业名与最低分。
-   细节始终占着位置、只做透明度与位移的过渡，所以展开收起不会顶动页面——滑动才是丝滑的。 */
-.sc-detail{margin:0 16px 10px;transition:opacity .36s var(--ease),transform .36s var(--ease);
-  opacity:.35;transform:translateY(3px)}
+/* ══════════ 推荐卡的「纸张堆叠」 ══════════
+   负责人 2026-09-12：要卡片抽屉式的堆叠结构，随着滑动像纸张翻页，停在当前卡片就只显示当前卡的内容。
+   一个专业类叠成一摞（.card-stack），每张卡占一个 .stack-slot，用 sticky 钉在
+   「--deck-top + i × --deck-peek」这条线上：后一张压住前一张，被压住的只露出抬头那一条（像抽屉里码着的一摞纸），
+   正翻过来的那张微微翘起，落到线上就摊平。只切 class、不动任何布局尺寸，卡片高度恒定，滚动不会被顶动。
+   末尾的 padding-bottom 是留给这一摞最后一张的停留位——没有它，最后一张一贴线就被容器底部推走。 */
+.schools.card-stack{display:block;--deck-top:calc(var(--rail-h) + 8px);--deck-peek:66px}
+.stack-slot{position:sticky;top:calc(var(--deck-top) + var(--i,0) * var(--deck-peek))}
+.stack-slot+.stack-slot{margin-top:14px}
+/* 这一摞末尾留出的「跑道」：sticky 只能在父元素的内容盒里活动，最后一张要停得住就得有这段空程。
+   用真实的空 div 而不是 padding——padding 不在内容盒里，钉不住最后一张。 */
+.stack-tail{height:min(42vh,300px)}
+/* .scard 自带的 msgin 动画是 fill:both，动画来源会压掉 transform——堆叠里让位给翻页。 */
+.card-stack .scard{animation:none;transform-origin:50% 100%;
+  transition:transform .58s var(--ease),box-shadow .5s var(--ease),border-color .4s}
+.stack-slot.is-covered .scard{transform:scale(.994);box-shadow:0 -8px 18px rgba(8,32,42,.05)}
+.stack-slot.is-current .scard{border-color:var(--brass-line);box-shadow:var(--sh-card)}
+.stack-slot.is-arriving .scard{transform:perspective(1400px) rotateX(-6.5deg) scale(.972) translateY(8px);
+  box-shadow:0 30px 46px -34px rgba(8,32,42,.55)}
+@media(prefers-reduced-motion:reduce){
+  .card-stack .scard{transition:none}
+  .stack-slot.is-arriving .scard{transform:none}
+}
+.sc-detail{margin:0 16px 10px}
 .sc-detail-line{font-size:11px;color:var(--ink-2);line-height:1.7}
 .sc-detail .sc-tagline{margin:4px 0 0}
 .sc-detail .fhint{margin:4px 0 0}
-.scard.focus{border-color:var(--brass-line);box-shadow:var(--sh-card)}
-.scard.focus .sc-detail{opacity:1;transform:none}
-/* 细屏上细节整段可见即可读，没必要跟着滚动忽明忽暗。 */
-@media(pointer:coarse) and (hover:none){
-  .sc-detail{opacity:.75}
-}
-@media(prefers-reduced-motion:reduce){
-  .sc-detail{opacity:1;transform:none;transition:none}
-}
 .axis-cards{margin-top:4px}
 /* 推荐卡的分层：大类（学科门类）标题 → 小类（专业类）标题 → 卡片。
    宽屏平铺时用这两级标题分隔，手机端则把大类收进抽屉（复用首页起航那套 .deck/.stop）。 */
@@ -834,6 +844,25 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
 #page-chart .srow:nth-child(n+5){animation-delay:.2s}
 #page-chart .blessing{animation:arrive .6s var(--ease) both}
 #page-chart .export-row{animation:fade .5s var(--ease) .12s both}
+
+/* ══════════ 设置卡：一行一个开关 / 读数（借北辰 .stat-row 的排法）══════════ */
+.set-rows{margin:12px 0 0}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px dashed var(--line)}
+.set-row:last-child{border-bottom:0}
+.set-row dt{font-size:11.5px;color:var(--mut);letter-spacing:.06em}
+.set-row dd{margin:0;font-family:var(--song);font-size:13px;color:var(--ink-2);text-align:right}
+.set-row .chips{gap:6px}
+/* 小结卡里「专业类 + 为什么/以后做什么」用的高行：左对齐、可折行（对比一行一读数的 .set-row）。 */
+.set-row.tall{display:block}
+.set-row.tall dt{font-family:var(--song);font-size:13px;color:var(--ink);letter-spacing:.02em}
+.set-row.tall dd{text-align:left;font-family:var(--sans);font-size:11.5px;color:var(--mut);line-height:1.8;margin-top:3px}
+/* 等待时的一行低语：每次换句都淡入一次（只动 opacity，代价最小）。 */
+.whisper-live{display:block;animation:fade .5s var(--ease)}
+/* 「界面动效」开关：关掉时与系统「减少动态效果」同一套处理。 */
+html[data-motion="off"] *,html[data-motion="off"] *::before,html[data-motion="off"] *::after{
+  animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;
+  transition-duration:.001ms!important;scroll-behavior:auto!important;
+}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}

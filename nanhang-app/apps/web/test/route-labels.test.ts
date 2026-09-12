@@ -248,30 +248,47 @@ describe("参考年最低分与整页海报", () => {
     expect(shared).toContain("chartNote?: string");
   });
 
-  it("分数轴的院校卡也是抽屉 + 跟随滑动：滑到中间的那张浮出细节", () => {
+  it("两个页面的院校卡都是抽屉式分组（大类收起、小类展开）", () => {
     expect(axis).toContain("groupRouteRows(rows)");
     expect(axis).toContain("pickGroupedCards(grouped, AXIS_CARDS_PER_CLASS, AXIS_CARDS_TOTAL)");
+    expect(chart).toContain("pickGroupedCards(grouped, CARDS_PER_CLASS, CARDS_PER_ROUTE)");
     expect(axis).toContain('className="deck"');
-    expect(axis).toContain("IntersectionObserver");
-    expect(axis).toContain('classList.toggle("focus"');
-    expect(axis).toContain('className="sc-detail"');
-    // 细节只做透明度/位移过渡（不改高度），所以展开收起不会顶动页面
-    expect(css).toMatch(/\.sc-detail\{[^}]*transition:opacity/);
-    expect(css).toContain(".scard.focus .sc-detail{opacity:1");
+    expect(chart).toContain('className="deck"');
+    // 每类的张数要够翻一趟纸堆：总数上限不能再把每类压到只剩 1 张（原来 60 张平摊就是这个结果）
+    expect(axis).toContain("const AXIS_CARDS_PER_CLASS = 3;");
+    expect(axis).toContain("const AXIS_CARDS_TOTAL = 600;");
+    expect(axis).not.toContain("超过 60 条时先展示前 60 条");
   });
 
-  it("航线图的院校卡也跟随滑动：最低分常驻，其余细节滑到哪张亮哪张", () => {
-    // 负责人 2026-09-12：分数轴做了跟随滑动，航线图还是静态的。两页现在共用同一套卡片
-    // 结构与观察者——细节始终占位、只做透明度过渡，所以滑到中间的那张浮出来，滑走就交还。
-    expect(chart).toContain('className="route-cards" ref={cardsRef}');
-    expect(chart).toContain("IntersectionObserver");
-    expect(chart).toContain('classList.toggle("focus"');
-    // 视野中间约 8% 的带子：卡片比带子高，同一时刻通常只有「当前这张」亮着
-    expect(chart).toContain('rootMargin: "-46% 0px -46% 0px"');
-    expect(axis).toContain('rootMargin: "-46% 0px -46% 0px"');
-    // 窄屏抽屉是点开才把大类放进 DOM 的，展开状态一变就得重新挂观察者
-    expect(chart).toContain("[focusKey, openCategory]");
-    // 最低分留在常驻那一行，位次/招生数/学费收进跟随滑动的细节块
+  it("卡片是纸张堆叠：滚到线上的那张完整摊开，被压住的只露抬头", () => {
+    // 负责人 2026-09-12：「我要的是卡片抽屉式的堆叠结构。随着滑动有那种类似于纸张翻页的那种动效动画。
+    // 然后停在当前卡片就只显示当前卡片的内容。」——所以卡片按专业类叠成一摞，用 sticky 钉成纸堆，
+    // 只有当前这张是完整露出来的（旧版是让所有卡片都显示内容、只把细节调暗，不是这个意思）。
+    for (const page of [axis, chart]) {
+      expect(page).toContain("<div className=\"schools card-stack\"");
+      expect(page).toContain('className="stack-slot"');
+      expect(page).toContain('"--i": index');
+      expect(page).toContain("useDeckStack(cardsRef");
+    }
+    // 堆叠的行为在 shared 的钩子里：钉线 = --deck-top + i × --deck-peek，三态按「谁在线上」切
+    expect(shared).toContain("export function useDeckStack");
+    expect(shared).toContain("deckTop + index * peek");
+    expect(shared).toContain('"covered"');
+    expect(shared).toContain('"arriving"');
+    expect(shared).toContain("requestAnimationFrame");
+    // 样式：钉住、压住的那张只露纸边、正翻过来的那张翘起来
+    expect(css).toContain(".stack-slot{position:sticky");
+    expect(css).toContain(".stack-slot.is-covered .scard{transform:scale(.994)");
+    expect(css).toContain(".stack-slot.is-current .scard{");
+    expect(css).toMatch(/\.stack-slot\.is-arriving \.scard\{transform:perspective/);
+    // 卡片自带的入场动画是 fill:both，会压掉翻转用的 transform，堆叠里必须关掉
+    expect(css).toContain(".card-stack .scard{animation:none");
+    // 旧版「跟随滑动调暗细节」的做法不再回来
+    expect(css).not.toContain(".scard.focus .sc-detail{opacity:1");
+    expect(css).not.toMatch(/\.sc-detail\{[^}]*opacity:\.35/);
+  });
+
+  it("航线图院校卡的最低分常驻，其余细节在摊开的那张里", () => {
     const foot = /<div className="sc-foot">([\s\S]*?)<\/div>/.exec(chart)?.[1] ?? "";
     expect(foot).toContain("sc-score");
     expect(foot).not.toContain("位次");

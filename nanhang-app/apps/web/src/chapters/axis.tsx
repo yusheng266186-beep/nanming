@@ -1,16 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, useState } from "react";
+import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Icon } from "../art.js";
 import {
   REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, groupRouteRows, label, levelLabel,
-  pickGroupedCards, scoreRangeForRanks, useNarrow, type PageId
+  pickGroupedCards, scoreRangeForRanks, useDeckStack, useNarrow, type PageId
 } from "./shared.js";
 import type { PoolRow, SchoolPool, ScoreRange } from "../journey-model.js";
 
-/** 池子里放大类分组后每类取几张、合计上限多少（与航线图同一套挑选思路）。 */
-const AXIS_CARDS_PER_CLASS = 6;
-const AXIS_CARDS_TOTAL = 60;
+/**
+ * 池子里放大类分组后每类取几张、合计上限多少（与航线图同一套挑选思路）。
+ * 每类 3 张：这一页是「区间里有哪些专业类」的横向浏览，每个专业类给几张就够翻一趟纸堆；
+ * 上限只当安全阀——真正的约束是「每个专业类都要有」，不是总张数（原来按 60 张平摊，
+ * 专业类一多就变成每类只剩 1 张，纸堆里翻不起来）。
+ */
+const AXIS_CARDS_PER_CLASS = 3;
+const AXIS_CARDS_TOTAL = 600;
 
 export interface AxisProps {
   state: WebState;
@@ -93,21 +98,13 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
     </article>;
   };
 
-  /** 卡片里的「当前这张」：进入视野中间那条带子（约 8%，比卡片矮）就算聚焦，滑走就交还——
-   *  停住时显示的那一张就是它（IntersectionObserver 直接切换 class，不触发 React 重渲染）。 */
+  /**
+   * 纸张堆叠：窄屏里每个专业类的卡片叠成一摞，滚到「线」上的那张才完整摊开（细节见 useDeckStack）。
+   * 抽屉是点开才把大类放进 DOM 的，所以展开状态一变要重新挂一遍。
+   */
   const cardsRef = useRef<HTMLDivElement | null>(null);
   const focusKey = pool ? `${pool.releaseId}:${pool.rows.length}` : "none";
-  useEffect(() => {
-    const root = cardsRef.current;
-    if (!root) return;
-    const cards = Array.from(root.querySelectorAll<HTMLElement>(".scard"));
-    if (!cards.length) return;
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) entry.target.classList.toggle("focus", entry.isIntersecting);
-    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
-    for (const card of cards) observer.observe(card);
-    return () => observer.disconnect();
-  }, [focusKey, openCategory]);
+  useDeckStack(cardsRef, `${focusKey}:${openCategory}`);
 
   return <section id="page-axis" className={`view${page === "axis" ? " active" : ""}`} aria-label="分数轴">
     <div className="page-head">
@@ -261,7 +258,14 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
                       <span>{cls.name}</span>
                       <span>{cls.total} 条{cls.total > cls.rows.length ? ` · 列前 ${cls.rows.length}` : ""}</span>
                     </div>
-                    <div className="schools" style={{ marginTop: 0 }}>{cls.rows.map((row) => renderCard(row))}</div>
+                    {/* 一个专业类一摞纸：每张卡占一个 .stack-slot，滚过去就翻一张。 */}
+                    <div className="schools card-stack" style={{ marginTop: 0 }}>
+                      {cls.rows.map((row, index) => (
+                        <div className="stack-slot" style={{ "--i": index } as CSSProperties}
+                          key={`${cls.name}-${row.label.offeringId}`}>{renderCard(row)}</div>
+                      ))}
+                      <div className="stack-tail" aria-hidden="true" />
+                    </div>
                   </div>) : <p className="muted-note">这个大类没有展开的卡片。</p>}
                 </div> : null}
               </div>;
@@ -292,7 +296,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
         </div>}
     </div>
     <p className="fhint" style={{ margin: "22px 2px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
-      <Icon name="doc" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。超过 60 条时先展示前 60 条，完整结果在「航线图」按你的两条线分别给出。</span></p>
+      <Icon name="doc" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。每个专业类先展开前 3 张卡片（小类标题上写着这一类总共有多少条），完整结果在「航线图」按你的两条线分别给出。</span></p>
     <div className="banner">
       <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}><Icon name="route" size="lg" />
         <div><h3 className="song">院校池有了，去「航线图」看两条线的结果</h3><p>方向在上一站已经定好：AI 建议线和你的自选线在「航线图」分开列出——一致合成一条，不一致各走一条。</p></div></div>

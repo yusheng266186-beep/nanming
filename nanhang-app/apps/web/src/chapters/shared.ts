@@ -125,6 +125,70 @@ export function useNarrow(query = "(max-width: 720px)"): boolean {
   return narrow;
 }
 
+/**
+ * 纸张堆叠（窄屏的推荐卡）：一个专业类的卡片叠成一摞，滚动就是一次翻页。
+ *
+ * 每张卡占一个 `.stack-slot`，钉在 `--deck-top + i × --deck-peek` 这条线上（CSS 用 sticky 钉住），
+ * 所以后一张压在前一张上、前一张只露出抬头那一条——像抽屉里码着的一摞纸。
+ * 这里只切三个 class 与一个 `--i` 序号，**不动任何布局尺寸**，所以滚动不会被顶动：
+ *   is-covered  已经被后一张压住（只露抬头）
+ *   is-current  钉在当前这条线上的那张，只有它的内容是完整露出来的
+ *   is-arriving 正翻过来的下一张（微微翘起，落到线上就摊平）
+ * 其余（is-idle）保持原样，避免整列表都翘着。
+ */
+export function useDeckStack(
+  rootRef: { current: HTMLElement | null }, depsKey: string
+): void {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const stacks = Array.from(root.querySelectorAll<HTMLElement>(".card-stack"));
+    if (!stacks.length) return;
+    // 「线」与「纸边」都从 CSS 变量读，保证 JS 的判断与 sticky 的落点是同一组数字。
+    const style = getComputedStyle(root);
+    const deckTop = Number.parseFloat(style.getPropertyValue("--deck-top")) || 72;
+    const peek = Number.parseFloat(style.getPropertyValue("--deck-peek")) || 66;
+    let frame = 0;
+
+    const paint = () => {
+      frame = 0;
+      for (const stack of stacks) {
+        const slots = Array.from(stack.children).filter(
+          (node): node is HTMLElement => node instanceof HTMLElement && node.classList.contains("stack-slot"));
+        if (!slots.length) continue;
+        let current = -1;
+        slots.forEach((slot, index) => {
+          const rect = slot.getBoundingClientRect();
+          const line = deckTop + index * peek;
+          if (rect.bottom <= line) return;          // 整张已经翻到线上方，不再算在这一摞里
+          if (rect.top <= line + 0.5) current = index;  // 已经钉在它自己的那条线上
+        });
+        // 还没滚到线时（current 为 -1）让第一张当「正翻过来的那张」，其余保持安静。
+        const arriving = current < 0 ? 0 : current + 1;
+        slots.forEach((slot, index) => {
+          const state = index < current ? "covered" : index === current ? "current"
+            : index === arriving ? "arriving" : "idle";
+          const isCurrent = state === "current";
+          const isCovered = state === "covered";
+          const isArriving = state === "arriving";
+          if (slot.classList.contains("is-current") !== isCurrent) slot.classList.toggle("is-current", isCurrent);
+          if (slot.classList.contains("is-covered") !== isCovered) slot.classList.toggle("is-covered", isCovered);
+          if (slot.classList.contains("is-arriving") !== isArriving) slot.classList.toggle("is-arriving", isArriving);
+        });
+      }
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+    paint();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [rootRef, depsKey]);
+}
+
 /** 一条线的记录按「大类（学科门类）→ 小类（专业类）」分组后的形状。 */
 export interface GroupedClass<T> { name: string; total: number; rows: T[] }
 export interface GroupedCategory<T> { name: string; total: number; classes: GroupedClass<T>[] }

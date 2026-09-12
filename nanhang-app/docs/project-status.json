@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 41,
-    "passed": 509,
+    "files": 42,
+    "passed": 526,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "最终最新前端合并快照本机全量41文件509项全部通过；类型检查与正式配置生产构建通过。",
+    "note": "本次（2026-09-12 23:59，npm run test）全量 42 文件 526 项通过、0 失败；其中 apps/web/test/route-labels.test.ts 22 项覆盖院校卡的纸张堆叠（钉线、三态、每类推选张数），apps/api/test/totp-code.test.ts 5 项覆盖动态码脚本与服务端一致性。",
     "log": "docs/verification/latest-frontend-tests-2026-09-12.txt"
   },
   "runtime": {

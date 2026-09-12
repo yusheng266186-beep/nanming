@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import type { Dispatch, MutableRefObject, SetStateAction } from "react";
+import { useRef, useState } from "react";
+import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from "react";
 import { makeBranches, type PoolRow, type RouteBranch, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
 import type { WebState } from "../model.js";
 import { Icon } from "../art.js";
 import {
   REFERENCE_YEAR, RELATION_CLASSES, buildRoutePoster, formatRankInterval, groupRouteRows, label,
-  levelLabel, pickGroupedCards, scoreRangeForRanks, svgStringToPng, useNarrow, type PageId
+  levelLabel, pickGroupedCards, scoreRangeForRanks, svgStringToPng, useDeckStack, useNarrow, type PageId
 } from "./shared.js";
 
 export interface ChartProps {
@@ -106,23 +106,12 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
     .slice(0, 4);
 
   /**
-   * 卡片里的「当前这张」：与分数轴同款——滑到视野中间那条带子（约 8%，比卡片矮）就算聚焦，滑走就交还。
-   * 停住时显示的那一张就是它；IntersectionObserver 直接切 class，不触发 React 重渲染。
-   * 抽屉（窄屏 deck）里的大类是点开才进 DOM 的，所以 openCategory 变化时要重新挂一遍。
+   * 纸张堆叠：窄屏里每个专业类的卡片叠成一摞，滚到「线」上的那张才完整摊开（细节见 useDeckStack）。
+   * 抽屉是点开才把大类放进 DOM 的，所以展开状态一变要重新挂一遍。
    */
   const cardsRef = useRef<HTMLDivElement | null>(null);
   const focusKey = pool ? `${pool.releaseId}:${pool.rows.length}` : "none";
-  useEffect(() => {
-    const root = cardsRef.current;
-    if (!root) return;
-    const cards = Array.from(root.querySelectorAll<HTMLElement>(".scard"));
-    if (!cards.length) return;
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) entry.target.classList.toggle("focus", entry.isIntersecting);
-    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
-    for (const card of cards) observer.observe(card);
-    return () => observer.disconnect();
-  }, [focusKey, openCategory]);
+  useDeckStack(cardsRef, `${focusKey}:${openCategory}`);
 
   /**
    * 导出整页海报（负责人 2026-09-12：导出要和手机端显示一致——竖版长图、一条条卡片，
@@ -493,8 +482,15 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
                             <span>{cls.name}</span>
                             <span>{cls.total} 条{cls.total > cls.rows.length ? ` · 列前 ${cls.rows.length}` : ""}</span>
                           </div>
-                          <div className="schools" style={{ marginTop: 0 }}>
-                            {cls.rows.map((row) => renderCard(row, route.kind))}
+                          {/* 一个专业类一摞纸：每张卡占一个 .stack-slot，滚过去就翻一张。 */}
+                          <div className="schools card-stack" style={{ marginTop: 0 }}>
+                            {cls.rows.map((row, index) => (
+                              <div className="stack-slot" style={{ "--i": index } as CSSProperties}
+                                key={`${route.kind}-${cls.name}-${row.label.offeringId}`}>
+                                {renderCard(row, route.kind)}
+                              </div>
+                            ))}
+                            <div className="stack-tail" aria-hidden="true" />
                           </div>
                         </div>) : <p className="muted-note">这个大类在这次挑选里没有展开的卡片（每个专业类取前 {CARDS_PER_CLASS} 张，每条线合计上限 {CARDS_PER_ROUTE} 张）。</p>}
                       </div> : null}
