@@ -1,4 +1,5 @@
 # ---- 依赖与构建产物 ----
+dist-scf/
 node_modules/
 dist/
 coverage/
