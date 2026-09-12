@@ -9,7 +9,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  buildRoutePoster, formatRankInterval, levelLabel, scoreRangeForRanks,
+  buildRoutePoster, formatRankInterval, groupRouteRows, levelLabel, pickGroupedCards,
+  scoreRangeForRanks,
 } from "../src/chapters/shared.js";
 import type { LoadedRelease } from "@nanhang/release-loader";
 
@@ -169,44 +170,74 @@ describe("参考年最低分与整页海报", () => {
     expect(scoreRangeForRanks(null, "PHYSICS", 2025, [1, 10])).toBeNull();
   });
 
-  it("海报是竖版卡片式：一张张卡片、含最低分与寄语", () => {
+  it("海报是竖版卡片式，并按大类 → 小类分层", () => {
     const poster = buildRoutePoster({
       chartBody: "<text>chart</text>",
       chartWidth: 360, chartHeight: 344,
       contextLabel: "四川 · 物理类 · 2027", rangeLabel: "200–460", referenceYear: 2025,
-      routes: [{ title: "我的自主选择", total: 385, more: 361, cards: [
-        { institution: "示例大学", city: "成都", relation: { label: "历史位置较有余量", color: "#7d9a86" },
-          major: "计算机科学与技术", level: "本科", sub: "本科批B段 · 计算机类",
-          score: "444", rank: "200,565", plan: "6", fee: "学费 5000", tags: ["省部共建", "卓越工程师"] }
-      ] }],
+      routes: [{
+        title: "我的自主选择", total: 385, more: 361,
+        groups: [{
+          name: "工学", total: 200,
+          classes: [{ name: "计算机类", total: 120, cards: [
+            { institution: "示例大学", city: "成都", relation: { label: "历史位置较有余量", color: "#7d9a86" },
+              major: "计算机科学与技术", level: "本科", sub: "本科批B段 · 计算机类",
+              score: "444", rank: "200,565", plan: "6", fee: "学费 5000", tags: ["省部共建", "卓越工程师"] }
+          ] }]
+        }]
+      }],
       blessing: { text: "愿你既有仰望星空的方向。", sign: "—— 南 溟" },
       note: "按历史位置参考绘制 · 不构成录取判断"
     });
-    expect(poster).toContain("<svg");
-    expect(poster).toContain("<text>chart</text>");                    // 竖版航线图正文嵌在海报里
+    expect(poster).toContain("<text>chart</text>");
     expect(poster).toContain("我的自主选择 · 385 条专业 × 院校");
-    expect(poster).toContain("示例大学 · 成都");                       // 卡片：院校抬头
-    expect(poster).toContain("计算机科学与技术");                      // 卡片：专业
-    expect(poster).toContain("2025 最低 ");                            // 卡片：参考年最低分
-    expect(poster).toContain("位次 200,565 · 招 6 人 · 学费 5000");     // 卡片：一行数据
-    expect(poster).toContain("省部共建 · 卓越工程师");                  // 卡片：院校标签
-    expect(poster).toContain("另有 361 条未逐条列出");
-    expect(poster).toContain("愿你既有仰望星空的方向。");               // 写给你
+    expect(poster).toContain("工学");                                   // 大类标题
+    expect(poster).toContain("200 条 · 1 个专业类");
+    expect(poster).toContain("计算机类");                               // 小类标题
+    expect(poster).toContain("120 条（列前 1 条）");
+    expect(poster).toContain("示例大学 · 成都");
+    expect(poster).toContain("计算机科学与技术");
+    expect(poster).toContain("2025 最低 ");
+    expect(poster).toContain("位次 200,565 · 招 6 人 · 学费 5000");
+    expect(poster).toContain("省部共建 · 卓越工程师");
+    expect(poster).toContain("愿你既有仰望星空的方向。");
     expect(poster).toContain("不构成录取判断");
-    expect(poster).toMatch(/width="720" height="\d+"/);               // 竖版：宽 720
+    expect(poster).toMatch(/width="720" height="\d+"/);                 // 竖版长图
   });
 
-  it("卡片压扁了：数据条一行、关系标签进抬头行", () => {
-    for (const page of [chart, axis]) {
-      expect(page).toContain('className="sc-foot"');
-      expect(page).toContain('className="sc-head"');
-      expect(page).toContain("最低 <b>{scoreText}</b> 分");
-      expect(page).not.toContain('className="ranks"');
-    }
-    // 两版航线图都留在 DOM 里（导出取横版），显隐交给 CSS
-    expect(chart).toContain('className="rt-narrow"');
-    expect(chart).toContain('className="rt-wide"');
-    expect(chart).toContain('ref={chartSvgRef} viewBox="0 0 360 344"');
-    expect(css).toMatch(/@media\(max-width:640px\)\{\.routes \.rt-narrow\{display:block\}/);
+  it("分组：按大类 → 小类，大类与小类都按条数从多到少", () => {
+    const row = (category: string | null, categoryClass: string | null, majorName: string) =>
+      ({ label: { category, categoryClass, majorName } });
+    const groups = groupRouteRows([
+      row("工学", "计算机类", "软件工程"),
+      row("工学", "计算机类", "计算机科学与技术"),
+      row("工学", "机械类", "机械设计制造及其自动化"),
+      row("管理学", "工商管理类", "工商管理"),
+      row(null, null, "未分类专业"),
+    ]);
+    expect(groups.map((group) => group.name)).toEqual(["工学", "管理学", "未分类"]);
+    expect(groups[0]!.total).toBe(3);
+    expect(groups[0]!.classes.map((cls) => `${cls.name}:${cls.total}`)).toEqual(["计算机类:2", "机械类:1"]);
+    // 每类取 1 张、合计上限 2 张：两条线各出一张，超出的不取
+    const picked = pickGroupedCards(groups, 1, 2);
+    expect(picked.map((entry) => entry.category.name)).toEqual(["工学"]);
+    expect(picked[0]!.classes.map((cls) => cls.rows.length)).toEqual([1, 1]);
+  });
+
+  it("手机端抽屉、宽屏平铺；导出海报始终平铺（两版共用同一份挑选）", () => {
+    expect(chart).toContain("useNarrowChart");
+    expect(chart).toContain('className="deck"');
+    expect(chart).toContain('className="stop-head"');
+    expect(chart).toContain('className="sc-class"');
+    expect(chart).toContain("groupRouteRows(route.rows)");
+    expect(chart).toContain("pickGroupedCards(groupRouteRows(route.rows)");
+    expect(chart).toContain("const PNG_SCALE = 2;");
+    expect(chart).toContain("posterWidth * PNG_SCALE");
+  });
+
+  it("复制文字版按钮已按负责人要求删掉", () => {
+    expect(chart).not.toContain("复制文字版");
+    expect(chart).not.toContain("copyText");
+    expect(chart).not.toContain("clipboard");
   });
 });

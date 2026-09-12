@@ -1,11 +1,11 @@
 # 前端三线并行：分工、共享文件与认领规则
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-nanming-totp）：南溟AI验证已改为TOTP；API版本9和Pages均已上线，旧固定码失效，线上核验通过。
+> 统一进度（2026-09-12，2026-09-12-latest-frontend-backend-alignment）：最新前端合同已对齐，Pages发布中；API版本9继续在线。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：40 个测试文件、491 项通过、1 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人保存TOTP种子并录入认证器；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：41 个测试文件、507 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：完成最新前端Pages发布与公网资产核验；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 负责人要求（2026-09-12）：多个 Agent 同时改 `apps/web`，必须**明确分工、互不覆盖**。本文件是这份分工的
@@ -77,6 +77,7 @@
 | 2026-09-12 20:20 | 线一（负责人指派） | `chapters/chart.tsx`（推荐卡与已撤掉的「保底路线」段）、`chapters/axis.tsx`（同款推荐卡）、`chapters/shared.ts`（新增 `levelLabel`/`formatRankInterval`）、`style.css`（`.scard` 视觉与标签样式；删掉已失效的 `.safety/.srow/.sicon`）、`test/route-labels.test.ts`（新） | 负责人要求：删掉页底的「保底路线」说明段，把冲刺/保底这类分层直接做进推荐院校卡片；卡片视觉升级。按项目既有边界（不提供「冲稳保」）用历史位置关系标签实现，卡片上另给办学层次（本科/职业本科/高职）与院校标签。动手前已重读四份文件当前内容。985/211/双一流因发布包与源工作簿都没有该字段，未实现，已记入实施记录待裁决。 | 已交还 |
 | 2026-09-12 20:14 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（三件事一段 + 窄屏三行）、`test/sail-pack.test.ts`（新） | 「先定下三件事」加编号印章、n/2 计数、逐件入场、chip 盖章光环、备齐时出发按钮弹一下；满 2 门只变淡不禁用 | 已交还 |
 | 2026-09-12 20:18 | 线一（负责人指派） | `chapters/chart.tsx`（院校卡分层标签与标签行） | 航线图院校卡改用发布包的历史位置关系做分层标签 | 已交还（提交 `65b35bb`） |
+| 2026-09-12 22:05 | 线一（负责人指派） | `chapters/chart.tsx`、`chapters/shared.ts`（分组与挑选、海报分层）、`style.css`（分组标题样式）、`test/route-labels.test.ts` | 删「复制文字版」；导出改 2 倍高清；推荐卡按大类→小类分层：手机抽屉（复用起航 .deck/.stop 与动效）、宽屏与导出平铺分组 | 已交还 |
 | 2026-09-12 21:55 | 线一（负责人指派） | `chapters/sail.tsx`（开始起航门禁）、`chapters/chart.tsx`、`chapters/shared.ts`（海报改成竖版卡片）、`test/route-labels.test.ts` | ① 选科没齐时不许拉开登船卡，只提醒；② 导出 PNG 改成与手机端一致的竖版卡片长图（720 宽：竖版航线图 + 一条条院校卡片 + 写给你） | 已交还 |
 | 2026-09-12 21:40 | 线一（负责人指派） | `chapters/chart.tsx`、`chapters/axis.tsx`、`chapters/shared.ts`、`style.css`、`test/route-labels.test.ts` | 负责人三项：卡片补参考年最低分、卡片压扁（236→148px）、导出 PNG 改成整页海报（航线图 + 双线清单 + 写给你）。新增 `scoreRangeForRanks` / `buildRoutePoster` 两个纯函数；两版版心改为 CSS 切换以便窄屏也能导出横版海报 | 已交还 |
 | 2026-09-12 20:30 | 线一（负责人指派） | `chapters/chart.tsx`（导出用的那张 SVG 重画 + 图例）、`chapters/shared.ts`（导出垫色改纸色）、`style.css`（`.route-legend`/`.rl`）、`test/route-labels.test.ts`（加 4 项导出约束断言） | 负责人指出图内 SVG 与整站主题不符：重画成海图版画（版框、四角刻线、不标数值的底纹、双描边航路与端点节点、右侧标签栏、帆船起航点、区间图签、底部小结）。顺带修掉导出 PNG 的深色底：图内不再引用任何 id（渐变/滤镜/`<use>`），垫色改纸色 | 已交还 |
@@ -87,6 +88,8 @@
 | 2026-09-12 20:56 | 线三（负责人指派） | `chapters/talk.tsx`（底栏聊法一行）、`style.css`（谈心房间一段）、`test/talk-room.test.ts`（新） | 进对话后去掉聊法切换按钮；聊天区按视口放大到接近整屏（消息区 flex 撑满、输入栏落底），气泡仍限宽 | 已交还 |
 | 2026-09-12 21:01 | 线三（负责人指派） | `style.css`（四页动画适配一段）、`test/page-motion.test.ts`（新） | 谈心 / 方向 / 分数轴 / 航线图 的动画编排与微交互（只加样式，四页标记未动；航线图图内动效留给重画该块的那条线） | 已交还 |
 | 2026-09-12 21:38 | 线三（负责人指派） | `chapters/talk.tsx`、`style.css`（谈心作用域与留白修复）、`test/talk-room.test.ts` | 聊完才给「去方向 · 选专业」；聊完弹方向小结卡（就业方向交 AI 现场答）；修掉聊天区下方留白（样式被旧规则盖掉） | 已交还 |
+| 2026-09-12 21:49 | 线三（负责人指派） | `chapters/talk.tsx`（开场气泡与回答起点）、`test/talk-room.test.ts` | 两个模式的开场第一句都改成问题（取自内容规格）；引航一进来就摆出可点答案，泛舟只给问题 | 已交还 |
+| 2026-09-12 21:56 | 线三（负责人指派） | `direction-quota.ts`（新）、`App.tsx`（建议合并）、`chapters/talk.tsx`（收口提示与卡片时机）、`test/direction-quota.test.ts`（新）、`test/talk-room.test.ts` | 借北辰「到量即停、之后仍可聊但画像不再变」：方向收口（5 小类 + 2 大类，8 轮兜底）、上限 6 小类 / 3 大类、收口后冻结不再新增 | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 

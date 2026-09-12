@@ -104,6 +104,59 @@ export function scoreRangeForRanks(
   return best === null || worst === null ? null : { min: worst, max: best };
 }
 
+/** 一条线的记录按「大类（学科门类）→ 小类（专业类）」分组后的形状。 */
+export interface GroupedClass<T> { name: string; total: number; rows: T[] }
+export interface GroupedCategory<T> { name: string; total: number; classes: GroupedClass<T>[] }
+
+/**
+ * 把一条线的院校记录按大类 → 小类分组（负责人 2026-09-12：卡片要按大类与小类专业组分类、
+ * 有层次，不要一股脑全堆出来）。分组只按发布包里的原文分类字段，不发明门类；
+ * 大类与小类都按条数从多到少排，条数相同按名字排，保证两次渲染顺序一致。
+ */
+export function groupRouteRows<
+  T extends { label: { category: string | null; categoryClass: string | null; majorName: string } }
+>(rows: readonly T[]): GroupedCategory<T>[] {
+  const byCategory = new Map<string, Map<string, T[]>>();
+  for (const row of rows) {
+    const category = row.label.category?.trim() || "未分类";
+    const className = row.label.categoryClass?.trim() || row.label.majorName.trim();
+    const classes = byCategory.get(category) ?? new Map<string, T[]>();
+    classes.set(className, [...(classes.get(className) ?? []), row]);
+    byCategory.set(category, classes);
+  }
+  const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, "zh-CN");
+  return [...byCategory.entries()]
+    .map(([name, classes]) => ({
+      name,
+      total: [...classes.values()].reduce((sum, list) => sum + list.length, 0),
+      classes: [...classes.entries()]
+        .map(([className, list]) => ({ name: className, total: list.length, rows: list }))
+        .sort((a, b) => b.total - a.total || byName(a, b)),
+    }))
+    .sort((a, b) => b.total - a.total || byName(a, b));
+}
+
+/** 一条线在「每小类取几张、总共取几张」的规则下挑出来的卡片（页面与海报共用同一份挑选）。 */
+export function pickGroupedCards<T>(groups: readonly GroupedCategory<T>[], perClass: number, cap: number):
+{ category: GroupedCategory<T>; classes: { name: string; total: number; rows: T[] }[] }[] {
+  const picked = groups.map((category) => ({ category, classes: [] as { name: string; total: number; rows: T[] }[] }));
+  let taken = 0;
+  for (let round = 0; round < perClass && taken < cap; round += 1) {
+    for (const entry of picked) {
+      for (const cls of entry.category.classes) {
+        if (taken >= cap) break;
+        const row = cls.rows[round];
+        if (!row) continue;
+        let target = entry.classes.find((item) => item.name === cls.name);
+        if (!target) { target = { name: cls.name, total: cls.total, rows: [] }; entry.classes.push(target); }
+        target.rows.push(row);
+        taken += 1;
+      }
+    }
+  }
+  return picked.filter((entry) => entry.classes.length > 0);
+}
+
 /** 海报里的一张推荐卡：和手机端卡片同一套字段。 */
 export interface PosterCard {
   institution: string;
@@ -122,11 +175,22 @@ export interface PosterCard {
   tags: readonly string[];
 }
 
+export interface PosterClass {
+  name: string;
+  /** 这个小类总共多少条（卡片只列前若干张）。 */
+  total: number;
+  cards: readonly PosterCard[];
+}
+export interface PosterGroup {
+  name: string;
+  total: number;
+  classes: readonly PosterClass[];
+}
 export interface PosterRoute {
   title: string;
   /** 这一条线总共有多少条（卡片只列前若干张，其余照实写在海报里）。 */
   total: number;
-  cards: readonly PosterCard[];
+  groups: readonly PosterGroup[];
   more: number;
 }
 
@@ -167,29 +231,43 @@ export function buildRoutePoster(input: {
     y += 10;
     parts.push(`<path d="M${pad} ${y}H${W - pad}" stroke="#a97b34" stroke-width="1" opacity="0.5"/>`);
     y += 20;
-    for (const card of route.cards) {
-      const h = card.tags.length ? 136 : 116;
-      parts.push(`<rect x="${pad}" y="${y}" width="${cardW}" height="${h}" rx="14" fill="#fbf9f2" stroke="#dcd6c6"/>`);
-      if (card.relation) {
-        parts.push(`<rect x="${pad + 14}" y="${y + 1}" width="${cardW - 28}" height="3" rx="2" fill="${card.relation.color}" opacity="0.85"/>`);
+    for (const group of route.groups) {
+      parts.push(`<text x="${pad}" y="${y + 10}" font-family="${song}" font-size="15" fill="#0f262e">${escape(group.name)}</text>`);
+      parts.push(`<text x="${W - pad}" y="${y + 10}" text-anchor="end" font-family="${song}" font-size="11" fill="#6d7f83">${group.total} 条 · ${group.classes.length} 个专业类</text>`);
+      y += 18;
+      parts.push(`<path d="M${pad} ${y}H${W - pad}" stroke="#dcd6c6" stroke-width="0.8"/>`);
+      y += 16;
+      for (const cls of group.classes) {
+        parts.push(`<text x="${pad + 4}" y="${y + 8}" font-family="${song}" font-size="12" fill="#8a6326">${escape(cls.name)}</text>`);
+        parts.push(`<text x="${W - pad}" y="${y + 8}" text-anchor="end" font-family="${song}" font-size="10.5" fill="#6d7f83">${cls.total} 条${cls.total > cls.cards.length ? `（列前 ${cls.cards.length} 条）` : ""}</text>`);
+        y += 18;
+        for (const card of cls.cards) {
+          const h = card.tags.length ? 136 : 116;
+          parts.push(`<rect x="${pad}" y="${y}" width="${cardW}" height="${h}" rx="14" fill="#fbf9f2" stroke="#dcd6c6"/>`);
+          if (card.relation) {
+            parts.push(`<rect x="${pad + 14}" y="${y + 1}" width="${cardW - 28}" height="3" rx="2" fill="${card.relation.color}" opacity="0.85"/>`);
+          }
+          parts.push(`<text x="${pad + 16}" y="${y + 28}" font-family="${song}" font-size="11" fill="#6d7f83">${escape(`${card.institution}${card.city ? ` · ${card.city}` : ""}`)}</text>`);
+          if (card.relation) {
+            parts.push(`<circle cx="${W - pad - 16 - Math.round(card.relation.label.length * 10.5) - 12}" cy="${y + 24}" r="3" fill="${card.relation.color}"/>`);
+            parts.push(`<text x="${W - pad - 16}" y="${y + 28}" text-anchor="end" font-family="${song}" font-size="10.5" fill="${card.relation.color}">${escape(card.relation.label)}</text>`);
+          }
+          parts.push(`<text x="${pad + 16}" y="${y + 56}" font-family="${song}" font-size="16.5" fill="#0f262e">${escape(card.major)}${card.level ? `<tspan font-family="${song}" font-size="10" fill="#8a6326">　${escape(card.level)}</tspan>` : ""}</text>`);
+          parts.push(`<text x="${pad + 16}" y="${y + 76}" font-family="${song}" font-size="11" fill="#6d7f83">${escape(card.sub)}</text>`);
+          parts.push(`<path d="M${pad} ${y + 88}H${W - pad}" stroke="#dcd6c6" stroke-width="0.8"/>`);
+          parts.push(`<text x="${pad + 16}" y="${y + 108}" font-family="${song}" font-size="11.5" fill="#6d7f83">${input.referenceYear} 最低 <tspan font-family="${display}" font-size="17" font-weight="600" fill="#8a6326">${escape(card.score)}</tspan> 分</text>`);
+          parts.push(`<text x="${W - pad - 16}" y="${y + 108}" text-anchor="end" font-family="${song}" font-size="11" fill="#2c444c">位次 ${escape(card.rank)} · 招 ${escape(card.plan)} 人 · ${escape(card.fee)}</text>`);
+          if (card.tags.length) {
+            parts.push(`<text x="${pad + 16}" y="${y + 127}" font-family="${song}" font-size="10" fill="#8a6326">${escape(card.tags.join(" · "))}</text>`);
+          }
+          y += h + 10;
+        }
+        y += 6;
       }
-      parts.push(`<text x="${pad + 16}" y="${y + 28}" font-family="${song}" font-size="11" fill="#6d7f83">${escape(`${card.institution}${card.city ? ` · ${card.city}` : ""}`)}</text>`);
-      if (card.relation) {
-        parts.push(`<circle cx="${W - pad - 16 - Math.round(card.relation.label.length * 10.5) - 12}" cy="${y + 24}" r="3" fill="${card.relation.color}"/>`);
-        parts.push(`<text x="${W - pad - 16}" y="${y + 28}" text-anchor="end" font-family="${song}" font-size="10.5" fill="${card.relation.color}">${escape(card.relation.label)}</text>`);
-      }
-      parts.push(`<text x="${pad + 16}" y="${y + 56}" font-family="${song}" font-size="16.5" fill="#0f262e">${escape(card.major)}${card.level ? `<tspan font-family="${song}" font-size="10" fill="#8a6326">　${escape(card.level)}</tspan>` : ""}</text>`);
-      parts.push(`<text x="${pad + 16}" y="${y + 76}" font-family="${song}" font-size="11" fill="#6d7f83">${escape(card.sub)}</text>`);
-      parts.push(`<path d="M${pad} ${y + 88}H${W - pad}" stroke="#dcd6c6" stroke-width="0.8"/>`);
-      parts.push(`<text x="${pad + 16}" y="${y + 108}" font-family="${song}" font-size="11.5" fill="#6d7f83">${input.referenceYear} 最低 <tspan font-family="${display}" font-size="17" font-weight="600" fill="#8a6326">${escape(card.score)}</tspan> 分</text>`);
-      parts.push(`<text x="${W - pad - 16}" y="${y + 108}" text-anchor="end" font-family="${song}" font-size="11" fill="#2c444c">位次 ${escape(card.rank)} · 招 ${escape(card.plan)} 人 · ${escape(card.fee)}</text>`);
-      if (card.tags.length) {
-        parts.push(`<text x="${pad + 16}" y="${y + 127}" font-family="${song}" font-size="10" fill="#8a6326">${escape(card.tags.join(" · "))}</text>`);
-      }
-      y += h + 10;
+      y += 14;
     }
     if (route.more > 0) {
-      parts.push(`<text x="${pad}" y="${y + 6}" font-family="${song}" font-size="11" fill="#6d7f83">另有 ${route.more} 条未逐条列出（页面与海报都只展开前 ${route.cards.length} 条）。</text>`);
+      parts.push(`<text x="${pad}" y="${y + 6}" font-family="${song}" font-size="11" fill="#6d7f83">另有 ${route.more} 条未逐条列出：页面与海报按同一规则挑选（每个专业类取前几张，合计 ${route.total - route.more} 张）。</text>`);
       y += 24;
     }
     y += 26;

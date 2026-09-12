@@ -1,11 +1,12 @@
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import { makeBranches, type SchoolPool } from "../journey-model.js";
+import { makeBranches, type PoolRow, type RouteBranch, type SchoolPool } from "../journey-model.js";
 import type { ScoreRange } from "../journey-model.js";
 import type { WebState } from "../model.js";
 import { Icon } from "../art.js";
 import {
-  REFERENCE_YEAR, RELATION_CLASSES, buildRoutePoster, formatRankInterval, label, levelLabel,
-  scoreRangeForRanks, svgStringToPng, type PageId
+  REFERENCE_YEAR, RELATION_CLASSES, buildRoutePoster, formatRankInterval, groupRouteRows, label,
+  levelLabel, pickGroupedCards, scoreRangeForRanks, svgStringToPng, type PageId
 } from "./shared.js";
 
 export interface ChartProps {
@@ -27,6 +28,34 @@ const BLESSING = {
   text: "愿你既有仰望星空的方向，也有脚踏实地的航线。远方很远，但每一次起航，都从今天这一分开始。",
   sign: "—— 南 溟"
 } as const;
+
+
+/**
+ * 窄屏判定。手机端用「抽屉式堆叠卡」按大类收起（负责人 2026-09-12：不要一股脑全堆出来，
+ * 借首页起航六站那套），宽屏仍是平铺的分组列表；导出海报一律平铺。
+ */
+function useNarrowChart(query = "(max-width: 720px)"): boolean {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia(query).matches
+      : false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(query);
+    const onChange = () => setNarrow(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [query]);
+  return narrow;
+}
+
+/** 每个专业类在页面上取几张、每条线一共取几张（页面与海报用同一组数字）。 */
+const CARDS_PER_CLASS = 4;
+const CARDS_PER_ROUTE = 24;
+
+/** 导出倍率：整图按这个倍数光栅化（长度很长的图放大看时，1 倍会糊）。 */
+const PNG_SCALE = 2;
 
 const ROUTE_META = [
   { kind: "shared" as const, title: "共同方向", sub: "两条路在这里相遇——AI 的建议和你的选择都包含这些专业。" },
@@ -76,6 +105,9 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
   const drawable = relationGroups.some((group) => group.items.length > 0);
   const rangeLabel = range ? `${range.low}–${range.high}` : "未生成";
   /** 三种关系的记录总数，用来算各自占比（两个版式共用）。 */
+  const narrowChart = useNarrowChart();
+  /** 抽屉当前展开的大类（键是「线:大类名」）；一次只开一个，和首页六站一个脾气。 */
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const relationTotal = relationGroups.reduce((sum, group) => sum + group.items.length, 0);
   /** 学生这一次真正选了方向没有（自选专业类 + AI 建议），空结果要据此分开解释。 */
   const chosenDirections = picks.length + aiDirectionIds.length;
@@ -85,23 +117,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
     .map((id) => id.replace(/^catalog:/, ""))
     .slice(0, 4);
 
-  const copyText = async () => {
-    const lines = [
-      `南溟航线图 · ${contextLabel}`,
-      `探索区间：${rangeLabel}（参考年 ${REFERENCE_YEAR}）`,
-      ...routes.map((route) => `${route.title}：${route.majors.length} 个专业 · ${route.rows.length} 条专业×院校`),
-      ...routes.flatMap((route) => route.rows.slice(0, 20)
-        .map((row) => `  [${route.title}] ${row.label.institutionName} · ${row.label.majorName}`)),
-      ...RELATION_CLASSES.map((relation) => `历史参考：${relation.label} —— ${relationGroups.find((group) => group.key === relation.key)!.items.length} 项`)
-    ];
-    try {
-      if (!navigator.clipboard) throw new Error("CLIPBOARD_UNAVAILABLE");
-      await navigator.clipboard.writeText(lines.join("\n"));
-      notify("已复制文字版航线图");
-    } catch {
-      notify("复制失败：浏览器未提供剪贴板权限，请手动选中页面文字复制。");
-    }
-  };
   /**
    * 导出整页海报（负责人 2026-09-12：导出要和手机端显示一致——竖版长图、一条条卡片，
    * 不是把院校压成一堆文字行）。素材取竖版那张航线图（它在 DOM 里始终存在，窄屏可见），
@@ -109,7 +124,7 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
    */
   const savePng = async () => {
     const node = chartSvgRef.current;
-    if (!node) { notify("当前浏览器无法导出图片，请改用「复制文字版」。"); return; }
+    if (!node) { notify("当前浏览器无法导出图片，请稍后重试。"); return; }
     const box = node.viewBox?.baseVal;
     const chartWidth = Math.round(box?.width || 360);
     const chartHeight = Math.round(box?.height || 344);
@@ -120,42 +135,101 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
       contextLabel,
       rangeLabel,
       referenceYear: pool?.referenceYear ?? REFERENCE_YEAR,
-      routes: routes.map((route) => ({
-        title: route.title,
-        total: route.rows.length,
-        more: Math.max(0, route.rows.length - 24),
-        cards: route.rows.slice(0, 24).map((row) => {
-          const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
-          const interval = reference.reference_rank_interval ?? [];
-          const year = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
-          const scores = scoreRangeForRanks(state.release, state.form.primary, year, interval);
-          const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
-          const passed = row.candidate.eligibility.status === "PASS";
-          return {
-            institution: row.label.institutionName,
-            city: row.label.institutionCity,
-            relation: relation ? { label: relation.label, color: relation.route } : null,
-            major: row.label.majorName,
-            level: row.label.level ? levelLabel(row.label.level) : null,
-            sub: [row.label.batch, row.label.categoryClass,
-              passed ? null : label(row.candidate.eligibility.status)].filter(Boolean).join(" · "),
-            score: scores ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`) : "未知",
-            rank: formatRankInterval(interval),
-            plan: row.label.planCount === null || row.label.planCount === undefined ? "未知" : `${row.label.planCount}`,
-            fee: row.label.tuition === null || row.label.tuition === undefined ? "学费未知" : `学费 ${row.label.tuition}`,
-            tags: (row.label.institutionTags ?? "").split("/").map((tag) => tag.trim()).filter(Boolean).slice(0, 3),
-          };
-        }),
-      })),
+      // 海报与页面同款：按大类 → 小类分层，卡片挑选规则也一致（每类几张、每线合计上限）。
+      routes: routes.map((route) => {
+        const picked = pickGroupedCards(groupRouteRows(route.rows), CARDS_PER_CLASS, CARDS_PER_ROUTE);
+        const shown = picked.reduce(
+          (sum, entry) => sum + entry.classes.reduce((n, cls) => n + cls.rows.length, 0), 0);
+        return {
+          title: route.title,
+          total: route.rows.length,
+          more: Math.max(0, route.rows.length - shown),
+          groups: picked.map((entry) => ({
+            name: entry.category.name,
+            total: entry.category.total,
+            classes: entry.classes.map((cls) => ({
+              name: cls.name,
+              total: cls.total,
+              cards: cls.rows.map((row) => {
+                const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
+                const interval = reference.reference_rank_interval ?? [];
+                const year = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
+                const scores = scoreRangeForRanks(state.release, state.form.primary, year, interval);
+                const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+                const passed = row.candidate.eligibility.status === "PASS";
+                return {
+                  institution: row.label.institutionName,
+                  city: row.label.institutionCity,
+                  relation: relation ? { label: relation.label, color: relation.route } : null,
+                  major: row.label.majorName,
+                  level: row.label.level ? levelLabel(row.label.level) : null,
+                  sub: [row.label.batch, row.label.categoryClass,
+                    passed ? null : label(row.candidate.eligibility.status)].filter(Boolean).join(" · "),
+                  score: scores ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`) : "未知",
+                  rank: formatRankInterval(interval),
+                  plan: row.label.planCount === null || row.label.planCount === undefined ? "未知" : `${row.label.planCount}`,
+                  fee: row.label.tuition === null || row.label.tuition === undefined ? "学费未知" : `学费 ${row.label.tuition}`,
+                  tags: (row.label.institutionTags ?? "").split("/").map((tag) => tag.trim()).filter(Boolean).slice(0, 3),
+                };
+              }),
+            })),
+          })),
+        };
+      }),
       blessing: BLESSING,
       note: `按历史位置参考绘制 · 参考年 ${pool?.referenceYear ?? REFERENCE_YEAR} · 不构成录取判断 · 正式填报以本省考试院政策与高校招生章程为准`
     });
     const posterWidth = 720;
     const posterHeight = Number((poster.match(/viewBox="0 0 720 (\d+)"/) ?? [])[1] ?? 2400);
-    const ok = await svgStringToPng(poster, posterWidth, posterHeight,
+    // 长图放大看时字会糊，所以按 2 倍像素密度光栅化（SVG 是矢量，放大不损失清晰度）。
+    const ok = await svgStringToPng(poster, posterWidth * PNG_SCALE, posterHeight * PNG_SCALE,
       `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
-    notify(ok ? "已保存 PNG 航线图（与页面同款，含院校卡片与寄语）" : "图片生成失败：浏览器拒绝导出，请改用「复制文字版」。");
+    notify(ok ? "已保存高清 PNG 航线图（与页面同款，含院校卡片与寄语）" : "图片生成失败：浏览器拒绝导出，请稍后重试。");
   };
+  /** 一张院校推荐卡（航线图与分数轴同款；这里抽出来给平铺与抽屉两版共用）。 */
+  const renderCard = (row: PoolRow, routeKind: string) => {
+    const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
+    const interval = reference.reference_rank_interval ?? [];
+    const sourceYear = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
+    // 分层标签直接用发布包里的历史位置关系（需更好位置 / 同分或边界重叠 / 位置较有余量）。
+    // 项目边界不提供「冲稳保」预测，所以标签说明的是「相对历史记录的位置」，不是录取结论。
+    const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+    const institutionTags = (row.label.institutionTags ?? "").split("/")
+      .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
+    const passed = row.candidate.eligibility.status === "PASS";
+    // 参考年最低分由位次区间反查同年的分段表得到（合约只带位次），查不到写「未知」。
+    const scores = scoreRangeForRanks(state.release, state.form.primary, sourceYear, interval);
+    const scoreText = scores
+      ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`)
+      : "未知";
+return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={`${routeKind}-${row.label.offeringId}`}>
+  <div className="scard-top">
+    <div className="sc-head">
+      <span className="sc-loc"><Icon name="pin" />{row.label.institutionName}{row.label.institutionCity ? ` · ${row.label.institutionCity}` : ""}</span>
+      {relation
+        ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
+        : <span className="sc-rel none">暂无比较依据</span>}
+    </div>
+    <h3 className="song">{row.label.majorName}
+      {row.label.level ? <em className="sc-lv">{levelLabel(row.label.level)}</em> : null}</h3>
+    <p className="sc-sub">
+      {row.label.batch}{row.label.categoryClass ? ` · ${row.label.categoryClass}` : ""}
+      {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
+    </p>
+  </div>
+  {/* 一行数据条：最低分打头（学生最先想知道的），位次/招生数/学费跟在后面。
+      旧版三格方块把卡片撑到 236px 高，滚动很费劲；这里压成一条。 */}
+  <div className="sc-foot">
+    <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
+    <span>位次 {formatRankInterval(interval)}</span>
+    <span>招 {row.label.planCount ?? "—"} 人</span>
+    <span className="sc-fee">{row.label.tuition == null ? "学费未知" : `学费 ${row.label.tuition}`}</span>
+  </div>
+  {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
+  {row.reference === "group" ? <p className="fhint" style={{ margin: "0 16px 10px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
+</article>;
+  };
+
   return <section id="page-chart" className={`view${page === "chart" ? " active" : ""}`} aria-label="航线图">
     <div className="page-head">
       <div><span className="eyebrow">Chapter 06 · 航线图 · 抟扶摇</span>
@@ -367,6 +441,12 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
         </div>
         : routes.map((route) => {
           const meta = ROUTE_META.find((item) => item.kind === route.kind)!;
+          // 按大类 → 小类分组（负责人 2026-09-12：不要一股脑全堆出来，要有层次）；
+          // 每小类取前几张、每条线合计上限若干张——页面两版与导出海报用同一份挑选。
+          const grouped = groupRouteRows(route.rows);
+          const picked = pickGroupedCards(grouped, CARDS_PER_CLASS, CARDS_PER_ROUTE);
+          const shown = picked.reduce(
+            (sum, entry) => sum + entry.classes.reduce((n, cls) => n + cls.rows.length, 0), 0);
           return <div className="panel" style={{ marginBottom: 22 }} key={route.kind}>
             <div className="res-bar" style={{ marginBottom: 14 }}>
               <div className="res-count">{meta.title} · <b>{route.rows.length}</b> 条专业 × 院校</div>
@@ -381,55 +461,56 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
               // 选科与批次筛出来的那一部分（负责人 2026-09-12 就是被这句话绕住的）。
               // 现在说实话，并给出可操作的下一步。
               ? <p className="muted-note">这些专业类在你这次的院校池里一条记录都没有（池子共 {pool?.rows.length ?? 0} 条 · {pool?.schoolCount ?? 0} 所院校）。院校池是按你的探索区间、选科与批次筛出来的；可以把区间放宽一点、把高职（专科）批一并勾上，或换个方向。这条选择会保留，不自动扩大范围去凑结果。</p>
-              : <div className="schools" style={{ marginTop: 0 }}>
-                {route.rows.slice(0, 24).map((row) => {
-                  const reference = row.reference === "major" ? row.candidate.major_reference : row.candidate.group_reference;
-                  const interval = reference.reference_rank_interval ?? [];
-                  const sourceYear = reference.source_year ?? pool?.referenceYear ?? REFERENCE_YEAR;
-                  // 分层标签直接用发布包里的历史位置关系（需更好位置 / 同分或边界重叠 / 位置较有余量）。
-                  // 项目边界不提供「冲稳保」预测，所以标签说明的是「相对历史记录的位置」，不是录取结论。
-                  const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
-                  const institutionTags = (row.label.institutionTags ?? "").split("/")
-                    .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
-                  const passed = row.candidate.eligibility.status === "PASS";
-                  // 参考年最低分由位次区间反查同年的分段表得到（合约只带位次），查不到写「未知」。
-                  const scores = scoreRangeForRanks(state.release, state.form.primary,
-                    sourceYear, interval);
-                  const scoreText = scores
-                    ? (scores.min === scores.max ? `${scores.min}` : `${scores.min}–${scores.max}`)
-                    : "未知";
-                  return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key={`${route.kind}-${row.label.offeringId}`}>
-                    <div className="scard-top">
-                      <div className="sc-head">
-                        <span className="sc-loc"><Icon name="pin" />{row.label.institutionName}{row.label.institutionCity ? ` · ${row.label.institutionCity}` : ""}</span>
-                        {relation
-                          ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
-                          : <span className="sc-rel none">暂无比较依据</span>}
-                      </div>
-                      <h3 className="song">{row.label.majorName}
-                        {row.label.level ? <em className="sc-lv">{levelLabel(row.label.level)}</em> : null}</h3>
-                      <p className="sc-sub">
-                        {row.label.batch}{row.label.categoryClass ? ` · ${row.label.categoryClass}` : ""}
-                        {passed ? null : ` · ${label(row.candidate.eligibility.status)}`}
-                      </p>
+              : narrowChart
+                // 手机端：大类收成抽屉（借首页起航六站那套堆叠卡），点开才展开它的小类与卡片。
+                ? <div className="deck">
+                  {grouped.map((category) => {
+                    const key = `${route.kind}:${category.name}`;
+                    const open = openCategory === key;
+                    const entry = picked.find((item) => item.category.name === category.name);
+                    return <div className={`stop${open ? " open" : ""}`} key={key}>
+                      <button type="button" className="stop-head" aria-expanded={open}
+                        onClick={() => setOpenCategory(open ? null : key)}>
+                        <span className="mk">{category.classes.length} 个专业类</span>
+                        <h4>{category.name}</h4>
+                        <span className="sc-cat-count">{category.total} 条</span>
+                        <span className="stop-cue"><Icon name="chevron" /></span>
+                      </button>
+                      {open ? <div className="stop-body">
+                        {entry ? entry.classes.map((cls) => <div className="sc-class" key={cls.name}>
+                          <div className="sc-class-head">
+                            <span>{cls.name}</span>
+                            <span>{cls.total} 条{cls.total > cls.rows.length ? ` · 列前 ${cls.rows.length}` : ""}</span>
+                          </div>
+                          <div className="schools" style={{ marginTop: 0 }}>
+                            {cls.rows.map((row) => renderCard(row, route.kind))}
+                          </div>
+                        </div>) : <p className="muted-note">这个大类在这次挑选里没有展开的卡片（每个专业类取前 {CARDS_PER_CLASS} 张，每条线合计上限 {CARDS_PER_ROUTE} 张）。</p>}
+                      </div> : null}
+                    </div>;
+                  })}
+                </div>
+                // 宽屏与导出：平铺的分组列表——大类标题 → 小类标题 → 卡片。
+                : <>{picked.map((entry) => <section className="sc-cat" key={entry.category.name}>
+                  <div className="sc-cat-head">
+                    <h4 className="song">{entry.category.name}</h4>
+                    <span>{entry.category.total} 条 · {entry.category.classes.length} 个专业类</span>
+                  </div>
+                  {entry.classes.map((cls) => <div className="sc-class" key={cls.name}>
+                    <div className="sc-class-head">
+                      <span>{cls.name}</span>
+                      <span>{cls.total} 条{cls.total > cls.rows.length ? ` · 列前 ${cls.rows.length}` : ""}</span>
                     </div>
-                    {/* 一行数据条：最低分打头（学生最先想知道的），位次/招生数/学费跟在后面。
-                        旧版三格方块把卡片撑到 236px 高，滚动很费劲；这里压成一条。 */}
-                    <div className="sc-foot">
-                      <span className="sc-score">{sourceYear} 最低 <b>{scoreText}</b> 分</span>
-                      <span>位次 {formatRankInterval(interval)}</span>
-                      <span>招 {row.label.planCount ?? "—"} 人</span>
-                      <span className="sc-fee">{row.label.tuition == null ? "学费未知" : `学费 ${row.label.tuition}`}</span>
+                    <div className="schools" style={{ marginTop: 0 }}>
+                      {cls.rows.map((row) => renderCard(row, route.kind))}
                     </div>
-                    {institutionTags.length ? <p className="sc-tagline">{institutionTags.join(" · ")}</p> : null}
-                    {row.reference === "group" ? <p className="fhint" style={{ margin: "0 16px 10px" }}>只有专业组依据，具体专业门槛未知。</p> : null}
-                  </article>;
-                })}
-              </div>}
-            {route.rows.length > 24 ? <p className="fhint" style={{ marginTop: 10 }}>已展示前 24 条，其余 {route.rows.length - 24} 条未逐条展开（复制文字版含每路前 20 条的院校与专业名）。</p> : null}
+                  </div>)}
+                </section>)}</>}
+            {shown > 0 && shown < route.rows.length
+              ? <p className="fhint" style={{ marginTop: 12 }}>已按大类与专业类分层展开 {shown} 张卡片，其余 {route.rows.length - shown} 条未逐条展开（导出的图片与这一屏同款）。</p>
+              : null}
           </div>;
         })}
-
     </>}
 
     <div className="blessing">
@@ -443,7 +524,6 @@ export function renderChart({ state, page, setPage, pool, poolStale, aiDirection
     <div className="chart-actions chart-export">
       <button type="button" className="btn brass" disabled={!drawable} onClick={() => { void savePng(); }}><Icon name="down" />保存为 PNG 图片</button>
       <div className="export-row">
-        <button type="button" className="btn ghost" onClick={copyText}><Icon name="layers" />复制文字版</button>
         <button type="button" className="btn ghost" onClick={() => setPage("axis")}><Icon name="axis" />回去调区间</button>
       </div>
     </div>
