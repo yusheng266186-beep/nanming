@@ -7,7 +7,7 @@
  *
  * 本文件只放开关与调试专用常量，不写业务逻辑；所有消费点都必须带 DEBUG_MODE 判断。
  */
-export const DEBUG_MODE = true;
+export const DEBUG_MODE = import.meta.env.DEV;
 
 /** 调试模式下预填的本地访问码（本地 API 开发档的演示码）。 */
 export const DEBUG_ACCESS_CODE = "local-trial-code";

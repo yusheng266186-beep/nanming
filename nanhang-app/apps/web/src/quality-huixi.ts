@@ -22,7 +22,7 @@ export const QUALITY_BASE =
 export const MAX_CODE_ATTEMPTS = 5;
 
 export interface LoadedQuality {
-  index: QualityIndex;
+  index: Pick<QualityIndex, "exams" | "trend">;
   shard: QualityShard;
 }
 
@@ -62,10 +62,10 @@ async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   }
 }
 
-/** 只接受 6 位数字；其它输入在校验前就被拒绝，不发起请求。 */
+/** 六位数字查询码；身份证后六位的末位 X 按 0 输入，前导零保留。 */
 export function normalizeCode(input: string): string | null {
-  const digits = input.replace(/\D/g, "");
-  return digits.length === 6 ? digits : null;
+  const code = input.normalize("NFKC").replace(/\s/g, "").toUpperCase();
+  return /^\d{6}$/.test(code) ? code : null;
 }
 
 async function sha256Hex(value: string): Promise<string> {

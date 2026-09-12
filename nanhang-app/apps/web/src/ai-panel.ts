@@ -226,8 +226,11 @@ export function applyOutcome(state: AiPanelState, outcome: AiTurnOutcome, httpSt
   }
   if (outcome.status === "error") {
     return { ...state, pending: false, reply: null, suggestions: [], actions: [], options: [], replyRevision: null,
+      ...(httpStatus === 401 ? { connected: false, token: null } : {}),
       status: httpStatus === 503
         ? "AI 当前不可用，无 AI 的浏览、探索与匹配仍可正常使用。"
+        : httpStatus === 401 ? "会话已过期，请重新输入老师发放的访问码。"
+        : httpStatus === 0 ? "连接中断或等待超时，请稍后重新发送。"
         : `AI 未完成：${outcome.reason ?? "未知原因"}` };
   }
   if (outcome.status === "degraded") {

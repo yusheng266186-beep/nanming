@@ -721,6 +721,35 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
 .table .num{font-family:var(--display);font-variant-numeric:tabular-nums;text-align:right}
 .empty-inline{border:1px dashed var(--line-2);border-radius:14px;padding:26px;text-align:center;color:var(--mut);font-size:12.5px;line-height:1.9}
 
+/* ══════════ 定位页：卡片留白收紧（负责人点名两处，尤以「荣县一中接入」与「探索区间」为甚）══════════
+   先给整页的面板收一档（内边距 26→22、标题与副述之间的空档各收 2–4px），再把这两张卡单独再收一档。
+   这两张卡靠 `:has()` 按内容认出来（识别卡里有文本框、区间卡里有网格里的数字框，全页唯一），
+   因此**不需要给 JSX 加类名**；认不出的浏览器（不支持 `:has()`）只是保持原样，不会坏版。
+   卡内几处间距是 JSX 的行内 style（`.grid-2` 的 marginTop/gap、`.hero-act`、`.vlist`、两条提示），
+   样式表要盖住行内值只能用 `!important`——本轮只在这里用，且只作用在这两张卡上。 */
+#page-locate .panel{padding:22px 24px}
+#page-locate .panel h3{margin-bottom:2px}
+#page-locate .panel .psub{margin-bottom:14px}
+#page-locate .panel:has(input[type="text"]),
+#page-locate .panel:has(.grid-2 label.field input[type="number"]){padding:20px 22px}
+#page-locate .panel:has(input[type="text"]) .psub,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .psub{margin-bottom:10px}
+#page-locate .panel:has(input[type="text"]) .field,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .field{margin-bottom:0}
+#page-locate .panel:has(input[type="text"]) .flab,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .flab{margin-bottom:8px}
+#page-locate .panel:has(input[type="text"]) .fhint,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .fhint{margin-top:7px!important}
+#page-locate .panel:has(input[type="text"]) .vlist,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .vlist{margin-top:10px!important;gap:7px}
+#page-locate .panel:has(input[type="text"]) .vpill,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .vpill{padding:6px 12px}
+#page-locate .panel:has(input[type="text"]) .grid-2,
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .grid-2{margin-top:10px!important;gap:12px!important}
+#page-locate .panel:has(input[type="text"]) .hero-act{margin-top:12px!important}
+#page-locate .panel:has(.grid-2 label.field input[type="number"]) .muted-note{margin-top:10px!important}
+@media(max-width:640px){#page-locate .panel{padding:20px 18px}}
+
 /* ══════════ 定位页：读数区不再被挤成半栏（窄屏修复）══════════
    `.gauge-top` 里那两处读数（高考目标分 / 全省位次）在窄屏被 `space-between` 挤成半栏，
    于是「高考目标分 · 裸分」在字中间断行、大号破折号与「分」也分了家——标签与数字都是

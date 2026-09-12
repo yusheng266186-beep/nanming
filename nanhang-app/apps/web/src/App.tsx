@@ -9,7 +9,7 @@ import { evidenceForRequest } from "./ai-client.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
 import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
 import {
-  additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam, loadQualityIndex,
+  additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam,
   normalizeCode, recentExams, registerFailure, withoutEntryExams,
   type LoadedQuality, type QualityAttempts
 } from "./quality-huixi.js";
@@ -32,6 +32,7 @@ import { renderTalk } from "./chapters/talk.js";
 import { renderDirection } from "./chapters/direction.js";
 import { renderAxis } from "./chapters/axis.js";
 import { renderChart } from "./chapters/chart.js";
+import { renderSettings } from "./chapters/settings.js";
 
 export default function App() {
   const [state, setState] = useState(initialState);
@@ -63,6 +64,8 @@ export default function App() {
   const [talkStep, setTalkStep] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const [showKun, setShowKun] = useState(false);
+  // 设置卡片：思考深度与清除本人数据都收在这里，顶栏右上角的「溟」是唯一入口。
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [onlyConfirmed, setOnlyConfirmed] = useState(false);
   const [matchPending, setMatchPending] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
@@ -232,6 +235,13 @@ export default function App() {
     setPicks([]);
     setPickedGroups([]);
     setSchoolName("");
+    if (ai.token) {
+      void fetch(`${ai.apiBase}/v1/session`, { method: "DELETE",
+        headers: { authorization: `Bearer ${ai.token}` }, signal: AbortSignal.timeout(15_000)
+      }).then((response) => {
+        if (!response.ok && response.status !== 401) notify("本页已清除，云端会话清理未完成，将按服务端期限过期。");
+      }).catch(() => notify("本页已清除，暂时无法连接云端清理会话，将按服务端期限过期。"));
+    }
     setAi(disableAi(ai));
     setAiDraft("");
     setAiCode("");
@@ -277,7 +287,7 @@ export default function App() {
     const name = schoolName.trim();
     if (!name || name.length > 40 || normalizeCode(qualityCode) === null) {
       setQuality((current) => ({ ...current, status: "failed",
-        message: "请填写学生姓名和 6 位数字验证码。" }));
+        message: "请填写学生姓名和 6 位数字查询码，身份证末位 X 请填 0。" }));
       return;
     }
     const seq = ++qualitySeq.current;
@@ -286,13 +296,16 @@ export default function App() {
       const response = await fetch(`${ai.apiBase}/v1/school/identify`, {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, code: qualityCode }) });
-      const body = await response.json() as { shard?: QualityShard; message?: string };
+      const body = await response.json() as { shard?: QualityShard; index?: LoadedQuality["index"]; message?: string };
       if (!response.ok || !body.shard) throw new Error(body.message ?? "姓名或验证码不匹配，请向老师核对。");
       if (seq !== qualitySeq.current) return;
       // 入口考（入学测试）满分口径与正考不同且全校无切线，负责人裁定不作为参考依据：
       // 在入口处就剔除，考试行、稳定性、趋势、航迹、知识短板一律看不到它。
       const shard = withoutEntryExams(body.shard);
-      const index = quality.index ?? await loadQualityIndex();
+      const index = body.index;
+      if (!index || !Array.isArray(index.exams) || !Array.isArray(index.trend)) {
+        throw new Error("成绩汇总暂不可用，请稍后重试或联系老师。");
+      }
       if (seq !== qualitySeq.current) return;
       const exam = latestExam(shard);
       setQuality({ status: "ready", index, shard, attempts: initialQualityAttempts, message: null });
@@ -347,8 +360,10 @@ export default function App() {
   };
   /** 点选 AI 给出的答案时用 override 直接发出，不必先写进草稿再等一轮渲染。 */
   const sendAi = async (override?: string) => {
+    if (ai.pending) return;
     const text = (override ?? aiDraft).trim();
     if (!text) { setAi((current) => ({ ...current, status: "请先写下你想说的话。" })); return; }
+    if (text.length > 4000) { setAi((current) => ({ ...current, status: "这段话较长，请分成每次不超过 4000 字发送。" })); return; }
     const seq = ++aiSeq.current;
     const requestId = `web-req-${state.generation}-${Date.now()}`;
     // 用户消息先进入转录（等待回复时也能看到自己说了什么）；历史带最近 8 轮给模型接上下文。
@@ -503,7 +518,7 @@ export default function App() {
     catalog, hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
     reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
     matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,
-    map, score, contextLabel, chartSvgRef, download, clear, setShowKun, setToast, toast
+    map, score, contextLabel, chartSvgRef, download, setShowKun, setToast, toast
   };
 
   const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);
@@ -519,7 +534,8 @@ export default function App() {
     {DEBUG_MODE ? <div className="debug-flag" role="status" aria-label="调试模式开启中">调试模式 · 示例数据</div> : null}
     <header className="topbar">
       <div className="topbar-in">
-        <button type="button" className="brand" aria-label="南溟 · 回到起航" onClick={() => goTo("sail")}>
+        {/* 品牌标记与「溟」分工：左边是《逍遥游》的彩蛋，右边进设置。 */}
+        <button type="button" className="brand" aria-label="南溟 · 逍遥游" onClick={() => setShowKun(true)}>
           <BrandMark />
           <span className="brand-txt"><span className="brand-name">南溟</span><span className="brand-sub">NANMING · 天池</span></span>
         </button>
@@ -541,7 +557,7 @@ export default function App() {
         </nav>
         <div className="head-end">
           <button type="button" className="ctx-btn" onClick={() => goTo("locate")}><span>{contextLabel}</span><Icon name="chevron" /></button>
-          <button type="button" className="avatar" aria-label="关于南溟 / 设置" onClick={() => setShowKun(true)}>溟</button>
+          <button type="button" className="avatar" aria-label="设置" onClick={() => setSettingsOpen(true)}>溟</button>
         </div>
       </div>
     </header>
@@ -573,6 +589,9 @@ export default function App() {
         </button>;
       })}
     </nav>
+
+    {/* 设置卡片：任何一页都能打开；Esc、点背景、右上角关闭按钮都能退出。 */}
+    {renderSettings({ open: settingsOpen, onClose: () => setSettingsOpen(false), ai, setAi, clear })}
 
     <div id="kun-stage" className={showKun ? "show" : ""} role="dialog" aria-label="逍遥游">
       <div className="kun-in">

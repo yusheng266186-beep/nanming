@@ -1,0 +1,25 @@
+{
+  "scope": "existing deployed API; not the new local code",
+  "origin": "https://yusheng266186-beep.github.io",
+  "/healthz": {
+    "status": 200,
+    "cors_matches": true,
+    "ai": true,
+    "store": "redis"
+  },
+  "/readyz": {
+    "status": 200,
+    "cors_matches": true,
+    "ai": true,
+    "store": true
+  },
+  "preflight": {
+    "status": 204,
+    "cors_matches": true
+  },
+  "admissions_pointer": {
+    "status": 200,
+    "cors": "*",
+    "json": true
+  }
+}

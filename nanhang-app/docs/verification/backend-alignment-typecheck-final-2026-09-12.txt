@@ -1,0 +1,21 @@
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+src/chapters/axis.tsx(170,28): error TS2304: Cannot find name 'RELATION_CLASSES'.
+src/chapters/axis.tsx(170,51): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/chapters/axis.tsx(182,57): error TS2304: Cannot find name 'levelLabel'.
+src/chapters/axis.tsx(194,42): error TS2304: Cannot find name 'formatRankInterval'.
+src/chapters/chart.tsx(180,69): error TS2304: Cannot find name 'levelLabel'.
+src/chapters/chart.tsx(192,50): error TS2304: Cannot find name 'formatRankInterval'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path C:\Users\yusheng\Desktop\南航\nanhang-app\apps\web
+npm error workspace @nanhang/web@0.1.0
+npm error location C:\Users\yusheng\Desktop\南航\nanhang-app\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc --noEmit -p tsconfig.json

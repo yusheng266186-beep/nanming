@@ -1,0 +1,1849 @@
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ apps/web/test/quality-huixi.test.ts (36 tests) 644ms
+   ✓ 发布产物与解析器输出一致 > 跨科类考试（美术班）按该场科类的分数线与位次池计算  324ms
+ ✓ apps/api/test/api.test.ts (31 tests) 422ms
+ ✓ apps/web/test/release-integration.test.ts (13 tests) 2748ms
+   ✓ published release integration > 发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业  2154ms
+ ✓ packages/ai-gateway/test/redis-store.test.ts (13 tests) 294ms
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 汇总密文缺失时明确503，不交付一个无法完成定位的成功响应
+school identify failed: Error: SCHOOL_SUMMARY_UNAVAILABLE
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:215:38)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 密文被改过一个字节就拒绝（GCM 认证失败），不会把坏数据发给学生
+school identify failed: Error: Unsupported state or unable to authenticate data
+    at Decipheriv.final (node:internal/crypto/cipher:174:29)
+    at decryptShard (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:36:14)
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:211:27)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+ ✓ apps/api/test/school-cloud.test.ts (7 tests) 223ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 197ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 183ms
+ ✓ apps/api/test/school-access.test.ts (3 tests) 187ms
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 116ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 41ms
+ ✓ packages/domain/test/matching.test.ts (10 tests) 30ms
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 31ms
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 35ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 30ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 16ms
+ ✓ apps/web/test/chat.test.ts (16 tests) 21ms
+ ✓ apps/web-paper/test/paper-honesty.test.ts (12 tests) 18ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 14ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 35ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 18ms
+ ✓ packages/ai-gateway/test/catalog-guard.test.ts (5 tests) 27ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 20ms
+ ✓ apps/web/test/backend-alignment.test.ts (4 tests) 22ms
+ ✓ apps/web/test/journey-model.test.ts (13 tests) 13ms
+ ✓ apps/web/test/theme-spirit.test.ts (11 tests) 18ms
+ ✓ apps/web/test/progress.test.ts (15 tests) 34ms
+ ✓ apps/web/test/exam-position.test.ts (13 tests) 15ms
+ ✓ apps/web/test/presentation.test.ts (8 tests) 11ms
+ ✓ apps/web/test/sail-deck.test.ts (7 tests) 9ms
+ ❯ apps/web/test/quality-presentation.test.ts (10 tests | 1 failed) 36ms
+   ✓ 成绩页的界面约定 > 入口卡片可点，并说明需要姓名加验证码 4ms
+   ✓ 成绩页的界面约定 > 识别改为服务端核对并写明限流，不再声称仅验证码是安全边界 2ms
+   × 成绩页的界面约定 > 慧析面板不给录取结论，并区分「已发生」与「未预测」 19ms
+     → expected 'import { useEffect, useMemo, useRef, …' not to match /录取把握|稳上|保底校/
+   ✓ 成绩页的界面约定 > 表格与输入都带可访问名称与作用域 2ms
+   ✓ 成绩页的界面约定 > 数据缺失显示为「—」，不显示 0，也不用空字符串 1ms
+   ✓ 成绩页的界面约定 > 跨科类考试在页面上有单独说明 1ms
+   ✓ 成绩页的界面约定 > 成绩表在宽表时横向可滚动，数字列右对齐 1ms
+   ✓ 成绩页的界面约定 > 开发服务器只读挂载成绩目录做校内演示，越界复检与两条数据通道并存 1ms
+   ✓ 成绩页的界面约定 > 读取层不把验证码写进地址栏或本地存储 1ms
+   ✓ 成绩页的界面约定 > 分片请求只用摘要名，不含明文验证码 1ms
+ ✓ apps/web/test/topbar-narrow.test.ts (4 tests) 12ms
+ ✓ apps/web/test/settings.test.ts (3 tests) 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps/web/test/quality-presentation.test.ts > 成绩页的界面约定 > 慧析面板不给录取结论，并区分「已发生」与「未预测」
+AssertionError: expected 'import { useEffect, useMemo, useRef, …' not to match /录取把握|稳上|保底校/
+
+- Expected: 
+/录取把握|稳上|保底校/
+
++ Received: 
+"import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from \"react\";
+import {
+  DIRECTIONS, SELECTABLE_BATCHES, comparabilityNote, initialState, isMatchFresh,
+  loadPublishedRelease, registerStartTool, resetLocal, routeMap, runMatch,
+  summary, withForm, type ModelContextLike, type WebState
+} from \"./model.js\";
+import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUserTurn, type AiPanelState } from \"./ai-panel.js\";
+import { evidenceForRequest } from \"./ai-client.js\";
+import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from \"./art.js\";
+import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from \"./chat.js\";
+import {
+  additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam,
+  normalizeCode, recentExams, registerFailure, withoutEntryExams,
+  type LoadedQuality, type QualityAttempts
+} from \"./quality-huixi.js\";
+import type { QualityShard } from \"./quality-types.js\";
+import { buildReleaseCatalog, buildSchoolPool, makeBranches, rangeFromExams,
+  type CatalogDirection, type CatalogGroup, type Major, type SchoolPool, type ScoreRange } from \"./journey-model.js\";
+import { equivalentPosition } from \"./exam-position.js\";
+import { OFFICIAL_LINES_2026 } from \"./reference-lines.js\";
+import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from \"./debug.js\";
+import {
+  CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
+  type PageId, type QualityState
+} from \"./chapters/shared.js\";
+import {
+  canOpen, isDone, lockHint, stageDone, stageOf, unlockedStage, type ProgressInput
+} from \"./progress.js\";
+import { renderSail } from \"./chapters/sail.js\";
+import { renderLocate } from \"./chapters/locate.js\";
+import { renderTalk } from \"./chapters/talk.js\";
+import { renderDirection } from \"./chapters/direction.js\";
+import { renderAxis } from \"./chapters/axis.js\";
+import { renderChart } from \"./chapters/chart.js\";
+import { renderSettings } from \"./chapters/settings.js\";
+
+export default function App() {
+  const [state, setState] = useState(initialState);
+  const [, setDrafts] = useState<Record<string, string>>({});
+  const [ai, setAi] = useState<AiPanelState>(initialAiPanel);
+  const [qualityCode, setQualityCode] = useState(\"\");
+  const [schoolName, setSchoolName] = useState(\"\");
+  const [quality, setQuality] = useState<QualityState>(initialQualityState);
+  // 新主流程的三块状态：探索区间（成绩 → 匹配）、院校池（区间匹配结果）、我的专业自选。
+  // poolRun 附带生成时的输入指纹，选科/批次/区间一变，旧池即标记失效。
+  const [range, setRange] = useState<ScoreRange | null>(null);
+  const [poolRun, setPoolRun] = useState<{ key: string; data: SchoolPool } | null>(null);
+  const [poolPending, setPoolPending] = useState(false);
+  const [poolError, setPoolError] = useState<string | null>(null);
+  const [picks, setPicks] = useState<string[]>([]);
+  // 两级方向选择（负责人裁定）：先选 2–3 个大类（学科门类），再在大类里勾 5–10 个
+  // 小类（专业类）；进入匹配的是小类，大类负责圈定范围。
+  const [pickedGroups, setPickedGroups] = useState<string[]>([]);
+  // 发布包级专业类目录（与分数区间无关）：方向页的自选清单与 AI 的方向目录都用它。
+  // 流程是先定方向、再按分数匹配——不能等院校池跑出来才谈方向。
+  const [catalogRun, setCatalogRun] = useState<{ key: string;
+    data: { majors: Major[]; directions: CatalogDirection[]; groups: CatalogGroup[] } } | null>(null);
+  // 章节门禁：学生按下「先用通用模式」算一次显式跳过；maxStage 记住本会话解锁到哪一段（只增不减）。
+  const [maxStage, setMaxStage] = useState(0);
+  const [aiDraft, setAiDraft] = useState(\"\");
+  // 调试模式预填本地演示访问码：点「连接」就能进对话，不用手敲。
+  const [aiCode, setAiCode] = useState(DEBUG_MODE ? DEBUG_ACCESS_CODE : \"\");
+  const [page, setPage] = useState<PageId>(\"sail\");
+  const [talkStep, setTalkStep] = useState(0);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showKun, setShowKun] = useState(false);
+  // 设置卡片：思考深度与清除本人数据都收在这里，顶栏右上角的「溟」是唯一入口。
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [onlyConfirmed, setOnlyConfirmed] = useState(false);
+  const [matchPending, setMatchPending] = useState(false);
+  const [detail, setDetail] = useState<string | null>(null);
+  // 谈心页的打字指示：换题后先显示「溟在听」，再开始逐字显示问题。
+  const [thinking, setThinking] = useState(false);
+  const reducedMotion = useMemo(() => prefersReducedMotion(), []);
+
+  const reading = useMemo(() => summary(state), [state]);
+  const map = useMemo(() => {
+    try { return routeMap(state); } catch { return null; }
+  }, [state]);
+  const comparability = useMemo(
+    () => comparabilityNote(state.release, state.form.primary,
+      state.match?.result.candidates[0]?.group_reference.source_year ?? null),
+    [state.release, state.form.primary, state.match]);
+  const matching = state.releaseStatus === \"loading\" || matchPending;
+
+  // Matching is asynchronous, so a response can outlive the input it was issued for. `matchSeq`
+  // rejects any response that a newer request has superseded, and the generation check refuses to
+  // write a result built from an input the student has since changed.
+  const matchSeq = useRef(0);
+  const matchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aiSeq = useRef(0);
+  const qualitySeq = useRef(0);
+  const poolSeq = useRef(0);
+  const catalogSeq = useRef(0);
+  const chartSvgRef = useRef<SVGSVGElement | null>(null);
+  const detailRef = useRef<HTMLDialogElement | null>(null);
+  const releaseAbort = useRef<AbortController | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // 新消息或换题后把对话滚到底部，让刚出现的提问可见。
+  useEffect(() => {
+    const box = chatScrollRef.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  }, [page, talkStep, state.answers.length, thinking, ai.history.length, ai.pending]);
+  useEffect(() => () => { if (matchTimer.current !== null) clearTimeout(matchTimer.current); }, []);
+
+  const runMatchSafely = (source: WebState) => {
+    const seq = ++matchSeq.current;
+    const generation = source.generation;
+    setMatchPending(true);
+    void runMatch(source).then((next) => {
+      if (seq !== matchSeq.current) return;
+      setMatchPending(false);
+      setState((current) => current.generation === generation ? next : current);
+      if (next.generation === generation && next.notice) notify(next.notice);
+    });
+  };
+
+  // Debounced re-match for the score slider: dragging changes the score many times, but only the
+  // value the student settles on is worth a run. Prerequisites are checked so dragging before the
+  // course selection is complete does not raise a notice on every step.
+  const queueMatch = (source: WebState) => {
+    if (!source.form.primary || source.form.additional.length !== 2
+      || source.form.batches.length === 0 || source.form.score === null) return;
+    if (matchTimer.current !== null) clearTimeout(matchTimer.current);
+    matchTimer.current = setTimeout(() => { matchTimer.current = null; runMatchSafely(source); }, 320);
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const context = (document as unknown as { modelContext?: ModelContextLike }).modelContext;
+    registerStartTool(context, (patch) => setState((current) => withForm(current, patch)), controller.signal);
+    return () => controller.abort();
+  }, []);
+
+  // Load (or reload) the published release. A failure is surfaced and leaves the synthetic flow
+  // usable, so a missing or stale release degrades instead of blocking exploration. Reloading is
+  // also what lets 「清除本次探索」 restore release usability without stranding the page in
+  // synthetic mode, and the previous controller is aborted so an older load cannot overwrite it.
+  const reloadRelease = () => {
+    releaseAbort.current?.abort();
+    const controller = new AbortController();
+    releaseAbort.current = controller;
+    setState((current) => ({ ...current, releaseStatus: \"loading\" }));
+    void loadPublishedRelease(controller.signal).then((patch) => {
+      if (!controller.signal.aborted) setState((current) => ({ ...current, ...patch }));
+    });
+  };
+  useEffect(() => {
+    reloadRelease();
+    return () => releaseAbort.current?.abort();
+  }, []);
+
+  // 调试模式：预置一段示例探索区间，让院校池/方向/航线图不用先填成绩就能看视觉效果。
+  useEffect(() => {
+    if (!DEBUG_MODE) return;
+    setRange((current) => current ?? { low: DEBUG_SAMPLE_RANGE.low, high: DEBUG_SAMPLE_RANGE.high,
+      basis: \"（调试模式）示例区间，仅供验收界面使用，不是真实数据。\" });
+  }, []);
+
+  // 探索区间自动生成（负责人裁定：区间由数据来，不由学生填）：有考试按各自切线做等位
+  // 换算取 min–max；没有考试但有目标分时按上下各 10 分。学生仍可在定位页微调，
+  // 但下一次数据变化会按新数据重新生成——改数据比保手调更重要。
+  const examsKey = state.form.exams.map((exam) => `${exam.total}/${exam.topTotal}/${exam.undergraduateTotal}`).join(\"|\");
+  useEffect(() => {
+    if (!state.form.primary) return;
+    const derived = rangeFromExams(state.form.exams, state.form.primary);
+    if (derived) { setRange(derived); return; }
+    if (state.form.score !== null) {
+      setRange({ low: Math.max(0, state.form.score - 10), high: Math.min(750, state.form.score + 10),
+        basis: \"按当前分数上下各 10 分自动生成，可在「定位」微调；不是预测区间。\" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.form.primary, state.form.score, examsKey]);
+
+  // 发布包目录自动构建：选科+两门再选就绪即拉全量专业类（不需要探索区间，更不需要院校池）；
+  // 选科/批次变化按指纹换新，旧目录静默失效（目录是基础数据，失败时如实显示为空）。
+  const catalogKey = [state.form.primary ?? \"none\", [...state.form.additional].sort().join(\"+\"),
+    [...(state.form.batches.length ? state.form.batches : SELECTABLE_BATCHES)].sort().join(\"+\")].join(\"|\");
+  const catalog = catalogRun?.key === catalogKey ? catalogRun.data : null;
+  useEffect(() => {
+    if (!state.release || !state.form.primary || state.form.additional.length !== 2) return;
+    const seq = ++catalogSeq.current;
+    const batches = state.form.batches.length ? state.form.batches : [...SELECTABLE_BATCHES];
+    buildReleaseCatalog(state.release, state.form.primary, state.form.additional, batches)
+      .then((data) => { if (seq === catalogSeq.current) setCatalogRun({ key: catalogKey, data }); })
+      .catch(() => { if (seq === catalogSeq.current) setCatalogRun(null); });
+  }, [state.release, state.form.primary, state.form.additional, catalogKey]);
+
+  useEffect(() => {
+    if (toast === null) return;
+    const timer = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  // The exploration-fact dialog is native so it gets a backdrop and Escape handling for free.
+  useEffect(() => {
+    const node = detailRef.current;
+    if (!node) return;
+    if (detail && !node.open) node.showModal();
+    else if (!detail && node.open) node.close();
+  }, [detail]);
+  const notify = (message: string) => setToast(message);
+
+  // Display names come straight from the release's typed catalog, keyed by offeringId. The
+  // OfferingLabel fields are camelCase (institutionName/majorName/...), and the id — never a list
+  // index — is what ties a name to its row.
+  const catalogueEntry = (offeringId: string) => state.catalog[offeringId] ?? null;
+
+  const toggleBatch = (batch: string) => {
+    setState((current) => {
+      const has = current.form.batches.includes(batch);
+      const next = has
+        ? current.form.batches.filter((item) => item !== batch)
+        : [...SELECTABLE_BATCHES].filter((item) => current.form.batches.includes(item) || item === batch);
+      return withForm(current, { batches: next });
+    });
+  };
+
+  // Clearing drops the student's own exploration but keeps the loaded release and its catalog
+  // (they are not the student's data), then reloads the release so a failed load can recover.
+  // In-flight work is explicitly invalidated: matchSeq/aiSeq are bumped so a late response cannot
+  // overwrite the cleared state, and the debounce timer is cancelled.
+  const clear = () => {
+    if (matchTimer.current !== null) { clearTimeout(matchTimer.current); matchTimer.current = null; }
+    matchSeq.current += 1;
+    aiSeq.current += 1;
+    qualitySeq.current += 1;
+    poolSeq.current += 1;
+    setMatchPending(false);
+    setPoolPending(false);
+    setPoolError(null);
+    setPoolRun(null);
+    setRange(null);
+    setPicks([]);
+    setPickedGroups([]);
+    setSchoolName(\"\");
+    if (ai.token) {
+      void fetch(`${ai.apiBase}/v1/session`, { method: \"DELETE\",
+        headers: { authorization: `Bearer ${ai.token}` }, signal: AbortSignal.timeout(15_000)
+      }).then((response) => {
+        if (!response.ok && response.status !== 401) notify(\"本页已清除，云端会话清理未完成，将按服务端期限过期。\");
+      }).catch(() => notify(\"本页已清除，暂时无法连接云端清理会话，将按服务端期限过期。\"));
+    }
+    setAi(disableAi(ai));
+    setAiDraft(\"\");
+    setAiCode(\"\");
+    setQualityCode(\"\");
+    setQuality(initialQualityState);
+    setDrafts({});
+    setTalkStep(0);
+    setOnlyConfirmed(false);
+    // 门禁也一并归零：清除本次探索之后，仍然要从「起航」一步步来。
+    setMaxStage(0);
+    setState((current) => resetLocal(current));
+    reloadRelease();
+    notify(\"已清除本次探索\");
+  };
+  const download = () => {
+    // 双线结果一并导出：AI 建议线与自选线各自的专业类，以及两条路的合并/分路概要。
+    const routes = pool ? makeBranches(pool, aiDirectionIds, picks)
+      .map((branch) => ({ kind: branch.kind, title: branch.title,
+        majors: branch.majors.map((item) => item.name),
+        offerings: branch.rows.length })) : [];
+    const content = JSON.stringify({ exported_at: new Date().toISOString(), storage: \"student_download\",
+      profile: state.profile, answers: state.answers, form: state.form,
+      range, picks: picks.map((id) => catalog?.directions.find((entry) => entry.id === id)?.name ?? id),
+      groups: pickedGroups.map((id) => catalog?.groups.find((entry) => entry.id === id)?.name ?? id),
+      aiSuggestions: ai.suggestions.map((item) => ({
+        direction: catalog?.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId,
+        rationale: item.rationale,
+        quotes: item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null) })),
+      routes,
+      note: \"历史区间与专业探索结果，不保证录取；专业组参考不等于专业录取线。\" }, null, 2);
+    const url = URL.createObjectURL(new Blob([content], { type: \"application/json\" }));
+    const anchor = document.createElement(\"a\");
+    anchor.href = url;
+    anchor.download = \"nanhang-exploration-profile.json\";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // 荣县一中增强模式：姓名 + 6 位验证码 → 服务端核对（/v1/school/identify，带限流）→
+  // 取回本人分片 → 回填表单并推导探索区间。失败按次计数，达到上限就停手，不做无上限的试号。
+  const identifySchool = async () => {
+    if (quality.attempts.blocked || quality.status === \"loading\") return;
+    const name = schoolName.trim();
+    if (!name || name.length > 40 || normalizeCode(qualityCode) === null) {
+      setQuality((current) => ({ ...current, status: \"failed\",
+        message: \"请填写学生姓名和 6 位数字验证码。\" }));
+      return;
+    }
+    const seq = ++qualitySeq.current;
+    setQuality((current) => ({ ...current, status: \"loading\", message: null }));
+    try {
+      const response = await fetch(`${ai.apiBase}/v1/school/identify`, {
+        method: \"POST\", headers: { \"content-type\": \"application/json\" },
+        body: JSON.stringify({ name, code: qualityCode }) });
+      const body = await response.json() as { shard?: QualityShard; index?: LoadedQuality[\"index\"]; message?: string };
+      if (!response.ok || !body.shard) throw new Error(body.message ?? \"姓名或验证码不匹配，请向老师核对。\");
+      if (seq !== qualitySeq.current) return;
+      // 入口考（入学测试）满分口径与正考不同且全校无切线，负责人裁定不作为参考依据：
+      // 在入口处就剔除，考试行、稳定性、趋势、航迹、知识短板一律看不到它。
+      const shard = withoutEntryExams(body.shard);
+      const index = body.index;
+      if (!index || !Array.isArray(index.exams) || !Array.isArray(index.trend)) {
+        throw new Error(\"成绩汇总暂不可用，请稍后重试或联系老师。\");
+      }
+      if (seq !== qualitySeq.current) return;
+      const exam = latestExam(shard);
+      setQuality({ status: \"ready\", index, shard, attempts: initialQualityAttempts, message: null });
+      setQualityCode(\"\");
+      setSchoolName(\"\");
+      // 回填表单：首选科目与再选科目来自本人记录，考试用最近五次；探索区间按这些考试
+      // 各自的切线做等位换算（min—max），供「分数轴」匹配院校。
+      if (exam) {
+        const primary = shard.person.track === \"物理类\" ? \"PHYSICS\" : \"HISTORY\";
+        // 再选科目按组合原文解析（如「物化地」→ 化+地）。解析不出两门时不猜一个组合出来，
+        // 保持学生当前的选择让他自己改——数据里出现新组合时，猜错会把资格判断悄悄带偏。
+        const additional = additionalFromCombination(shard.person.combination);
+        const recent = recentExams(shard);
+        // 分数用「高考等价分」：最近一次带切线的考试按线差比例换算到省控线口径。
+        // 学校各场考试划线深浅不一，裸分总分没有可比性；没有可换算的考试时才退回最近一次总分。
+        const equivExam = [...recent].reverse()
+          .find((item) => item.total !== null && (item.topTotal !== null || item.undergraduateTotal !== null)) ?? null;
+        const equiv = equivExam
+          ? equivalentPosition(equivExam,
+            { year: OFFICIAL_LINES_2026.year, ...OFFICIAL_LINES_2026.tracks[primary] }, state.release, primary)
+          : null;
+        const equivScore = equiv?.top?.equivalentScore ?? equiv?.undergraduate?.equivalentScore
+          ?? (exam.total !== null ? Math.round(exam.total) : null);
+        setState((current) => withForm(current, { primary,
+          additional: additional ?? current.form.additional,
+          score: equivScore ?? current.form.score, exams: recent }));
+        const derived = rangeFromExams(recent, primary);
+        if (derived) setRange(derived);
+      }
+      notify(`已接入质量慧析 · ${shard.person.classLabel}`);
+    } catch (error) {
+      if (seq !== qualitySeq.current) return;
+      const reason = error instanceof Error ? error.message : \"识别没有完成，请重试。\";
+      const attempts = registerFailure(quality.attempts);
+      setQuality((current) => ({ ...current, status: \"failed\", attempts,
+        // 第一次失败优先展示服务端给的具体原因（不匹配/未配置/暂不可用），连错才强调次数。
+        message: attempts.count <= 1 ? reason : attemptsMessage(attempts) }));
+      setQualityCode(\"\");
+    }
+  };
+
+  const aiStamp = () => ({ runId: `web-run-g${state.generation}`, inputRevision: state.generation });
+  const exchangeCode = async () => {
+    try {
+      const response = await fetch(`${ai.apiBase}/v1/access/exchange`, { method: \"POST\",
+        headers: { \"content-type\": \"application/json\" }, body: JSON.stringify({ access_code: aiCode }) });
+      if (!response.ok) { setAi((current) => ({ ...current, status: \"访问码被拒绝，或本地服务未启动。\" })); return; }
+      const body = await response.json() as { token: string };
+      setAi((current) => withSession(current, body.token));
+      setAiCode(\"\");
+    } catch { setAi((current) => ({ ...current, status: \"无法连接本地 AI 服务；无 AI 流程不受影响。\" })); }
+  };
+  /** 点选 AI 给出的答案时用 override 直接发出，不必先写进草稿再等一轮渲染。 */
+  const sendAi = async (override?: string) => {
+    if (ai.pending) return;
+    const text = (override ?? aiDraft).trim();
+    if (!text) { setAi((current) => ({ ...current, status: \"请先写下你想说的话。\" })); return; }
+    if (text.length > 4000) { setAi((current) => ({ ...current, status: \"这段话较长，请分成每次不超过 4000 字发送。\" })); return; }
+    const seq = ++aiSeq.current;
+    const requestId = `web-req-${state.generation}-${Date.now()}`;
+    // 用户消息先进入转录（等待回复时也能看到自己说了什么）；历史带最近 8 轮给模型接上下文。
+    const history = [...ai.history, { role: \"user\" as const, text }];
+    setAi((current) => withUserTurn({ ...current, pending: true, ...(override ? { options: [] } : {}) }, text));
+    if (!override) setAiDraft(\"\");
+    // 学生自己说的每句话都作为「本人的表达」随请求上行（服务端只让模型引用这些话）；
+    // 按下「存为方向证据」的原话额外进入方向结论的依据，决定方向结论能不能生成。
+    // 院校池存在时同时上行真实专业目录，AI 的建议只能从里面挑，前端还会再过滤一遍。
+    const userTurns = ai.history.filter((turn) => turn.role === \"user\");
+    const chatEvidence = [
+      ...userTurns.map((turn, index) => ({ evidenceId: `ev-chat-${index}`, quote: turn.text, kind: \"student_self_report\" })),
+      { evidenceId: `ev-chat-${userTurns.length}`, quote: text, kind: \"student_self_report\" }
+    ];
+    const evidence = [...evidenceForRequest(state.registry), ...chatEvidence].slice(-12);
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, catalog?.directions ?? []);
+    if (seq !== aiSeq.current) return;
+    setAi((current) => {
+      const merged = applyTurnResult(current, next);
+      // 调试模式：本地假上游不会返回结构化建议，这里注入两条示例建议（挂在发布包目录里
+      // 真实存在的专业类上，引用学生的第一句原话），让「AI 推荐线」的界面能被验收。
+      if (!DEBUG_MODE || merged.suggestions.length > 0 || !catalog) return merged;
+      // 两级示例：一个大类 + 它下面两个专业类，贴合「先大类、后小类」的选择结构。
+      const group = [...catalog.groups].sort((a, b) => a.name.localeCompare(b.name, \"zh-CN\"))
+        .find((entry) => entry.classes.length >= 2) ?? catalog.groups[0];
+      const sample = group ? group.classes.slice(0, 2) : [];
+      return { ...merged, suggestions: sample.map((entry) => ({
+        directionId: entry.id,
+        evidenceIds: userTurns.length ? [\"ev-chat-0\"] : [],
+        rationale: \"（调试示例）从你聊到的内容看，可以先探索这个专业类；验收通过后请换真实模型复核。\"
+      })) };
+    });
+  };
+
+  // 谈心对话里的原话随每轮请求作为「本人的表达」上行（见 sendAi），方向结论由
+  // AI 建议与学生的自选两条线在「方向」页生成，不再需要单独的证据保存动作。
+
+  // —— 新主流程：探索区间 → 院校池 → AI 建议 × 自选 → 双线结果 ——
+  // 院校池的输入指纹：选科、批次或区间任一变化，旧池就在界面上标记失效（不静默沿用）。
+  const poolKeyNow = [state.form.primary ?? \"none\", [...state.form.additional].sort().join(\"+\"),
+    [...state.form.batches].sort().join(\"+\"), range ? `${range.low}-${range.high}` : \"no-range\"].join(\"|\");
+  const pool = poolRun?.data ?? null;
+  const poolStale = poolRun !== null && poolRun.key !== poolKeyNow;
+
+  /** 用当前区间跑一次院校池匹配：区间端点换位次区间，与历史录取位次取交集。 */
+  const matchPool = async () => {
+    if (!state.form.primary || state.form.additional.length !== 2) { notify(\"先在「起航」选好首选与两门再选科目。\"); return; }
+    if (!range) { notify(\"先在「定位」生成探索区间。\"); return; }
+    if (!state.form.batches.length) { notify(\"请至少选择一个批次。\"); return; }
+    if (!state.release) { notify(\"发布数据还没有载入，稍等或刷新后再试。\"); return; }
+    const seq = ++poolSeq.current;
+    setPoolPending(true);
+    setPoolError(null);
+    try {
+      const data = await buildSchoolPool(state.release, state.form.primary, state.form.additional, range, state.form.batches);
+      if (seq !== poolSeq.current) return;
+      setPoolRun({ key: poolKeyNow, data });
+      // 自选专业挂在发布包目录上（与分数无关），匹配不清空它——方向先定、匹配在后。
+      notify(`已匹配 ${data.schoolCount} 所院校 · ${data.rows.length} 条记录`);
+    } catch (error) {
+      if (seq === poolSeq.current) setPoolError(error instanceof Error ? error.message : \"匹配没有完成，请调整范围后重试。\");
+    } finally {
+      if (seq === poolSeq.current) setPoolPending(false);
+    }
+  };
+
+  /** 自选小类（专业类，≤10 个）：挂在发布包目录上，与分数区间无关，匹配不清理。 */
+  const togglePick = (classId: string) => {
+    setPicks((current) => {
+      if (current.includes(classId)) return current.filter((item) => item !== classId);
+      if (current.length >= 10) { notify(\"最多选 10 个专业类，先聚焦在最想去的几类上。\"); return current; }
+      return [...current, classId];
+    });
+  };
+
+  /**
+   * 选大类（学科门类，≤3 个）：先大类、后小类。取消一个大类时，把它里面已勾的
+   * 小类一并取消——大类是范围，范围撤了范围里的选择不再成立。
+   */
+  const toggleGroup = (groupId: string) => {
+    setPickedGroups((current) => {
+      if (current.includes(groupId)) {
+        const classIds = new Set(catalog?.groups.find((entry) => entry.id === groupId)
+          ?.classes.map((cls) => cls.id) ?? []);
+        setPicks((picked) => picked.filter((id) => !classIds.has(id)));
+        return current.filter((item) => item !== groupId);
+      }
+      if (current.length >= 3) { notify(\"最多选 3 个大类；先取消一个，再换别的。\"); return current; }
+      return [...current, groupId];
+    });
+  };
+
+  /** 建议引用的原话：先查保存过的证据，再查聊天转录（ev-chat-序号）。 */
+  const userTurns = ai.history.filter((turn) => turn.role === \"user\");
+  const quoteFor = (evidenceId: string): string | null => {
+    const saved = state.answers.find((item) => item.evidenceId === evidenceId);
+    if (saved) return saved.text;
+    const match = /^ev-chat-(\\d+)$/.exec(evidenceId);
+    const turn = match ? userTurns[Number(match[1])] : undefined;
+    return turn ? turn.text : null;
+  };
+
+  const runNow = () => {
+    setState((current) => ({ ...current, notice: null }));
+    runMatchSafely(state);
+  };
+
+  const score = state.form.score;
+  const trackLabel = state.form.primary === \"PHYSICS\" ? \"物理类\" : state.form.primary === \"HISTORY\" ? \"历史类\" : \"尚未选科\";
+  const contextLabel = `四川 · ${trackLabel} · ${state.form.targetYear}`;
+
+  // 学生是否已经和 AI 聊过：AI 转录里有发言即算；聊过之后才解锁自选专业（流程设计）。
+  // 调试模式下直接放行，让「方向」「航线图」不必先走完对话也能验收。
+  const hasChatted = userTurns.length > 0 || DEBUG_MODE;
+  const aiDirectionIds = ai.suggestions.map((item) => item.directionId);
+  const fresh = isMatchFresh(state) ? state.match?.result ?? null : null;
+
+  // —— 章节门禁（见 progress.ts）——
+  // 完成状态始终按当前数据实时算；解锁段位只增不减，所以「回看」不会被中途改数据卡住。
+  const progress: ProgressInput = {
+    state, rangeKnown: range !== null, poolReady: pool !== null,
+    picks: picks.length, suggestionCount: ai.suggestions.length,
+    chatted: hasChatted
+  };
+  const derivedStage = unlockedStage(progress);
+  useEffect(() => {
+    setMaxStage((current) => (derivedStage > current ? derivedStage : current));
+  }, [derivedStage]);
+  const openStage = Math.max(maxStage, derivedStage);
+  // 调试模式旁路门禁：验收时每个章节都要能直接进；产品态判定保留在 progress.ts 不动。
+  const gateOpen = (id: PageId) => DEBUG_MODE || canOpen(id, progress, openStage);
+
+  /**
+   * 唯一的页面切换入口：章节里的按钮、导航条、页头全部走这里。
+   * 没解锁就只给一句指名道姓的提示（「先完成『定位』（生成探索区间）」），不跳页。
+   * 类型与 useState 的 setter 一致，章节组件那边一行都不用改。
+   */
+  const goTo: Dispatch<SetStateAction<PageId>> = (value) => {
+    const id = typeof value === \"function\" ? value(page) : value;
+    if (gateOpen(id)) { setPage(id); return; }
+    notify(lockHint(id, progress));
+  };
+
+  // 每个章节只声明它真正用到的字段（结构性子集），这里一次性把页面状态交给它们。
+  const ctx = {
+    // 章节里所有跳转都经过 goTo：没解锁的章节点了只会得到提示，不会跳页。
+    state, setState, page, setPage: goTo, talkStep, setTalkStep, thinking, setThinking,
+    reducedMotion, chatScrollRef, notify,
+    ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
+    quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
+    range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, pickedGroups, togglePick, toggleGroup,
+    catalog, hasChatted, suggestions: ai.suggestions, aiDirectionIds, quoteFor,
+    reading, onlyConfirmed, setOnlyConfirmed, fresh, setDetail,
+    matching, queueMatch, toggleBatch, runNow, comparability, catalogueEntry, trackLabel,
+    map, score, contextLabel, chartSvgRef, download, setShowKun, setToast, toast
+  };
+
+  const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);
+  /** 导航条上每一步的状态：locked（还没轮到）/ done（已完成，可以回看）/ 当前。调试模式全部视为 open。 */
+  const stepState = (id: PageId) => ({
+    open: gateOpen(id),
+    done: isDone(id, progress),
+    hint: gateOpen(id) ? null : lockHint(id, progress)
+  });
+
+  return <main>
+    <Sprite />
+    {DEBUG_MODE ? <div className=\"debug-flag\" role=\"status\" aria-label=\"调试模式开启中\">调试模式 · 示例数据</div> : null}
+    <header className=\"topbar\">
+      <div className=\"topbar-in\">
+        {/* 品牌标记与「溟」分工：左边是《逍遥游》的彩蛋，右边进设置。 */}
+        <button type=\"button\" className=\"brand\" aria-label=\"南溟 · 逍遥游\" onClick={() => setShowKun(true)}>
+          <BrandMark />
+          <span className=\"brand-txt\"><span className=\"brand-name\">南溟</span><span className=\"brand-sub\">NANMING · 天池</span></span>
+        </button>
+        <nav className=\"voyage\" aria-label=\"航程\">
+          {CHAPTERS.map((chapter, index) => {
+            const step = stepState(chapter.id);
+            return <span key={chapter.id} style={{ display: \"contents\" }}>
+              {index ? <span className={`vline${stageDone(stageOf(CHAPTERS[index - 1]!.id), progress) ? \" done\" : \"\"}`} /> : null}
+              <button type=\"button\"
+                className={`vstop${step.done ? \" done\" : \"\"}${step.open ? \"\" : \" locked\"}`}
+                aria-current={chapter.id === page ? \"step\" : undefined}
+                aria-disabled={step.open ? undefined : true}
+                {...(step.hint ? { title: step.hint } : {})}
+                onClick={() => goTo(chapter.id)}>
+                <span className=\"vnum\">{chapter.num}</span><span className=\"vdot\" /><span className=\"vlab\">{chapter.k}</span>
+              </button>
+            </span>;
+          })}
+        </nav>
+        <div className=\"head-end\">
+          <button type=\"button\" className=\"ctx-btn\" onClick={() => goTo(\"locate\")}><span>{contextLabel}</span><Icon name=\"chevron\" /></button>
+          <button type=\"button\" className=\"avatar\" aria-label=\"设置\" onClick={() => setSettingsOpen(true)}>溟</button>
+        </div>
+      </div>
+    </header>
+
+    <div className=\"wrap\">
+      {renderSail(ctx)}
+      {renderLocate(ctx)}
+      {renderTalk(ctx)}
+      {renderDirection(ctx)}
+      {renderAxis(ctx)}
+      {renderChart(ctx)}
+    </div>
+
+    <footer className=\"footer\">
+      <div className=\"fbrand\"><BrandMark /><span>南溟 · 南冥者，天池也</span></div>
+      <span className=\"fnote\">设计概念原型 · 未提供的控制线与院校分数一律显示为未知 · 正式填报以本省考试院政策与高校招生章程为准</span>
+    </footer>
+
+    <nav className=\"bottom-nav\" aria-label=\"移动端导航\">
+      {CHAPTERS.map((chapter) => {
+        const step = stepState(chapter.id);
+        return <button type=\"button\" key={chapter.id}
+          className={`${step.done ? \"done\" : \"\"}${step.open ? \"\" : \" locked\"}`}
+          aria-current={chapter.id === page ? \"step\" : undefined}
+          aria-disabled={step.open ? undefined : true}
+          {...(step.hint ? { title: step.hint } : {})}
+          onClick={() => goTo(chapter.id)}>
+          <Icon name={chapter.icon} /><span>{chapter.k}</span>
+        </button>;
+      })}
+    </nav>
+
+    {/* 设置卡片：任何一页都能打开；Esc、点背景、右上角关闭按钮都能退出。 */}
+    {renderSettings({ open: settingsOpen, onClose: () => setSettingsOpen(false), ai, setAi, clear })}
+
+    <div id=\"kun-stage\" className={showKun ? \"show\" : \"\"} role=\"dialog\" aria-label=\"逍遥游\">
+      <div className=\"kun-in\">
+        <KunArt />
+        <div className=\"kun-quote song\">北冥有鱼，其名为鲲。鲲之大，不知其几千里也；化而为鸟，其名为鹏。</div>
+        <div className=\"kun-sign\">《庄子 · 逍遥游》 · 北辰识己，南溟启程</div>
+        <button type=\"button\" className=\"btn brass kun-close\" onClick={() => setShowKun(false)}>继续我的航行<Icon name=\"arrow\" /></button>
+      </div>
+    </div>
+
+    <dialog ref={detailRef} aria-label=\"方向探索事实\" onClose={() => setDetail(null)}
+      onClick={(event) => { if (event.target === detailRef.current) setDetail(null); }}>
+      {detail ? (() => {
+        const direction = DIRECTIONS.find((item) => item.directionId === detail);
+        const card = experienceCardFor(detail);
+        const fact = majorCardFor(detail);
+        if (!direction || !card) return null;
+        const index = DIRECTIONS.findIndex((item) => item.directionId === direction.directionId);
+        return <>
+          <button type=\"button\" className=\"btn sm ghost dlg-close\" aria-label=\"关闭\" onClick={() => setDetail(null)}><Icon name=\"close\" /></button>
+          <div className=\"dlg-art\"><ArtSlot name={DIRECTION_ARTS[index % DIRECTION_ARTS.length]!} /></div>
+          <div className=\"dlg-body\">
+            <span className=\"eyebrow\">Exploration Fact · 探索事实</span>
+            <h2 className=\"song\">{direction.title}</h2>
+            <p className=\"lead\">以下内容来自随前端提供的探索卡与专业事实卡，不属于当前发布包的招生数据，也不构成该方向与任何院校的录取关联。</p>
+            <div className=\"dlg-sec\">
+              <h3><Icon name=\"book\" />{card.experienceLabelText} · {card.title}</h3>
+              <p>可以自己动手尝试的学习体验（只用于认识自己，不产生录取结论）：</p>
+              <ul className=\"tick-list\">{card.learningTasks.map((task) => <li key={task}><Icon name=\"check\" /><span>{task}</span></li>)}</ul>
+              <p>做完之后问自己：</p>
+              <ul className=\"tick-list\">{card.reflectionQuestions.map((question) => <li key={question}><Icon name=\"spark\" /><span>{question}</span></li>)}</ul>
+            </div>
+            {fact ? <div className=\"dlg-sec\">
+              <h3><Icon name=\"layers\" />专业事实卡 · {fact.majorName}</h3>
+              <div className=\"kv\"><span>示例院校</span><b>{fact.exampleInstitution}</b></div>
+              <p className=\"muted-note\">示例院校只用于说明这个专业学什么，不是该方向的录取院校，也不代表你的可达结果。</p>
+            </div> : null}
+            <div className=\"dlg-act\"><button type=\"button\" className=\"btn brass\" onClick={() => setDetail(null)}>知道了</button></div>
+          </div>
+        </>;
+      })() : null}
+    </dialog>
+
+    <div className={`toast${toast ? \" show\" : \"\"}`} role=\"status\" aria-live=\"polite\"><Icon name=\"check\" /><span>{toast ?? \"\"}</span></div>
+  </main>;
+}
+
+import type { Dispatch, SetStateAction } from \"react\";
+import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from \"../model.js\";
+import { Icon } from \"../art.js\";
+import { REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, label, levelLabel, type PageId } from \"./shared.js\";
+import type { SchoolPool, ScoreRange } from \"../journey-model.js\";
+
+export interface AxisProps {
+  state: WebState;
+  setState: Dispatch<SetStateAction<WebState>>;
+  page: PageId;
+  setPage: Dispatch<SetStateAction<PageId>>;
+  notify: (message: string) => void;
+  range: ScoreRange | null;
+  setRange: Dispatch<SetStateAction<ScoreRange | null>>;
+  pool: SchoolPool | null;
+  poolStale: boolean;
+  poolPending: boolean;
+  poolError: string | null;
+  matchPool: () => Promise<void>;
+  toggleBatch: (batch: string) => void;
+}
+
+export function renderAxis({ state, setState, page, setPage, notify, range, setRange, pool, poolStale,
+  poolPending, poolError, matchPool, toggleBatch }: AxisProps) {
+  // 刻度用真实存在的东西：官方分段表公布的最低分/最高分。项目没有公布的控制线，因此不画线。
+  const axisMarkList = axisMarks(state.release, state.form.primary, null);
+  const publishedBounds = axisMarkList.filter((mark) => mark.major).map((mark) => mark.score);
+  const axisMin = publishedBounds.length > 0 ? Math.min(...publishedBounds) : 300;
+  const axisMax = publishedBounds.length > 0 ? Math.max(...publishedBounds) : 700;
+  const pct = (value: number) => axisMax > axisMin ? (clamp(value, axisMin, axisMax) - axisMin) / (axisMax - axisMin) * 100 : 0;
+  const bandLeft = range ? pct(range.low) : 0;
+  const bandWidth = range ? Math.max(0.8, pct(range.high) - pct(range.low)) : 0;
+  const rows = pool?.rows ?? [];
+  return <section id=\"page-axis\" className={`view${page === \"axis\" ? \" active\" : \"\"}`} aria-label=\"分数轴\">
+    <div className=\"page-head\">
+      <div><span className=\"eyebrow\">Chapter 05 · 分数轴 · 试风</span>
+        <h1 className=\"song\">这段区间里，<em>哪些学校可选。</em></h1>
+        <p className=\"lede\">把「定位」页的探索区间放到官方分段表上：区间端点换算成同科类历史位次，与每条院校专业记录的历史录取位次取交集——交集非空才进入结果。前台单位是分数，后台判断用位次。</p></div>
+      <div className=\"head-aside\">
+        <svg className=\"head-rose\" aria-hidden=\"true\"><use href=\"#rose\" /></svg>
+        <p>先看海的宽度，<br />再挑想靠的岸。</p></div>
+    </div>
+    <div className=\"axis-hero\">
+      <div className=\"axis-head\">
+        <div><span className=\"eyebrow\">Score Axis · 你的探索区间</span>
+          <h2 className=\"song\">区间每宽一分，能看到的院校就多一批；区间只决定先看谁，不决定谁能录取。</h2>
+          <p>区间来自「定位」页的考试数据，也可以直接在这一页改上下限。它只决定先看谁，不决定谁能录取。</p></div>
+        <div className=\"delta-box\"><div className=\"dk\">探索区间</div>
+          <div className=\"delta-num num\"><span>{range ? `${range.low}–${range.high}` : \"—\"}</span></div></div>
+      </div>
+      <div className=\"slider-wrap\">
+        <div className=\"slider-scale\">
+          {/* 刻度只标「公布范围的上下界」与「你的区间两端」，端点贴边对齐避免文字相撞。 */}
+          {([axisMin, axisMax, ...(range ? [range.low, range.high] : [])] as const).map((value, index) => {
+            const name = index === 0 ? \"公布最低\" : index === 1 ? \"公布最高\"
+              : value === range?.low ? \"区间下限\" : \"区间上限\";
+            const major = index < 2;
+            const left = pct(value);
+            const edge = left <= 1 ? \" start\" : left >= 99 ? \" end\" : \"\";
+            return <span className={`stick${major ? \" major\" : \" own\"}${edge}`}
+              key={`${value}-${name}`} style={{ left: `${left}%` }}>
+              {value}<b>{name}</b></span>;
+          })}
+        </div>
+        <div style={{ position: \"relative\" }}>
+          <div className=\"axis-track\" />
+          {/* 金带本身就是区间：实心端头标出上下限，不再画两根「当前分」竖线——
+              那对竖线会把一段区间掐成一个点。 */}
+          {range ? <div className=\"axis-band\" style={{ left: `${bandLeft}%`, width: `${bandWidth}%` }} /> : null}
+        </div>
+        <div className=\"slider-foot\">
+          <span>{axisMin}（公布最低）</span>
+          <span>{range ? \"金色带就是你的探索区间\" : \"还没有探索区间 · 在下面填上下限\"}</span>
+          <span>{axisMax}（公布最高）</span>
+        </div>
+      </div>
+      <div className=\"grid-2\" style={{ marginTop: 18, gap: 14, maxWidth: 460 }}>
+        <label className=\"field\"><span className=\"flab\">区间下限</span>
+          <input className=\"inp\" type=\"number\" min={0} max={750} inputMode=\"numeric\" aria-label=\"探索区间下限\"
+            value={range && Number.isFinite(range.low) ? range.low : \"\"}
+            onChange={(event) => {
+              const value = event.target.value === \"\" ? NaN : Number(event.target.value);
+              // 还没有区间时以「另一个端点先等于这个值」起步（原来补 750/0 会平白造出一个 0–750 的巨区间），
+              // 学生再改另一头就是一段明确的区间。
+              setRange((current) => ({ low: value, high: current?.high ?? value,
+                basis: \"手动填写的探索区间（不来自考试数据）；可随时修改。\" }));
+            }} /></label>
+        <label className=\"field\"><span className=\"flab\">区间上限</span>
+          <input className=\"inp\" type=\"number\" min={0} max={750} inputMode=\"numeric\" aria-label=\"探索区间上限\"
+            value={range && Number.isFinite(range.high) ? range.high : \"\"}
+            onChange={(event) => {
+              const value = event.target.value === \"\" ? NaN : Number(event.target.value);
+              setRange((current) => ({ low: current?.low ?? value, high: value,
+                basis: \"手动填写的探索区间（不来自考试数据）；可随时修改。\" }));
+            }} /></label>
+      </div>
+      {range ? <p className=\"fhint\" style={{ marginTop: 8 }}>{range.basis}</p> : null}
+      {/* 「定位」是按考试数据生成区间的地方，但区间不是只能在那边产生：这一页可以直接填上下限，
+          有目标分时还能按 ±10 生成（与「定位」页同一条规则）。已有区间时按钮改成「看区间怎么来的」，
+          不再对着已经拿着区间的学生说「去生成」——那正是负责人指出的自相矛盾。 */}
+      <div className=\"chart-actions\" style={{ justifyContent: \"flex-start\", marginTop: 12 }}>
+        {!range && state.form.score !== null ? <button type=\"button\" className=\"btn sm ghost\"
+          onClick={() => {
+            const score = state.form.score!;
+            setRange({ low: Math.max(0, score - 10), high: Math.min(750, score + 10),
+              basis: \"按高考目标分上下各 10 分生成；不是预测区间。\" });
+            notify(\"已按高考目标分 ±10 生成探索区间\");
+          }}>用目标分 ±10 生成区间</button> : null}
+        <button type=\"button\" className=\"btn sm ghost\" onClick={() => setPage(\"locate\")}>
+          {range ? \"去「定位」看区间怎么来的\" : \"去「定位」按考试数据生成\"}</button>
+      </div>
+    </div>
+    <div className=\"chain\">
+      <div className={`chain-seg${state.form.batches.length === SELECTABLE_BATCHES.length ? \" on\" : \"\"}`}>
+        <div className=\"ck\">已选批次</div><div className=\"cn\">{state.form.batches.length ? state.form.batches.map(label).join(\" / \") : \"未选择\"}</div>
+      </div>
+      {SELECTABLE_BATCHES.map((batch) => {
+        const count = batchOfferings(state.release, state.form.primary, batch);
+        const on = state.form.batches.includes(batch);
+        return <div className={`chain-seg${on ? \" on\" : \"\"}`} key={batch} role=\"button\" tabIndex={0}
+          onClick={() => toggleBatch(batch)} onKeyDown={(event) => { if (event.key === \"Enter\" || event.key === \" \") toggleBatch(batch); }}>
+          <div className=\"ck\">{label(batch)}</div><div className=\"cn\">{count === null ? \"条数未知\" : `${count.toLocaleString(\"zh-CN\")} 条专业`}</div>
+        </div>;
+      })}
+    </div>
+    <p className=\"fhint\">普通类批次之外还有提前批、专项计划等，本页暂不提供。</p>
+
+    <div className=\"res-bar\" style={{ marginTop: 24 }}>
+      <div className=\"res-count\">{pool
+        ? <>区间内匹配到 <b>{pool.schoolCount}</b> 所院校 · <b>{rows.length}</b> 条专业 × 院校</>
+        : <>还没有匹配结果</>}</div>
+      <div className=\"legend\">
+        <span><i style={{ background: \"var(--steady)\" }} />按专业自己的历史</span>
+        <span><i style={{ background: \"var(--reach)\" }} />只有专业组历史</span>
+      </div>
+    </div>
+    <div className=\"chart-actions\" style={{ justifyContent: \"flex-start\", marginBottom: 20 }}>
+      <button type=\"button\" className=\"btn brass\" disabled={poolPending || !range}
+        onClick={() => void matchPool()}>{poolPending ? \"正在匹配院校…\" : \"用这个区间匹配院校\"}</button>
+      {poolStale ? <span className=\"gap neg\">选科、批次或区间已改变，旧结果已失效，请重新匹配。</span> : null}
+      {range ? null : <span className=\"gap neg\">还没有探索区间——在下面填上下限，或去「定位」按考试数据生成。</span>}
+    </div>
+    {poolError ? <p className=\"feedback\" role=\"alert\">{poolError}</p> : null}
+
+    {pool ? <div className=\"panel\" style={{ marginBottom: 20 }}>
+      <div className=\"stats\">
+        <div className=\"stat\"><span className=\"sk\"><Icon name=\"pin\" />院校</span>
+          <div className=\"sv num\">{pool.schoolCount}</div>
+          <div className=\"sd\">区间内至少有一条记录可参考的院校数</div></div>
+        <div className=\"stat\"><span className=\"sk\"><Icon name=\"layers\" />专业 × 院校</span>
+          <div className=\"sv num\">{rows.length}</div>
+          <div className=\"sd\">历史位次与你的位次跨度有交集的记录</div></div>
+        <div className=\"stat\"><span className=\"sk\"><Icon name=\"axis\" />你的位次跨度</span>
+          <div className=\"sv num\">{pool.rankRange[1].toLocaleString(\"zh-CN\")}–{pool.rankRange[0].toLocaleString(\"zh-CN\")}</div>
+          <div className=\"sd\">由区间两端按 {pool.referenceYear} 年分段表换算</div></div>
+        <div className=\"stat\"><span className=\"sk\"><Icon name=\"wave\" />缺历史依据</span>
+          <div className=\"sv num\">{pool.missingHistory}</div>
+          <div className=\"sd\">条记录没有可用历史，未进入结果，不补造数字</div></div>
+      </div>
+      <p className=\"fhint\" style={{ marginTop: 10 }}>按 {pool.referenceYear} 年同科类历史位次筛选（发布版本 {pool.releaseId}）；这决定「先看谁」，不构成任何录取判断。</p>
+    </div> : null}
+
+    <div className=\"schools\">
+      {rows.length > 0
+        ? rows.slice(0, 60).map((row) => {
+          const entry = row.label;
+          const reference = row.reference === \"major\" ? row.candidate.major_reference : row.candidate.group_reference;
+          const interval = reference.reference_rank_interval ?? [];
+          // 与「航线图」同一套分层标签：历史位置关系（项目边界内不写冲稳保）、办学层次、资格。
+          const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+          const institutionTags = (entry.institutionTags ?? \"\").split(\"/\")
+            .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
+          const passed = row.candidate.eligibility.status === \"PASS\";
+          return <article className={`scard${relation ? ` rel-${relation.cls}` : \"\"}`} key={entry.offeringId}>
+            <div className=\"scard-top\">
+              <span className=\"sc-loc\"><Icon name=\"pin\" />{entry.institutionName}{entry.institutionCity ? ` · ${entry.institutionCity}` : \"\"}</span>
+              <h3 className=\"song\">{entry.majorName}</h3>
+              <div className=\"sc-chips\">
+                {relation
+                  ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
+                  : <span className=\"sc-rel none\">暂无比较依据</span>}
+                {entry.level ? <span className=\"sc-lv\">{levelLabel(entry.level)}</span> : null}
+                <span>{entry.batch}</span>
+                {entry.categoryClass ? <span>{entry.categoryClass}</span> : null}
+                {passed ? <span className=\"sc-ok\"><Icon name=\"check\" />资格符合</span>
+                  : <span className=\"sc-warn\">{label(row.candidate.eligibility.status)}</span>}
+              </div>
+              {institutionTags.length ? <div className=\"sc-tags\">
+                {institutionTags.map((tag) => <span key={tag}>{tag}</span>)}
+              </div> : null}
+            </div>
+            <div className=\"ranks\">
+              <div className=\"rank\"><div className=\"ry\">参考 {reference.source_year ?? REFERENCE_YEAR} 位次</div>
+                <div className=\"rv num\">{formatRankInterval(interval)}</div></div>
+              <div className=\"rank\"><div className=\"ry\">招生数</div><div className=\"rv num\">{entry.planCount ?? \"—\"}</div></div>
+              <div className=\"rank\"><div className=\"ry\">学费</div>
+                <div className=\"rv num\">{entry.tuition == null ? \"未知\" : `${entry.tuition} 元/年`}</div></div>
+            </div>
+            {row.reference === \"group\" ? <p className=\"fhint\" style={{ margin: \"0 20px 12px\" }}>这条只有专业组的历史依据，具体专业的门槛未知——不要把它当成该专业往年录取位次。</p> : null}
+            {row.candidate.eligibility.pending_requirements.length > 0
+              ? <p className=\"fhint\" style={{ margin: \"0 20px 12px\" }}>待核对条件：{row.candidate.eligibility.pending_requirements.map(label).join(\"、\")}。</p> : null}
+          </article>;
+        })
+        : <div className=\"empty\">
+          <Icon name=\"compass\" size=\"xl\" />
+          <h3>{poolPending ? \"正在匹配院校…\" : pool ? \"当前区间没有命中记录\" : \"还没有可展示的院校\"}</h3>
+          <p>{pool
+            ? \"可以回到「定位」把区间稍微放宽，再点一次匹配；结果不会自动扩大范围。\"
+            : range
+              ? \"区间已经有了：选好批次，点上面的「用这个区间匹配院校」。区间端点超出分段表公布范围时，页面会如实提示。\"
+              : \"先在这一页填上下限（或去「定位」按考试数据生成），选好批次，然后点「用这个区间匹配院校」。区间端点超出分段表公布范围时，页面会如实提示。\"}</p>
+        </div>}
+    </div>
+    <p className=\"fhint\" style={{ margin: \"22px 2px 0\", display: \"flex\", gap: 8, alignItems: \"flex-start\" }}>
+      <Icon name=\"doc\" /><span>院校录取位次来自发布数据；未提供时显示为未知，不编造数字。超过 60 条时先展示前 60 条，完整结果在「航线图」按你的两条线分别给出。</span></p>
+    <div className=\"banner\">
+      <div style={{ display: \"flex\", gap: 16, alignItems: \"flex-start\" }}><Icon name=\"route\" size=\"lg\" />
+        <div><h3 className=\"song\">院校池有了，去「航线图」看两条线的结果</h3><p>方向在上一站已经定好：AI 建议线和你的自选线在「航线图」分开列出——一致合成一条，不一致各走一条。</p></div></div>
+      <button type=\"button\" className=\"btn sm brass\" style={{ flexShrink: 0 }} onClick={() => setPage(\"chart\")}>去航线图<Icon name=\"arrow\" /></button>
+    </div>
+  </section>;
+}
+
+import type { Dispatch, MutableRefObject, SetStateAction } from \"react\";
+import { makeBranches, type SchoolPool } from \"../journey-model.js\";
+import type { ScoreRange } from \"../journey-model.js\";
+import type { WebState } from \"../model.js\";
+import { Icon } from \"../art.js\";
+import {
+  REFERENCE_YEAR, RELATION_CLASSES, formatRankInterval, label, levelLabel, svgStringToPng, type PageId
+} from \"./shared.js\";
+
+export interface ChartProps {
+  state: WebState;
+  page: PageId;
+  setPage: Dispatch<SetStateAction<PageId>>;
+  pool: SchoolPool | null;
+  poolStale: boolean;
+  aiDirectionIds: readonly string[];
+  picks: readonly string[];
+  range: ScoreRange | null;
+  contextLabel: string;
+  notify: (message: string) => void;
+  chartSvgRef: MutableRefObject<SVGSVGElement | null>;
+}
+
+const ROUTE_META = [
+  { kind: \"shared\" as const, title: \"共同方向\", sub: \"两条路在这里相遇——AI 的建议和你的选择都包含这些专业。\" },
+  { kind: \"ai\" as const, title: \"AI 建议探索\", sub: \"从对话中发现——只出现在 AI 建议里的专业。\" },
+  { kind: \"self\" as const, title: \"我的自主选择\", sub: \"为自己的想法留一条路——只出现在你自选里的专业。\" }
+];
+
+
+/**
+ * 图内文字的排版约束（viewBox 0 0 1000 320，导出 PNG 用同一坐标系）。
+ *
+ * 三条关系线在 y=78/158/238，每条的波形只在自己 ±14 上下浮动；因此
+ * 「线间空档」是 165–229。航线小结放在这段空档里，才不会与中间那条线相交。
+ * 右端留出一条标签栏：线画到 LABEL_COLUMN_X 之前就停，标签右对齐到 992 再向左生长，
+ * 这样计数涨到五位数也不会溢出画布被裁掉（导出 PNG 与屏幕用的是同一个画布）。
+ */
+const ROUTE_LINE_END_X = 812;
+const ROUTE_LINE_CTRL_X = 640;
+const LABEL_COLUMN_X = 992;
+const ROUTE_TITLE_TOP_Y = 186;
+const ROUTE_TITLE_LINE_H = 17;
+
+export function renderChart({ state, page, setPage, pool, poolStale, aiDirectionIds, picks, range,
+  contextLabel, notify, chartSvgRef }: ChartProps) {
+  const routes = pool ? makeBranches(pool, aiDirectionIds, [...picks]) : [];
+  const candidates = pool?.rows.map((row) => row.candidate) ?? [];
+  const withRange = range !== null;
+
+  // 三条航线仍按历史参考关系分组画线——它们描述位次与参考年记录的关系，不是录取预测。
+  const relationGroups = RELATION_CLASSES.map((relation) => ({
+    ...relation,
+    items: candidates.filter((candidate) => candidate.group_reference.relation === relation.key)
+  }));
+  const drawable = relationGroups.some((group) => group.items.length > 0);
+  const rangeLabel = range ? `${range.low}–${range.high}` : \"未生成\";
+
+  const copyText = async () => {
+    const lines = [
+      `南溟航线图 · ${contextLabel}`,
+      `探索区间：${rangeLabel}（参考年 ${REFERENCE_YEAR}）`,
+      ...routes.map((route) => `${route.title}：${route.majors.length} 个专业 · ${route.rows.length} 条专业×院校`),
+      ...routes.flatMap((route) => route.rows.slice(0, 20)
+        .map((row) => `  [${route.title}] ${row.label.institutionName} · ${row.label.majorName}`)),
+      ...RELATION_CLASSES.map((relation) => `历史参考：${relation.label} —— ${relationGroups.find((group) => group.key === relation.key)!.items.length} 项`)
+    ];
+    try {
+      if (!navigator.clipboard) throw new Error(\"CLIPBOARD_UNAVAILABLE\");
+      await navigator.clipboard.writeText(lines.join(\"\\n\"));
+      notify(\"已复制文字版航线图\");
+    } catch {
+      notify(\"复制失败：浏览器未提供剪贴板权限，请手动选中页面文字复制。\");
+    }
+  };
+  // Save the drawn route chart as a real raster PNG. The on-screen SVG is serialized (so it
+  // carries the current relations and labels), given an explicit size, then drawn to a canvas.
+  // PNG export needs no dialog; when the browser refuses the blob we fall back to the text copy
+  // (打印入口已按负责人要求下线，这里不再引导去打印）。
+  const savePng = async () => {
+    const node = chartSvgRef.current;
+    if (!node) { notify(\"当前浏览器无法导出图片，请改用「复制文字版」。\"); return; }
+    const clone = node.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute(\"width\", \"1000\");
+    clone.setAttribute(\"height\", \"320\");
+    const svg = new XMLSerializer().serializeToString(clone);
+    const ok = await svgStringToPng(svg, 1000, 320, `南溟航线图-${state.form.targetYear}-${rangeLabel}.png`);
+    notify(ok ? \"已保存 PNG 航线图\" : \"图片生成失败：浏览器拒绝导出，请改用「复制文字版」。\");
+  };
+  return <section id=\"page-chart\" className={`view${page === \"chart\" ? \" active\" : \"\"}`} aria-label=\"航线图\">
+    <div className=\"page-head\">
+      <div><span className=\"eyebrow\">Chapter 06 · 航线图 · 抟扶摇</span>
+        <h1 className=\"song\">两条来路，<em>一张航线图。</em></h1>
+        <p className=\"lede\">AI 建议和你的自选各是一条线：一致合成一条，不一致分两条并列列出。所有院校专业都来自区间匹配的院校池，系统不打分、不排先后。</p></div>
+      <div className=\"head-aside\">
+        <svg className=\"head-rose\" aria-hidden=\"true\"><use href=\"#rose\" /></svg>
+        <p>水击三千里，<br />抟扶摇而上者九万里。</p></div>
+    </div>
+
+    {!pool ? <div className=\"panel\">
+      <h3><Icon name=\"axis\" />还没有院校池</h3>
+      <p className=\"psub\">双线结果从区间匹配的院校池里来：先在「定位」生成探索区间，再去「分数轴」匹配院校，最后回「方向」定两条线。</p>
+      <div className=\"chart-actions\" style={{ justifyContent: \"flex-start\", marginTop: 12 }}>
+        <button type=\"button\" className=\"btn brass\" onClick={() => setPage(\"axis\")}>去分数轴匹配<Icon name=\"arrow\" /></button>
+      </div>
+    </div> : <>
+      {poolStale ? <p className=\"feedback\">选科、批次或区间已改变，下面的结果按上一次匹配的院校池计算；建议回「分数轴」重新匹配。</p> : null}
+      <div className=\"chart-stage\">
+        <div className=\"chart-head\">
+          <span className=\"eyebrow\">Chart of the Southern Deep</span>
+          <h2 className=\"song\">{withRange ? `从 ${rangeLabel} 分的海面，到你想去的那片。` : \"先生成探索区间，航线才会亮起。\"}</h2>
+          <p className=\"sub\">图中三条线仍按历史参考关系分组：只反映院校池里的记录与参考年位次的关系，不是录取预测，也不代表三种分数情景。</p>
+          <div className=\"seal\"><span className=\"song\">南溟<br />航线</span></div>
+        </div>
+        <div className=\"routes\">
+          <svg ref={chartSvgRef} viewBox=\"0 0 1000 320\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"三条历史参考关系航线示意图\">
+            <defs><linearGradient id=\"rtSea\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">
+              <stop offset=\"0\" stopColor=\"#eef0e6\" /><stop offset=\"1\" stopColor=\"#dfe6dd\" /></linearGradient></defs>
+            <rect width=\"1000\" height=\"320\" fill=\"url(#rtSea)\" />
+            <g stroke=\"#cbc4b0\" strokeWidth={0.6} opacity={0.5}><path d=\"M0 300h1000M0 40h1000\" /></g>
+            {drawable ? <>
+              {relationGroups.map((group) => <path key={group.key}
+                d={`M96 ${group.y}C276 ${group.y - 26} ${ROUTE_LINE_CTRL_X} ${group.y + 22} ${ROUTE_LINE_END_X} ${group.y}`}
+                stroke={group.route} strokeWidth={group.width} strokeDasharray={group.dash || undefined} fill=\"none\" strokeLinecap=\"round\" />)}
+              <g transform=\"translate(96,238)\"><path d=\"M-16 0h32l-6 11h-20Z\" fill=\"#0f262e\" /><path d=\"M0 0V-26\" stroke=\"#0f262e\" strokeWidth={2} /><path d=\"M0-24 15-3H0Z\" fill=\"#a97b34\" /></g>
+              <text x=\"90\" y=\"272\" fontSize=\"11\" fill=\"#2c444c\" textAnchor=\"middle\" fontFamily=\"sans-serif\">区间 · {rangeLabel} 分</text>
+              {relationGroups.map((group) => <text key={group.key} x={LABEL_COLUMN_X} y={group.y + 4} fontSize=\"13\" fill=\"#2c444c\" textAnchor=\"end\" fontFamily=\"'Cormorant Garamond',serif\" fontWeight={600}>{group.label} {group.items.length}</text>)}
+              {/* 航线小结写在两条线之间的空档（165–229）里：原先贴在 y=148–182，正好横穿中间那条线。 */}
+              {routes.slice(0, 3).map((route, index) =>
+                <text key={route.kind} x={296} y={ROUTE_TITLE_TOP_Y + index * ROUTE_TITLE_LINE_H} fontSize=\"12.5\" fill=\"#2c444c\" fontFamily=\"'Noto Serif SC',serif\">{route.title} · {route.rows.length} 条</text>)}
+            </> : <text x=\"500\" y=\"170\" fontSize=\"14\" fill=\"#2c444c\" textAnchor=\"middle\" fontFamily=\"sans-serif\">{withRange ? \"还没有可绘制的结果，先回「分数轴」重新匹配\" : \"尚未生成探索区间\"}</text>}
+          </svg>
+        </div>
+        <div className=\"route-legend\">
+          {RELATION_CLASSES.map((relation) => <span className={`rl ${relation.cls}`} key={relation.key}>
+            <span className=\"swatch\" />{relation.label} · 历史参考
+          </span>)}
+        </div>
+      </div>
+
+      {/* 双线结果：每个方向类一条路，样式对等；重叠的专业×院校在两条线里都出现，不去重。 */}
+      {routes.length === 0
+        ? <div className=\"panel\">
+          <h3><Icon name=\"route\" />两条线都还空着</h3>
+          <p className=\"psub\">AI 建议和自选都还没有内容：回「谈心」聊出建议，或在「方向」自选几个专业，两条线就会在这里分开亮起。</p>
+          <div className=\"chart-actions\" style={{ justifyContent: \"flex-start\", marginTop: 12 }}>
+            <button type=\"button\" className=\"btn sm\" onClick={() => setPage(\"talk\")}>去谈心</button>
+            <button type=\"button\" className=\"btn sm ghost\" onClick={() => setPage(\"direction\")}>去方向自选</button>
+          </div>
+        </div>
+        : routes.map((route) => {
+          const meta = ROUTE_META.find((item) => item.kind === route.kind)!;
+          return <div className=\"panel\" style={{ marginBottom: 22 }} key={route.kind}>
+            <div className=\"res-bar\" style={{ marginBottom: 14 }}>
+              <div className=\"res-count\">{meta.title} · <b>{route.rows.length}</b> 条专业 × 院校</div>
+              <span className=\"muted-note\">{meta.sub}</span>
+            </div>
+            <div className=\"dmajors\" style={{ marginBottom: 14 }}>
+              {route.majors.slice(0, 12).map((major) => <span key={major.id}>{major.name}</span>)}
+              {route.majors.length > 12 ? <span>另 {route.majors.length - 12} 个</span> : null}
+            </div>
+            {route.rows.length === 0
+              ? <p className=\"muted-note\">这些专业在院校池里，但当前区间、选科和批次没有命中院校专业。这条选择会保留，不自动扩大范围去凑结果。</p>
+              : <div className=\"schools\" style={{ marginTop: 0 }}>
+                {route.rows.slice(0, 24).map((row) => {
+                  const reference = row.reference === \"major\" ? row.candidate.major_reference : row.candidate.group_reference;
+                  const interval = reference.reference_rank_interval ?? [];
+                  // 分层标签直接用发布包里的历史位置关系（需更好位置 / 同分或边界重叠 / 位置较有余量）。
+                  // 项目边界不提供「冲稳保」预测，所以标签说明的是「相对历史记录的位置」，不是录取把握。
+                  const relation = RELATION_CLASSES.find((item) => item.key === reference.relation) ?? null;
+                  const institutionTags = (row.label.institutionTags ?? \"\").split(\"/\")
+                    .map((tag) => tag.trim()).filter(Boolean).slice(0, 3);
+                  const passed = row.candidate.eligibility.status === \"PASS\";
+                  return <article className={`scard${relation ? ` rel-${relation.cls}` : \"\"}`} key={`${route.kind}-${row.label.offeringId}`}>
+                    <div className=\"scard-top\">
+                      <span className=\"sc-loc\"><Icon name=\"pin\" />{row.label.institutionName}{row.label.institutionCity ? ` · ${row.label.institutionCity}` : \"\"}</span>
+                      <h3 className=\"song\">{row.label.majorName}</h3>
+                      <div className=\"sc-chips\">
+                        {relation
+                          ? <span className={`sc-rel ${relation.cls}`}><i />{relation.label}</span>
+                          : <span className=\"sc-rel none\">暂无比较依据</span>}
+                        {row.label.level ? <span className=\"sc-lv\">{levelLabel(row.label.level)}</span> : null}
+                        <span>{row.label.batch}</span>
+                        {row.label.categoryClass ? <span>{row.label.categoryClass}</span> : null}
+                        {passed ? <span className=\"sc-ok\"><Icon name=\"check\" />资格符合</span>
+                          : <span className=\"sc-warn\">{label(row.candidate.eligibility.status)}</span>}
+                      </div>
+                      {institutionTags.length ? <div className=\"sc-tags\">
+                        {institutionTags.map((tag) => <span key={tag}>{tag}</span>)}
+                      </div> : null}
+                    </div>
+                    <div className=\"ranks\">
+                      <div className=\"rank\"><div className=\"ry\">参考 {reference.source_year ?? REFERENCE_YEAR} 位次</div>
+                        <div className=\"rv num\">{formatRankInterval(interval)}</div></div>
+                      <div className=\"rank\"><div className=\"ry\">招生数</div><div className=\"rv num\">{row.label.planCount ?? \"—\"}</div></div>
+                      <div className=\"rank\"><div className=\"ry\">学费</div>
+                        <div className=\"rv num\">{row.label.tuition == null ? \"未知\" : `${row.label.tuition} 元/年`}</div></div>
+                    </div>
+                    {row.reference === \"group\" ? <p className=\"fhint\" style={{ margin: \"10px 20px 14px\" }}>只有专业组依据，具体专业门槛未知。</p> : null}
+                  </article>;
+                })}
+              </div>}
+            {route.rows.length > 24 ? <p className=\"fhint\" style={{ marginTop: 10 }}>已展示前 24 条，其余 {route.rows.length - 24} 条未逐条展开（复制文字版含每路前 20 条的院校与专业名）。</p> : null}
+          </div>;
+        })}
+
+    </>}
+
+    <div className=\"blessing\">
+      <span className=\"eyebrow\">A Word For You · 写给你</span>
+      <p className=\"song\">愿你既有仰望星空的方向，也有脚踏实地的航线。远方很远，但每一次起航，都从今天这一分开始。</p>
+      <div className=\"sign\">—— 南 溟</div>
+    </div>
+    {/* 导出与返回（负责人 2026-09-12 定）：删掉那块个人资料面板与打印入口后，
+        只剩三枚按钮——导出 PNG 独占一行当主操作，复制与返回并排当次要操作，窄屏不会挤成一团。
+        清除本次探索已随该面板一起下线，改由顶栏「溟」→ 设置提供。 */}
+    <div className=\"chart-actions chart-export\">
+      <button type=\"button\" className=\"btn brass\" disabled={!drawable} onClick={() => { void savePng(); }}><Icon name=\"down\" />保存为 PNG 图片</button>
+      <div className=\"export-row\">
+        <button type=\"button\" className=\"btn ghost\" onClick={copyText}><Icon name=\"layers\" />复制文字版</button>
+        <button type=\"button\" className=\"btn ghost\" onClick={() => setPage(\"axis\")}><Icon name=\"axis\" />回去调区间</button>
+      </div>
+    </div>
+  </section>;
+}
+
+import type { Dispatch, SetStateAction } from \"react\";
+import { Icon } from \"../art.js\";
+import { makeBranches, majorId,
+  type CatalogDirection, type CatalogGroup, type Major, type SchoolPool } from \"../journey-model.js\";
+import type { AiSuggestion } from \"../ai-panel.js\";
+import { type PageId } from \"./shared.js\";
+
+export interface DirectionProps {
+  page: PageId;
+  setPage: Dispatch<SetStateAction<PageId>>;
+  /** 发布包级专业类目录（与分数无关）：自选清单与 AI 建议的名字解析都用它。 */
+  catalog: { majors: Major[]; directions: CatalogDirection[]; groups: CatalogGroup[] } | null;
+  pool: SchoolPool | null;
+  poolStale: boolean;
+  suggestions: readonly AiSuggestion[];
+  /** 自选小类（专业类 id，≤10）：进入匹配的方向。 */
+  picks: readonly string[];
+  /** 已选大类（学科门类 id，≤3）：圈定小类的可选范围。 */
+  pickedGroups: readonly string[];
+  togglePick: (classId: string) => void;
+  toggleGroup: (groupId: string) => void;
+  quoteFor: (evidenceId: string) => string | null;
+  hasChatted: boolean;
+  notify: (message: string) => void;
+}
+
+const ROUTE_META = [
+  { kind: \"shared\" as const, title: \"共同方向\", sub: \"两条路在这里相遇——AI 的建议和你的选择都包含它们。\" },
+  { kind: \"ai\" as const, title: \"AI 建议探索\", sub: \"从对话中发现——只出现在 AI 建议里的专业。\" },
+  { kind: \"self\" as const, title: \"我的自主选择\", sub: \"为自己的想法留一条路——只出现在你自选里的专业。\" }
+];
+
+export function renderDirection({ page, setPage, catalog, pool, poolStale, suggestions, picks,
+  pickedGroups, togglePick, toggleGroup, quoteFor, hasChatted, notify }: DirectionProps) {
+  const aiIds = suggestions.map((item) => item.directionId);
+  const routes = pool ? makeBranches(pool, aiIds, [...picks]) : [];
+  // 专业类里的真实专业来自发布包目录（与分数无关）；区间内命中数只在匹配后有。
+  const majorsIn = (classId: string) => catalog?.majors.filter((major) => major.directionId === classId) ?? [];
+  // 覆盖统计只回答「有多少」，不回答「有多适合」——项目禁止由兴趣推断专业适合度。
+  const coverageFor = (classId: string) => {
+    if (!pool) return { offerings: 0, institutions: 0 };
+    const ids = new Set(majorsIn(classId).map((major) => major.id));
+    const rows = pool.rows.filter((row) => ids.has(majorId(row.label.majorName)));
+    return { offerings: rows.length, institutions: new Set(rows.map((row) => row.label.institutionName)).size };
+  };
+  // AI 建议按大类分组：AI 先指出学生在哪个大类里，再给大类下的专业类（小类）。
+  const activeGroups = (catalog?.groups ?? []).filter((group) => pickedGroups.includes(group.id));
+  const covered = new Set((catalog?.groups ?? []).flatMap((group) => group.classes.map((cls) => cls.id)));
+  const restSuggestions = suggestions.filter((item) => !covered.has(item.directionId));
+
+  return <section id=\"page-direction\" className={`view${page === \"direction\" ? \" active\" : \"\"}`} aria-label=\"方向\">
+    <div className=\"page-head\">
+      <div><span className=\"eyebrow\">Chapter 04 · 方向 · 定罗盘</span>
+        <h1 className=\"song\">两条来路，<em>都算数。</em></h1>
+        <p className=\"lede\">方向不是系统判给你的：AI 会根据你在「谈心」里说过的原话给一条线，你自己再选一条线。
+          两条一致就合成一条，不一致就各走各的——最后的专业和院校按两条线分开给你，系统不打分、不排先后。</p></div>
+      <div className=\"head-aside\">
+        <svg className=\"head-rose\" aria-hidden=\"true\"><use href=\"#rose\" /></svg>
+        <p>建议是参考，<br />选择是你自己的。</p></div>
+    </div>
+
+    {!hasChatted ? <>
+      <div className=\"empty-inline\">先到「谈心」和 AI 聊几句——聊过之后，这里才会解锁：AI 给出有原话依据的建议，你再亲自选一次专业。
+        这一步不能跳过，跳过它，选专业就失去了认识自己的前提。</div>
+      <div className=\"banner\">
+        <div style={{ display: \"flex\", gap: 16, alignItems: \"flex-start\" }}><Icon name=\"chat\" size=\"lg\" />
+          <div><h3 className=\"song\">先聊，再选</h3><p>谈心有两种聊法：引航一步步给你现成的答案起点，泛舟不设路线随便说。说多短都行。</p></div></div>
+        <button type=\"button\" className=\"btn sm brass\" style={{ flexShrink: 0 }} onClick={() => setPage(\"talk\")}>去谈心<Icon name=\"arrow\" /></button>
+      </div>
+    </> : <>
+      {!catalog ? <>
+        <div className=\"empty-inline\">发布库的专业类目录还没有准备好（发布数据载入后自动出现），稍等或刷新后再试。</div>
+      </> : <>
+        {poolStale ? <p className=\"feedback\">选科、批次或区间已改变，下面的覆盖数字按上一次匹配的院校池计算；建议回「分数轴」重新匹配。</p> : null}
+
+        {/* 块一：AI 推荐线——来自谈心，引用原话，展开为池内真实专业。 */}
+        <div className=\"panel\" style={{ marginTop: 8 }}>
+          <h3><Icon name=\"chat\" />溟的建议（AI 推荐线）</h3>
+          <p className=\"psub\">这些专业类来自你聊过的内容，每一条都引用你的原话；它们是探索建议，不是结论，
+            也不会因为 AI 提过就排在你的选择前面。</p>
+          {suggestions.length === 0
+            ? <div className=\"empty-inline\">这次对话还没有形成有依据的建议。多聊一些具体的经历——做过的事、愿意反复做的事——建议会出现在这里，并引用你自己的话。</div>
+            : <>
+              {/* AI 先指出大类，再给大类下的专业类（小类）——两级都来自真实目录。 */}
+              {catalog.groups.map((group) => {
+                const items = suggestions.filter((item) => group.classes.some((cls) => cls.id === item.directionId));
+                if (!items.length) return null;
+                return <div key={group.id} style={{ marginTop: 16 }}>
+                  <span className=\"eyebrow plain\">{group.name} · 溟建议在这一类里探索</span>
+                  <div className=\"grid-2\" style={{ marginTop: 10 }}>
+                    {items.map((item) => {
+                      const cls = group.classes.find((entry) => entry.id === item.directionId)!;
+                      const cover = coverageFor(item.directionId);
+                      const quotes = item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null);
+                      return <div className=\"sidecard\" key={item.directionId}>
+                        <span className=\"eyebrow plain\">AI 建议 · 引用了你的话</span>
+                        <h3 className=\"song\" style={{ marginTop: 8 }}>{cls.name}</h3>
+                        {quotes.length ? quotes.map((quote) => <blockquote className=\"dquote\" key={quote}>{quote}</blockquote>)
+                          : <p className=\"dwhy\">（这条建议引用的原话已不在当前对话里，仅保留理由。）</p>}
+                        <p className=\"dwhy\">{item.rationale}</p>
+                        <div className=\"vlist\" style={{ marginTop: 10 }}>
+                          <span className=\"vpill\">发布库里 <b>{cls.majors.length}</b> 个专业</span>
+                          {pool
+                            ? <span className=\"vpill\">区间内命中 <b>{cover.offerings}</b> 条 · <b>{cover.institutions}</b> 所院校</span>
+                            : <span className=\"vpill\">去「分数轴」匹配后，这里显示区间内命中的院校</span>}
+                        </div>
+                        {cls.majors.length ? <div className=\"dmajors\">
+                          {cls.majors.slice(0, 6).map((major) => <span key={major.id}>{major.name}</span>)}
+                          {cls.majors.length > 6 ? <span>另 {cls.majors.length - 6} 个</span> : null}
+                        </div> : null}
+                      </div>;
+                    })}
+                  </div>
+                </div>;
+              })}
+              {restSuggestions.length ? <div style={{ marginTop: 16 }}>
+                <span className=\"eyebrow plain\">其他建议</span>
+                <div className=\"grid-2\" style={{ marginTop: 10 }}>
+                  {restSuggestions.map((item) => {
+                    const name = catalog.directions.find((entry) => entry.id === item.directionId)?.name ?? item.directionId;
+                    const quotes = item.evidenceIds.map(quoteFor).filter((quote): quote is string => quote !== null);
+                    return <div className=\"sidecard\" key={item.directionId}>
+                      <span className=\"eyebrow plain\">AI 建议 · 引用了你的话</span>
+                      <h3 className=\"song\" style={{ marginTop: 8 }}>{name}</h3>
+                      {quotes.length ? quotes.map((quote) => <blockquote className=\"dquote\" key={quote}>{quote}</blockquote>) : null}
+                      <p className=\"dwhy\">{item.rationale}</p>
+                    </div>;
+                  })}
+                </div>
+              </div> : null}
+            </>}
+        </div>
+
+        {/* 块二：自选线——两级选择（负责人裁定）：先选大类（2–3 个），再在大类里勾小类（5–10 个）。 */}
+        <div className=\"panel\" style={{ marginTop: 22 }}>
+          <h3><Icon name=\"compass\" />我的方向（自选线）</h3>
+          <p className=\"psub\">先选 2–3 个感兴趣的大类，再在大类里勾 5–10 个专业类（小类）；最后按这些方向去「分数轴」匹配院校与专业。可以和 AI 建议选一样的，也完全可以不一样——两条线都会保留到最后的航线里。</p>
+          <span className=\"flab\">第一步 · 选大类（已选 {pickedGroups.length} / 3）</span>
+          <div className=\"chips\" style={{ marginTop: 10 }}>
+            {catalog.groups.map((group) => <button key={group.id} type=\"button\"
+              className={`chip${pickedGroups.includes(group.id) ? \" brass on\" : \"\"}`}
+              aria-pressed={pickedGroups.includes(group.id)}
+              onClick={() => toggleGroup(group.id)}>
+              {group.name}<small> · {group.classes.length} 类</small>
+            </button>)}
+          </div>
+          {pickedGroups.length === 0 ? <p className=\"fhint\" style={{ marginTop: 12 }}>先点上面的大类；选好后，这里会展开每个大类里的专业类供你勾选。</p> : null}
+          {activeGroups.map((group) => <div key={group.id} style={{ marginTop: 18 }}>
+            <span className=\"flab\">在「{group.name}」里勾专业类（已勾 {picks.length} / 10）</span>
+            <div className=\"chips\" style={{ marginTop: 10 }}>
+              {group.classes.map((cls) => <button key={cls.id} type=\"button\"
+                className={`chip${picks.includes(cls.id) ? \" brass on\" : \"\"}`}
+                aria-pressed={picks.includes(cls.id)}
+                title={cls.majors.slice(0, 8).map((major) => major.name).join(\"、\") + (cls.majors.length > 8 ? \" 等\" : \"\")}
+                onClick={() => togglePick(cls.id)}>
+                {cls.name}<small> · {cls.majors.length} 个专业</small>
+              </button>)}
+            </div>
+          </div>)}
+          {picks.length ? <div className=\"dmajors\" style={{ marginTop: 14 }}>
+            {picks.map((id) => <button key={id} type=\"button\" className=\"chip brass on\"
+              aria-label={`移除 ${catalog.directions.find((entry) => entry.id === id)?.name ?? id}`}
+              onClick={() => togglePick(id)}>{catalog.directions.find((entry) => entry.id === id)?.name ?? id} ×</button>)}
+          </div> : <p className=\"fhint\" style={{ marginTop: 12 }}>还没有勾专业类；勾满至少一个，「航线图」里才会出现「我的自主选择」这条线。</p>}
+        </div>
+
+        {/* 块三：两条线的走向——只对照与计数，不裁判、不排权重。 */}
+        <div className=\"panel\" style={{ marginTop: 22 }}>
+          <h3><Icon name=\"route\" />两条线的走向</h3>
+          <p className=\"psub\">相同的专业合并为「共同方向」，各自独有的分两条线；重叠的专业×院校在两条线里都会出现，不去重——它本来就属于两条路。</p>
+          <div className=\"vlist\" style={{ marginTop: 14 }}>
+            {ROUTE_META.map((meta) => {
+              const route = routes.find((item) => item.kind === meta.kind);
+              return <span className=\"vpill\" key={meta.kind}>
+                {meta.title} <b>{route ? `${route.majors.length} 个专业 · ${route.rows.length} 条记录` : \"0\"}</b></span>;
+            })}
+          </div>
+          <div className=\"vlist\" style={{ marginTop: 10 }}>
+            {routes.length === 0 ? <span className=\"vpill\">两条线都还空着——聊出建议、选好专业后，这里会出现走向。</span> : null}
+            {!pool ? <span className=\"vpill\">还没有院校池：去「分数轴」匹配后，这里显示两条线在区间内的走向。</span> : null}
+            {suggestions.length === 0 ? <span className=\"vpill\">AI 线为空：这次对话还没有形成建议。</span> : null}
+            {picks.length === 0 ? <span className=\"vpill\">自选线为空：还没有勾选专业类。</span> : null}
+          </div>
+          {routes.map((route) => {
+            const meta = ROUTE_META.find((item) => item.kind === route.kind)!;
+            return <div className=\"sidecard\" style={{ marginTop: 14 }} key={route.kind}>
+              <span className=\"eyebrow plain\">{meta.title}</span>
+              <p className=\"fhint\" style={{ marginTop: 6 }}>{meta.sub}</p>
+              <div className=\"dmajors\" style={{ marginTop: 8 }}>
+                {route.majors.slice(0, 10).map((major) => <span key={major.id}>{major.name}</span>)}
+                {route.majors.length > 10 ? <span>另 {route.majors.length - 10} 个</span> : null}
+              </div>
+              <p className=\"fhint\" style={{ marginTop: 8 }}>这条线在区间内命中 {route.rows.length} 条专业 × 院校，完整列表在「航线图」。</p>
+            </div>;
+          })}
+        </div>
+
+        <div className=\"banner\">
+          <div style={{ display: \"flex\", gap: 16, alignItems: \"flex-start\" }}><Icon name=\"axis\" size=\"lg\" />
+            <div><h3 className=\"song\">两条线定了，去「分数轴」匹配院校与专业</h3><p>用「定位」生成的探索区间，把区间内可选的院校专业按这两条线捞出来；匹配完成，「航线图」直接给出分线结果。</p></div></div>
+          <button type=\"button\" className=\"btn sm brass\" style={{ flexShrink: 0 }}
+            onClick={() => { if (!picks.length && !suggestions.length) { notify(\"两条线都还空着：先聊出建议，或选大类、勾专业类。\"); return; } setPage(\"axis\"); }}>
+            去分数轴匹配<Icon name=\"arrow\" /></button>
+        </div>
+      </>}
+    </>}
+    <p className=\"fhint\" style={{ margin: \"14px 2px 0\", display: \"flex\", gap: 8, alignItems: \"flex-start\" }}>
+      <Icon name=\"doc\" /><span>专业与专业类名称全部来自当前发布库与匹配结果；AI 只能从这份目录里挑建议，挑不出的进不了页面。系统不生成任何「适合度」「录取概率」或权重。</span></p>
+  </section>;
+}
+
+import type { Dispatch, SetStateAction } from \"react\";
+import { axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from \"../model.js\";
+import { examLineDiffs, equivalentPosition, linesInverted, scoreStability, scoreTrend } from \"../exam-position.js\";
+import { rangeFromExams, type ScoreRange } from \"../journey-model.js\";
+import { OFFICIAL_LINES_2026 } from \"../reference-lines.js\";
+import {
+  classChanges, formatGap, formatRate, formatScore, friendlyExamLabel, latestExam,
+  subjectDistances, trailChart, weakestKnowledge
+} from \"../quality-huixi.js\";
+import { Uncharted } from \"../theme.js\";
+import { Icon } from \"../art.js\";
+import { REFERENCE_YEAR, clamp, label, type PageId, type QualityState } from \"./shared.js\";
+
+export interface LocateProps {
+  state: WebState;
+  setState: Dispatch<SetStateAction<WebState>>;
+  page: PageId;
+  setPage: Dispatch<SetStateAction<PageId>>;
+  score: number | null;
+  trackLabel: string;
+  notify: (message: string) => void;
+  range: ScoreRange | null;
+  setRange: Dispatch<SetStateAction<ScoreRange | null>>;
+  quality: QualityState;
+  qualityCode: string;
+  setQualityCode: Dispatch<SetStateAction<string>>;
+  schoolName: string;
+  setSchoolName: Dispatch<SetStateAction<string>>;
+  identifySchool: () => Promise<void>;
+}
+
+const formatRatio = (ratio: number) => `${ratio >= 0 ? \"+\" : \"\"}${(ratio * 100).toFixed(1)}%`;
+const formatPercentile = (percentile: number) =>
+  `前 ${percentile < 1 ? percentile.toFixed(2) : percentile.toFixed(1)}%`;
+
+export function renderLocate({ state, setState, page, setPage, score, trackLabel, notify, range, setRange,
+  quality, qualityCode, setQualityCode, schoolName, setSchoolName, identifySchool }: LocateProps) {
+  const exams = state.form.exams;
+  // 0 分与缺考一样不参与稳定性/趋势：0 不是成绩，混进均值会同时压低均值、抬高波动。
+  const totals = exams.flatMap((exam) => exam.total !== null && exam.total > 0 ? [exam.total] : []);
+  const stability = scoreStability(totals);
+  const trend = scoreTrend(totals);
+  // 位次与百分位来自官方分段表；没有表或分数不在公布范围时保持 null，页面显示未知。
+  const position = scorePosition(state.release, state.form.primary, score);
+  const marks = axisMarks(state.release, state.form.primary, score);
+  const bandRange = position ? Math.max(1, position.publishedMaxScore - position.publishedMinScore) : 0;
+  const bandLeft = position ? (position.score - position.publishedMinScore) / bandRange * 100 : 0;
+
+  // 荣县一中增强模式接入后，考试行来自学校数据：只读、固定，不提供增删改。
+  const schoolLocked = quality.status === \"ready\" && quality.shard !== null;
+
+  // 等位换算取最近一次「有总分且有任一切线」的考试；官方线是已登记的 2026 年四川省控线。
+  const equivalentExam = [...exams].reverse()
+    .find((exam) => exam.total !== null && (exam.topTotal !== null || exam.undergraduateTotal !== null)) ?? null;
+  const officialLines = state.form.primary
+    ? { year: OFFICIAL_LINES_2026.year, ...OFFICIAL_LINES_2026.tracks[state.form.primary] }
+    : null;
+  const equivalent = equivalentExam && officialLines
+    ? equivalentPosition(equivalentExam, officialLines, state.release, state.form.primary)
+    : null;
+
+  const updateExam = (index: number, patch: Partial<ExamRecord>) => {
+    setState((current) => withForm(current, {
+      exams: current.form.exams.map((exam, i) => i === index ? { ...exam, ...patch } : exam)
+    }));
+  };
+  const addExam = () => {
+    setState((current) => current.form.exams.length >= 5 ? current : withForm(current, {
+      exams: [...current.form.exams,
+        { label: `第 ${current.form.exams.length + 1} 次`, total: null, rank: null, topTotal: null, undergraduateTotal: null }]
+    }));
+  };
+  const removeExam = (index: number) => {
+    setState((current) => withForm(current, { exams: current.form.exams.filter((_, i) => i !== index) }));
+  };
+  const applyEquivalent = (value: number) => {
+    setState((current) => withForm(current, { score: value }));
+    notify(`已把等位分 ${value} 设为高考等价分`);
+  };
+  const numberField = (ariaLabel: string, placeholder: string, value: number | null,
+                       onChange: (value: number | null) => void, disabled = false) =>
+    <input className=\"inp exam-num\" type=\"number\" inputMode=\"numeric\" min={0} max={750}
+      aria-label={ariaLabel} value={value ?? \"\"} placeholder={placeholder} disabled={disabled}
+      onChange={(event) => onChange(event.target.value === \"\" ? null : Number(event.target.value))} />;
+
+  // —— 荣县一中质量慧析（合并自原「成绩」章）——
+  const shardExam = quality.shard ? latestExam(quality.shard) : null;
+  const distances = shardExam ? subjectDistances(shardExam) : [];
+  const gaps = quality.shard ? weakestKnowledge(quality.shard, 6) : [];
+  const moves = quality.shard ? classChanges(quality.shard) : [];
+  const examRow = quality.index && shardExam
+    ? quality.index.exams.find((row) => row.exam_code === shardExam.exam && row.track === quality.shard?.person.track) ?? null
+    : null;
+  const examTrend = quality.index?.trend ?? [];
+  const lastTrend = examTrend[examTrend.length - 1] ?? null;
+  const prevTrend = examTrend[examTrend.length - 2] ?? null;
+  const examName = (raw: string) => friendlyExamLabel(raw);
+
+  return <section id=\"page-locate\" className={`view${page === \"locate\" ? \" active\" : \"\"}`} aria-label=\"定位\">
+    <div className=\"page-head\">
+      <div><span className=\"eyebrow\">Chapter 02 · 定位 · 测深</span>
+        <h1 className=\"song\">先看清，<em>我在哪片海域。</em></h1>
+        <p className=\"lede\">不给虚假精确的单点数字。几次考试（或学校数据）与它们各自的切线，共同围出一段「真实水平区间」——这才是能站得住脚的起点。</p></div>
+      <div className=\"head-aside\">
+        <svg className=\"head-rose\" aria-hidden=\"true\"><use href=\"#rose\" /></svg>
+        <p>知止而后有定，<br />定而后能静，静而后能安。</p></div>
+    </div>
+
+    {/* 荣县一中增强模式直接内嵌在这里：识别后考试行自动填好并锁定，替换掉手输。 */}
+    {quality.status !== \"ready\" ? <div className=\"panel\" style={{ marginTop: 20 }}>
+      <h3><Icon name=\"shield\" />荣县一中的同学：直接接入学校数据</h3>
+      <p className=\"psub\">输入姓名和班主任发放的 6 位验证码，服务端核对后读取你本人的成绩记录，自动填好下面的考试行并推导探索区间——不需要手动录入。其他学校的同学跳过这步，直接手填即可。</p>
+      <div className=\"grid-2\" style={{ marginTop: 16, gap: 14, maxWidth: 460 }}>
+        <label className=\"field\"><span className=\"flab\">学生姓名</span>
+          <input className=\"inp\" type=\"text\" autoComplete=\"off\" maxLength={40}
+            value={schoolName}
+            placeholder=\"和验证码一起由班主任发放\"
+            onChange={(event) => setSchoolName(event.target.value)} /></label>
+        <label className=\"field\"><span className=\"flab\">6 位验证码</span>
+          <input className=\"inp\" type=\"text\" inputMode=\"numeric\" autoComplete=\"off\" maxLength={6}
+            value={qualityCode}
+            placeholder=\"例如 246810\"
+            aria-describedby=\"locate-identify-hint\"
+            onChange={(event) => setQualityCode(event.target.value.replace(/\\D/g, \"\").slice(0, 6))}
+            onKeyDown={(event) => { if (event.key === \"Enter\") void identifySchool(); }} /></label>
+      </div>
+      <div className=\"hero-act\" style={{ marginTop: 16 }}>
+        <button type=\"button\" className=\"btn brass\" disabled={quality.status === \"loading\" || quality.attempts.blocked}
+          onClick={() => void identifySchool()}>
+          {quality.status === \"loading\" ? \"正在核对…\" : \"识别并接入\"}<Icon name=\"arrow\" /></button>
+        <span className=\"muted-note\">不接入也完全可以：直接在下面手填考试即可。</span>
+      </div>
+      <p className=\"fhint\" id=\"locate-identify-hint\">{quality.message
+        ?? \"姓名和验证码只发送给成绩服务核对（有尝试次数限制），不进入对话，也不发给 AI。\"}</p>
+    </div>
+    : <div className=\"panel\" style={{ marginTop: 20 }}>
+      <h3><Icon name=\"shield\" />{quality.shard?.person.name} · {quality.shard?.person.classLabel}</h3>
+      <p className=\"psub\">{quality.shard?.person.track} · {quality.shard?.person.combination} · 已接入 {quality.shard?.exams.length} 次考试记录（入学入口考满分口径与正考不同，不作为参考，已剔除），下面这些行来自学校数据，是固定的，不能改；要看逐科位置、航迹与知识短板，见本页下方。</p>
+    </div>}
+
+    <div className=\"panel\" style={{ marginTop: 22 }}>
+      <h3><Icon name=\"log\" />{schoolLocked ? \"学校带入的近几次考试（只读）\" : \"录入近几次考试\"}</h3>
+      {!schoolLocked ? <p className=\"psub\">总分决定稳定性与趋势；填上本次考试的特控线（部分学校称一本线）和本科线，才能得到距线差与下面的高考等位参考。位次不需要填：没有全校人数做分母，它做不了可靠的换算。</p>
+        : null}
+      {exams.length === 0 ? <p className=\"muted-note\">{schoolLocked
+        ? \"学校数据里没有可用作参考的考试记录（入学入口考不计入参考）。\"
+        : \"还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。\"}</p> : null}
+      {exams.map((exam, index) => {
+        const diffs = examLineDiffs(exam);
+        // 两条线高低颠倒时这场不参与等位换算，必须在这一行说出来，不能静默丢掉。
+        const inverted = linesInverted(exam);
+        const rowLabel = schoolLocked ? (exam.label || `第 ${index + 1} 次`) : `第 ${index + 1} 次`;
+        return <div className=\"exam-row\" key={index}>
+          <span className=\"exam-tag\" title={exam.label}>{rowLabel}</span>
+          {numberField(`第 ${index + 1} 次总分`, \"总分\", exam.total, (value) => updateExam(index, { total: value }), schoolLocked)}
+          {numberField(`第 ${index + 1} 次特控线/一本线`, \"特控线\", exam.topTotal, (value) => updateExam(index, { topTotal: value }), schoolLocked)}
+          {numberField(`第 ${index + 1} 次本科线`, \"本科线\", exam.undergraduateTotal, (value) => updateExam(index, { undergraduateTotal: value }), schoolLocked)}
+          {!schoolLocked && <button type=\"button\" className=\"rbtn\" aria-label={`删除第 ${index + 1} 次考试`}
+            onClick={() => removeExam(index)}><Icon name=\"close\" /></button>}
+          {diffs.topDiff !== null || diffs.undergraduateDiff !== null || inverted ? <span className=\"exam-diffs\">
+            {diffs.topDiff !== null ? <span>距特控线 {formatGap(diffs.topDiff)}</span> : null}
+            {diffs.undergraduateDiff !== null ? <span>距本科线 {formatGap(diffs.undergraduateDiff)}</span> : null}
+            {inverted ? <span className=\"warn\">这场本科线高于特控线，未参与等位换算</span> : null}
+          </span> : null}
+        </div>;
+      })}
+      {!schoolLocked && <div className=\"chart-actions\" style={{ justifyContent: \"flex-start\", marginTop: 12 }}>
+        <button type=\"button\" className=\"btn sm\" disabled={exams.length >= 5} onClick={addExam}>
+          {exams.length >= 5 ? \"最多记录 5 次\" : \"添加一次考试\"}</button>
+        <small className=\"muted-note\">切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。</small>
+      </div>}
+    </div>
+
+    <div className=\"locate\">
+      <div>
+        <div className=\"gauge\">
+          <div className=\"gauge-top\">
+            <div><span className=\"eyebrow plain\">{schoolLocked ? \"高考等价分 · 学校数据换算\" : \"高考目标分 · 裸分\"}</span>
+              <div className=\"bignum num\" style={{ marginTop: 12 }}>{score === null ? <span className=\"absent\">—</span> : score}<small>分</small></div></div>
+            <div style={{ textAlign: \"right\" }}><span className=\"eyebrow plain\">全省位次 · 参考年</span>
+              <div className=\"bignum num\" style={{ marginTop: 12, fontSize: 40 }}>
+                {position ? position.rank.toLocaleString(\"zh-CN\") : <span className=\"absent\">—</span>}</div>
+              {!position && <div style={{ marginTop: 4 }}>
+                <Uncharted>{score === null ? \"还没有可查的分数\" : \"该分数官方未列出\"}</Uncharted>
+              </div>}</div>
+          </div>
+          <div style={{ marginTop: 26 }}>
+            {/* 没有可用的分段表/分数越界时，说明写在条外——条内挤不下长句。 */}
+            <div className=\"bandbar\">
+              {position
+                ? <>
+                  <div className=\"bandfill\" style={{ left: `${clamp(bandLeft, 0, 100)}%`, width: \"2px\" }} />
+                  <div className=\"bandmark\" style={{ left: `${clamp(bandLeft, 0, 100)}%` }} />
+                  <span className=\"bandtick\" style={{ left: \"2%\" }}>{position.publishedMinScore}</span>
+                  <span className=\"bandtick line\" style={{ left: `${clamp(bandLeft, 6, 94)}%` }}>你 {position.score}</span>
+                  <span className=\"bandtick\" style={{ left: \"98%\" }}>{position.publishedMaxScore}</span>
+                </>
+                : null}
+            </div>
+            {!position && <p className=\"fhint\" style={{ marginTop: 8 }}>
+              {state.release
+                ? \"该科类没有可用的官方分段表，或目标分不在公布范围内——位次保持未知，不插值、不外推。\"
+                : \"尚未载入发布数据，位次与范围保持未知。\"}</p>}
+            <div className=\"slider-foot\" style={{ color: \"var(--mut)\", marginTop: 9 }}>
+              <span>{position ? `官方公布最低 ${position.publishedMinScore} 分` : \"官方公布最低分\"}</span>
+              <span>{position ? `${position.tableYear} 年分段表 · 共 ${position.total.toLocaleString(\"zh-CN\")} 人` : \"分段表\"}</span>
+              <span>{position ? `官方公布最高 ${position.publishedMaxScore} 分` : \"官方公布最高分\"}</span>
+            </div>
+          </div>
+          <div className=\"stats\">
+            <div className=\"stat\"><span className=\"sk\"><Icon name=\"pin\" />全省位次</span>
+              <div className=\"sv num\">{position ? position.rank.toLocaleString(\"zh-CN\") : <span className=\"absent\">—</span>}</div>
+              <div className=\"sd\">{position
+                ? `${position.tableYear} 年官方分段表 · 同分 ${position.count} 人`
+                : \"该分数未在分段表中列出，或尚未载入发布数据\"}</div></div>
+            <div className=\"stat\"><span className=\"sk\"><Icon name=\"layers\" />全省百分位</span>
+              <div className=\"sv num\">{position ? formatPercentile(position.percentile) : \"—\"}</div>
+              <div className=\"sd\">{position
+                ? `同科类约 ${position.total.toLocaleString(\"zh-CN\")} 人中的位置`
+                : \"缺少分段表时不估算百分位\"}</div></div>
+            <div className=\"stat\"><span className=\"sk\"><Icon name=\"wave\" />近五次稳定性</span>
+              <div className=\"sv num\">{stability === null ? \"—\" : `±${stability.toFixed(1)}`}</div>
+              <div className=\"sd\">{stability === null ? \"尚未录入考试成绩\" : \"波动越小，定位越可信\"}</div></div>
+            <div className=\"stat\"><span className=\"sk\"><Icon name=\"up\" />近期趋势</span>
+              <div className=\"sv num\">{trend === null ? \"—\" : `${trend >= 0 ? \"+\" : \"\"}${Math.round(trend * 10) / 10}`}</div>
+              <div className=\"sd\">{trend === null ? \"尚未录入考试成绩\" : \"相对上一次的变化（分）\"}</div></div>
+          </div>
+        </div>
+        <div className=\"verdict\">
+          <span className=\"eyebrow\">Your True Range · 真实水平区间</span>
+          <h3 className=\"song\">把你的分数，翻译成一段可以站稳的区间。</h3>
+          <div className=\"vlist\">
+            <span className=\"vpill\">目标年份 <b>{state.form.targetYear}</b></span>
+            <span className=\"vpill\">科类 <b>{trackLabel}</b></span>
+            <span className=\"vpill\">再选 <b>{state.form.additional.length ? state.form.additional.map(label).join(\"、\") : \"未选择\"}</b></span>
+            <span className=\"vpill\">{schoolLocked ? \"高考等价分\" : \"高考目标分\"} <b>{score ?? \"未填写\"}</b></span>
+            <span className=\"vpill\">位次表年份 <b>{position ? position.tableYear : \"未知\"}</b></span>
+            <span className=\"vpill\">参考年 <b>{REFERENCE_YEAR}</b></span>
+          </div>
+          <p className=\"small\">位次与百分位全部由官方分段表换算；分数不在公布范围时保留为未知，不插值也不外推。</p>
+          {marks.length ? <div className=\"chips\" style={{ marginTop: 14 }}>
+            {marks.map((mark) => <span className=\"vpill\" key={`${mark.score}-${mark.label}`}>
+              {mark.label} <b>{mark.score}</b></span>)}
+          </div> : null}
+        </div>
+      </div>
+      <aside>
+        <div className=\"sidecard\">
+          <span className=\"eyebrow plain\">Stability · 近五次</span>
+          <h3 className=\"song\" style={{ marginTop: 10 }}>你的成绩曲线</h3>
+          <div className=\"trend\">
+            {totals.length >= 2
+              ? (() => {
+                // 标尺按总分区间放大（上下留边距）：「以最高分为 100%」的旧标尺里 550 和 570
+                // 几乎一样高，看不出起伏；缩放后柱子的高低差对应分数差，悬停可见当次分数。
+                const low = Math.min(...totals);
+                const high = Math.max(...totals);
+                const floorScore = low - 3 - (high - low) * 0.2;
+                const ceilScore = high + 3 + (high - low) * 0.2;
+                return totals.map((value, index) => {
+                  const height = Math.max(6, Math.round((value - floorScore) / (ceilScore - floorScore) * 100));
+                  return <div className={`tbar${index === totals.length - 1 ? \" now\" : \"\"}`} key={index}>
+                    <span className=\"col\" style={{ height: `${height}%` }} title={`${value} 分`} />
+                    <span className=\"tl\">{index + 1}</span>
+                  </div>;
+                });
+              })()
+              : <div className=\"empty-inline\">尚未录入考试成绩；此页不生成趋势结论。</div>}
+          </div>
+          <p className=\"fhint\">曲线越平，说明当前定位越可信；起伏大时，我们用区间而非单点来表达。</p>
+        </div>
+      </aside>
+    </div>
+
+    {equivalent && (equivalent.top || equivalent.undergraduate) && <div className=\"panel\" style={{ marginTop: 22 }}>
+      <h3><Icon name=\"compass\" />高考等位参考（估算，不是预测）</h3>
+      <p className=\"psub\">用最近一次带切线的考试「{equivalentExam?.label}」做线差比例换算：距线比例 =（总分 − 本次线）÷ 本次线，
+        等位分 = {OFFICIAL_LINES_2026.year} 年同口径省线 ×（1 + 距线比例），再查官方一分一段表。它假设本次考试难度与高考同比例——
+        换一次考试或换一种算法，结果就会不同，只当参照，不当结论。</p>
+      <div className=\"grid-2\" style={{ marginTop: 14 }}>
+        {[equivalent.top && {
+          key: \"top\", title: \"按特控线口径\", item: equivalent.top
+        }, equivalent.undergraduate && {
+          key: \"undergraduate\", title: \"按本科线口径\", item: equivalent.undergraduate
+        }].map((entry) => entry && <div className=\"sidecard\" key={entry.key}>
+          <span className=\"eyebrow plain\">{entry.title}</span>
+          <div className=\"vlist\" style={{ marginTop: 10 }}>
+            <span className=\"vpill\">距线比例 <b>{formatRatio(entry.item.lineRatio)}</b></span>
+            <span className=\"vpill\">高考等价分 <b>{entry.item.equivalentScore}</b></span>
+            <span className=\"vpill\">位次区间 <b>{entry.item.position
+              ? `约 ${entry.item.position.rank.toLocaleString(\"zh-CN\")} 名` : \"—\"}</b></span>
+            <span className=\"vpill\">全省百分位 <b>{entry.item.position
+              ? formatPercentile(entry.item.position.percentile) : \"—\"}</b></span>
+          </div>
+          {entry.item.position ? <div className=\"chart-actions\" style={{ justifyContent: \"flex-start\", marginTop: 12 }}>
+            <button type=\"button\" className=\"btn sm ghost\"
+              onClick={() => applyEquivalent(entry.item.equivalentScore)}>
+              把 {entry.item.equivalentScore} 设为高考等价分</button>
+            <small className=\"muted-note\">高考等价分决定起点，探索区间决定匹配范围，随时可在「起航」改回。</small>
+          </div> : <p className=\"fhint\" style={{ marginTop: 10 }}>
+            等价分不在官方分段表公布范围内，或尚未载入发布数据——不插值、不外推。</p>}
+        </div>)}
+      </div>
+    </div>}
+
+    {/* 探索区间由数据自动生成：有考试按等位换算取 min–max，没有考试按目标分 ±10。
+        学生非要改可以改（微调），但不提供「去匹配」按钮——顺序上的下一步是谈心。 */}
+    <div className=\"panel\" style={{ marginTop: 22 }}>
+      <h3><Icon name=\"compass\" />探索区间（自动生成，可微调）</h3>
+      <p className=\"psub\">后面的院校匹配不看单点分数，看这段区间。它由上面的数据自动生成：有几次考试时按各自的切线做等位换算、
+        取可用估算的最小—最大值；只有目标分时按上下各 10 分。非要改，可以直接改下面两个数——下一次数据变化时会按新数据重新生成。</p>
+      {range
+        ? <>
+          <div className=\"vlist\" style={{ marginTop: 14 }}>
+            <span className=\"vpill\">区间 <b>{range.low}–{range.high}</b> 分</span>
+            <span className=\"vpill\">参考 <b>{trackLabel}</b></span>
+          </div>
+          <div className=\"grid-2\" style={{ marginTop: 14, gap: 14, maxWidth: 420 }}>
+            <label className=\"field\"><span className=\"flab\">微调下限</span>
+              <input className=\"inp\" type=\"number\" min={0} max={750} inputMode=\"numeric\" aria-label=\"探索区间下限\"
+                value={Number.isFinite(range.low) ? range.low : \"\"}
+                onChange={(event) => {
+                  const value = event.target.value === \"\" ? NaN : Number(event.target.value);
+                  setRange((current) => ({ low: value, high: current?.high ?? 750,
+                    basis: \"手动微调过的探索区间；下一次数据变化会重新生成。\" }));
+                }} /></label>
+            <label className=\"field\"><span className=\"flab\">微调上限</span>
+              <input className=\"inp\" type=\"number\" min={0} max={750} inputMode=\"numeric\" aria-label=\"探索区间上限\"
+                value={Number.isFinite(range.high) ? range.high : \"\"}
+                onChange={(event) => {
+                  const value = event.target.value === \"\" ? NaN : Number(event.target.value);
+                  setRange((current) => ({ low: current?.low ?? 0, high: value,
+                    basis: \"手动微调过的探索区间；下一次数据变化会重新生成。\" }));
+                }} /></label>
+          </div>
+          <p className=\"fhint\" style={{ marginTop: 8 }}>{range.basis}</p>
+        </>
+        : <p className=\"muted-note\" style={{ marginTop: 12 }}>还没有可以生成区间的数据：录入至少一次「总分 + 切线」的考试，或在「起航」填一个高考目标分。</p>}
+    </div>
+
+    {/* —— 荣县一中质量慧析（原「成绩」章并入）：学校数据接入后才能看 —— */}
+    {schoolLocked && shardExam && <div className=\"panel\" style={{ marginTop: 22 }}>
+      <h3><Icon name=\"layers\" />最近一次考试的逐科位置</h3>
+      <p className=\"psub\">每一科都给出「本人分数 / 本科线 / 距线差」和与年级、班级均分的差。缺失或异常单元格显示为「—」，不按 0 分计算。这些只描述已经发生的事，不预测录取。</p>
+      {examRow && <p className=\"fhint\" style={{ marginTop: 10 }}>
+        {examName(shardExam.exam)} 本校 {shardExam.track} 共 {examRow.students} 人参考；一本上线 {examRow.top_count ?? \"—\"} 人（{formatRate(examRow.top_rate)}），
+        本科上线 {examRow.undergraduate_count ?? \"—\"} 人（{formatRate(examRow.undergraduate_rate)}）。
+        {shardExam.trackDiffersFromHome && `该场考试按${shardExam.track}统计（你平时在${quality.shard?.person.track}），位次、分数线与班级均分都取自这一场自己的口径。`}
+      </p>}
+      {lastTrend && <p className=\"fhint\" style={{ marginTop: 6 }}>年级参考：{examName(lastTrend.exam_code)}全年级 {lastTrend.students} 人参考，
+        均分 {formatScore(lastTrend.average)}，一本上线 {lastTrend.top_count ?? \"—\"} 人{prevTrend
+          ? `；上次（${examName(prevTrend.exam_code)}）均分 ${formatScore(prevTrend.average)}` : \"\"}。</p>}
+      <div className=\"table-wrap\" style={{ marginTop: 10 }}>
+        <table className=\"table\">
+          <thead><tr><th scope=\"col\">科目</th><th scope=\"col\">分数</th><th scope=\"col\">本科线</th><th scope=\"col\">距本科线</th>
+            <th scope=\"col\">一本线</th><th scope=\"col\">距一本线</th><th scope=\"col\">年级均分差</th><th scope=\"col\">班级均分差</th></tr></thead>
+          <tbody>
+            {distances.map((row) => <tr key={row.subject}>
+              <th scope=\"row\">{row.subject}</th>
+              <td className=\"num\">{row.value === null ? \"—\" : formatScore(row.value)}</td>
+              <td className=\"num\">{formatScore(row.undergraduateLine)}</td>
+              <td className=\"num\">{formatGap(row.undergraduateGap)}</td>
+              <td className=\"num\">{formatScore(row.topLine)}</td>
+              <td className=\"num\">{formatGap(row.topGap)}</td>
+              <td className=\"num\">{formatGap(row.gradeGap)}</td>
+              <td className=\"num\">{formatGap(row.classGap)}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p className=\"fhint\">语数外与物理/历史为原分，化学/生物/政治/地理为赋分。距线差为负数表示还差多少分。</p>
+    </div>}
+
+    {schoolLocked && quality.shard && quality.shard.exams.length > 1 && <div className=\"panel\" style={{ marginTop: 22 }}>
+      <h3><Icon name=\"route\" />航迹：历次总分与切线</h3>
+      <p className=\"psub\">柱子画在统一分数标尺上（左侧是分数刻度），柱顶标着当次总分，越高分越高；两条虚线按每一场考试自己的划线分段画——各场考试的划线深浅不一样，不能共用一条线。柱子到虚线的落差就是当次距线差。更早的考试见下表。</p>
+      {(() => {
+        // 只画最近 6 次：更早的考试量纲可能不同（如入口考），会把标尺撑宽、压扁近期的高低差；
+        // 完整历次见下面的表格。
+        const chart = trailChart(quality.shard!.exams.slice(-6));
+        if (!chart) return <div className=\"empty-inline\">暂无可绘制的总分记录。</div>;
+        return <svg viewBox={`0 0 ${chart.width} ${chart.height}`} width=\"100%\" role=\"img\"
+          aria-label=\"历次考试总分轨迹：柱顶是当次总分，两条虚线按各场考试自己的划线分段画\"
+          style={{ display: \"block\", maxWidth: 560 }}>
+          {chart.grid.map((tick) => <g key={`grid-${tick.value}`}>
+            <line x1={chart.padLeft} y1={tick.y} x2={chart.width - 6} y2={tick.y} stroke=\"#ece5d4\" strokeWidth={1} />
+            <text x={chart.padLeft - 4} y={tick.y + 3} textAnchor=\"end\" fontSize=\"8\" fill=\"#a89f88\">{tick.value}</text>
+          </g>)}
+          <line x1={chart.padLeft} y1={chart.baseline} x2={chart.width - 6} y2={chart.baseline} stroke=\"#dcd6c6\" strokeWidth={1} />
+          {chart.lines.map((line, index) => <g key={`${line.kind}-${index}`}>
+            <line x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
+              stroke={line.kind === \"top\" ? \"#a97b34\" : \"#7d9a86\"} strokeWidth={1.2} strokeDasharray=\"5 3\" />
+            {line.label ? <text x={chart.width - 6} y={line.labelY} textAnchor=\"end\" fontSize=\"9\"
+              fill={line.kind === \"top\" ? \"#a97b34\" : \"#7d9a86\"}>{line.label}</text> : null}
+          </g>)}
+          {chart.bars.map((bar) => <g key={bar.key}>
+            {bar.total !== null
+              ? <>
+                <rect x={bar.x} y={bar.y} width={bar.w} height={Math.max(2, bar.h)} rx={3} fill=\"#12454f\" opacity={0.88}>
+                  <title>{`${bar.full}：${formatScore(bar.total)} 分`}</title>
+                </rect>
+                <text x={bar.x + bar.w / 2} textAnchor=\"middle\" fontSize=\"8.5\" fontWeight={600}
+                  fill={bar.h >= 14 ? \"#f4efe2\" : \"#12454f\"} y={bar.h >= 14 ? bar.y + 12 : bar.y - 4}>
+                  {Math.round(bar.total)}</text>
+              </>
+              : <line className=\"trail-gap\" x1={bar.x + bar.w / 2} y1={chart.baseline - 10} x2={bar.x + bar.w / 2} y2={chart.baseline}
+                stroke=\"#cbc4b0\" strokeWidth={2} strokeDasharray=\"2 2\">
+                <title>{`${bar.full}：缺考/无来源总分，留空不补零`}</title>
+              </line>}
+            <text x={bar.x + bar.w / 2} y={chart.height - 8} textAnchor=\"middle\" fontSize=\"9\" fill=\"#6d7f83\">{bar.short}</text>
+          </g>)}
+        </svg>;
+      })()}
+      <div className=\"table-wrap\">
+        <table className=\"table\">
+          <thead><tr><th scope=\"col\">考试</th><th scope=\"col\">总分</th><th scope=\"col\">一本线</th><th scope=\"col\">距一本</th>
+            <th scope=\"col\">本科线</th><th scope=\"col\">距本科</th><th scope=\"col\">校内位次</th><th scope=\"col\">考试人数</th></tr></thead>
+          <tbody>
+            {quality.shard.exams.map((row) => <tr key={row.exam}>
+              <th scope=\"row\">{friendlyExamLabel(row.exam)}{row.trackDiffersFromHome ? `（按${row.track}）` : \"\"}</th>
+              <td className=\"num\">{formatScore(row.total)}</td>
+              <td className=\"num\">{formatScore(row.topTotal)}</td>
+              <td className=\"num\">{formatGap(row.topDiff)}</td>
+              <td className=\"num\">{formatScore(row.undergraduateTotal)}</td>
+              <td className=\"num\">{formatGap(row.undergraduateDiff)}</td>
+              <td className=\"num\">{row.gradeRank ?? \"—\"}</td>
+              <td className=\"num\">{row.gradeSize ?? \"—\"}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      {moves.length > 0 && <p className=\"fhint\">注意：你的班号在 {moves.map((row) => friendlyExamLabel(row.exam)).join(\"、\")} 发生变化，页面按各次考试的原始班号统计，班级均分差也随之切换。</p>}
+      <p className=\"fhint\">考试代码说明：一册～四册＝第1～4学期期末；「XY」＝第X学期第Y次月考（如 21 为第2学期第1次月考、51 为第5学期第1次月考）；4半＝第4学期半期。</p>
+    </div>}
+
+    {schoolLocked && gaps.length > 0 && <div className=\"panel\" style={{ marginTop: 22 }}>
+      <h3><Icon name=\"layers\" />知识点：最该先补的几块</h3>
+      <p className=\"psub\">按本人得分率从低到高排列，同时给出年级同知识点的得分率。得分率为 0 说明该题没拿到分，不代表这一块完全不会。</p>
+      <div className=\"table-wrap\">
+        <table className=\"table\">
+          <thead><tr><th scope=\"col\">学科</th><th scope=\"col\">知识点</th><th scope=\"col\">本人得分率</th>
+            <th scope=\"col\">年级得分率</th><th scope=\"col\">与年级差</th><th scope=\"col\">考试</th></tr></thead>
+          <tbody>
+            {gaps.map((row) => <tr key={`${row.exam}-${row.subject}-${row.knowledge}`}>
+              <th scope=\"row\">{row.subject}</th>
+              <td>{row.knowledge}</td>
+              <td className=\"num\">{formatRate(row.rate)}</td>
+              <td className=\"num\">{formatRate(row.gradeRate)}</td>
+              <td className=\"num\">{row.gradeRate === null ? \"—\" : formatGap((row.rate - row.gradeRate) * 100)} 个百分点</td>
+              <td>{friendlyExamLabel(row.exam)}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p className=\"fhint\">只统计有来源满分且本人有作答的小题；缺少分值的题不参与得分率计算，也不会被补成满分。</p>
+    </div>}
+
+    <div className=\"banner\">
+      <div style={{ display: \"flex\", gap: 16, alignItems: \"flex-start\" }}><Icon name=\"chat\" size=\"lg\" />
+        <div><h3 className=\"song\">位置看清了，去和 AI 聊聊你想去哪</h3><p>分数决定「能到哪」，聊出来的方向决定「想去哪」。区间匹配院校随时可以去「分数轴」做；顺序上的下一步是谈心。</p></div></div>
+      <button type=\"button\" className=\"btn sm\" style={{ fl...
+
+ ❯ apps/web/test/quality-presentation.test.ts:43:21
+     41|     expect(app).toContain("不预测录取");
+     42|     expect(app).not.toMatch(/录取概率为?\s*\d/);
+     43|     expect(app).not.toMatch(/录取把握|稳上|保底校/);
+       |                     ^
+     44|   });
+     45| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 31 passed (32)
+      Tests  1 failed | 428 passed (429)
+   Start at  20:12:18
+   Duration  16.46s (transform 1.73s, setup 0ms, collect 8.33s, tests 5.53s, environment 12ms, prepare 6.40s)
+

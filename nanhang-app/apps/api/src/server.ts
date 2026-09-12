@@ -14,7 +14,7 @@ import { demoEvidence, DEMO_TRIAL_CODE, DEMO_ACADEMIC_BINDING } from "./demo-con
 import { scriptedUpstreamFromEnv } from "./dev-upstream.ts";
 import { ENV_NAMES, loadRuntimeConfig, memoryStoreAllowed, redisOptionsFromEnv } from "./config.ts";
 
-const MAX_BODY_BYTES = 64 * 1024;
+const MAX_BODY_BYTES = 512 * 1024;
 /** Past this multiple of the limit we stop draining and drop the connection instead of absorbing bytes. */
 const DRAIN_MULTIPLIER = 8;
 
@@ -143,14 +143,16 @@ const schoolAccess = createSchoolAccess();
 
 export function createApiServer(deps: ServerDeps): Server {
   const { gateway } = deps;
-  const sessionsByToken = new Map<string, SessionRecord>();
 
   const authenticate = async (request: IncomingMessage) =>
     await gateway.authenticate(bearer(request));
 
   const server = createServer((request, response) => {
     applyCors(request, response);
-    void handle(request, response);
+    void handle(request, response).catch(() => {
+      if (response.headersSent) { response.end(); return; }
+      sendJson(response, 503, { error: { code: "SERVICE_UNAVAILABLE", message: "服务暂不可用，请稍后重试。", retryable: true } });
+    });
   });
 
   async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -179,7 +181,7 @@ export function createApiServer(deps: ServerDeps): Server {
         sendJson(response, 503, { error: { code: "AI_DISABLED", message: "access code is not configured on this deployment", request_id: "" } });
         return;
       }
-      const code = (body.value as { access_code?: unknown }).access_code;
+      const code = (body.value as { access_code?: unknown } | null)?.access_code;
       if (typeof code !== "string" || !secretEquals(code.trim(), expected)) {
         sendJson(response, 401, { error: { code: "UNAUTHENTICATED", message: "access code rejected", request_id: "" } });
         return;
@@ -189,7 +191,6 @@ export function createApiServer(deps: ServerDeps): Server {
       const session = await gateway.createSession({
         token, subjectId: newSubjectId(), accessKind: "trial_code", sessionId
       });
-      sessionsByToken.set(token, session);
       sendJson(response, 200, { session_id: session.sessionId, token, quota: session.quotaRemaining, academic_scope: false });
       return;
     }
@@ -202,7 +203,7 @@ export function createApiServer(deps: ServerDeps): Server {
       const body = await readBody(request);
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
       const controller = new AbortController();
-      request.on("close", () => controller.abort());
+      response.on("close", () => { if (!response.writableEnded) controller.abort(); });
       const result = await gateway.careerTurn(auth.session, body.value, controller.signal);
       response.writeHead(result.httpStatus, {
         "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store",
@@ -219,7 +220,7 @@ export function createApiServer(deps: ServerDeps): Server {
       const body = await readBody(request);
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
       const controller = new AbortController();
-      request.on("close", () => controller.abort());
+      response.on("close", () => { if (!response.writableEnded) controller.abort(); });
       const result = await gateway.careerProfile(auth.session, body.value, controller.signal);
       sendJson(response, result.httpStatus, result.body);
       return;
@@ -237,8 +238,6 @@ export function createApiServer(deps: ServerDeps): Server {
     if (route === "DELETE /v1/session") {
       const auth = await authenticate(request);
       if (!auth.ok) { sendAuthFailure(response, auth.code); return; }
-      const token = bearer(request);
-      if (token) sessionsByToken.delete(token);
       const revoked = await gateway.revoke(auth.session.sessionId);
       sendJson(response, 200, { revoked: true, deleted_records: revoked.deleted });
       return;

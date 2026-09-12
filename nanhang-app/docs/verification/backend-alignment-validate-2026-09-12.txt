@@ -1,0 +1,108 @@
+
+> nanhang-app@0.1.0 validate
+> npm run generate && npm run typecheck && npm test
+
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/web-paper@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/api@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> nanhang-app@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 73ms
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 177ms
+ ✓ apps/web/test/quality-huixi.test.ts (36 tests) 1466ms
+   ✓ 发布产物与解析器输出一致 > 跨科类考试（美术班）按该场科类的分数线与位次池计算  717ms
+ ✓ apps/web/test/chat.test.ts (16 tests) 121ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 68ms
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 密文被改过一个字节就拒绝（GCM 认证失败），不会把坏数据发给学生
+school identify failed: Error: Unsupported state or unable to authenticate data
+    at Decipheriv.final (node:internal/crypto/cipher:174:29)
+    at decryptShard (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:36:14)
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:211:27)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 88ms
+ ✓ apps/api/test/school-access.test.ts (3 tests) 399ms
+ ✓ apps/api/test/school-cloud.test.ts (6 tests) 388ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 98ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 55ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 50ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 94ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 323ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 520ms
+ ✓ packages/ai-gateway/test/redis-store.test.ts (13 tests) 855ms
+ ✓ apps/api/test/api.test.ts (29 tests) 1191ms
+ ✓ packages/domain/test/matching.test.ts (10 tests) 84ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 36ms
+ ✓ apps/web/test/journey-model.test.ts (13 tests) 36ms
+ ✓ apps/web/test/theme-spirit.test.ts (11 tests) 32ms
+ ✓ apps/web-paper/test/paper-honesty.test.ts (12 tests) 70ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 170ms
+ ✓ apps/web/test/presentation.test.ts (8 tests) 97ms
+ ✓ packages/ai-gateway/test/catalog-guard.test.ts (5 tests) 94ms
+ ✓ apps/web/test/quality-presentation.test.ts (10 tests) 44ms
+ ✓ apps/web/test/exam-position.test.ts (13 tests) 26ms
+ ✓ apps/web/test/settings.test.ts (3 tests) 14ms
+ ✓ apps/web/test/topbar-narrow.test.ts (4 tests) 17ms
+ ✓ apps/web/test/sail-deck.test.ts (4 tests) 57ms
+ ✓ apps/web/test/progress.test.ts (15 tests) 28ms
+ ✓ apps/web/test/backend-alignment.test.ts (3 tests) 28ms
+ ❯ apps/web/test/release-integration.test.ts (13 tests | 1 failed) 7244ms
+   ✓ published release integration > exports a manifest whose coverage is internally consistent 40ms
+   ✓ published release integration > serves distribution tables whose rows carry a derivable rank interval  624ms
+   ✓ published release integration > loads a shard, converts it, and produces candidates against published history  455ms
+   ✓ published release integration > records a comparability decision for every year that has a published table 20ms
+   ✓ published release integration > only selects a reference year whose comparison is established 27ms
+   ✓ published release integration > does not present an unestablished year as comparable 18ms
+   ✓ published release integration > limits a match to the batches the student selected  713ms
+   ✓ published release integration > reports the offering count for each selectable batch 14ms
+   ✓ published release integration > converts a score into the rank the published table actually lists 12ms
+   ✓ published release integration > keeps the rank unknown when the score is outside the published rows 12ms
+   ✓ published release integration > marks the axis with published bounds rather than an invented control line 11ms
+   ✓ published release integration > carries the workbook's own category onto the offering label 39ms
+   × published release integration > 发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业 5254ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps/web/test/release-integration.test.ts > published release integration > 发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ apps/web/test/release-integration.test.ts:486:3
+    484|   });
+    485| 
+    486|   it("发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业", async () => {
+       |   ^
+    487|     const { dir, manifest, index, distributions, comparability } = loa…
+    488|     const release: LoadedRelease = { manifest, index, distributions, c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 31 passed (32)
+      Tests  1 failed | 421 passed (422)
+   Start at  20:05:56
+   Duration  13.17s (transform 18.44s, setup 0ms, collect 54.94s, tests 14.04s, environment 18ms, prepare 22.73s)
+

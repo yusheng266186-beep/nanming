@@ -1,0 +1,118 @@
+
+> nanhang-app@0.1.0 validate
+> npm run generate && npm run typecheck && npm test --maxWorkers=2
+
+
+> nanhang-app@0.1.0 generate
+> node scripts/generate-contract-types.mjs
+
+
+> nanhang-app@0.1.0 typecheck
+> tsc -b --pretty false && npm --workspace @nanhang/web run typecheck && npm --workspace @nanhang/web-paper run typecheck && npm --workspace @nanhang/api run typecheck
+
+
+> @nanhang/web@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/web-paper@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> @nanhang/api@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+npm warn Unknown cli config "--maxWorkers". This will stop working in the next major version of npm.
+
+> nanhang-app@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ apps/web/test/presentation.test.ts (8 tests) 20ms
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 123ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 33ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 33ms
+ ✓ packages/ai-gateway/test/catalog-guard.test.ts (5 tests) 34ms
+ ✓ apps/web/test/quality-huixi.test.ts (36 tests) 1362ms
+   ✓ 发布产物与解析器输出一致 > 跨科类考试（美术班）按该场科类的分数线与位次池计算  534ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 334ms
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 80ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 403ms
+ ✓ apps/web-paper/test/paper-honesty.test.ts (12 tests) 54ms
+ ✓ packages/ai-gateway/test/redis-store.test.ts (13 tests) 683ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 112ms
+ ✓ apps/web/test/chat.test.ts (16 tests) 249ms
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 汇总密文缺失时明确503，不交付一个无法完成定位的成功响应
+school identify failed: Error: SCHOOL_SUMMARY_UNAVAILABLE
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:215:38)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 密文被改过一个字节就拒绝（GCM 认证失败），不会把坏数据发给学生
+school identify failed: Error: Unsupported state or unable to authenticate data
+    at Decipheriv.final (node:internal/crypto/cipher:174:29)
+    at decryptShard (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:36:14)
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:211:27)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+ ✓ apps/api/test/school-cloud.test.ts (7 tests) 792ms
+   ✓ 云端密文分片 > 汇总密文缺失时明确503，不交付一个无法完成定位的成功响应  449ms
+ ✓ apps/api/test/school-access.test.ts (3 tests) 1019ms
+   ✓ 姓名与验证码必须同时核对 > 生产未配置私有文件时返回不可用，不探测本地目录  439ms
+   ✓ 姓名与验证码必须同时核对 > 正确二元组只返回本人，错名与错码返回相同错误，连续请求会限流  502ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 44ms
+ ✓ apps/web/test/quality-presentation.test.ts (10 tests) 18ms
+ ✓ apps/web/test/theme-spirit.test.ts (11 tests) 27ms
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 216ms
+ ✓ apps/web/test/journey-model.test.ts (13 tests) 20ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 315ms
+ ✓ apps/api/test/api.test.ts (31 tests) 1707ms
+   ✓ TASK-08 HTTP 适配层 > A46/A48 上游返回脚本或概率时，客户端只收到降级文本  432ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 240ms
+ ✓ apps/web/test/sail-deck.test.ts (7 tests) 28ms
+ ✓ apps/web/test/settings.test.ts (3 tests) 67ms
+ ✓ apps/web/test/backend-alignment.test.ts (3 tests) 74ms
+ ✓ apps/web/test/topbar-narrow.test.ts (4 tests) 206ms
+ ✓ apps/web/test/exam-position.test.ts (13 tests) 45ms
+ ✓ apps/web/test/progress.test.ts (15 tests) 271ms
+ ✓ packages/domain/test/matching.test.ts (10 tests) 214ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 313ms
+ ❯ apps/web/test/release-integration.test.ts (13 tests | 1 failed) 11289ms
+   ✓ published release integration > exports a manifest whose coverage is internally consistent 157ms
+   ✓ published release integration > serves distribution tables whose rows carry a derivable rank interval  1188ms
+   ✓ published release integration > loads a shard, converts it, and produces candidates against published history  564ms
+   ✓ published release integration > records a comparability decision for every year that has a published table 47ms
+   ✓ published release integration > only selects a reference year whose comparison is established 149ms
+   ✓ published release integration > does not present an unestablished year as comparable 90ms
+   ✓ published release integration > limits a match to the batches the student selected  497ms
+   ✓ published release integration > reports the offering count for each selectable batch 13ms
+   ✓ published release integration > converts a score into the rank the published table actually lists 62ms
+   ✓ published release integration > keeps the rank unknown when the score is outside the published rows 58ms
+   ✓ published release integration > marks the axis with published bounds rather than an invented control line 15ms
+   ✓ published release integration > carries the workbook's own category onto the offering label 25ms
+   × published release integration > 发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业 8410ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps/web/test/release-integration.test.ts > published release integration > 发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ apps/web/test/release-integration.test.ts:486:3
+    484|   });
+    485| 
+    486|   it("发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业", async () => {
+       |   ^
+    487|     const { dir, manifest, index, distributions, comparability } = loa…
+    488|     const release: LoadedRelease = { manifest, index, distributions, c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 31 passed (32)
+      Tests  1 failed | 427 passed (428)
+   Start at  20:07:34
+   Duration  18.21s (transform 20.52s, setup 0ms, collect 70.95s, tests 20.43s, environment 17ms, prepare 19.92s)
+

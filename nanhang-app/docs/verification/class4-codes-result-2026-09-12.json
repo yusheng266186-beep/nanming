@@ -1,0 +1,10 @@
+{
+  "matched_http_passed": 48,
+  "lowercase_x_http_passed": 6,
+  "old_lookup_keys_removed": 48,
+  "unchanged_identities_checked": 832,
+  "class4_original_retained": 8,
+  "identities_total": 880,
+  "score_database_unchanged": true,
+  "scope": "local SCF bundle, not deployed"
+}

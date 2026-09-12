@@ -1,0 +1,32 @@
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ packages/ai-gateway/test/redis-store.test.ts (13 tests) 279ms
+ ✓ apps/api/test/api.test.ts (31 tests) 335ms
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 汇总密文缺失时明确503，不交付一个无法完成定位的成功响应
+school identify failed: Error: SCHOOL_SUMMARY_UNAVAILABLE
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:215:38)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 密文被改过一个字节就拒绝（GCM 认证失败），不会把坏数据发给学生
+school identify failed: Error: Unsupported state or unable to authenticate data
+    at Decipheriv.final (node:internal/crypto/cipher:174:29)
+    at decryptShard (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:36:14)
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:211:27)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+ ✓ apps/api/test/school-cloud.test.ts (7 tests) 210ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 149ms
+ ✓ apps/api/test/school-access.test.ts (3 tests) 236ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 193ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 23ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 30ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 19ms
+ ✓ packages/ai-gateway/test/catalog-guard.test.ts (5 tests) 22ms
+ ✓ apps/web/test/backend-alignment.test.ts (4 tests) 9ms
+
+ Test Files  11 passed (11)
+      Tests  168 passed (168)
+   Start at  20:14:00
+   Duration  5.40s (transform 772ms, setup 0ms, collect 2.83s, tests 1.51s, environment 3ms, prepare 2.02s)
+

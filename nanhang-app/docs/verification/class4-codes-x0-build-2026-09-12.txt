@@ -1,0 +1,17 @@
+
+> nanhang-app@0.1.0 web:build
+> npm --workspace @nanhang/web run build
+
+
+> @nanhang/web@0.1.0 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 62 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.52 kB │ gzip:   0.37 kB
+dist/assets/index-ChhgcMlV.css   67.71 kB │ gzip:  14.47 kB
+dist/assets/index-CGOXhzr8.js   318.78 kB │ gzip: 103.49 kB
+✓ built in 1.72s

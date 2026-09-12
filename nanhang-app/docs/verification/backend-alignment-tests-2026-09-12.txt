@@ -1,0 +1,55 @@
+
+ RUN  v3.2.7 C:/Users/yusheng/Desktop/南航/nanhang-app
+
+ ✓ apps/web/test/quality-huixi.test.ts (36 tests) 735ms
+   ✓ 发布产物与解析器输出一致 > 跨科类考试（美术班）按该场科类的分数线与位次池计算  345ms
+ ✓ apps/api/test/api.test.ts (31 tests) 598ms
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 汇总密文缺失时明确503，不交付一个无法完成定位的成功响应
+school identify failed: Error: SCHOOL_SUMMARY_UNAVAILABLE
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:215:38)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+stderr | apps/api/test/school-cloud.test.ts > 云端密文分片 > 密文被改过一个字节就拒绝（GCM 认证失败），不会把坏数据发给学生
+school identify failed: Error: Unsupported state or unable to authenticate data
+    at Decipheriv.final (node:internal/crypto/cipher:174:29)
+    at decryptShard (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:36:14)
+    at Server.<anonymous> (C:\Users\yusheng\Desktop\南航\nanhang-app\apps\api\src\school-access.ts:211:27)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+ ✓ apps/api/test/school-cloud.test.ts (7 tests) 332ms
+ ✓ apps/web/test/release-integration.test.ts (13 tests) 3509ms
+   ✓ published release integration > 发布包级专业类目录与分数区间无关：覆盖该科类批次下的全部真实专业  3021ms
+ ✓ apps/api/test/school-access.test.ts (3 tests) 235ms
+ ✓ packages/ai-gateway/test/redis-store.test.ts (13 tests) 371ms
+ ✓ packages/ai-gateway/test/qianfan-upstream.test.ts (34 tests) 261ms
+ ✓ packages/ai-gateway/test/gateway.test.ts (28 tests) 232ms
+ ✓ packages/contracts/test/workbook-data.test.ts (4 tests) 136ms
+ ✓ packages/contracts/test/task03-data.test.ts (6 tests) 60ms
+ ✓ packages/school-adapter/test/school-adapter.test.ts (17 tests) 121ms
+ ✓ packages/contracts/test/contracts.test.ts (10 tests) 70ms
+ ✓ apps/web/test/chat.test.ts (16 tests) 53ms
+ ✓ apps/web/test/flow.test.ts (7 tests) 70ms
+ ✓ apps/web-paper/test/paper-honesty.test.ts (12 tests) 49ms
+ ✓ apps/web/test/ai-panel.test.ts (18 tests) 47ms
+ ✓ packages/domain/test/matching.test.ts (10 tests) 96ms
+ ✓ packages/ai-gateway/test/acceptance-cases.test.ts (11 tests) 54ms
+ ✓ packages/ai-gateway/test/catalog-guard.test.ts (5 tests) 27ms
+ ✓ packages/exploration/test/exploration.test.ts (9 tests) 26ms
+ ✓ packages/domain/test/acceptance.test.ts (37 tests) 36ms
+ ✓ apps/web/test/ai-client.test.ts (14 tests) 48ms
+ ✓ apps/web/test/progress.test.ts (15 tests) 11ms
+ ✓ apps/web/test/backend-alignment.test.ts (3 tests) 21ms
+ ✓ apps/web/test/theme-spirit.test.ts (11 tests) 12ms
+ ✓ apps/web/test/journey-model.test.ts (13 tests) 16ms
+ ✓ apps/web/test/presentation.test.ts (8 tests) 10ms
+ ✓ apps/web/test/sail-deck.test.ts (7 tests) 7ms
+ ✓ apps/web/test/exam-position.test.ts (13 tests) 10ms
+ ✓ apps/web/test/quality-presentation.test.ts (10 tests) 7ms
+ ✓ apps/web/test/topbar-narrow.test.ts (4 tests) 5ms
+ ✓ apps/web/test/settings.test.ts (3 tests) 4ms
+
+ Test Files  32 passed (32)
+      Tests  428 passed (428)
+   Start at  20:08:38
+   Duration  25.34s (transform 4.44s, setup 0ms, collect 14.57s, tests 7.27s, environment 12ms, prepare 8.91s)
+

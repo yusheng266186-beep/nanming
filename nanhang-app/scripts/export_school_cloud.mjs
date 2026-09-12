@@ -49,6 +49,13 @@ mkdirSync(join(OUT, "objects"), { recursive: true });
 
 let bytes = 0;
 const objects = {};
+// 章节版定位页需要的匿名考试汇总也走密文，核验后由 API 返回。
+const sourceIndex = JSON.parse(readFileSync(join(SHARD_DIR, "..", "index.json"), "utf8"));
+if (!Array.isArray(sourceIndex.exams) || !Array.isArray(sourceIndex.trend)) throw new Error("SCHOOL_SUMMARY_INVALID");
+const summaryPayload = encrypt(key, Buffer.from(JSON.stringify({ exams: sourceIndex.exams, trend: sourceIndex.trend })));
+const summaryObject = objectName(key, "index.json");
+writeFileSync(join(OUT, "objects", summaryObject), summaryPayload);
+bytes += summaryPayload.length;
 for (const shardFile of shardFiles) {
   const plaintext = readFileSync(join(SHARD_DIR, shardFile));
   const payload = encrypt(key, plaintext);
@@ -66,6 +73,7 @@ const manifest = {
   keyLocation: "private/school-cloud-key.txt（不进仓库、不进对象存储）",
   identityEntries: Object.keys(identity.entries ?? {}).length,
   shards: shardFiles.length,
+  summary: { object: summaryObject, bytes: summaryPayload.length, sha256: createHash("sha256").update(summaryPayload).digest("hex") },
   bytes,
   objects
 };

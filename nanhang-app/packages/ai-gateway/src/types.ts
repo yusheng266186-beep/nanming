@@ -84,7 +84,7 @@ export const DEFAULT_CONFIG: AiGatewayConfig = {
   profile: "development",
   maxInputChars: 4000,
   maxContextMessages: 20,
-  maxContextChars: 12000,
+  maxContextChars: 32000,
   maxEvidenceIds: 200,
   firstByteTimeoutMs: 30000,
   totalTimeoutMs: 90000,

@@ -2,7 +2,7 @@
 #
 # 两件事在仓库变量里配，不写死在文件里（改地址不用改代码）：
 #   vars.NANHANG_RELEASE_BASE  发布包地址，例如 https://<bucket>.cos.ap-chengdu.myqcloud.com/data/releases
-#   vars.NANHANG_API_BASE      AI 中转函数地址；留空则前端回落到本机 127.0.0.1:8790（面板会提示连不上）
+#   vars.NANHANG_API_BASE      AI 中转函数地址；缺失或非公网 HTTPS 则拒绝发布
 #
 # 数据与代码分开发布：换一版发布包只需要重跑 scripts/deploy_cos.py，
 # 前端读 current.json 指针，不必重新构建 Pages。
@@ -42,13 +42,24 @@ jobs:
         working-directory: nanhang-app
         run: npm run generate && npx tsc -b
 
+      - name: 验证前后端与发布配置检查器
+        # 负责人要求本轮半成品也发布供实际验收；保留结果，但不以测试失败阻断上传。
+        continue-on-error: true
+        working-directory: nanhang-app
+        run: |
+          npm run typecheck
+          npm test -- --maxWorkers=2
+          node --test scripts/check_pages_config.test.mjs
+
       - name: 构建主前端
         working-directory: nanhang-app
         env:
           VITE_NANHANG_RELEASE_BASE: ${{ vars.NANHANG_RELEASE_BASE }}
           VITE_NANHANG_API_BASE: ${{ vars.NANHANG_API_BASE }}
         # 站点在 /<仓库名>/ 子路径下，base 必须跟着改，否则资源全部 404。
-        run: npm --workspace @nanhang/web run build -- --base=/${{ github.event.repository.name }}/
+        run: |
+          node scripts/check_pages_config.mjs
+          npm --workspace @nanhang/web run build -- --base=/${{ github.event.repository.name }}/
 
       - uses: actions/upload-pages-artifact@v3
         with:

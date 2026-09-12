@@ -72,6 +72,29 @@ describe("TASK-08 HTTP 适配层", () => {
     expect(profile.status).toBe(401);
   });
 
+  it("无效兑换体不产生未捕获异常，服务随后仍可用", async () => {
+    const response = await fetch(`${base}/v1/access/exchange`, {
+      method: "POST", headers: { "content-type": "application/json" }, body: "null"
+    });
+    expect(response.status).toBe(401);
+    expect((await fetch(`${base}/healthz`)).status).toBe(200);
+  });
+
+  it("共享会话写入失败返回503而不是挂起请求", async () => {
+    const h = harnessServer();
+    h.gateway.createSession = async () => { throw new Error("synthetic store failure"); };
+    const local = h.server;
+    await new Promise<void>((resolve) => local.listen(0, "127.0.0.1", resolve));
+    try {
+      const result = await fetch(`http://127.0.0.1:${(local.address() as AddressInfo).port}/v1/access/exchange`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ access_code: DEMO_TRIAL_CODE })
+      });
+      expect(result.status).toBe(503);
+      expect(JSON.stringify(await result.json())).not.toContain("synthetic store failure");
+    } finally { await new Promise<void>((resolve) => local.close(() => resolve())); }
+  });
+
   it("真实HTTP路径上完成一次SSE对话，并可按request_id查询状态", async () => {
     const response = await fetch(`${base}/v1/career/turn`, { method: "POST", headers: authed(),
       body: JSON.stringify({ run_id: "run-http-1", request_id: "req-http-1", input_revision: 1,

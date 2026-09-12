@@ -34,6 +34,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
   const rippleSeq = useRef(0);
   // 登船方式不再平铺在页面上：按「开始起航」后以卡片弹出，作为通向定位/成绩的桥。
   const [boardOpen, setBoardOpen] = useState(false);
+  // 六站航程收成一副抽屉卡：默认全部收起叠在一起，点哪一站展开哪一站（再点收起）。
+  const [deckOpen, setDeckOpen] = useState<string | null>(null);
   const reducedMotion = useMemo(() => prefersReducedMotion(), []);
   const artPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedMotion || event.pointerType === "touch") return;
@@ -49,6 +51,13 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
     window.setTimeout(() => setRipples((current) => current.filter((item) => item.id !== id)), 1300);
   };
   const tiltStyle = tilt ? { transform: `translate(${tilt.x * 8}px, ${tilt.y * 6}px) scale(1.06)` } : undefined;
+  // 「先定下三件事」各自的备齐状态：01 首选科目与 02 再选两门是出发的前提，03 目标分是选填。
+  // 状态只写在字段的印章上（铜色 = 备好），底部那句摘要同步再说一遍（aria-live），不另造第二份说明。
+  const additionalFull = state.form.additional.length === 2;
+  const readyToSail = state.form.primary !== null && additionalFull;
+  const sailSummary = state.form.primary
+    ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 高考目标分 ${state.form.score ?? "未填"}`
+    : "还没有选首选科目，位次与资格都会显示为未知。";
   return <section id="page-sail" className={`view${page === "sail" ? " active" : ""}`} aria-label="起航">
     <div className="hero">
       <div className="hero-copy">
@@ -81,14 +90,24 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
 
     {/* 页面顺序（负责人定）：六章航程在前（先知道去哪），三件事居中（备好行装），登船方式收尾（选入口出发）。 */}
     <div className="section">
-      <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>起航之后的六站，每一站都算数：先圈出探索区间，再聊出方向；两条来路都保留，最后一站合成一张航线图。</p></div></div>
-      <div className="trio">
+      <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>起航之后的六站，每一站都算数：先圈出探索区间，再聊出方向；两条来路都保留，最后一站合成一张航线图。六站收成一叠抽屉卡，点哪一站展开哪一站。</p></div></div>
+      {/* 抽屉式堆叠：收起时每站只露一行（章号 + 站名 + 这一站做什么），六张压边叠成一副，
+          省下的是留白，不是内容——每站的整句说明一个字都没删，展开就能看到。 */}
+      <div className="deck">
         {CHAPTERS.map((chapter) => {
           const intro = STOP_INTRO[chapter.id]!;
-          return <div className="mini" key={chapter.id}>
-            <span className="mk"><Icon name={chapter.icon} />{chapter.num} {chapter.k}</span>
-            <h4>{intro.title}</h4>
-            <p>{intro.desc}</p>
+          const open = deckOpen === chapter.id;
+          return <div className={`stop${open ? " open" : ""}`} key={chapter.id}>
+            <button type="button" className="stop-head" aria-expanded={open} aria-controls={`stop-${chapter.id}`}
+              onClick={() => setDeckOpen(open ? null : chapter.id)}>
+              <span className="mk"><Icon name={chapter.icon} />{chapter.num} {chapter.k}</span>
+              <h4>{intro.title}</h4>
+              <span className="stop-cue" aria-hidden="true"><Icon name="chevron" /></span>
+            </button>
+            {/* 正文始终在 DOM 里：展开/收起动的是高度与透明度，读屏不会因为视觉收起而丢掉这段说明。 */}
+            <div className="stop-body" id={`stop-${chapter.id}`}>
+              <div className="stop-inner"><p>{intro.desc}</p></div>
+            </div>
           </div>;
         })}
       </div>
@@ -98,10 +117,10 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       <div className="sec-head"><div><span className="eyebrow">Chapter 01 · 起航 · 北冥有鱼</span><h2 style={{ marginTop: 12 }}>先定下三件事</h2><p>首选科目与再选科目决定「这个专业我能不能报」；高考目标分给出起点，探索区间决定先看哪些院校。</p></div></div>
       {/* 选科与情景分必须在这里能设置，否则「选择你的选科组合」只是文案：
           位次、资格与匹配都依赖首选科目，没有它整页只能显示未知。 */}
-      <div className="panel sail-panel">
+      <div className="panel sail-panel" data-ready={readyToSail ? "true" : "false"}>
         <div className="grid-2 sail-form">
-          <div className="field">
-            <span className="flab">首选科目</span>
+          <div className="field" data-ready={state.form.primary !== null ? "true" : "false"}>
+            <span className="flab"><i className="seal">01</i>首选科目</span>
             <div className="chips">
               {(["PHYSICS", "HISTORY"] as const).map((item) => <button type="button" key={item}
                 className={`chip${state.form.primary === item ? " brass on" : ""}`}
@@ -112,16 +131,16 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
             </div>
             <p className="fhint">2025 年起四川采用 3+1+2，物理类与历史类是两套独立的计划与位次。</p>
           </div>
-          <div className="field">
-            <span className="flab">再选科目（正好 2 门）</span>
-            <div className="chips">
+          <div className="field" data-ready={additionalFull ? "true" : "false"}>
+            <span className="flab"><i className="seal">02</i>再选科目（正好 2 门）
+              <em className="flab-n">{state.form.additional.length}/2</em></span>
+            <div className="chips" data-full={additionalFull ? "true" : "false"}>
               {ADDITIONAL_OPTIONS.map((item) => {
                 const on = state.form.additional.includes(item);
-                const full = state.form.additional.length >= 2;
                 return <button type="button" key={item}
                   className={`chip${on ? " brass on" : ""}`} aria-pressed={on}
                   onClick={() => {
-                    if (!on && full) { setToast("再选科目正好 2 门，先取消一门再选。"); return; }
+                    if (!on && additionalFull) { setToast("再选科目正好 2 门，先取消一门再选。"); return; }
                     setState((current) => withForm(current, {
                       additional: current.form.additional.includes(item)
                         ? current.form.additional.filter((value) => value !== item)
@@ -133,8 +152,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
             <p className="fhint">选满 2 门才能判断资格。不确定的要求会显示「待核对」，不会被当成满足。</p>
           </div>
         </div>
-        <label className="field sail-score">
-          <span className="flab">高考目标分（可不填）</span>
+        <label className="field sail-score" data-ready={state.form.score !== null ? "true" : "false"}>
+          <span className="flab"><i className="seal">03</i>高考目标分（可不填）</span>
           <input className="inp" type="number" min={0} max={750} inputMode="numeric"
             value={state.form.score ?? ""} placeholder="例如 600"
             onChange={(event) => setState((current) => withForm(current, { score: event.target.value ? Number(event.target.value) : null }))} />
@@ -146,11 +165,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
         </div>
         <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 14 }}>
-          <span className="muted-note">
-            {state.form.primary
-              ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 高考目标分 ${state.form.score ?? "未填"}`
-              : "还没有选首选科目，位次与资格都会显示为未知。"}
-          </span>
+          {/* key 让摘要每次变化都重新播一遍淡入，改选科时眼睛能跟上；同一句话也读给读屏。 */}
+          <span className="muted-note sail-live" aria-live="polite" key={sailSummary}>{sailSummary}</span>
         </div>
         {toast ? <p className="feedback" aria-live="polite">{toast}</p> : null}
       </div>

@@ -1,12 +1,30 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-chapter-gate）：本地核心流程、真实招生发布与学校成绩接入完成；千帆、学生原话链路、共享会话存储均已上线；学校成绩改为云端密文托管（对象存储里只有密文）；TASK-14 剩余线上验收与回滚演练。
+> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：负责人授权当前全部半成品快照上云验收；Pages发布进行中，腾讯云API部署待恢复登录凭据。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
-> 本次验证：28 个测试文件、398 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：线上学生规模验收与回滚演练、TASK-13 本人身份；TASK-11 按负责人决定保持跳过。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
+> 下一步：完成当前快照Pages/API发布并核验线上链路，供负责人实际验收；未完成门禁仍如实保留。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 最新：四班身份证后六位查询码，X转0
+
+- 类型检查通过：[日志](verification/class4-codes-x0-typecheck-2026-09-12.txt)；全量36文件454项通过：[测试](verification/class4-codes-x0-tests-2026-09-12.txt)。Python合成测试4项通过；SCF打包通过。
+- 48人真实本机HTTP查询全部成功，6人验证X→0。旧48个查询键移除，其余832键保持原样，四班未提供身份的8人保留原码。成绩SQLite哈希不变：[脱敏结果](verification/class4-codes-x0-result-2026-09-12.json)。
+- 先前支持X的结果为历史，已被负责人改用0的指示替代；初始测试跨目录导入造成类型检查失败，最终已修正。未部署或线上核验新码，不作视觉验收。
+- 操作与发布边界见[查询码专题](CLASS4_QUERY_CODES.md)。
+
+
+## 最新：章节版后端对齐（2026-09-12）
+
+- 类型检查通过：[最终类型检查](verification/backend-alignment-typecheck-latest-2026-09-12.txt)。全量34文件439项通过：[最终测试](verification/backend-alignment-tests-latest-2026-09-12.txt)。后端与AI客户端专项11文件168项通过：[专项](verification/backend-alignment-focused-2026-09-12.txt)。
+- 双前端生产构建通过：[构建](verification/backend-alignment-build-latest-2026-09-12.txt)；SCF打包与Pages配置检查器单元测试通过。
+- 本机SCF打包产物，真实学校身份只回本人+汇总、假AI HTTP与会话撤销：[脱敏结果](verification/backend-alignment-smoke-2026-09-12.json)。新增汇总密文实际回读与源exams/trend完全一致。
+- 线上现有API/Redis健康、Pages CORS与招生current.json通过：[线上只读](verification/backend-alignment-online-2026-09-12.json)。未部署本轮新代码、未完成本轮真模型对话，不视为联合上线验收。
+- 先前两轮默认并发目录测试超时，后采用maxWorkers=2通过；中途因并发前端编辑出现的编译/文案断言失败已由最新工作区通过结果替代，原始日志保留。本轮不做视觉验收、全量Excel重解析或学生规模/校园网/回滚验收。
+- 发布顺序与各功能映射见[后端对齐](BACKEND_FRONTEND_ALIGNMENT.md)。文档包同步结果以本轮根目录 --package/--check 实际结果为准。
+
 
 ## 最新验证：五步主流程（2026-09-12）
 

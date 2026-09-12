@@ -47,10 +47,26 @@ function cloudFixture(key: Buffer) {
   const shard = { element: "nanming-quality-huixi-student", person: { name }, exams: [] };
   const object = schoolObjectName(key, shardFile);
   const objects = new Map<string, Buffer>([[object, encrypt(key, Buffer.from(JSON.stringify(shard)))]]);
+  objects.set(schoolObjectName(key, "index.json"), encrypt(key, Buffer.from(JSON.stringify({
+    exams: [], trend: [], sourceWorkbook: "must-not-leak", issues: [{ raw_value: "must-not-leak" }]
+  }))));
   return { root, name, code, shardFile, object, objects };
 }
 
 describe("云端密文分片", () => {
+  it("汇总密文缺失时明确503，不交付一个无法完成定位的成功响应", async () => {
+    const key = randomBytes(32);
+    const fixture = cloudFixture(key);
+    fixture.objects.delete(schoolObjectName(key, "index.json"));
+    const fetcher = (async (url: unknown) => {
+      const payload = fixture.objects.get(String(url).split("/").pop() ?? "");
+      return payload ? new Response(payload) : new Response("missing", { status: 404 });
+    }) as typeof fetch;
+    const base = await host({ NANHANG_AI_PROFILE: "production",
+      NANHANG_QUALITY_IDENTITY_FILE: join(fixture.root, "quality-identity.json"),
+      NANHANG_SCHOOL_CLOUD_BASE: "https://example.test/objects", NANHANG_SCHOOL_KEY: key.toString("base64") }, fetcher);
+    expect((await post(base, fixture.name, fixture.code)).status).toBe(503);
+  });
   it("对象名由密钥派生，同样输入稳定、不同密钥不同", () => {
     const key = randomBytes(32);
     const other = randomBytes(32);
@@ -80,7 +96,10 @@ describe("云端密文分片", () => {
 
     const ok = await post(base, fixture.name, fixture.code);
     expect(ok.status).toBe(200);
-    expect((await ok.json() as { shard: { person: { name: string } } }).shard.person.name).toBe(fixture.name);
+    const body = await ok.json() as { shard: { person: { name: string } }; index: unknown };
+    expect(body.shard.person.name).toBe(fixture.name);
+    expect(body.index).toEqual({ exams: [], trend: [] });
+    expect(JSON.stringify(body)).not.toContain("must-not-leak");
     // 取的是 HMAC 对象名，URL 里不出现 sha256(验证码) 那个文件名
     expect(calls[0]).toContain(fixture.object);
     expect(calls[0]).not.toContain(fixture.shardFile);

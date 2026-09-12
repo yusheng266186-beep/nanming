@@ -166,9 +166,10 @@ export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active
     return { httpStatus: 401, events: [], outcome: { requestId: pending.requestId, status: "error", reply: null,
       reason: "NOT_AUTHENTICATED", options: [] } };
   }
+  try {
   const response = await doFetch(`${deps.baseUrl}/v1/career/turn`, {
     method: "POST",
-    ...(deps.signal ? { signal: deps.signal } : {}),
+    signal: deps.signal ? AbortSignal.any([deps.signal, AbortSignal.timeout(330_000)]) : AbortSignal.timeout(330_000),
     headers: { "content-type": "application/json", authorization: `Bearer ${deps.token}` },
     body: JSON.stringify(toWireBody(request))
   });
@@ -184,6 +185,10 @@ export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active
     outcome = { ...outcome, status: "error", reason: outcome.reason ?? `HTTP_${response.status}` };
   }
   return { httpStatus: response.status, outcome, events };
+  } catch {
+    return { httpStatus: 0, events: [], outcome: { requestId: pending.requestId, status: "error", reply: null,
+      reason: deps.signal?.aborted ? "REQUEST_CANCELLED" : "NETWORK_ERROR", options: [] } };
+  }
 }
 
 export function parseFrames(body: string): SseLikeEvent[] {

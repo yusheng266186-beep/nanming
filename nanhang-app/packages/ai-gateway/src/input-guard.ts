@@ -13,8 +13,8 @@ export const ALLOWED_PROFILE_FIELDS = ["run_id", "request_id", "input_revision",
 
 /** 学生原话的体量上限：够一次完整谈心的记录，又不至于把请求撑爆。 */
 const MAX_EVIDENCE_ITEMS = 40;
-const MAX_EVIDENCE_QUOTE_CHARS = 500;
-const MAX_EVIDENCE_TOTAL_CHARS = 8000;
+const MAX_EVIDENCE_QUOTE_CHARS = 4000;
+const MAX_EVIDENCE_TOTAL_CHARS = 48000;
 /** 学生可以自己选的思考档位。它是偏好，不是控制面字段：取值只有这三种，服务端只做校验。 */
 export const SELECTABLE_THINKING_TIERS: readonly ThinkingTier[] = ["speed", "standard", "deep"];
 

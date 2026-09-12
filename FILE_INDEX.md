@@ -1,11 +1,11 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-12，2026-09-12-class4-query-code-x0）：章节版后端对齐已本地验证；既有千帆、Redis与成绩密文服务在线；本轮汇总接口、聊天收尾与Pages门禁未部署。
+> 统一进度（2026-09-12，2026-09-12-acceptance-cloud-snapshot）：负责人授权当前全部半成品快照上云验收；Pages发布进行中，腾讯云API部署待恢复登录凭据。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：36 个测试文件、454 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：依次发布学校汇总密文、新版API与Pages，再做线上完整流程、学生规模与回滚验收；TASK-11保持跳过。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：完成当前快照Pages/API发布并核验线上链路，供负责人实际验收；未完成门禁仍如实保留。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。

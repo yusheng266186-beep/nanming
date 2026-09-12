@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted, withTier,
+import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted,
   type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
 import { ChatBubble, TypingDots } from "../chat.js";
@@ -56,20 +56,8 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
           <span className="vc-hint">{choice.hint}</span>
         </button>)}
       </div>
-      <div className="field" style={{ marginTop: 18 }}>
-        <span className="flab">思考深度</span>
-        <div className="tier-pick">
-          {/* 每档标出一次回答的预估等待时间，学生按自己节奏选；切换下一轮生效。 */}
-          {THINKING_CHOICES.map((choice) => <button key={choice.value} type="button"
-            className={`tier-card${ai.tier === choice.value ? " on" : ""}`}
-            aria-pressed={ai.tier === choice.value} title={choice.hint}
-            onClick={() => setAi(withTier(ai, choice.value))}>
-            <span className="tc-name">{choice.label}</span>
-            <span className="tc-eta">{choice.eta}</span>
-            <span className="tc-hint">{choice.hint}</span>
-          </button>)}
-        </div>
-      </div>
+      {/* 思考深度已收进顶栏「溟」→ 设置：同一件事不在两个章节各放一份。 */}
+      <p className="fhint" style={{ marginTop: 14 }}>回答的思考深度在顶栏右上角的「溟」→ 设置里，开始前后都可以换。</p>
       <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 18 }}>
         <button type="button" className="btn brass" onClick={() => setAi(withStarted(ai))}>开始谈心<Icon name="arrow" /></button>
         <small className="muted-note">连接需要访问码，由老师发放。</small>
@@ -122,11 +110,7 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
                 className={`chip${ai.mode === choice.value ? " brass on" : ""}`}
                 aria-pressed={ai.mode === choice.value}
                 onClick={() => setAi(withMode(ai, choice.value))}>{choice.label}</button>)}
-              <span className="dc-k">深度</span>
-              {THINKING_CHOICES.map((choice) => <button key={choice.value} type="button"
-                className={`chip${ai.tier === choice.value ? " on" : ""}`}
-                aria-pressed={ai.tier === choice.value} title={`${choice.eta} · ${choice.hint}`}
-                onClick={() => setAi(withTier(ai, choice.value))}>{choice.label}</button>)}
+              {tierOf ? <span className="ch-tier" title="思考深度在顶栏「溟」→ 设置里换">深度 {tierOf.label} · {tierOf.eta}</span> : null}
             </div>
             {ai.status ? <p className="feedback">{ai.status}</p> : null}
           </>}

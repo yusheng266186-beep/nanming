@@ -109,14 +109,14 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     {/* 荣县一中增强模式直接内嵌在这里：识别后考试行自动填好并锁定，替换掉手输。 */}
     {quality.status !== "ready" ? <div className="panel" style={{ marginTop: 20 }}>
       <h3><Icon name="shield" />荣县一中的同学：直接接入学校数据</h3>
-      <p className="psub">输入姓名和班主任发放的 6 位验证码，服务端核对后读取你本人的成绩记录，自动填好下面的考试行并推导探索区间——不需要手动录入。其他学校的同学跳过这步，直接手填即可。</p>
+      <p className="psub">输入姓名和 6 位查询码。四班已更新的同学使用身份证后六位（末位 X 改填 0），其他同学仍用班主任发放的验证码。服务端核对后读取你本人的成绩记录，自动填好下面的考试行并推导探索区间——不需要手动录入。其他学校的同学跳过这步，直接手填即可。</p>
       <div className="grid-2" style={{ marginTop: 16, gap: 14, maxWidth: 460 }}>
         <label className="field"><span className="flab">学生姓名</span>
           <input className="inp" type="text" autoComplete="off" maxLength={40}
             value={schoolName}
             placeholder="和验证码一起由班主任发放"
             onChange={(event) => setSchoolName(event.target.value)} /></label>
-        <label className="field"><span className="flab">6 位验证码</span>
+        <label className="field"><span className="flab">6 位查询码</span>
           <input className="inp" type="text" inputMode="numeric" autoComplete="off" maxLength={6}
             value={qualityCode}
             placeholder="例如 246810"

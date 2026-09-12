@@ -1,0 +1,9 @@
+{
+  "runtime": "SCF bundled app.js on local Node",
+  "school_real_local": true,
+  "school_summary_in_response": true,
+  "ai_fake_http_complete": true,
+  "session_revoke": true,
+  "pii_logged": false,
+  "deployed": false
+}

@@ -16,7 +16,7 @@ import { redisOptionsFromEnv } from "./config.ts";
 
 export function schoolLookupKey(name: string, code: string): string {
   const normalized = name.normalize("NFKC").replace(/\s/g, "");
-  const codeHash = createHash("sha256").update(code).digest("hex");
+  const codeHash = createHash("sha256").update(code.normalize("NFKC").replace(/\s/g, "").toUpperCase()).digest("hex");
   return createHash("sha256")
     .update(`${normalized}\n${codeHash}`)
     .digest("hex");
@@ -165,9 +165,9 @@ export function createSchoolAccess(env: NodeJS.ProcessEnv = process.env, options
         !body.name.trim() ||
         body.name.length > 40 ||
         typeof body.code !== "string" ||
-        !/^\d{6}$/.test(body.code)
+        !/^\d{6}$/.test(body.code.normalize("NFKC").replace(/\s/g, ""))
       ) {
-        send(400, { message: "请填写姓名和六位数字验证码。" });
+        send(400, { message: "请填写姓名和六位数字查询码，身份证末位 X 请填 0。" });
         return;
       }
       // 姓名与 IP 分别计数：学校常共用一个出口 IP，只按 IP 限会让一个班互相拖累。
@@ -200,14 +200,20 @@ export function createSchoolAccess(env: NodeJS.ProcessEnv = process.env, options
         return;
       }
       let data: unknown;
+      let summary: { exams: unknown[]; trend: unknown[] };
       if (cloudReady && cloudKey) {
         const objectUrl = `${cloudBase}/${schoolObjectName(cloudKey, shard)}`;
-        const fetched = await doFetch(objectUrl, { cache: "no-store" });
+        const fetched = await doFetch(objectUrl, { cache: "no-store", signal: AbortSignal.timeout(15_000) });
         if (!fetched.ok) {
           send(401, { message: "姓名或验证码不匹配，请向老师核对。" });
           return;
         }
         data = JSON.parse(decryptShard(cloudKey, Buffer.from(await fetched.arrayBuffer())));
+        const indexResponse = await doFetch(`${cloudBase}/${schoolObjectName(cloudKey, "index.json")}`, {
+          cache: "no-store", signal: AbortSignal.timeout(15_000)
+        });
+        if (!indexResponse.ok) throw new Error("SCHOOL_SUMMARY_UNAVAILABLE");
+        summary = JSON.parse(decryptShard(cloudKey, Buffer.from(await indexResponse.arrayBuffer())));
       } else {
         const directory = releaseDir ? resolve(releaseDir) : moduleRelative("../../../data/quality-huixi/release");
         if (!directory) {
@@ -220,9 +226,12 @@ export function createSchoolAccess(env: NodeJS.ProcessEnv = process.env, options
           return;
         }
         data = JSON.parse(readFileSync(path, "utf8"));
+        summary = JSON.parse(readFileSync(resolve(directory, "index.json"), "utf8"));
       }
+      if (!Array.isArray(summary.exams) || !Array.isArray(summary.trend)) throw new Error("SCHOOL_SUMMARY_INVALID");
       // 成功也占一个名额：知道一对有效凭据不能变成无限次探测。
-      send(200, { shard: data });
+      // 只回页面实际使用的匿名汇总，不带源文件路径、问题原值或其他班级明细。
+      send(200, { shard: data, index: { exams: summary.exams, trend: summary.trend } });
     } catch (error) {
       // 不把细节发给学生，但要留在函数日志里：这里曾经把「身份索引读不到」吞成一个看不出原因的 503。
       console.error("school identify failed:", error instanceof Error ? (error.stack ?? error.message) : String(error));

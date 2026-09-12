@@ -39,6 +39,7 @@ describe("姓名与验证码必须同时核对", () => {
     const root = mkdtempSync(join(tmpdir(), "nanming-identity-test-"));
     folders.push(root);
     mkdirSync(join(root, "shards"));
+    writeFileSync(join(root, "index.json"), JSON.stringify({ exams: [], trend: [], sourceWorkbook: "private-source" }));
     const shard = "a".repeat(40) + ".json";
     writeFileSync(
       join(root, "shards", shard),
