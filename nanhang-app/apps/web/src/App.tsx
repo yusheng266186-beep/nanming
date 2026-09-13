@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   DIRECTIONS, SELECTABLE_BATCHES, comparabilityNote, initialState, isMatchFresh,
   loadPublishedRelease, registerStartTool, resetLocal, routeMap, runMatch,
@@ -553,6 +553,15 @@ export default function App() {
     setRoute(next);
     goTo("locate");
   };
+
+  /**
+   * 换页从顶端开始：一个章节到下一个章节，学生应该从页头往下读，而不是接着上一页的滚动位置落在大半山腰。
+   * 用的是 useLayoutEffect（在浏览器绘制前滚），所以不会先闪一下新页面的中段再跳。
+   * `behavior:"instant"` 是必须的——全局 `html{scroll-behavior:smooth}` 会把这次跳转变成一段动画。
+   */
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [page]);
 
   /**
    * 收尾轮（借北辰的「报告轮」）：谈够之后**由界面发起一次专门的生成请求**，
