@@ -74,7 +74,12 @@ ul{margin:0;padding:0;list-style:none}
 .avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--sea);color:#eef3ee;font-family:var(--song);font-size:16px;border:1px solid var(--sea-2);transition:transform .4s var(--ease),background .3s}
 .avatar:hover{transform:translateY(-2px);background:var(--brass)}
 .wrap{max-width:1280px;margin:0 auto;padding:0 40px}
-.view{display:none;animation:arrive .65s var(--ease) both}
+/* 章节入场：**不能带 fill（both/forwards）**。动画一旦带 fill，元素会被当成「在动 transform」的元素，
+   于是成为 position:fixed 后代的包含块——挂在章节里的浮层（登船卡片、设置卡、方向小结）就会以章节盒子
+   为参照：背板只盖住章节的宽（两边露出页面底色＝负责人说的「两边有遮挡」），卡片也只能贴着章节底部，
+   页面一滚就跟着走（「跳转时无法固定，下方一节被遮挡」）。去掉 fill 后动画结束即回到自然样式，视觉不变，
+   浮层重新以视口为参照。2026-09-13 实测：fill=both 时背板 rect=[18,-1224,354,2079]，去掉后=[0,0,390,844]。 */
+.view{display:none;animation:arrive .65s var(--ease)}
 .view.active{display:block}
 @keyframes arrive{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 main{min-height:calc(100vh - var(--rail-h) - 90px)}

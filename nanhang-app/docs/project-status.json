@@ -25,12 +25,12 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 45,
-    "passed": 549,
+    "files": 46,
+    "passed": 552,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 00:58，npm run test）全量 45 文件 549 项通过、0 失败；apps/web/test/serif-font.test.ts 6 项钉住「全站一套宋体」（基准字体、--sans 只剩别名、输入框不许用展示字体、≤12px 无衬线归零、SVG 小字写死宋体栈）。",
+    "note": "本次（2026-09-13 12:44，npm run test）全量 46 文件 552 项通过、0 失败；apps/web/test/overlay-fixed.test.ts 3 项钉住「浮层贴视口（章节动画不带 fill）」，serif-font.test.ts 6 项钉住「全站一套宋体」。",
     "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
   },
   "runtime": {
