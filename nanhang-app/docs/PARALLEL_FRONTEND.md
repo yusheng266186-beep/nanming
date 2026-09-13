@@ -103,6 +103,7 @@
 | 2026-09-13 00:49 | 线一（负责人指派） | `style.css`（76 条 ≤12px 规则改宋体）、`chapters/locate.tsx`（轨迹图 4 处 SVG 小字补宋体）、`test/serif-small-text.test.ts`（新） | 负责人：全站最小的字体改宋体，全面替换不要漏。改完逐页实测审计六页均为 0 处残留 | 已交还 |
 | 2026-09-13 00:56 | 线一（负责人指派） | `style.css`（基准字体与 .num/group-chip 改宋体、--sans 变别名）、`test/serif-font.test.ts`（新，替代 serif-small-text）、`test/serif-small-text.test.ts`（删） | 负责人：13px 以上的正文、聊天框、输入框也还是原字体，要全覆盖改宋体。改完样式表里无衬线归零，守卫测试升级为「全站一套宋体」 | 已交还 |
 | 2026-09-13 12:45 | 线一（负责人指派） | `style.css`（`.view` 动画去 fill）、`test/overlay-fixed.test.ts`（新） | 负责人：登船卡片两边露底、跳转时无法固定、下方一节被遮挡。根因是章节入园动画带 fill 让章节成了 fixed 后代的包含块；去掉 fill 后背板与卡片都贴住视口（实测 [0,0,390,844]） | 已交还 |
+| 2026-09-13 12:56 | 线一（负责人指派） | `progress.ts`（起航段加「选过登船口」）、`App.tsx`（entryChosen、去调试旁路、删示例区间）、`chapters/sail.tsx`（删按不动的「先看看分数轴」）、`debug.ts`、`test/progress.test.ts`、`test/route-split.test.ts` | 负责人：点了开始起航（甚至关掉卡片）定位就已解锁；应只在选了登船口之后才进，否则进去是一页空的。门禁收紧、调试模式不再旁路 | 已交还 |
 | 2026-09-12 23:47 | 线三（负责人指派） | `ai-panel.ts`（删状态行）、`direction-quota.ts`（素材判据）、`App.tsx`/`chapters/talk.tsx`（入参与缺目录提示）、`test/ai-panel.test.ts`（改一条断言）、两个测试文件 | 删掉每次回复都挂的「待确认」声明；「素材够不够」改前端判（6 轮 + 240 字，或满 12 轮）；缺目录时把原因说出来 | 已交还 |
 | 2026-09-13 00:13 | 线三（负责人指派） | `chapters/direction.tsx`（加三个类名）、`style.css`（方向页两级分层一段）、`test/direction-levels.test.ts`（新） | 方向页大类（海绿·略方·13px）与小类（铜·胶囊·12px）分开，小类区缩进并挂竖线，读得出从属关系 | 已交还 |
 | 2026-09-13 00:40 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（三件事一段与窄屏对应几行）、`test/sail-pack.test.ts` | 负责人：「先定下三件事」和整站设计不匹配，要更有设计感。改成「行装清单」：卡头是深海底带（面板抬头 + 备齐进度 + 铜色细进度线 + aria-live 摘要），三件沿一条竖轨排开，轨上编号印章备好点亮成铜色并挂光环；02 的计数与状态合成一枚状态签；窄屏逐项收一圈 | 已交还 |

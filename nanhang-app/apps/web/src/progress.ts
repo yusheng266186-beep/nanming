@@ -14,6 +14,11 @@ import type { PageId } from "./chapters/shared.js";
 
 /**
  * 流程分段。段与段之间是硬顺序，段内是并列入口。
+ *
+ * 「起航」这一段包含两件事：定下选科，**并且在「开始起航」的登船卡片里明确选一条入口**
+ * （通用模式手填 / 荣县一中接入）。负责人 2026-09-13：只要点了「开始起航」就放行定位是不对的——
+ * 学生没有选入口、也没有任何成绩，进去就是一页空的；定位必须在选了入口之后才进。
+ *
  * 顺序与导航编号一致（负责人 2026-09-12 定）：先在「方向」定下两条线，再去「分数轴」
  * 匹配院校与专业——分数轴不再回指方向，匹配的结果直接进「航线图」。
  */
@@ -38,6 +43,11 @@ export interface ProgressInput {
   readonly suggestionCount: number;
   /** 是否已经聊过（AI 转录里有发言）。 */
   readonly chatted: boolean;
+  /**
+   * 是否已经在登船卡片里选过入口（通用模式或荣县一中）。
+   * 这是「起航」段的一部分：没选入口就进定位，页面上既没有考试行也没有接入表单的依据。
+   */
+  readonly entryChosen: boolean;
 }
 
 export function stageOf(id: PageId): number {
@@ -57,7 +67,9 @@ export function stageDone(stage: number, input: ProgressInput): boolean {
 export function chapterDone(id: PageId, input: ProgressInput): boolean {
   switch (id) {
     case "sail":
-      return input.state.form.primary !== null && input.state.form.additional.length === 2;
+      // 选科齐了、并且选过登船口（两条入口都在登船卡片上）才算起航完成。
+      return input.state.form.primary !== null && input.state.form.additional.length === 2
+        && input.entryChosen;
     case "locate":
       return input.rangeKnown;
     case "axis":
@@ -98,7 +110,7 @@ export function isDone(id: PageId, input: ProgressInput): boolean {
 
 /** 每一步「怎样才算完成」的人话说明。 */
 export const DONE_HINT: Record<PageId, string> = {
-  sail: "选好首选科目与两门再选科目",
+  sail: "选好首选科目与两门再选科目，再点「开始起航」选一条登船口（通用模式或荣县一中）",
   locate: "生成探索区间（手填考试或接入学校数据）",
   axis: "运行一次区间匹配",
   talk: "在对话里聊几句",

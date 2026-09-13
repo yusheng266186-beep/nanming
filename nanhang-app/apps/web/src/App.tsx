@@ -19,7 +19,7 @@ import { buildReleaseCatalog, buildSchoolPool, makeBranches, rangeFromExams,
   type CatalogDirection, type CatalogGroup, type Major, type SchoolPool, type ScoreRange } from "./journey-model.js";
 import { equivalentPosition } from "./exam-position.js";
 import { OFFICIAL_LINES_2026 } from "./reference-lines.js";
-import { DEBUG_ACCESS_CODE, DEBUG_MODE, DEBUG_SAMPLE_RANGE } from "./debug.js";
+import { DEBUG_ACCESS_CODE, DEBUG_MODE } from "./debug.js";
 import {
   CHAPTERS, DIRECTION_ARTS, experienceCardFor, initialQualityState, majorCardFor,
   type LocateRoute, type PageId, type QualityState
@@ -71,6 +71,9 @@ export default function App() {
   // 定位章的两条路（负责人 2026-09-12 定）：手填几次考试，或荣县一中接入学校数据。
   // 默认走通用模式；登船卡片里选哪条就跳到对应页面，两条路都通向「谈心」。
   const [route, setRoute] = useState<LocateRoute>("manual");
+  // 登船卡片里有没有真的选过入口（两条路都算）。门禁把「起航」定义为：选科 + 选过入口——
+  // 负责人 2026-09-13：点了「开始起航」就放行定位是错的，没选入口进去只会看到一页空的。
+  const [entryChosen, setEntryChosen] = useState(false);
   // 设置卡里的两个开关（只影响这台设备的显示，不写盘；刷新回到默认）。
   // 低语 = 等回答时显示一行「溟在做什么」的阶段提示（不是模型思考）；动效关掉 = 与系统「减少动态效果」同一套处理。
   const [whisperOn, setWhisperOn] = useState(true);
@@ -170,13 +173,6 @@ export default function App() {
   useEffect(() => {
     reloadRelease();
     return () => releaseAbort.current?.abort();
-  }, []);
-
-  // 调试模式：预置一段示例探索区间，让院校池/方向/航线图不用先填成绩就能看视觉效果。
-  useEffect(() => {
-    if (!DEBUG_MODE) return;
-    setRange((current) => current ?? { low: DEBUG_SAMPLE_RANGE.low, high: DEBUG_SAMPLE_RANGE.high,
-      basis: "（调试模式）示例区间，仅供验收界面使用，不是真实数据。" });
   }, []);
 
   // 探索区间自动生成（负责人裁定：区间由数据来，不由学生填）：有考试按各自切线做等位
@@ -283,6 +279,7 @@ export default function App() {
     setOnlyConfirmed(false);
     // 门禁也一并归零：清除本次探索之后，仍然要从「起航」一步步来。
     setMaxStage(0);
+    setEntryChosen(false);
     setState((current) => resetLocal(current));
     reloadRelease();
     notify("已清除本次探索");
@@ -519,7 +516,7 @@ export default function App() {
 
   // 学生是否已经和 AI 聊过：AI 转录里有发言即算；聊过之后才解锁自选专业（流程设计）。
   // 调试模式下直接放行，让「方向」「航线图」不必先走完对话也能验收。
-  const hasChatted = userTurns.length > 0 || DEBUG_MODE;
+  const hasChatted = userTurns.length > 0;
   const aiDirectionIds = ai.suggestions.map((item) => item.directionId);
   const fresh = isMatchFresh(state) ? state.match?.result ?? null : null;
 
@@ -528,15 +525,16 @@ export default function App() {
   const progress: ProgressInput = {
     state, rangeKnown: range !== null, poolReady: pool !== null,
     picks: picks.length, suggestionCount: ai.suggestions.length,
-    chatted: hasChatted
+    chatted: hasChatted, entryChosen
   };
   const derivedStage = unlockedStage(progress);
   useEffect(() => {
     setMaxStage((current) => (derivedStage > current ? derivedStage : current));
   }, [derivedStage]);
   const openStage = Math.max(maxStage, derivedStage);
-  // 调试模式旁路门禁：验收时每个章节都要能直接进；产品态判定保留在 progress.ts 不动。
-  const gateOpen = (id: PageId) => DEBUG_MODE || canOpen(id, progress, openStage);
+  // 门禁就是这个门禁：调试模式也不再旁路（负责人 2026-09-13——他验收时看到的正是旁路造成的
+  // 「没选入口定位就开着」）。调试模式仍保留示例 AI 建议、预填访问码与角标。
+  const gateOpen = (id: PageId) => canOpen(id, progress, openStage);
 
   /**
    * 唯一的页面切换入口：章节里的按钮、导航条、页头全部走这里。
@@ -551,6 +549,7 @@ export default function App() {
 
   /** 选定位的哪条路：定下路线后立刻进「定位」，进去看到的就是那条路对应的页面。 */
   const chooseRoute = (next: LocateRoute) => {
+    setEntryChosen(true);
     setRoute(next);
     goTo("locate");
   };
@@ -596,7 +595,7 @@ export default function App() {
   };
 
   const chapterIndex = CHAPTERS.findIndex((chapter) => chapter.id === page);
-  /** 导航条上每一步的状态：locked（还没轮到）/ done（已完成，可以回看）/ 当前。调试模式全部视为 open。 */
+  /** 导航条上每一步的状态：locked（还没轮到）/ done（已完成，可以回看）/ 当前。 */
   const stepState = (id: PageId) => ({
     open: gateOpen(id),
     done: isDone(id, progress),

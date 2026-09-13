@@ -27,9 +27,10 @@ describe("定位章：两条路并行", () => {
     expect(sail).toContain('chooseRoute("school")');
     expect(sail).toContain('className={`entry${route === "manual" ? " picked" : ""}`}');
     expect(sail).toContain('className={`entry deep${route === "school" ? " picked" : ""}`}');
-    // 卡片上的两条入口不再各自直接 setPage：走同一条「定路线 + 进定位」的路。
+    // 卡片上的两条入口不再各自直接 setPage：走同一条「记下选过入口 + 定路线 + 进定位」的路。
+    // 记下「选过入口」是门禁的一部分（负责人 2026-09-13：没选入口就放行定位，进去是一页空的）。
     expect(sail).not.toContain('setBoardOpen(false); setPage("locate")');
-    expect(app).toMatch(/const chooseRoute = \(next: LocateRoute\) => \{\s*setRoute\(next\);\s*goTo\("locate"\);/);
+    expect(app).toMatch(/const chooseRoute = \(next: LocateRoute\) => \{\s*setEntryChosen\(true\);\s*setRoute\(next\);\s*goTo\("locate"\);/);
   });
 
   it("两个页面互不掺杂：学校卡只在学校路，学生手填行只在手填路", () => {

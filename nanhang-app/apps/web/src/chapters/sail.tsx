@@ -219,7 +219,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
                 }
                 setBoardOpen(true);
               }}>开始起航<Icon name="arrow" /></button>
-            <button type="button" className="tbtn" onClick={() => setPage("axis")}>先看看分数轴<Icon name="axis" /></button>
+            {/* 「先看看分数轴」已删：章节门禁现在是真的（调试模式也不再旁路），分数轴要等定位与方向
+                走完才解锁，这个按钮只会弹一句提示——留一个按不动的入口不如不留。回看走下方导航条。 */}
           </div>
           {toast ? <p className="feedback" aria-live="polite">{toast}</p> : null}
         </div>

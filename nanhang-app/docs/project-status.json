@@ -30,7 +30,7 @@
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 12:44，npm run test）全量 46 文件 552 项通过、0 失败；apps/web/test/overlay-fixed.test.ts 3 项钉住「浮层贴视口（章节动画不带 fill）」，serif-font.test.ts 6 项钉住「全站一套宋体」。",
+    "note": "本次（2026-09-13 12:52，npm run test）全量 46 文件 552 项通过、0 失败；progress.test.ts 15 项覆盖章节门禁（含「起航需先选登船口」），overlay-fixed.test.ts 3 项钉住浮层贴视口，serif-font.test.ts 6 项钉住全站宋体。",
     "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
   },
   "runtime": {

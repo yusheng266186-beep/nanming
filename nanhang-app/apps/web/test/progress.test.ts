@@ -11,7 +11,7 @@ import {
 
 const blank: ProgressInput = {
   state: initialState(), rangeKnown: false, poolReady: false,
-  picks: 0, suggestionCount: 0, chatted: false
+  picks: 0, suggestionCount: 0, chatted: false, entryChosen: false
 };
 
 const withInput = (patch: Partial<ProgressInput>): ProgressInput => ({ ...blank, ...patch });
@@ -24,6 +24,7 @@ function form(patch: Partial<WebState["form"]>): WebState {
 function completedThrough(stage: number): ProgressInput {
   return withInput({
     state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"], score: 600 }),
+    entryChosen: true,
     rangeKnown: stage >= 1,
     chatted: stage >= 2,
     picks: stage >= 3 ? 2 : 0,
@@ -32,12 +33,18 @@ function completedThrough(stage: number): ProgressInput {
 }
 
 describe("每一步「完成」的判定", () => {
-  it("起航：首选 + 两门再选才算完成（分数可以不填）", () => {
+  it("起航：选科齐 + 在登船卡片里选过入口才算完成（分数可以不填）", () => {
     expect(chapterDone("sail", blank)).toBe(false);
     expect(chapterDone("sail", withInput({ state: form({ primary: "PHYSICS" }) }))).toBe(false);
     expect(chapterDone("sail", withInput({ state: form({ primary: "PHYSICS", additional: ["CHEMISTRY"] }) }))).toBe(false);
+    const subjectsOnly = withInput({ state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"] }) });
+    // 选科齐了但没选入口：起航不算完成，定位也进不去（负责人 2026-09-13：那时候进去是一页空的）
+    expect(chapterDone("sail", subjectsOnly)).toBe(false);
+    expect(canOpen("locate", subjectsOnly, 0)).toBe(false);
+    expect(lockHint("locate", subjectsOnly)).toContain(DONE_HINT.sail);
+    // 选了入口（两条路都一样）才算完成
     expect(chapterDone("sail", withInput({
-      state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"] })
+      state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"] }), entryChosen: true
     }))).toBe(true);
   });
 
@@ -68,7 +75,7 @@ describe("解锁顺序", () => {
     }
   });
 
-  it("选完科之后定位解锁；谈心仍锁着", () => {
+  it("选了登船口之后定位才解锁；谈心仍锁着", () => {
     const input = completedThrough(0);
     expect(unlockedStage(input)).toBe(1);
     expect(canOpen("locate", input, 1)).toBe(true);
@@ -91,6 +98,7 @@ describe("解锁顺序", () => {
   it("不接学校数据也能往下走：只要探索区间生成（手填或目标分），定位即算完成", () => {
     const generic = withInput({
       state: form({ primary: "HISTORY", additional: ["POLITICS", "GEOGRAPHY"] }),
+      entryChosen: true,          // 走的就是「通用模式」这条登船口
       rangeKnown: true
     });
     expect(unlockedStage(generic)).toBe(2);
@@ -111,8 +119,12 @@ describe("回看与单调解锁", () => {
   });
 
   it("但「完成」标记如实回退：改了数据就不再显示已完成", () => {
-    expect(isDone("sail", withInput({ state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"] }) }))).toBe(true);
-    expect(isDone("sail", withInput({ state: form({ primary: null, additional: [] }) }))).toBe(false);
+    expect(isDone("sail", withInput({
+      state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"] }), entryChosen: true
+    }))).toBe(true);
+    expect(isDone("sail", withInput({ state: form({ primary: null, additional: [] }), entryChosen: true }))).toBe(false);
+    // 选科还在、入口没选过，同样显示未完成
+    expect(isDone("sail", withInput({ state: form({ primary: "PHYSICS", additional: ["CHEMISTRY", "BIOLOGY"] }) }))).toBe(false);
   });
 });
 
