@@ -1,12 +1,26 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-14，2026-09-14-cloud-cost-freeze）：按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在。
+> 统一进度（2026-09-14，2026-09-14-service-switch）：按负责人要求做了服务开关网页：本机助手 + 本地网页一键开关按量 Redis（工具在工作区外的桌面目录）；开启被腾讯云以欠费拒绝，需先充值；站点当前为已关闭、单实例内存档。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：先在腾讯云充值：账户欠费，开关的开启动作被 ERR_INSUFFICIENT_BALANCE 拒绝；充值后双击桌面「南溟服务开关」的启动开关.cmd，点开启并确认走出完整链路；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-14 / 服务开关：助手自检与网页连通，`on` 被欠费挡住
+
+本轮只新增一个本机工具（在工作区之外：`C:\Users\yusheng\Desktop\南溟服务开关\`），没有改业务代码，因此没有跑类型检查、构建或单元测试；47 文件 554 项仍是历史结果。
+
+本次实测（命令与输出都在助手窗口与 `操作记录.log` 里）：
+
+- `py -3.12 nanming_switch.py selftest`：7/7 通过——凭据读取（本机私有交接文档）、Redis 实例查询、云函数环境读取、「云函数环境写入回路」（把现有 10 个变量原样写回并逐项比对一致，只验证写入路径、不改内容）、账单与余额、`/healthz`、学校查询 401。
+- `py -3.12 nanming_switch.py status`：`state=off`、`consistent=true`；账单本月 ¥7.01（缓存 6.28 / CLS 0.52 / 计费精度差异 0.12 / COS 0.09），与上一轮独立审计逐项一致。
+- `py -3.12 nanming_switch.py off`：幂等通过（无运行实例 → 跳过销毁；环境变量已是内存档 → 原样写回并复核；站点确认回到 `store=memory`）。
+- 本地网页服务：`GET /` 200（19,099 字节）、`/api/status` 返回当前状态；伪造来源 `Origin: https://evil.example` 的 `POST /api/action` 得到 403；`Origin: null`（双击 HTML 打开的场景）可正常走到参数校验；页面脚本经 `node --check` 通过。
+- `py -3.12 nanming_switch.py on`：创建参数经 `DescribeProductInfo` 核实（`ZoneId=160001`＝ap-chengdu-1、TypeId 17、256MB、1 副本、按量可售）后提交，被腾讯云拒绝：`ERR_INSUFFICIENT_BALANCE ... balance -13 is less than the frozen amount 4`。**欠费账户不能创建按量资源**；该请求未创建任何资源、未产生费用。
+
+未做：网页的视觉与交互验收（按项目规则由负责人执行）；`on` 在创建成功之后的链路（外网地址开通、写回环境变量、站点转 Redis）因欠费无法实测；未跑本地测试套件。工具目录不含任何凭据，也不进入 Git 与源码包。
 
 ## 2026-09-14 / 云端计费冻结：只读盘点 + 冻结后探针
 

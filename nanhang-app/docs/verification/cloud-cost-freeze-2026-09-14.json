@@ -50,8 +50,14 @@
     "设置 NANHANG_AI_ALLOW_MEMORY_STORE=1：生产档在缺少共享存储时会拒绝整个函数启动（不只是关闭 AI），实测该状态下 /v1/school/identify 也不可用；改内存档后站点与学校查询恢复"
   ],
   "probes_after_freeze": {
-    "GET_healthz": { "http": 200, "body": "{\"status\":\"ok\",\"ai\":true,\"store\":\"memory\"}" },
-    "POST_v1_school_identify_fake_name": { "http": 401, "body_head": "姓名或验证码不匹配，请向老师核对。" },
+    "GET_healthz": {
+      "http": 200,
+      "body": "{\"status\":\"ok\",\"ai\":true,\"store\":\"memory\"}"
+    },
+    "POST_v1_school_identify_fake_name": {
+      "http": 401,
+      "body_head": "姓名或验证码不匹配，请向老师核对。"
+    },
     "note": "未消耗负责人的 TOTP 动态码，未使用真实学生姓名或查询码；AI 实际连通未在冻结后重测"
   },
   "current_deployment_mode": {
@@ -69,5 +75,11 @@
     "未处理账户当前欠费状态；欠费继续存在时，云资源仍可能被平台进一步隔离",
     "未运行本地测试套件：本轮只改云端配置与文档，没有改业务代码",
     "未在真实学生规模、校园网或手机端复测"
-  ]
+  ],
+  "switch_tool": {
+    "location": "C:\\Users\\yusheng\\Desktop\\南溟服务开关\\",
+    "what": "本机助手 + 本地网页，一键开启/关闭按量 Redis；不含任何凭据，可自由复制",
+    "verified_2026_09_14": "selftest 7/7、status 与账单一致、off 幂等通过、网页与本地接口正常（跨站请求 403）；on 被 ERR_INSUFFICIENT_BALANCE 拒绝",
+    "blocker": "账户欠费；充值后可验证开启的完整链路"
+  }
 }

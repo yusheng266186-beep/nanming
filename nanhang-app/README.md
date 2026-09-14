@@ -3,11 +3,11 @@
 > [在线体验 Pages](https://yusheng266186-beep.github.io/nanming/) · [完整项目介绍与仓库导航](../README.md)
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-14，2026-09-14-cloud-cost-freeze）：按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在。
+> 统一进度（2026-09-14，2026-09-14-service-switch）：按负责人要求做了服务开关网页：本机助手 + 本地网页一键开关按量 Redis（工具在工作区外的桌面目录）；开启被腾讯云以欠费拒绝，需先充值；站点当前为已关闭、单实例内存档。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：先在腾讯云充值：账户欠费，开关的开启动作被 ERR_INSUFFICIENT_BALANCE 拒绝；充值后双击桌面「南溟服务开关」的启动开关.cmd，点开启并确认走出完整链路；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 ## 2026-09-13 审阅状态
@@ -31,7 +31,7 @@
 | 学生页面 | https://yusheng266186-beep.github.io/nanming/ | GitHub Pages；push 到 main 自动重建 |
 | AI 中转 | https://1459223409-lexj8si8uo.ap-chengdu.tencentscf.com | SCF Web 函数 `nanming-api`；控制台那行「访问路径」就是它的 http 触发器；`/healthz`、`/readyz` 自检 |
 | 数据 | COS 桶 `nanming-100051087352-1459223409` | `data/releases/` 招生发布包（`current.json` 指针，前端不重建即可换版）+ `school/objects/` 学校成绩**密文** |
-| 会话存储 | **已冻结**：按量 Redis `crs-bdr4f2z6` 于 2026-09-14 销毁（按量 ≈¥0.0368/小时） | 共享会话代码仍在；恢复前函数按单实例内存档跑（`NANHANG_AI_ALLOW_MEMORY_STORE=1`，`NANHANG_REDIS_*` 已移除）。恢复步骤见[冻结记录](docs/verification/cloud-cost-freeze-2026-09-14.json) |
+| 会话存储 | **已冻结**：按量 Redis `crs-bdr4f2z6` 于 2026-09-14 销毁（按量 ≈¥0.0368/小时） | 共享会话代码仍在；恢复前函数按单实例内存档跑（`NANHANG_AI_ALLOW_MEMORY_STORE=1`，`NANHANG_REDIS_*` 已移除）。开/关用桌面 `南溟服务开关\启动开关.cmd`（本机助手 + 网页，不含凭据）；欠费时创建会被腾讯云拒绝，需先充值。详见[冻结记录](docs/verification/cloud-cost-freeze-2026-09-14.json) |
 
 AI 谈心入口自 API 版本 9 起改用 TOTP；当前 API 版本 10 另对齐前端自动收尾轮。TOTP 为 SHA-1、30 秒、6 位、允许前后一个时间窗口；配共享存储时同一码经原子消费后不能再次兑换（当前内存档只在单实例内消费，重启即失效）。原始 Base32 种子只保存在 `private/nanming-totp-secret.txt` 和云函数 `NANHANG_TOTP_SECRET`，不进入仓库或源码包；旧固定访问码已从云端移除。
 

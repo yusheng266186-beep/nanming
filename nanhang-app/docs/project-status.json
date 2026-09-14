@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-14",
-  "revision": "2026-09-14-cloud-cost-freeze",
-  "stage": "按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在",
+  "revision": "2026-09-14-service-switch",
+  "stage": "按负责人要求做了服务开关网页：本机助手 + 本地网页一键开关按量 Redis（工具在工作区外的桌面目录）；开启被腾讯云以欠费拒绝，需先充值；站点当前为已关闭、单实例内存档",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -42,7 +42,32 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变",
+  "next_task": "先在腾讯云充值：账户欠费，开关的开启动作被 ERR_INSUFFICIENT_BALANCE 拒绝；充值后双击桌面「南溟服务开关」的启动开关.cmd，点开启并确认走出完整链路；审阅 P1 修复与 TASK-13/14 身份运维收尾不变",
+  "service_switch": {
+    "location": "C:\\Users\\yusheng\\Desktop\\南溟服务开关\\（工作区之外，不进 Git、不进源码包）",
+    "files": [
+      "nanming_switch.py（本机助手，纯标准库含 TC3 签名）",
+      "南溟服务开关.html（网页）",
+      "启动开关.cmd（双击启动）",
+      "README.md",
+      "开关配置.example.json"
+    ],
+    "model": "本机助手 + 本地网页；任何文件都不放凭据，凭据从本机私有交接文档读；助手只绑 127.0.0.1 并拒绝跨站来源",
+    "commands": [
+      "selftest",
+      "status",
+      "on",
+      "off",
+      "serve",
+      "open"
+    ],
+    "actions": {
+      "on": "余额预检 → 创建或复用按量 Redis（ZoneId 160001 / TypeId 17 / 256MB / 1 副本 / vpc-rgor54b6·subnet-4jsr4kun）→ 必要时开通外网地址 → AUTH+PING 探测 → 回填 NANHANG_REDIS_* 并置 NANHANG_AI_ALLOW_MEMORY_STORE=0 → 探针 store=redis",
+      "off": "销毁按量实例 → 移除 NANHANG_REDIS_* → 置 NANHANG_AI_ALLOW_MEMORY_STORE=1 → 探针 store=memory，站点与学校查询保持可用"
+    },
+    "verified_2026_09_14": "selftest 7/7（含环境变量写入回路）；status 与账单逐项一致；off 幂等通过；网页与本地接口正常且跨站请求 403；on 参数已核实但被欠费拒绝（未创建资源、未产生费用）",
+    "not_verified": "创建成功之后的链路（外网地址开通、回填变量、站点转 Redis）；网页视觉与交互验收由负责人执行"
+  },
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
   "workbook_data_rows": 52878,
@@ -146,7 +171,9 @@
       "COS 对象存储（公开招生发布包，站点依赖）约 ¥0.006/天"
     ],
     "account_arrears": "账户余额为负，欠费和冻结金额见腾讯云控制台；欠费未清时平台仍可能继续隔离资源",
-    "evidence": "docs/verification/cloud-cost-freeze-2026-09-14.json"
+    "evidence": "docs/verification/cloud-cost-freeze-2026-09-14.json",
+    "recovery": "恢复共享会话不用手敲命令：双击桌面「南溟服务开关」的 启动开关.cmd，点「开启 Redis」即可（助手自动建实例、开外网地址、回填三项变量并把内存档开关改回 0）。前置条件是账户不能欠费。",
+    "switch_tool": "service_switch（见同名字段）"
   },
   "ai_upstream": "qianfan 已接入并线上实测：函数 URL 为 http 触发器 https://1459223409-lexj8si8uo.ap-chengdu.tencentscf.com ；2026-09-12 深档三轮 + 两个学生并发一轮（speed 档）全部 HTTP 200",
   "ai_acceptance_ids": "A40—A48",
@@ -353,9 +380,9 @@
     ],
     "online_acceptance": "API 与浏览器均已实测（历史，Redis 冻结前）：跨域预检、访问码兑换、引航/泛舟两模式、学生原话引用、两个学生并发；尚未做真实学生规模的压测与回滚演练。2026-09-14 冻结后仅复测 /healthz 与学校查询路径，AI 链路未重测。",
     "remaining": [
-      "回读账单确认 15:00 之后不再出现 Redis 小时费用",
-      "处理账户欠费；未清欠费时平台仍可能继续隔离资源",
-      "试用恢复前重建共享 Redis 并回填三项环境变量、把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0",
+      "先给腾讯云充值：欠费状态下创建按量资源会被拒绝（ERR_INSUFFICIENT_BALANCE）",
+      "用桌面「南溟服务开关」验证开启的完整链路（建实例 → 外网地址 → 回填变量 → 站点转 Redis）",
+      "CLS 日志与 COS 存储的小额日用仍在（约 ¥0.045/天），保留是为了排障与招生包读取",
       "load and cost check at real student concurrency",
       "rollback drill",
       "mobile and campus network checks"
