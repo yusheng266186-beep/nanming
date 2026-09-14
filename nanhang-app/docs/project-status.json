@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-14",
-  "revision": "2026-09-14-service-switch",
-  "stage": "服务开关网页已交付并实测通过：开启与关闭全链路各跑一遍（开→建实例→站点转 Redis→关→回单实例内存档），云端结束时保持已关闭；账户已由负责人充值，欠费解除",
+  "revision": "2026-09-14-cloud-switch",
+  "stage": "服务开关升级为「任意设备可用」：COS 上的网页 + 云端中转函数，密钥只在中转函数环境变量里；开/关全链路实测通过（含充值后的新建实例、外网地址、回填变量、store=redis），云端结束时保持已关闭",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -42,7 +42,7 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "按全项目审阅修 P1 与状态生命周期；要用谈心时双击桌面「南溟服务开关」点开启（约 ¥0.9/天，用完关掉）；TASK-13/14 身份与运维收尾不变",
+  "next_task": "要用谈心时打开网页开关点开启（首次可能等几分钟到十几分钟开通外网地址）；按全项目审阅修 P1 与状态生命周期；TASK-13/14 身份与运维收尾不变",
   "service_switch": {
     "location": "C:\\Users\\yusheng\\Desktop\\南溟服务开关\\（工作区之外，不进 Git、不进源码包）",
     "files": [
@@ -66,13 +66,28 @@
       "off": "销毁按量实例 → 移除 NANHANG_REDIS_* → 置 NANHANG_AI_ALLOW_MEMORY_STORE=1 → 探针 store=memory，站点与学校查询保持可用"
     },
     "verified_2026_09_14": "selftest 7/7（含环境变量写入回路）；status 与账单逐项一致；off 幂等通过；网页与本地接口正常且跨站请求 403；启动器双击可用、重复双击明确报端口占用；欠费时 on 被 ERR_INSUFFICIENT_BALANCE 拒绝（不产生费用）；充值后 on 全链路成功：建实例 crs-i937eo6w → 外网地址 cd-crs-i937eo6w.sql.tencentcdb.com:20449 → AUTH+PING 通过 → 回填三项变量并把内存档置 0 → /healthz store=redis、/readyz state_store=true；随后 off 回到冻结态（实例 -3、无 NANHANG_REDIS_*、store=memory、学校查询 401）",
-    "not_verified": "网页的视觉与交互验收由负责人执行",
+    "not_verified": "网页的视觉与交互最终验收由负责人执行",
     "bugs_fixed": [
       "RESP 读取吃掉首个 + 导致 PING 误判（已按内容比较）",
       "Windows 上 HTTPServer 默认 SO_REUSEADDR 让第二个实例也能绑同一端口（已改为拒绝复用并给出提示）",
       "/healthz 单次抖动误报站点异常（探针加两次重试）",
       ".cmd 用 LF 换行会被 cmd.exe 解析错乱（已改为 GBK + CRLF）"
-    ]
+    ],
+    "modes": {
+      "cloud_any_device": {
+        "page": "https://nanming-100051087352-1459223409.cos.ap-chengdu.myqcloud.com/switch/b76b5b97.html",
+        "relay": "腾讯云 SCF 函数 nanming-control（成都，Python3.10，HTTP 触发器）",
+        "auth": "网页带控制口令（x-control-token）；腾讯云密钥只在函数环境变量 NANMING_TC_SECRET_ID/_KEY 里",
+        "files": "private/nanming-switch-cloud/{index.py,deploy.py,upload_page.py,page-template.html,README.md}",
+        "rotate": "py -3.12 private/nanming-switch-cloud/deploy.py --rotate && py -3.12 private/nanming-switch-cloud/upload_page.py"
+      },
+      "local_helper": {
+        "path": "C:\\Users\\yusheng\\Desktop\\南溟服务开关\\",
+        "note": "本机版，不依赖新增云组件；云端中转不可用时用这个"
+      }
+    },
+    "verified_cloud": "2026-09-14：网页公网 200；真实浏览器里跨域读 COS 200、调中转得到 401（口令校验生效）；off 12 秒完成、重复点开启 2 秒返回已完成；完整 on 成功（新建实例 → 外网地址 → AUTH+PING → 回填三项变量并置内存档 0 → /healthz store=redis），随后 off 回到 store=memory、学校查询 401",
+    "known_quirk": "首次开启时腾讯云『开通外网地址』可能排队几分钟到十几分钟（实测 20 秒~13 分钟都有）；关闭是秒级；云函数未绑 VPC，只能走外网地址访问 Redis"
   },
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
@@ -387,7 +402,7 @@
     "online_acceptance": "API 与浏览器均已实测（历史，Redis 冻结前）：跨域预检、访问码兑换、引航/泛舟两模式、学生原话引用、两个学生并发；尚未做真实学生规模的压测与回滚演练。2026-09-14 冻结后仅复测 /healthz 与学校查询路径，AI 链路未重测。",
     "remaining": [
       "按审阅报告修复 P1 与状态生命周期（业务问题）",
-      "需要谈心时用桌面「南溟服务开关」开启 Redis，用完关闭；当前保持关闭",
+      "要谈心时用服务开关网页开启 Redis（首次可能等几分钟到十几分钟），用完关闭；当前保持关闭",
       "load and cost check at real student concurrency",
       "rollback drill",
       "mobile and campus network checks"

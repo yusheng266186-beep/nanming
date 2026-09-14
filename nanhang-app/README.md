@@ -3,11 +3,11 @@
 > [在线体验 Pages](https://yusheng266186-beep.github.io/nanming/) · [完整项目介绍与仓库导航](../README.md)
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-14，2026-09-14-service-switch）：服务开关网页已交付并实测通过：开启与关闭全链路各跑一遍（开→建实例→站点转 Redis→关→回单实例内存档），云端结束时保持已关闭；账户已由负责人充值，欠费解除。
+> 统一进度（2026-09-14，2026-09-14-cloud-switch）：服务开关升级为「任意设备可用」：COS 上的网页 + 云端中转函数，密钥只在中转函数环境变量里；开/关全链路实测通过（含充值后的新建实例、外网地址、回填变量、store=redis），云端结束时保持已关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：按全项目审阅修 P1 与状态生命周期；要用谈心时双击桌面「南溟服务开关」点开启（约 ¥0.9/天，用完关掉）；TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：要用谈心时打开网页开关点开启（首次可能等几分钟到十几分钟开通外网地址）；按全项目审阅修 P1 与状态生命周期；TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 ## 2026-09-13 审阅状态
@@ -31,7 +31,7 @@
 | 学生页面 | https://yusheng266186-beep.github.io/nanming/ | GitHub Pages；push 到 main 自动重建 |
 | AI 中转 | https://1459223409-lexj8si8uo.ap-chengdu.tencentscf.com | SCF Web 函数 `nanming-api`；控制台那行「访问路径」就是它的 http 触发器；`/healthz`、`/readyz` 自检 |
 | 数据 | COS 桶 `nanming-100051087352-1459223409` | `data/releases/` 招生发布包（`current.json` 指针，前端不重建即可换版）+ `school/objects/` 学校成绩**密文** |
-| 会话存储 | **已冻结**：按量 Redis `crs-bdr4f2z6` 于 2026-09-14 销毁（按量 ≈¥0.0368/小时） | 共享会话代码仍在；恢复前函数按单实例内存档跑（`NANHANG_AI_ALLOW_MEMORY_STORE=1`，`NANHANG_REDIS_*` 已移除）。开/关用桌面 `南溟服务开关\启动开关.cmd`（本机助手 + 网页，不含凭据）；欠费时创建会被腾讯云拒绝，需先充值。详见[冻结记录](docs/verification/cloud-cost-freeze-2026-09-14.json) |
+| 会话存储 | **已冻结**：按量 Redis `crs-bdr4f2z6` 于 2026-09-14 销毁（按量 ≈¥0.0368/小时） | 共享会话代码仍在；恢复前函数按单实例内存档跑（`NANHANG_AI_ALLOW_MEMORY_STORE=1`，`NANHANG_REDIS_*` 已移除）。开/关用服务开关网页（任意设备）：COS 上的 `/switch/b76b5b97.html`，网页只带中转地址与控制口令，腾讯云密钥在云端中转函数 `nanming-control` 的环境变量里；桌面 `南溟服务开关\启动开关.cmd` 保留为本机备用。首次开启时腾讯云开通外网地址可能等几分钟到十几分钟，关闭是秒级；欠费时创建被拒。详见[冻结记录](docs/verification/cloud-cost-freeze-2026-09-14.json) |
 
 AI 谈心入口自 API 版本 9 起改用 TOTP；当前 API 版本 10 另对齐前端自动收尾轮。TOTP 为 SHA-1、30 秒、6 位、允许前后一个时间窗口；配共享存储时同一码经原子消费后不能再次兑换（当前内存档只在单实例内消费，重启即失效）。原始 Base32 种子只保存在 `private/nanming-totp-secret.txt` 和云函数 `NANHANG_TOTP_SECRET`，不进入仓库或源码包；旧固定访问码已从云端移除。
 
