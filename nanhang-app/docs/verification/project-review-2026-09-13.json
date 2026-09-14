@@ -1,0 +1,100 @@
+{
+  "date": "2026-09-13",
+  "baseline": "14fad3f",
+  "kind": "curated summary of actual command outputs; not raw logs",
+  "runtime": {
+    "node": "26.7.0",
+    "npm": "11.19.0",
+    "python": "3.12.4"
+  },
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "cwd": "nanhang-app",
+      "exit_code": 0
+    },
+    {
+      "command": "npm test -- --maxWorkers=2",
+      "cwd": "nanhang-app",
+      "exit_code": 0,
+      "files": 47,
+      "passed": 554,
+      "failed": 0
+    },
+    {
+      "command": "npm run build:all",
+      "cwd": "nanhang-app",
+      "exit_code": 0,
+      "main_js_gzip_kb": 111.16,
+      "scope": "local default build, not deployment"
+    },
+    {
+      "command": "py -3.12 -m unittest discover -s nanhang-app/pipelines/task03 -p 'test_*.py'",
+      "exit_code": 0,
+      "passed": 53
+    },
+    {
+      "command": "py -3.12 -m unittest discover -s nanhang-app/pipelines/quality-huixi -p 'test_*.py'",
+      "exit_code": 0,
+      "passed": 4
+    },
+    {
+      "command": "node --test nanhang-app/scripts/check_pages_config.test.mjs",
+      "exit_code": 0,
+      "passed": 1
+    },
+    {
+      "command": "py -3.12 nanhang-app/pipelines/task03/validate_admissions_db.py",
+      "exit_code": 0,
+      "checks": 19264,
+      "failures": 0
+    },
+    {
+      "command": "py -3.12 nanhang-app/pipelines/task03/validate_score_distribution.py",
+      "exit_code": 0,
+      "checks": 19178,
+      "tables": 7,
+      "rows": 3736,
+      "failures": 0
+    },
+    {
+      "command": "node nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs",
+      "exit_code": 0,
+      "confirmed_probes": 5,
+      "scope": "extracted frontend callbacks; actual Redis client and synthetic local RESP peer"
+    },
+    {
+      "command": "npm audit --json",
+      "cwd": "nanhang-app",
+      "exit_code": 1,
+      "reason": "configured mirror audit endpoint not implemented"
+    },
+    {
+      "command": "npm audit --json --registry=https://registry.npmjs.org",
+      "cwd": "nanhang-app",
+      "exit_code": 1,
+      "moderate_packages": 2,
+      "distinct_advisories": 1,
+      "high": 0,
+      "critical": 0,
+      "advisory": "GHSA-82fw-gwwq-j7x9"
+    },
+    {
+      "command": "py -3.12 tools/sync_project_docs.py --check",
+      "exit_code": 0,
+      "scope": "before review edits",
+      "frozen_copies_equal": 11,
+      "baseline_files": 24
+    }
+  ],
+  "not_run": [
+    "browser visual acceptance",
+    "production security probes",
+    "cloud deployment",
+    "student-scale load",
+    "campus network",
+    "rollback drill",
+    "clean Linux CI clone"
+  ],
+  "probe_development_note": "First callback probe run failed to match CRLF source; normalized line endings and reran successfully."
+}

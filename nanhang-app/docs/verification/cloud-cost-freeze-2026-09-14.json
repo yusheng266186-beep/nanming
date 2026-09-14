@@ -1,0 +1,73 @@
+{
+  "run": "2026-09-14",
+  "scope": "腾讯云计费资源冻结：按量计费 Redis 销毁 + 云函数改单实例内存档",
+  "reason": "项目负责人要求停止每天扣费的云端项目",
+  "billing_before_freeze": {
+    "month": "2026-09",
+    "window": "2026-09-01 至 2026-09-14",
+    "total_cny": 7.01,
+    "by_product_cny": {
+      "腾讯云分布式缓存数据库": 6.28,
+      "日志服务CLS": 0.52,
+      "月度计费精度差异": 0.12,
+      "COS 对象存储": 0.09
+    },
+    "tail_days_cny": {
+      "2026-09-12": 0.63,
+      "2026-09-13": 1.77,
+      "2026-09-14": 1.05
+    },
+    "redis_instances_seen_in_bill": 9,
+    "redis_instances_still_running": 1,
+    "note": "账单按小时/按天结算。9 个 Redis 实例里 8 个是此前测试期创建后又销毁的，冻结前只有 nanming-state 仍在运行（≈¥0.0368/小时，约 ¥0.9/天）。SCF 本身在本月账单中没有产生费用；五个函数都没有定时触发器，空闲不触发调用。"
+  },
+  "resources": {
+    "destroyed_this_run": [
+      {
+        "instance_id": "crs-bdr4f2z6",
+        "name": "nanming-state",
+        "region": "ap-chengdu",
+        "charge_mode": "postpaid / 按量计费小时结",
+        "spec": "Redis 7.0 标准架构 256MB，1 副本",
+        "destroy_requested_at": "2026-09-14 15:54:59（DeadlineTime 回读一致）",
+        "status_after_destroy": -3,
+        "last_billed_hour_observed": "2026-09-14 14:59:59",
+        "data": "仅 TOTP 会话状态与限流计数，实测用量 0MB，无业务数据丢失"
+      }
+    ],
+    "already_stopped_before_this_run": [
+      "另一个项目（北辰）的按量 Redis 实例：本次运行前已是待删除状态，未由本轮操作"
+    ],
+    "untouched_on_purpose": [
+      "COS nanming-100051087352-1459223409：公开招生发布包（51,878 条 / 90 分片）的唯一来源，站点读取依赖它；本月约 ¥0.09",
+      "日志服务 CLS：云函数的日志投递，本月约 ¥0.52，关闭会影响线上排障，本轮未动",
+      "SCF nanming-api 与其余函数：无定时触发器，空闲不计费"
+    ]
+  },
+  "actions": [
+    "销毁按量计费 Redis 实例 crs-bdr4f2z6（按量计费不支持暂停，销毁是唯一停止计费的方式）",
+    "从 nanming-api 环境变量移除 NANHANG_REDIS_HOST / NANHANG_REDIS_PORT / NANHANG_REDIS_PASSWORD；其余 10 个键逐项比对未变，更新前配置备份在 private/backups/redis-freeze-20260914/",
+    "设置 NANHANG_AI_ALLOW_MEMORY_STORE=1：生产档在缺少共享存储时会拒绝整个函数启动（不只是关闭 AI），实测该状态下 /v1/school/identify 也不可用；改内存档后站点与学校查询恢复"
+  ],
+  "probes_after_freeze": {
+    "GET_healthz": { "http": 200, "body": "{\"status\":\"ok\",\"ai\":true,\"store\":\"memory\"}" },
+    "POST_v1_school_identify_fake_name": { "http": 401, "body_head": "姓名或验证码不匹配，请向老师核对。" },
+    "note": "未消耗负责人的 TOTP 动态码，未使用真实学生姓名或查询码；AI 实际连通未在冻结后重测"
+  },
+  "current_deployment_mode": {
+    "state_store": "memory（单实例）",
+    "consequence": "API 重启或冷启动会丢会话与限流计数；同一码在重启后可再次兑换。共享 Redis 恢复前，AI 只适合负责人自测，不适合多人同时使用",
+    "restore_steps": [
+      "按原规格在 ap-chengdu 重建按量 Redis（或改用更有性价比的方案）",
+      "把新的 host / port / password 写回 NANHANG_REDIS_* 三项",
+      "把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0",
+      "跑 node scripts/redis_store_check.mjs 自检后再用于多人"
+    ]
+  },
+  "not_done": [
+    "未等账单结算到 15:00 之后的小时行，最后一笔 Redis 费用的确认需要之后回读账单",
+    "未处理账户当前欠费状态；欠费继续存在时，云资源仍可能被平台进一步隔离",
+    "未运行本地测试套件：本轮只改云端配置与文档，没有改业务代码",
+    "未在真实学生规模、校园网或手机端复测"
+  ]
+}

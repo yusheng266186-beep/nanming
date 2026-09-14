@@ -1,11 +1,11 @@
 # 当前源码分发
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-font-range-pending）：API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布。
+> 统一进度（2026-09-14，2026-09-14-cloud-cost-freeze）：按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](../nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](../nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 当前源码包：[nanhang-app-source-2026-09-10.zip](nanhang-app-source-2026-09-10.zip)。哈希见[同名 SHA-256 文件](nanhang-app-source-2026-09-10.zip.sha256)。包内包含 `nanhang-app/` 工程、锁文件、当前进度、验证记录和完整交接参考副本；不包含 `node_modules`、`dist`、构建缓存、Python 环境或历史归档。

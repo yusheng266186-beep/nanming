@@ -1,7 +1,7 @@
 {
-  "as_of": "2026-09-13",
-  "revision": "2026-09-13-font-range-pending",
-  "stage": "API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布",
+  "as_of": "2026-09-14",
+  "revision": "2026-09-14-cloud-cost-freeze",
+  "stage": "按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -30,19 +30,19 @@
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本次（2026-09-13 13:05，npm run test）全量 47 文件 554 项通过、0 失败；progress.test.ts 15 项覆盖章节门禁，page-scroll-top.test.ts 2 项钉住换页回顶部，overlay-fixed.test.ts 3 项钉住浮层贴视口，serif-font.test.ts 6 项钉住全站宋体。",
-    "log": "docs/verification/latest-frontend-tests-2026-09-13.txt"
+    "note": "历史：上一轮全项目审阅基线14fad3f执行 npm test -- --maxWorkers=2，47文件554项通过；2026-09-14 本轮只改云端配置与文档，未改业务代码、未运行本地测试，云端探针见 docs/verification/cloud-cost-freeze-2026-09-14.json。",
+    "log": "docs/verification/cloud-cost-freeze-2026-09-14.json"
   },
   "runtime": {
     "node": "26.7.0",
     "npm": "11.19.0",
-    "note": "本次本机实测；项目要求 Node >=22，Pages 配置 Node 22，SCF 脚本配置 Nodejs20.19；云端打包运行兼容性须单独验收"
+    "note": "版本来自此前全项目审阅的机器实测；本轮前端专项只读代码未重测。项目要求Node>=22，Pages配置Node22，SCF脚本Nodejs20.19，云端兼容性仍按独立记录判断。"
   },
   "published_admission_records": 51878,
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练",
+  "next_task": "回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变",
   "task03_local_db": "built, human verified and exported as immutable published release",
   "workbook_sample_records": 36,
   "workbook_data_rows": 52878,
@@ -115,7 +115,39 @@
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
-  "ai_gateway_store": "Redis（RedisStateStore，Lua 原子脚本，键前缀 nm:，带 TTL）；未配 Redis 时退回单实例内存档，生产档默认拒绝；自检脚本 scripts/redis_store_check.mjs",
+  "ai_gateway_store": "当前云端为单实例内存档：2026-09-14 按负责人要求销毁了按量计费 Redis，NANHANG_REDIS_* 已从函数环境移除，并设 NANHANG_AI_ALLOW_MEMORY_STORE=1（生产档缺共享存储时会拒绝整个函数启动，不只是关闭 AI）。代码仍支持 RedisStateStore（Lua 原子脚本，键前缀 nm:，带 TTL）与 MemoryStateStore；恢复共享会话需重建实例并回填三项变量、把开关改回 0。",
+  "cloud_costs": {
+    "frozen_on": "2026-09-14",
+    "frozen_by": "项目负责人要求停止每天扣费",
+    "month_to_date_cny": {
+      "month": "2026-09",
+      "window": "2026-09-01..2026-09-14",
+      "total": 7.01,
+      "by_product": {
+        "腾讯云分布式缓存数据库": 6.28,
+        "日志服务CLS": 0.52,
+        "月度计费精度差异": 0.12,
+        "COS 对象存储": 0.09
+      }
+    },
+    "destroyed": [
+      {
+        "instance_id": "crs-bdr4f2z6",
+        "name": "nanming-state",
+        "region": "ap-chengdu",
+        "charge_mode": "按量计费小时结",
+        "destroyed_at": "2026-09-14 15:54:59",
+        "last_billed_hour_observed": "2026-09-14 14:59:59",
+        "data": "仅 TOTP 会话与限流计数，用量 0MB"
+      }
+    ],
+    "still_billing": [
+      "CLS 日志服务（SCF 日志投递）约 ¥0.04/天，关闭会影响线上排障，本轮保留",
+      "COS 对象存储（公开招生发布包，站点依赖）约 ¥0.006/天"
+    ],
+    "account_arrears": "账户余额为负，欠费和冻结金额见腾讯云控制台；欠费未清时平台仍可能继续隔离资源",
+    "evidence": "docs/verification/cloud-cost-freeze-2026-09-14.json"
+  },
   "ai_upstream": "qianfan 已接入并线上实测：函数 URL 为 http 触发器 https://1459223409-lexj8si8uo.ap-chengdu.tencentscf.com ；2026-09-12 深档三轮 + 两个学生并发一轮（speed 档）全部 HTTP 200",
   "ai_acceptance_ids": "A40—A48",
   "ai_http_endpoints": [
@@ -249,7 +281,7 @@
     "unresolved_conflicts": 23,
     "rank_source_disagreements": 9,
     "identity_rule": "服务端同时核对姓名标准化值与六位码哈希，只返回映射到的本人分片；当前选择与记录科目不一致则要求核对",
-    "code_strength": "静态六位码分片不再由开发 Vite 直接暴露；新主入口走私有映射+服务端限流（单进程），正式身份生命周期及共享限流未完成",
+    "code_strength": "学校 API 核对姓名与查询码，并支持 Redis 共享限流；故障时退回单进程（当前云端 Redis 已冻结，即为此状态）；开发 Vite 仍直接挂载真实成绩目录（审阅R02待修）。",
     "student_trial_performed": false,
     "browser_verification": {
       "performed": true,
@@ -264,7 +296,7 @@
       "private_file": "private/quality-identity.json",
       "entries": 880,
       "endpoint": "POST /v1/school/identify",
-      "limits": "单姓名 5 次/15 分钟，单 IP 120 次/15 分钟；单进程实现",
+      "limits": "单姓名5次/15分钟、单IP120次/15分钟；配置 Redis 时共享，故障或未配置时退回单进程（当前云端即单进程），校园NAT待验收。",
       "local_real_check": "docs/verification/school-local-result.json"
     }
   },
@@ -309,21 +341,24 @@
     "note": "本轮不编辑apps/web；已发布纸堆弹簧、起航行装清单、小字衬线、设置、谈心收尾及方向分层增量。"
   },
   "deployment": {
-    "status": "API_V10_PAGES_C0B2664_DEPLOYED",
+    "status": "API_V10_DEPLOYED_REDIS_FROZEN",
     "implemented": [
       "GitHub Pages workflow",
       "COS public admissions upload",
       "SCF Web function entry, packaging and deployment",
       "SCF http trigger (function URL) for the API function",
       "production access code and CORS configuration verified from the Pages origin",
-      "shared Redis session store wired into the deployed function"
+      "shared Redis session store wired into the deployed function",
+      "2026-09-14 计费冻结：销毁按量计费 Redis，移除 NANHANG_REDIS_*，函数按单实例内存档运行"
     ],
-    "online_acceptance": "API 与浏览器均已实测：跨域预检、访问码兑换、引航/泛舟两模式、学生原话引用、两个学生并发；尚未做真实学生规模的压测与回滚演练",
+    "online_acceptance": "API 与浏览器均已实测（历史，Redis 冻结前）：跨域预检、访问码兑换、引航/泛舟两模式、学生原话引用、两个学生并发；尚未做真实学生规模的压测与回滚演练。2026-09-14 冻结后仅复测 /healthz 与学校查询路径，AI 链路未重测。",
     "remaining": [
+      "回读账单确认 15:00 之后不再出现 Redis 小时费用",
+      "处理账户欠费；未清欠费时平台仍可能继续隔离资源",
+      "试用恢复前重建共享 Redis 并回填三项环境变量、把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0",
       "load and cost check at real student concurrency",
       "rollback drill",
-      "mobile and campus network checks",
-      "destroy the Redis instance when the trial ends and remove NANHANG_REDIS_* together"
+      "mobile and campus network checks"
     ]
   },
   "ai_evidence": {
@@ -355,7 +390,7 @@
     "storage": "COS school/objects/*.bin：AES-256-GCM 密文，对象名 = HMAC(密钥, 分片名)[:40]",
     "key": "private/school-cloud-key.txt（git 忽略）→ 函数环境变量 NANHANG_SCHOOL_KEY；轮换需重新导出并更新环境变量",
     "identity_index": "private/quality-identity.json（只有摘要）随代码包发布",
-    "rate_limit": "Redis 共享计数：姓名 5 次 / IP 120 次 / 15 分钟窗口",
+    "rate_limit": "姓名 5 次 / IP 120 次 / 15 分钟窗口；配 Redis 时为共享计数，当前云端 Redis 已冻结，实际走单实例进程内计数（重启清零）",
     "verified_online": "真实学生凭据 HTTP 200、与本地明文一致、公网对象为密文、错名 401、限流 429",
     "not_yet": [
       "真实班级并发登录",
@@ -391,7 +426,8 @@
     "status": "API_V9_AND_PAGES_DEPLOYED_ONLINE_VERIFIED",
     "algorithm": "RFC6238 SHA1 30s 6 digits",
     "clock_window": "plus/minus 1",
-    "replay": "shared Redis atomic SET NX EX; one successful exchange per code window",
+    "replay": "one successful exchange per code window; shared atomic consume when Redis is configured",
+    "replay_note": "配共享 Redis 时为跨实例原子消费；当前云端内存档只在单实例进程内消费，重启即失效，多人同时使用的强度低于共享存储",
     "old_fixed_code": "removed from cloud environment and rejected online",
     "secret_storage": "private/nanming-totp-secret.txt and SCF NANHANG_TOTP_SECRET; excluded from Git and source package",
     "online_report": "docs/verification/nanming-totp-online-2026-09-12.json"
@@ -427,5 +463,26 @@
     "pages_url": "https://yusheng266186-beep.github.io/nanming/",
     "source_files_moved": false,
     "pages_online_report": "docs/verification/latest-pages-online-2026-09-13.json"
+  },
+  "review": {
+    "baseline": "14fad3f",
+    "report": "docs/PROJECT_REVIEW_2026-09-13.md",
+    "p1": 6,
+    "p2": 13,
+    "business_fixes_applied": false,
+    "task_states_changed": false,
+    "deployment_checked_this_round": false
+  },
+  "frontend_review": {
+    "baseline": "14fad3f",
+    "method": "static source review only",
+    "report": "docs/FRONTEND_CODE_REVIEW_2026-09-13.md",
+    "p1": 6,
+    "p2": 26,
+    "improvement_notes": 10,
+    "business_checks_run": false,
+    "browser_used": false,
+    "business_fixes_applied": false,
+    "task_states_changed": false
   }
 }

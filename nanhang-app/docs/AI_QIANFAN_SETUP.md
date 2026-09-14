@@ -1,12 +1,22 @@
 # 聊天模型接入：百度千帆（Token Plan 个人版）
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-font-range-pending）：API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布。
+> 统一进度（2026-09-14，2026-09-14-cloud-cost-freeze）：按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-13 前端协议静态审阅
+
+[前端专项](FRONTEND_CODE_REVIEW_2026-09-13.md) F17–F24 补充：本轮发言重复进入context与user_text、最终理由被旧值挡住、每轮只保留4条建议、素材够与报告完成混用、就业方向追问未显式带最终清单。均为源码调用链判断，尚未修复，本轮没有请求AI服务。
+
+
+## 2026-09-13 审阅补充（当前代码，尚未修复）
+
+见[全项目审阅](PROJECT_REVIEW_2026-09-13.md)：兑换入口缺少失败共享限流；Redis 超时响应错配已在合成服务复现；SSE 当前整包缓冲，心跳不实时发送；收尾、清除与过期输入存在状态问题。既有线上成功记录不覆盖这些故障路径；本轮没有调用生产 AI 或部署。
+
 
 本轮把南溟的 AI 对话接到真实模型上，配置项与北辰保持一致，两套系统可以共用同一份凭据说明。
 **密钥只在环境变量里**：不进仓库、不回显、不进错误消息；这一点有测试盯着。
@@ -31,8 +41,8 @@
 | `NANHANG_AI_TOTAL_TIMEOUT_MS` | 否 | 整轮超时；检测到开启思考时默认 300000，否则默认 90000；显式值优先 |
 | `NANHANG_API_PORT` | 否 | 本地服务端口，默认 8790 |
 | `NANHANG_FAKE_SCENARIO` | 否 | 用假上游演练失败路径（timeout、unsafe-output 等），不花钱 |
-| `NANHANG_REDIS_HOST` / `_PORT` / `_PASSWORD` | 否* | 共享会话存储；**三项齐全才算配好**。线上必填，缺一项就退回单实例内存档 |
-| `NANHANG_AI_ALLOW_MEMORY_STORE` | 否 | 只在没有共享存储时用的单实例开关；配了 Redis 就不要设，生产档会因此拒绝启动 |
+| `NANHANG_REDIS_HOST` / `_PORT` / `_PASSWORD` | 否* | 共享会话存储；**三项齐全才算配好**。配了走共享档，缺一项退回单实例内存档（2026-09-14 起线上就是这个状态：实例已销毁、三项已移除） |
+| `NANHANG_AI_ALLOW_MEMORY_STORE` | 否 | 没有共享存储时跑单实例内存档的开关：`1` 才允许。生产档下没有它、又缺共享存储时**整个函数不会启动**（不只是 AI 关闭）。当前线上为 `1` |
 | `NANHANG_ALLOW_DEMO_EVIDENCE` | 否 | 演示原话是否可顶替学生原话；默认只在假上游下允许，接真模型时禁止 |
 | `NANHANG_TOTP_SECRET` | 线上必填 | AI 谈心入口的 Base32 原始种子；RFC 6238、SHA-1、30 秒、6 位。只放云函数环境或本机 `private/`，不得进仓库 |
 
@@ -104,11 +114,16 @@ req.TriggerDesc  = json.dumps({
 读回环境变量，再跑 `scripts/deploy_function.py`——密钥全程只在内存里，
 本机因此没有 `.env`，也没有任何密钥文件（2026-09-12 更新到版本 3 就是这么做的）。
 
-### 共享会话存储：一台最小的 Redis（2026-09-12 建）
+### 共享会话存储：一台最小的 Redis（2026-09-12 建，2026-09-14 冻结）
+
+**当前状态：实例已销毁，函数跑单实例内存档。** 负责人要求停止每天扣费（约 ¥0.9/天），按量计费 Redis 没有暂停档，
+所以 2026-09-14 直接销毁了 `crs-bdr4f2z6`，并从函数环境移除 `NANHANG_REDIS_*` 三项。
+下面的表格与取舍是当天建实例时的记录，恢复共享会话时照它重建即可；恢复清单见
+[冻结记录](verification/cloud-cost-freeze-2026-09-14.json)。
 
 | 项 | 值 |
 |---|---|
-| 实例 | `crs-bdr4f2z6`（`nanming-state`），成都一区，Redis 7.0 标准架构 **256MB**、1 副本 |
+| 实例 | `crs-bdr4f2z6`（`nanming-state`），成都一区，Redis 7.0 标准架构 **256MB**、1 副本（已销毁） |
 | 计费 | 按量计费，约 **¥0.0368/小时**（≈¥0.9/天，一直开着约 ¥26.5/月）；用完在控制台销毁即可 |
 | 为什么是 256MB | 用量只有几十 MB 以下的会话键（实测 `SizeUsed` 为 0），1GB 是当初按「MemSize 必须是 1024 整数倍」误判选的；实测 256MB 可以买，已用 `UpgradeInstance` 原地缩容，地址端口不变。降配规则：缩容后规格须 ≥ 已用容量的 1.3 倍 |
 | 网络 | 与函数同地域；函数通过**外网地址**访问（函数未绑定 VPC，绑了 VPC 就去不了公网，而千帆必须走公网） |
@@ -123,6 +138,10 @@ req.TriggerDesc  = json.dumps({
   可以改走「函数绑 VPC + NAT 网关」或给 Redis 开 SSL。
 - **销毁实例**：控制台销毁后，函数里的 `NANHANG_REDIS_*` 要一并删掉；否则生产档会因为「配了但连不上」
   让 AI 整体不可用（`/readyz` 的 `state_store` 为 false），而不是悄悄退回内存档——这是有意的失败方式。
+  2026-09-14 实测补充：把三项删干净而不动别的，生产档会**整个函数拒绝启动**（`productionGuard` 抛
+  `refusing to start: production requires a shared state store`），连不依赖 Redis 的 `/v1/school/identify`
+  也一起不可用。要让站点继续跑，必须同时设 `NANHANG_AI_ALLOW_MEMORY_STORE=1`（单实例试用档）；
+  代码里没有「站点正常但 AI 关闭」这个档位，别指望只删环境变量能关掉 AI。
 
 ## 三·五、思考档位：服务端默认最高档，学生可以自己切
 
@@ -251,8 +270,9 @@ req.TriggerDesc  = json.dumps({
 | 回复被替换成「未通过安全校验」 | 模型输出了概率、冲稳保、链接或 HTML；看 `error` 帧的 detail，按提示词收紧 |
 | 每轮都没有方向建议 | 该会话没有已保存的原话（提示词里就会写明「不要给建议」），或模型给的建议没引用注册过的证据 ID 而被丢掉 |
 | 正文里出现学生没说过的话 | 检查是不是给真模型配了 `NANHANG_ALLOW_DEMO_EVIDENCE=1`，或前端漏发了证据字段 |
-| 学生聊到一半被要求重新兑换访问码 | 会话只存在函数进程内存里：没配 Redis（或 Redis 不可达，`/readyz` 的 `state_store` 会是 false）。检查 `NANHANG_REDIS_HOST/_PORT/_PASSWORD` 三项 |
-| `/healthz` 里 `store` 是 `memory` | 三项 Redis 变量没配齐；生产档下这种情况函数不会带 AI 启动（除非显式允许内存档） |
+| 学生聊到一半被要求重新兑换访问码 | 会话只存在函数进程内存里：没配 Redis（或 Redis 不可达，`/readyz` 的 `state_store` 会是 false）。检查 `NANHANG_REDIS_HOST/_PORT/_PASSWORD` 三项。**2026-09-14 起线上就是这个状态**（计费冻结，属预期） |
+| `/healthz` 里 `store` 是 `memory` | 共享存储没配齐。2026-09-14 起线上为预期状态（Redis 已销毁 + `NANHANG_AI_ALLOW_MEMORY_STORE=1`）；若共享存储已配好却仍显示 `memory`，说明三项没配齐 |
+| 函数启动即退出，提示 `refusing to start: production requires a shared state store` | 生产档缺共享存储且没有单实例开关。补 `NANHANG_REDIS_*` 三项，或设 `NANHANG_AI_ALLOW_MEMORY_STORE=1` 跑单实例档；注意此时连学校查询端点也一起不可用 |
 | 首字节很慢甚至超时 | 端点默认开着思考档位；先试 `QIANFAN_THINKING=disabled`，或放宽两个超时变量 |
 | 正文几乎为空、但确实烧了 token | 思考吃满了单轮上限。实测：`thinking` 开启 + `max_tokens=300` 时，300 个 token 全用在思考上、正文 0 字。把 `QIANFAN_MAX_TOKENS` 调大（4000 起），或设 `QIANFAN_THINKING=disabled` |
 | 上游 401/403 | 密钥或模型名与 Token Plan 不匹配；错误消息里只有状态码，不含密钥 |

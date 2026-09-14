@@ -1,19 +1,63 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-13，2026-09-13-font-range-pending）：API版本10与Pages c0b2664已部署并核验；宋体与区间标尺新快照本机通过、待Pages发布。
+> 统一进度（2026-09-14，2026-09-14-cloud-cost-freeze）：按负责人要求冻结计费云资源：按量计费 Redis 已销毁、函数改单实例内存档，站点与学校查询在线可用；账户欠费与 CLS/COS 小额日用仍在。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：负责人进行实际页面验收；继续TASK-13身份生命周期与TASK-14学生规模、校园网和回滚演练。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：回读账单确认 15:00 之后不再出现 Redis 小时费用并处理账户欠费；恢复共享会话需重建 Redis、回填 NANHANG_REDIS_* 并把 NANHANG_AI_ALLOW_MEMORY_STORE 改回 0；审阅 P1 修复与 TASK-13/14 身份运维收尾不变。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。
 
 | 文件 | 用途 |
 |---|---|
+| [.commandcode/taste/taste.md](.commandcode/taste/taste.md) | 工程配置或总入口 |
 | [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) | 工程配置或总入口 |
 | [.gitignore](.gitignore) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/.github/workflows/pages.yml](.nanhang-ref/zhiliang-huixi/.github/workflows/pages.yml) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/.gitignore](.nanhang-ref/zhiliang-huixi/.gitignore) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/components/charts.tsx](.nanhang-ref/zhiliang-huixi/app/components/charts.tsx) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/globals.css](.nanhang-ref/zhiliang-huixi/app/globals.css) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/analytics.ts](.nanhang-ref/zhiliang-huixi/app/lib/analytics.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/chart-theme.ts](.nanhang-ref/zhiliang-huixi/app/lib/chart-theme.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/class-config.ts](.nanhang-ref/zhiliang-huixi/app/lib/class-config.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/demo.ts](.nanhang-ref/zhiliang-huixi/app/lib/demo.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/exporters.ts](.nanhang-ref/zhiliang-huixi/app/lib/exporters.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/format.ts](.nanhang-ref/zhiliang-huixi/app/lib/format.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/import-client.ts](.nanhang-ref/zhiliang-huixi/app/lib/import-client.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/import-worker.ts](.nanhang-ref/zhiliang-huixi/app/lib/import-worker.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/metrics.ts](.nanhang-ref/zhiliang-huixi/app/lib/metrics.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/parser.ts](.nanhang-ref/zhiliang-huixi/app/lib/parser.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/report-model.ts](.nanhang-ref/zhiliang-huixi/app/lib/report-model.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/score-validation.ts](.nanhang-ref/zhiliang-huixi/app/lib/score-validation.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/storage.ts](.nanhang-ref/zhiliang-huixi/app/lib/storage.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/lib/types.ts](.nanhang-ref/zhiliang-huixi/app/lib/types.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/app/page.tsx](.nanhang-ref/zhiliang-huixi/app/page.tsx) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/docs/WORKBOOK-OPTIMIZATION-v1.2.md](.nanhang-ref/zhiliang-huixi/docs/WORKBOOK-OPTIMIZATION-v1.2.md) | 实施进度与记录 |
+| [.nanhang-ref/zhiliang-huixi/eslint.config.mjs](.nanhang-ref/zhiliang-huixi/eslint.config.mjs) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/examples/README.md](.nanhang-ref/zhiliang-huixi/examples/README.md) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/out/dataset.json](.nanhang-ref/zhiliang-huixi/out/dataset.json) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/out/dataset.summary.json](.nanhang-ref/zhiliang-huixi/out/dataset.summary.json) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/package-lock.json](.nanhang-ref/zhiliang-huixi/package-lock.json) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/package.json](.nanhang-ref/zhiliang-huixi/package.json) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/pages-static/index.html](.nanhang-ref/zhiliang-huixi/pages-static/index.html) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/pages-static/main.tsx](.nanhang-ref/zhiliang-huixi/pages-static/main.tsx) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/postcss.config.mjs](.nanhang-ref/zhiliang-huixi/postcss.config.mjs) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/public/favicon.svg](.nanhang-ref/zhiliang-huixi/public/favicon.svg) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/public/file.svg](.nanhang-ref/zhiliang-huixi/public/file.svg) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/public/globe.svg](.nanhang-ref/zhiliang-huixi/public/globe.svg) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/public/og.jpg](.nanhang-ref/zhiliang-huixi/public/og.jpg) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/public/window.svg](.nanhang-ref/zhiliang-huixi/public/window.svg) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/README.md](.nanhang-ref/zhiliang-huixi/README.md) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/scripts/check-pages-build.mjs](.nanhang-ref/zhiliang-huixi/scripts/check-pages-build.mjs) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/scripts/make-fixture.ts](.nanhang-ref/zhiliang-huixi/scripts/make-fixture.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/scripts/verify-accuracy.ts](.nanhang-ref/zhiliang-huixi/scripts/verify-accuracy.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/scripts/verify-analytics.ts](.nanhang-ref/zhiliang-huixi/scripts/verify-analytics.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/scripts/verify-parser.ts](.nanhang-ref/zhiliang-huixi/scripts/verify-parser.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/scripts/verify-workbook.ts](.nanhang-ref/zhiliang-huixi/scripts/verify-workbook.ts) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/tsconfig.json](.nanhang-ref/zhiliang-huixi/tsconfig.json) | 工程配置或总入口 |
+| [.nanhang-ref/zhiliang-huixi/vite.pages.config.ts](.nanhang-ref/zhiliang-huixi/vite.pages.config.ts) | 工程配置或总入口 |
 | [AGENTS.md](AGENTS.md) | 工程配置或总入口 |
 | [archives/nanhang-app-source-before-task04-2026-09-10.zip](archives/nanhang-app-source-before-task04-2026-09-10.zip) | 历史归档（不作为当前进度） |
 | [archives/README.md](archives/README.md) | 历史归档（不作为当前进度） |
@@ -28,6 +72,45 @@
 | [archives/workspace-before-excel-task06-2026-09-10.zip](archives/workspace-before-excel-task06-2026-09-10.zip) | 历史归档（不作为当前进度） |
 | [archives/workspace-before-sync-2026-09-10.zip](archives/workspace-before-sync-2026-09-10.zip) | 历史归档（不作为当前进度） |
 | [FILE_INDEX.md](FILE_INDEX.md) | 工程配置或总入口 |
+| [gui-test-screenshots/t01_sail_full.png](gui-test-screenshots/t01_sail_full.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t02_sail_viewport.png](gui-test-screenshots/t02_sail_viewport.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t03_sail_form.png](gui-test-screenshots/t03_sail_form.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t08_pagedown.png](gui-test-screenshots/t08_pagedown.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t09_domcua_click.png](gui-test-screenshots/t09_domcua_click.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t10_subjects_selected.png](gui-test-screenshots/t10_subjects_selected.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t11_start_sail.png](gui-test-screenshots/t11_start_sail.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t12_board_card.png](gui-test-screenshots/t12_board_card.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t13_locate_school.png](gui-test-screenshots/t13_locate_school.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t14_locate_page.png](gui-test-screenshots/t14_locate_page.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t15_wrong_code.png](gui-test-screenshots/t15_wrong_code.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t16_identified.png](gui-test-screenshots/t16_identified.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t17_identified_chen.png](gui-test-screenshots/t17_identified_chen.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t18_locate_exams.png](gui-test-screenshots/t18_locate_exams.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t19_range.png](gui-test-screenshots/t19_range.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t20_range2.png](gui-test-screenshots/t20_range2.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t21_range_card.png](gui-test-screenshots/t21_range_card.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t22_explore_range.png](gui-test-screenshots/t22_explore_range.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t23_range_instant.png](gui-test-screenshots/t23_range_instant.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t24_subject_table_zoom.png](gui-test-screenshots/t24_subject_table_zoom.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t25_subject_table_recheck.png](gui-test-screenshots/t25_subject_table_recheck.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t26_trail_chart.png](gui-test-screenshots/t26_trail_chart.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t27_knowledge.png](gui-test-screenshots/t27_knowledge.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t28_talk_entry.png](gui-test-screenshots/t28_talk_entry.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t29_totp_prompt.png](gui-test-screenshots/t29_totp_prompt.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t30_totp_connect.png](gui-test-screenshots/t30_totp_connect.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t31_answer_sent.png](gui-test-screenshots/t31_answer_sent.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t32_ai_reply1.png](gui-test-screenshots/t32_ai_reply1.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t33_ai_reply2.png](gui-test-screenshots/t33_ai_reply2.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t34_suggestions.png](gui-test-screenshots/t34_suggestions.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t36_free_text_reply.png](gui-test-screenshots/t36_free_text_reply.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t37_final_turn.png](gui-test-screenshots/t37_final_turn.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t38_after_career_btn.png](gui-test-screenshots/t38_after_career_btn.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t39_career_pending.png](gui-test-screenshots/t39_career_pending.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t40_direction.png](gui-test-screenshots/t40_direction.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t41_direction_self.png](gui-test-screenshots/t41_direction_self.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t42_pick_gongxue.png](gui-test-screenshots/t42_pick_gongxue.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t43_two_lines_empty.png](gui-test-screenshots/t43_two_lines_empty.png) | 工程配置或总入口 |
+| [gui-test-screenshots/t44_axis_top.png](gui-test-screenshots/t44_axis_top.png) | 工程配置或总入口 |
 | [MANIFEST.sha256](MANIFEST.sha256) | 工程配置或总入口 |
 | [nanhang-app/.gitignore](nanhang-app/.gitignore) | 工程配置或总入口 |
 | [nanhang-app/AGENTS.md](nanhang-app/AGENTS.md) | 工程配置或总入口 |
@@ -695,10 +778,12 @@
 | [nanhang-app/docs/baseline/VALIDATION.md](nanhang-app/docs/baseline/VALIDATION.md) | 交接包同步参考副本 |
 | [nanhang-app/docs/CLASS4_QUERY_CODES.md](nanhang-app/docs/CLASS4_QUERY_CODES.md) | 实施进度与记录 |
 | [nanhang-app/docs/DOCUMENTATION_POLICY.md](nanhang-app/docs/DOCUMENTATION_POLICY.md) | 实施进度与记录 |
+| [nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md](nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md) | 实施进度与记录 |
 | [nanhang-app/docs/FRONTENDS.md](nanhang-app/docs/FRONTENDS.md) | 实施进度与记录 |
 | [nanhang-app/docs/IMPLEMENTATION_LOG.md](nanhang-app/docs/IMPLEMENTATION_LOG.md) | 实施进度与记录 |
 | [nanhang-app/docs/PARALLEL_FRONTEND.md](nanhang-app/docs/PARALLEL_FRONTEND.md) | 实施进度与记录 |
 | [nanhang-app/docs/project-status.json](nanhang-app/docs/project-status.json) | 实施进度与记录 |
+| [nanhang-app/docs/PROJECT_REVIEW_2026-09-13.md](nanhang-app/docs/PROJECT_REVIEW_2026-09-13.md) | 实施进度与记录 |
 | [nanhang-app/docs/PROJECT_STATUS.md](nanhang-app/docs/PROJECT_STATUS.md) | 实施进度与记录 |
 | [nanhang-app/docs/QUALITY_HUIXI_PIPELINE.md](nanhang-app/docs/QUALITY_HUIXI_PIPELINE.md) | 实施进度与记录 |
 | [nanhang-app/docs/TASK03_ADMISSIONS_DB.md](nanhang-app/docs/TASK03_ADMISSIONS_DB.md) | 实施进度与记录 |
@@ -736,6 +821,7 @@
 | [nanhang-app/docs/verification/class4-codes-x0-result-2026-09-12.json](nanhang-app/docs/verification/class4-codes-x0-result-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/class4-codes-x0-tests-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-tests-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/class4-codes-x0-typecheck-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-typecheck-2026-09-12.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/cloud-cost-freeze-2026-09-14.json](nanhang-app/docs/verification/cloud-cost-freeze-2026-09-14.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/final-turn-cloud-api-2026-09-13.json](nanhang-app/docs/verification/final-turn-cloud-api-2026-09-13.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/final-turn-online-2026-09-13.json](nanhang-app/docs/verification/final-turn-online-2026-09-13.json) | 本次验证原始日志 |
@@ -772,6 +858,8 @@
 | [nanhang-app/docs/verification/npm-validate-journey-2026-09-12.txt](nanhang-app/docs/verification/npm-validate-journey-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/project-review-2026-09-13.json](nanhang-app/docs/verification/project-review-2026-09-13.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs](nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/school-local-check.mjs](nanhang-app/docs/verification/school-local-check.mjs) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/school-local-result.json](nanhang-app/docs/verification/school-local-result.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/task03-admissions-db-2026-09-11.txt](nanhang-app/docs/verification/task03-admissions-db-2026-09-11.txt) | 本次验证原始日志 |
