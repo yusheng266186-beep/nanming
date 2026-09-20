@@ -1,0 +1,32 @@
+{
+  "change": "unified-ui-polish-deploy-1",
+  "deployment_commit": "b625dc2fe4889b1077d5eec092419e6717a9d83e",
+  "pr": "https://github.com/yusheng266186-beep/nanming/pull/1",
+  "workflow_run": "https://github.com/yusheng266186-beep/nanming/actions/runs/35513184905",
+  "artifact_id": 10605563063,
+  "site": "https://yusheng266186-beep.github.io/nanming/",
+  "verification": "HTTP bytes/SHA-256 compared to github-pages artifact; no visual inspection",
+  "assets": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "bytes": 970,
+      "sha256": "09677052d79b47c22c4e49d02a9640e1f63dbcdcbbccad12040199f5577599c2",
+      "matches_artifact": true
+    },
+    {
+      "path": "assets/index-n9_BhPN_.js",
+      "status": 200,
+      "bytes": 348555,
+      "sha256": "6274163a0abdbc80dde6b2bde73e784f708a07def4583c450dda82e1ea760c37",
+      "matches_artifact": true
+    },
+    {
+      "path": "assets/index-BwG3mJaJ.css",
+      "status": 200,
+      "bytes": 99915,
+      "sha256": "0970dd0523674b0ad0eb8d0620683398da6dc8a8561c34555ebeeb9020540f74",
+      "matches_artifact": true
+    }
+  ]
+}

@@ -1,12 +1,20 @@
 # 实施记录
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-20，2026-09-20-unified-ui-polish-84）：主前端六章体验统一已完成：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置；54 文件 592 项测试与23项合成 DOM 断言通过；本轮待 PR 审阅与负责人视觉验收，未合并部署；已有数据发布与云端开关状态沿用上一轮。
+> 统一进度（2026-09-20，2026-09-20-unified-ui-polish-deployed-85）：主前端六章体验统一已合并并发布到 GitHub Pages：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置已上线；线上 index、JS、CSS 与 Pages 产物逐字节一致；视觉验收仍由负责人执行。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：54 个测试文件、592 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：审阅 codex/frontend-polish 并由负责人验收桌面/手机画框、抽屉、清单、定位和设置；当前未合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：负责人直接在线验收桌面/手机画框、抽屉、清单、定位和设置，不满意处继续迭代；前端已合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-20 / unified-ui-polish-deploy-1：合并并发布主前端体验统一
+
+- 负责人明确要求直接合并上线。PR [#1](https://github.com/yusheng266186-beep/nanming/pull/1) 已由草案转为可审阅并合并；merge commit 为 `b625dc2fe4889b1077d5eec092419e6717a9d83e`。
+- GitHub Pages 工作流 [35513184905](https://github.com/yusheng266186-beep/nanming/actions/runs/35513184905) 的 build 与 deploy 均为 `success`，线上地址为 <https://yusheng266186-beep.github.io/nanming/>。
+- 下载该次工作流的 `github-pages` 产物后，对线上 `index.html`、`assets/index-n9_BhPN_.js`、`assets/index-BwG3mJaJ.css` 逐文件比对：HTTP 均为 200，字节与 SHA-256 全部一致。脱敏证据见 [部署验证](verification/ui-polish-deploy-2026-09-20.json)。这是产物一致性验证，不是视觉验收。
+- CI 构建与发布成功。验证步骤按仓库既有 `continue-on-error` 策略记录到 559 项通过、30 项跳过、3 项失败：1 项来自公开检出缺少私有学校分片，另 2 项是公开检出中的冻结来源哈希不一致；本机完整工作区此前 54 文件 592 项通过。本次没有把 CI 的非阻断失败写成全绿。
+- 本条只补合并/部署事实和生成文档，不改前端运行代码。视觉仍由负责人在线验收；不满意处继续迭代。TASK-13/14、招生数据与云端开关状态未变。
 
 ## 2026-09-20 / unified-ui-polish-2：抽屉生命周期、动效偏好与全站密度统一
 

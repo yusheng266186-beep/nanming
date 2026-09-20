@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-20",
-  "revision": "2026-09-20-unified-ui-polish-84",
-  "stage": "主前端六章体验统一已完成：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置；54 文件 592 项测试与23项合成 DOM 断言通过；本轮待 PR 审阅与负责人视觉验收，未合并部署；已有数据发布与云端开关状态沿用上一轮",
+  "revision": "2026-09-20-unified-ui-polish-deployed-85",
+  "stage": "主前端六章体验统一已合并并发布到 GitHub Pages：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置已上线；线上 index、JS、CSS 与 Pages 产物逐字节一致；视觉验收仍由负责人执行",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -30,8 +30,8 @@
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "本轮完整原工作区 Node 测试实测54文件592项；web typecheck/build与23项合成DOM检查通过。TASK-03 Python68项与数据库独立校验66399项为历史结果，本轮未重跑。",
-    "log": "docs/verification/ui-polish-2026-09-20.json"
+    "note": "本轮完整原工作区 Node 测试实测54文件592项；web typecheck/build与23项合成DOM检查通过。Pages CI 的构建与部署成功；公开检出测试为559通过、30跳过、3失败，其中1项缺少私有学校分片、2项为公开检出中的冻结来源哈希不一致，工作流按既有 continue-on-error 策略继续发布。TASK-03 Python68项与数据库独立校验66399项为历史结果，本轮未重跑。",
+    "log": "docs/verification/ui-polish-deploy-2026-09-20.json"
   },
   "runtime": {
     "node": "26.7.0",
@@ -42,7 +42,7 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "审阅 codex/frontend-polish 并由负责人验收桌面/手机画框、抽屉、清单、定位和设置；当前未合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变",
+  "next_task": "负责人直接在线验收桌面/手机画框、抽屉、清单、定位和设置，不满意处继续迭代；前端已合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变",
   "official_fee_catalog": {
     "plan_year": 2026,
     "catalog_entries": 2190,
@@ -239,8 +239,8 @@
     "status": "APPLIED",
     "deployment_status": "PUBLISHED_TO_GITHUB_DATA_AND_NANMING_COS_ADMISSIONS_RELEASE"
   },
-  "web_build": "本轮本机 Vite production build passed（72 modules，JS gzip113.42KB）；分支待审阅，尚未合并/部署。历史数据发布事实见 published_release。",
-  "browser_journey": "historical_five_step_evidence_only; current_six_chapter_ui_has_23_synthetic_DOM_assertions; owner_visual_acceptance_pending",
+  "web_build": "PR #1 已合并为 b625dc2；Pages run 35513184905 build/deploy success。线上 index-n9_BhPN_.js 与 index-BwG3mJaJ.css 的字节和 SHA-256 均与 workflow artifact 一致。",
+  "browser_journey": "current_six_chapter_ui_deployed; 23_synthetic_DOM_assertions_passed; online_artifact_bytes_verified; owner_visual_acceptance_pending",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
   "ai_gateway_store": "当前云端为单实例内存档：2026-09-14 按负责人要求销毁了按量计费 Redis，NANHANG_REDIS_* 已从函数环境移除，并设 NANHANG_AI_ALLOW_MEMORY_STORE=1（生产档缺共享存储时会拒绝整个函数启动，不只是关闭 AI）。代码仍支持 RedisStateStore（Lua 原子脚本，键前缀 nm:，带 TTL）与 MemoryStateStore；恢复共享会话需重建实例并回填三项变量、把开关改回 0。",

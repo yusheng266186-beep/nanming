@@ -1,11 +1,11 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-20，2026-09-20-unified-ui-polish-84）：主前端六章体验统一已完成：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置；54 文件 592 项测试与23项合成 DOM 断言通过；本轮待 PR 审阅与负责人视觉验收，未合并部署；已有数据发布与云端开关状态沿用上一轮。
+> 统一进度（2026-09-20，2026-09-20-unified-ui-polish-deployed-85）：主前端六章体验统一已合并并发布到 GitHub Pages：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置已上线；线上 index、JS、CSS 与 Pages 产物逐字节一致；视觉验收仍由负责人执行。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：54 个测试文件、592 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：审阅 codex/frontend-polish 并由负责人验收桌面/手机画框、抽屉、清单、定位和设置；当前未合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：负责人直接在线验收桌面/手机画框、抽屉、清单、定位和设置，不满意处继续迭代；前端已合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。
@@ -828,6 +828,7 @@
 | [nanhang-app/docs/verification/task09-screenshots/mobile-top-390.png](nanhang-app/docs/verification/task09-screenshots/mobile-top-390.png) | TASK-09页面视觉核对截图 |
 | [nanhang-app/docs/verification/topbar-320-fixed-2026-09-12.png](nanhang-app/docs/verification/topbar-320-fixed-2026-09-12.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/ui-polish-2026-09-20.json](nanhang-app/docs/verification/ui-polish-2026-09-20.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/ui-polish-deploy-2026-09-20.json](nanhang-app/docs/verification/ui-polish-deploy-2026-09-20.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/ui-polish-dom-2026-09-20.json](nanhang-app/docs/verification/ui-polish-dom-2026-09-20.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/validation-history-before-e2001cb.md](nanhang-app/docs/verification/validation-history-before-e2001cb.md) | 本次验证原始日志 |
 | [nanhang-app/fixtures/acceptance-cases.json](nanhang-app/fixtures/acceptance-cases.json) | 冻结合同或合成案例 |
