@@ -57,7 +57,7 @@ b4dc1af0659ca52c80e70861faf6dee6a3aff36e34c066c27275e9258664444f  archives/sessi
 25be323556dad377abb57fe7ec8c4b99a6527f488dda28d0c9b686528659c909  archives/session-transcripts-2026-09-10/probe-artifact.txt
 17119a25a3e64d0df15ed9d1faafc261d690990402506c85849d8f03a07f2483  archives/workspace-before-excel-task06-2026-09-10.zip
 fb516aec9a6517e38c2c52c368f215442c027909029bdd08f3a7cbe9b0615b75  archives/workspace-before-sync-2026-09-10.zip
-8311e25df13aa9faf5c29e90b1ffd990c32788b3ad479cd1010a64aaab9c416d  FILE_INDEX.md
+0447a25458a66e154c378a9fa732aee75ffef19c28609a7689cee532dc947a1d  FILE_INDEX.md
 6cf5a0214999fc98bc84791921506cb3475996cbcd18166738a4bf54d4a72928  gui-test-screenshots/t01_sail_full.png
 48226c9952f01aeca2de6187a48f8efb7157e3ae2aa58ac31b1a667e947781b8  gui-test-screenshots/t02_sail_viewport.png
 d46ecc2e7321a29d840db8d12d536c4ff72c60ad057f14bd510c11afae88c76f  gui-test-screenshots/t03_sail_form.png
@@ -124,10 +124,10 @@ ae6ee3939e843c439b599be23ee2274eb3838e18aca3d57b881bb38ddae52d12  nanhang-app/ap
 8633ee40b1d34af8c9f61c5cd00d017845294a1abe766fd08daa48ca428b7e37  nanhang-app/apps/web/src/chapters/chart.tsx
 672f7b0c34ebfe978b2af448f8ee7ec067b7532bde5cdf050e7054eaa85a2624  nanhang-app/apps/web/src/chapters/direction.tsx
 83767227465d7f1355e738f0ec89e21634fced2cb7757751e93d148db4cc1373  nanhang-app/apps/web/src/chapters/locate.tsx
-880398561f38602bc61ec9ab2d25522868ddc8259ca524191f7dfac271cc4617  nanhang-app/apps/web/src/chapters/sail.tsx
-4ea20719ee652151901a1d840ab1ecdb18c56c6652abeb2c2e5f73bd18e24864  nanhang-app/apps/web/src/chapters/settings.tsx
+0e9b12187a2cde92feb7631e3ce9e0cfe40702d6900ae091eb8418f4ad93e828  nanhang-app/apps/web/src/chapters/sail.tsx
+ca5bbfe01472879f860e0e79e18c446b0e161acb94fdde42c0e1923a59ffb97e  nanhang-app/apps/web/src/chapters/settings.tsx
 39da0babdca2b34d0f51d914ab74f21c2fd438241492692ccbf2d89f029d79d5  nanhang-app/apps/web/src/chapters/shared.ts
-1b7b16eaaa3a54f618b9793a89d2b7a7608d88e3b13af490d054ba2834eddf69  nanhang-app/apps/web/src/chapters/talk.tsx
+86c471ed20ee505c0e980963cb7bed49bee604da7069caa5dda887a342814875  nanhang-app/apps/web/src/chapters/talk.tsx
 0c15fa32bbe80e6ab5d35365a8451ea70f719f044703b7b80e09b7837060d852  nanhang-app/apps/web/src/chat.tsx
 f450d4ce30eb33150b7ba8ee9b220586fc7251d47520368a6a40c005c3084617  nanhang-app/apps/web/src/debug.ts
 2ad7f1238b9231d2d9128a1e7fd50bf1c0cb177434ddc8d25f36ed2bc5bc175b  nanhang-app/apps/web/src/direction-quota.ts
@@ -138,6 +138,7 @@ cabd00928eaaa7aa7f55dbe669b1636cc46d3d4539d150faadf51c60933bf8f7  nanhang-app/ap
 5dc1e505308cf81a0347672b35583d67119263a0332187456fb21dadb105c255  nanhang-app/apps/web/src/JourneyApp.tsx
 d8f5112647df6565d2094faa749222e2da856ed593102160c8a9913b9f303c25  nanhang-app/apps/web/src/main.tsx
 758a0c13ae3b60b3d1f4b3c6343a672db89c7ddc44b77045470b349127e5603f  nanhang-app/apps/web/src/model.ts
+f14be6ebf87c28eeeb7cda5361ecaa8b382f01741290572de5028d9ba86fd200  nanhang-app/apps/web/src/overlay.tsx
 d3744f7bbef070cf7ee99532e740b4860d396881de61650ec2ed3708b555f8e7  nanhang-app/apps/web/src/progress.ts
 30d1915f5911b16bbaa798fc394160a8ff6f5f988f33bf18af3291b1a6cfd3b3  nanhang-app/apps/web/src/quality-huixi.ts
 1c641296cb555b0e401a4f1fbc92c50c22ac5f67f74dc018cd2a36781c3b09d2  nanhang-app/apps/web/src/quality-types.ts
@@ -145,7 +146,7 @@ d3744f7bbef070cf7ee99532e740b4860d396881de61650ec2ed3708b555f8e7  nanhang-app/ap
 3027829b94e7e78381bb94fada7047810705bbfe47aa15d8f38b82f632fca47f  nanhang-app/apps/web/src/reference-lines.ts
 ee58fe3aaf27228832ddfdd407b74eb8fbe0a070a1402a084d6d19190be12b23  nanhang-app/apps/web/src/release-loader.ts
 825a6be709b2b804690eb2cefc8df9f89bd3d738071356c60f9c45652d79b169  nanhang-app/apps/web/src/scroll-lock.ts
-18297fd264360f0899705d53493978b2cde785a3193072e719a16ce9697a86a0  nanhang-app/apps/web/src/style.css
+e95747c232240c8c30c1590e497e6bc98674610d505d622cb1d11165a6f71dbc  nanhang-app/apps/web/src/style.css
 3c47b8beccd578d61531c91674c9f32c0ad393b90b4f0e8ad858d65fca5f0478  nanhang-app/apps/web/src/theme.tsx
 f00e26292fdd4f3863cd870255c10e99241cc93ea3f554a3aa683c5127db305b  nanhang-app/apps/web/test/ai-client.test.ts
 eda3e8f28d3fa24bed73aebdeeeb4b8ac26dbcc1b72fecd6762913574abd2483  nanhang-app/apps/web/test/ai-panel.test.ts
@@ -161,8 +162,8 @@ c2298fe5aa0fbc649d4ab9452530d5f9ab5ce87dacb39c851a8a5077afbcd3ee  nanhang-app/ap
 c27bc73de6a6f3bdc3015746058dc622534137a9b2396f262599c4febdf46656  nanhang-app/apps/web/test/flow.test.ts
 1f63da9d803b710f892ea17ccb6fc8ad658ae93e1ae7cf2daf8e2e32aa03d154  nanhang-app/apps/web/test/journey-model.test.ts
 eaf536e56295c63225b6600cf0975ba744b4dd8c04312738fdc797054bb99ac0  nanhang-app/apps/web/test/locate-motion.test.ts
-b74fb21965e43d5f52bdf544af4df5838c04158bee360c69c1adeb3686f318d8  nanhang-app/apps/web/test/overlay-fixed.test.ts
-4a3c6f33b291c8e4f47ee63321e75339e47051f3b2c22fb1b04636cb8c638278  nanhang-app/apps/web/test/overlay-geometry.test.ts
+81d26286d64ac9b39ebb24ccbf7f31542a424eac2e41eb1d73c9d93cab01d0bc  nanhang-app/apps/web/test/overlay-fixed.test.ts
+b0a456b39e238722d6f969ac6ee6e891aee3aa50abc09c82fb18218d08562a1e  nanhang-app/apps/web/test/overlay-geometry.test.ts
 b069d64e46b605c4d38d48032d9453e981f8ed0b82dae957cdc5b8a661bf31b2  nanhang-app/apps/web/test/page-motion.test.ts
 6eb807079827af70556c551e07ce41ba8b9f11098a600f22b2b8a5806b57c03d  nanhang-app/apps/web/test/page-scroll-top.test.ts
 8a65650773f702a5ab796edbb285c8bed4ddb7f8b77982290fd405bceb325fd4  nanhang-app/apps/web/test/presentation.test.ts
@@ -177,7 +178,7 @@ bea98e4bb050f8812d8973611b8ab778993b22b3b5af896779bf081f31677306  nanhang-app/ap
 c18cd81ab5222c7f87309a1ccd42cc8b074c8710b77ada58dd06afd7d752e6e9  nanhang-app/apps/web/test/sail-pack.test.ts
 65eadaea1b1f33d85542e2c7710f502649158dff0d667bd64e0861a94a7b45ae  nanhang-app/apps/web/test/serif-font.test.ts
 e1257edf42c409f178ef299fa58628f9c76959a1a72aacb524707b60beacf45a  nanhang-app/apps/web/test/settings.test.ts
-863e0b8b13c82b4787435b6692ea6fe0cd05b753dfb5e913205fa1412fa2b1de  nanhang-app/apps/web/test/talk-room.test.ts
+fa783f96e3095611c72620a4c47d0b1afe608a28fa2264ab63b11280eadd74b5  nanhang-app/apps/web/test/talk-room.test.ts
 4a7fde3acbd1e821dda1b2a70fb13467a65a836723d66fcc1c281af9b14d9f09  nanhang-app/apps/web/test/talk-whisper.test.ts
 7c558e890d9cace886131c129e13a7082773773676d67667cc9cd3583a571f99  nanhang-app/apps/web/test/theme-spirit.test.ts
 b41c74d26ec2b988c516be481b6a56e0c5408d709d357e1e0b013cd42ac537c1  nanhang-app/apps/web/test/topbar-narrow.test.ts
@@ -747,7 +748,7 @@ dddbf1d15e00168d2e071c5cd7b80b14cfc6d9cc846bc6f2c595cdb9abc0e542  nanhang-app/da
 5e40fdbdefa779fa1aee95996096458eb7600d917469065573704cb7006faaaa  nanhang-app/docs/ADR_001_EXCEL_PRIMARY.md
 5e2276c844881988f13f4bce381c4b0d6adb1b2c2ab1e6dff094a330cb987792  nanhang-app/docs/ADR_002_LINE_EQUIVALENT_POSITIONING.md
 01de1a960b9d5d85ada1a8aa2acaee4a47be9ee78c6d53176407990a26971853  nanhang-app/docs/ADR_003_STUDENT_JOURNEY.md
-036e445cdb795895a9975bba9519ae0b76570fe3df6bf6b89176381c1b10bf70  nanhang-app/docs/AI_QIANFAN_SETUP.md
+ca68b5f8dde9a7973181df03d8fa1622e29d4e66bc1195a7dddf3be7d250da60  nanhang-app/docs/AI_QIANFAN_SETUP.md
 41054a6b009c5302930e310ee8db8dad0f07903c8e6c45ef1d99671c510b6a8e  nanhang-app/docs/BACKEND_FRONTEND_ALIGNMENT.md
 c37058d0eb2cd05c205dabaa5ff425a604cf2a5cf0622c12df169424f9108ad6  nanhang-app/docs/baseline/contracts/data-release.schema.json
 e4648de89c51e6ec330b653846af55d2c8a2f97fd028c66cc95de66e3b2de284  nanhang-app/docs/baseline/contracts/match-result.schema.json
@@ -777,7 +778,7 @@ ffa4a9b60138c5c1d17b6b5d6dde24dd30a8dc1fb36f49ef623d3580cc73f912  nanhang-app/do
 81f14610da714eb3fd39126bd2c88dd42c2b72de82cdc9aded0a5d030504b42e  nanhang-app/docs/DOCUMENTATION_POLICY.md
 cfcd4ee5db8a71c9a3d99cba3a2106dd76f6af7b82149d1319bb073cdea2596e  nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md
 5aa4a6d711c4b1560bb67cd81d2449590395f442ff7277dd78ddeb6d65345706  nanhang-app/docs/FRONTENDS.md
-02c2c39bfb98a31076ab1e14c6a75bfcab3c9b530050de9cf4af6130bb24059a  nanhang-app/docs/IMPLEMENTATION_LOG.md
+2048e1b02ddaf9fed890919b955162818921ec561ecd3bc4fc1345394d556ea2  nanhang-app/docs/IMPLEMENTATION_LOG.md
 b9670016cfb5f58200b36c639c820e837e96ed4e55f2f4792d60ea3efa40c3ef  nanhang-app/docs/PARALLEL_FRONTEND.md
 77b3dd3bc90b7daae83a50cfc85f723530db10558c3619ed675ac0b5c293ef78  nanhang-app/docs/project-status.json
 86c5d07b297143023c88215b8555b56019a597401c98ea7bd23b403fd159ce21  nanhang-app/docs/PROJECT_REVIEW_2026-09-13.md
@@ -855,6 +856,14 @@ ef21aaa8a13fd4c8981ca4fd25ea7321ec2b8d070b8266ec13ccbeb5fdd174d1  nanhang-app/do
 dab2af69e3a48dd18fe6b1a6a35f8090ff7e96aab99d5a7f1df35f87bbb5853d  nanhang-app/docs/verification/npm-validate-journey-2026-09-12.txt
 c9966664650478d73766291df11a9ab75767c05916c9fe434c7e2cef7bb68939  nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt
 35657a61b0fcebfb19ecdded4dd03bc40d8982fb25fdf43f21865adf0cf5ee0f  nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt
+b98dfc7da61aba439bf7ba1c52e20ea5c98c223e171ee062c9cd22e690e13630  nanhang-app/docs/verification/pages-mobile-2026-09-20/01-起航.png
+d91368af7821fe7994a3971da47c8d9981c46e2f7a6df823c3fb430aa42e9894  nanhang-app/docs/verification/pages-mobile-2026-09-20/02-登船卡.png
+fcc593db492fc4c0378a58881bf712471e0c09c918fb7400fbd56ba1150eb21f  nanhang-app/docs/verification/pages-mobile-2026-09-20/03-定位.png
+9ace7412d046c4bd5549426dde2310d51bc4b847d60fd35a7bacb96d36ae50a0  nanhang-app/docs/verification/pages-mobile-2026-09-20/04-实时思考.png
+f1796b48d3308211f93d701f4e4a44ed66b4b5115a64bc3870159cd70e56d495  nanhang-app/docs/verification/pages-mobile-2026-09-20/05-谈心回复.png
+69ac2506633694661431ce23e71cb3e4b8f84245b963c1eefee8bb44787dd84f  nanhang-app/docs/verification/pages-mobile-2026-09-20/06-方向小结卡.png
+69ac2506633694661431ce23e71cb3e4b8f84245b963c1eefee8bb44787dd84f  nanhang-app/docs/verification/pages-mobile-2026-09-20/07-方向小结卡-滑到底.png
+aebac0712ee216b2e60bc13e80edfc3e66871848727695d1f712ad3367251346  nanhang-app/docs/verification/pages-mobile-2026-09-20/08-设置卡.png
 d12d6d7f704949e9763d3f3b06533b73967ef870f5132033f0f8fe78921e9a7f  nanhang-app/docs/verification/project-review-2026-09-13.json
 69fc338c6cc713565418cad7b3e888fbe9d9447c77cb608f5ec60405a95bfb66  nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs
 9d28d359f6741415049ea317cc932b1e17eee8002df9fd315cf638a0d601f04f  nanhang-app/docs/verification/school-local-check.mjs
@@ -886,7 +895,7 @@ fd6f3d8ff9fec4d114ada4c5d40dcb0c5c8551b049c73a54a3c3af907bb7744b  nanhang-app/pa
 0390032bf7065b7ac122e45a36deb2aec411ab1dc8243d9bd94bbf38ac3e32e5  nanhang-app/packages/ai-gateway/src/index.ts
 0377c2eec70bdfbe4f12c25b3d76346fb9b34c0a9a814c09354d6a1f9b7a41a7  nanhang-app/packages/ai-gateway/src/input-guard.ts
 1878d19c0f47f03987208acb0c64de82ae27cfa6b915585594660931b12570b9  nanhang-app/packages/ai-gateway/src/output-guard.ts
-c10f71a4bc14cfbfd1de65bdaab75f43e2678cf148ec0b4596f42ac226c968a9  nanhang-app/packages/ai-gateway/src/qianfan-upstream.ts
+973724f5cb87ccf1fe6e0945b7113f70c3d5ce0b3bdedf9d8f2b6e5b698e5719  nanhang-app/packages/ai-gateway/src/qianfan-upstream.ts
 0a6fee0a27eda0309323c773e28654b73771756e0f0dcad5eba74c545162a3ef  nanhang-app/packages/ai-gateway/src/redis-client.ts
 28b59fc3d7b14c40d97f94e1dbde3c94a1f02de9974d76d9fa0749ad3555bba2  nanhang-app/packages/ai-gateway/src/redis-store.ts
 092ceec41ce327cf90c0afd2531e36174c77c6fa5155b0ed277f38f72ce65cc0  nanhang-app/packages/ai-gateway/src/sse.ts
@@ -1117,8 +1126,8 @@ ebe3294a5cefc84bbed707072231009026fbdf5a5b970225ac88f9ebd56bcbc0  nanhang-handof
 ffa4a9b60138c5c1d17b6b5d6dde24dd30a8dc1fb36f49ef623d3580cc73f912  nanhang-handoff/tools/validate_contracts.py
 74fc1a0071e9f4d95f4b9430550804d1501f3a2d6520a60d26af752b28c51807  nanhang-handoff/VALIDATION.md
 4f976497a7620fc11a42a5edc401b1c84e5a8ad3a747be5047664b7471d601f5  README.md
-263e3f8295558fdf8538042eb1768dffbe7ded97c93a4517da02b4b10a794180  releases/nanhang-app-source-2026-09-10.zip
-9dc8db55dfb48ccba4fe7e3a9c9985bd828b5b46977ae3d4adba43e0b91e4449  releases/nanhang-app-source-2026-09-10.zip.sha256
+17f8df0a1e8f5f1f60b3380c0dd5400b94a744ecef1fd7350b6e3f23f4a86838  releases/nanhang-app-source-2026-09-10.zip
+a3581c65ac2f4e83ebce44f5162f00b0750ee06339d87dc7557f8a242abdc632  releases/nanhang-app-source-2026-09-10.zip.sha256
 5c8c50dfc3216ad778fe78906dd237c679e8a4b3b49b02a863cbce746bd8b6b1  releases/README.md
 1c8ca485c80a6ae0971657c22d265007371deda8df0afef6113281feb523769f  tools/check_frontend_lanes.py
 52170851b8cd84479c9cc316b3ef13db3ecc76c9b926fbf3ea92368027c9994f  tools/sync_project_docs.py

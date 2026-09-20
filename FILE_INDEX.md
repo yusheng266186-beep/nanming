@@ -153,6 +153,7 @@
 | [nanhang-app/apps/web/src/JourneyApp.tsx](nanhang-app/apps/web/src/JourneyApp.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/main.tsx](nanhang-app/apps/web/src/main.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/model.ts](nanhang-app/apps/web/src/model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/overlay.tsx](nanhang-app/apps/web/src/overlay.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/progress.ts](nanhang-app/apps/web/src/progress.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/quality-huixi.ts](nanhang-app/apps/web/src/quality-huixi.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/quality-types.ts](nanhang-app/apps/web/src/quality-types.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -870,6 +871,14 @@
 | [nanhang-app/docs/verification/npm-validate-journey-2026-09-12.txt](nanhang-app/docs/verification/npm-validate-journey-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-task03-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-task05-2026-09-10.txt) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/01-起航.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/01-起航.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/02-登船卡.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/02-登船卡.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/03-定位.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/03-定位.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/04-实时思考.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/04-实时思考.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/05-谈心回复.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/05-谈心回复.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/06-方向小结卡.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/06-方向小结卡.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/07-方向小结卡-滑到底.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/07-方向小结卡-滑到底.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/pages-mobile-2026-09-20/08-设置卡.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/08-设置卡.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/project-review-2026-09-13.json](nanhang-app/docs/verification/project-review-2026-09-13.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs](nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/school-local-check.mjs](nanhang-app/docs/verification/school-local-check.mjs) | 本次验证原始日志 |
