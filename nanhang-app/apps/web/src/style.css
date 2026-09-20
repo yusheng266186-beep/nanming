@@ -19,7 +19,12 @@
 /* 滚动条全局隐藏，滚动能力保留：在窄屏与纸感界面上滚动条是视觉噪音。
    WebKit 走 ::-webkit-scrollbar{display:none}，Firefox 走 scrollbar-width:none；
    滚轮、触摸与键盘滚动不受影响。局部元素不得再用 scrollbar-width/scrollbar-color 覆盖。 */
-html{scrollbar-width:none;scroll-behavior:smooth;scroll-padding-top:120px;-webkit-text-size-adjust:100%}
+html{scrollbar-width:none;scroll-behavior:smooth;scroll-padding-top:120px;-webkit-text-size-adjust:100%;
+  /* 关掉滚动锚定（overflow-anchor）。负责人 2026-09-20 报的「六次靠岸点开某一张后上方变白」：
+     抽屉卡展开时它下面的内容整体下移，Chrome 的滚动锚定会自动补一次滚动来「稳住」视口，
+     于是视口上方那块被顶出去、露出下面的空背景——看起来就是卡片上方一片白。
+     页面里所有高度变化（抽屉、卡片展开）都由我们自己的滚动逻辑管，不需要浏览器代劳补滚动。 */
+  overflow-anchor:none}
 *{scrollbar-width:none}
 *::-webkit-scrollbar{display:none;width:0;height:0}
 body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.75 var(--song);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;min-height:100vh;background-image:radial-gradient(1200px 600px at 78% -8%,rgba(169,123,52,.06),transparent 60%)}
@@ -195,7 +200,7 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
    认不出的浏览器退化为瞬时展开，功能不受影响），正文另加一层 opacity + translateY 跟进；
    压边与让位走 margin-top 过渡，箭头用带回弹的缓动翻转。全部动效都被全局的
    prefers-reduced-motion 规则压成瞬时（见本文件末尾那块），无需再写覆盖。 */
-.deck{margin:22px 0;position:relative}
+.deck{margin:22px 0;position:relative;overflow-anchor:none}
 .stop{
   position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;
   transition:border-color .3s,box-shadow .5s var(--ease);
@@ -1424,20 +1429,24 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
   #page-sail .stop-head h4{font-size:14px}
   #page-sail .stop-body{padding:0}
   #page-sail .stop-inner p{padding:0 13px 13px;font-size:11px;line-height:1.75;font-family:var(--song)}
-  /* 先定下三件事：清单整体收一圈——状态带内边距、轨道列与印章同步缩，三件的行距不减半。 */
-  #page-sail .sail-panel{margin-top:14px;padding:0;border-radius:14px}
-  #page-sail .pack-head{padding:18px 18px 16px}
-  #page-sail .pack-head h3{font-size:16px}
-  #page-sail .pack-meter b{font-size:22px}
-  #page-sail .pack-track{margin:14px 0 11px}
-  #page-sail .pack-list{padding:4px 18px 0}
-  #page-sail .pack-row{grid-template-columns:28px minmax(0,1fr);column-gap:11px;padding:15px 0}
-  #page-sail .pack-node::after{top:31px;bottom:-24px}
+  /* 先定下三件事：清单整体收一圈——状态带内边距、轨道列与印章同步缩，三件的行距不减半。
+     2026-09-20 第二轮（负责人：还是有这么大的空白）：上一轮只收小节外边距，收效看不出来；
+     这一轮直接收三件自己的行距与状态带高度：面板 616 → 约 548px、每行 149 → 约 131px。 */
+  #page-sail .sail-panel{margin-top:10px;padding:0;border-radius:14px}
+  #page-sail .pack-head{padding:14px 16px 12px}
+  #page-sail .pack-head h3{font-size:15px}
+  #page-sail .pack-head h3 .icon{width:16px;height:16px}
+  #page-sail .pack-meter b{font-size:20px}
+  #page-sail .pack-track{margin:11px 0 8px}
+  #page-sail .pack-head .sail-live{font-size:10.5px;line-height:1.4;font-family:var(--song)}
+  #page-sail .pack-list{padding:2px 16px 0}
+  #page-sail .pack-row{grid-template-columns:24px minmax(0,1fr);column-gap:10px;padding:10px 0}
+  #page-sail .pack-node::after{top:29px;bottom:-20px}
   #page-sail .seal{width:26px;height:26px;font-size:10px;font-family:var(--song)}
-  #page-sail .pack-field .flab{gap:9px;margin-bottom:10px}
+  #page-sail .pack-field .flab{gap:8px;margin-bottom:7px}
   #page-sail .pack-field .chip{min-height:40px;padding:0 16px}
-  #page-sail .fhint{margin-top:7px;line-height:1.7}
-  #page-sail .pack-foot{padding:16px 18px 20px}
+  #page-sail .fhint{margin-top:6px;line-height:1.55;font-size:10.5px;font-family:var(--song)}
+  #page-sail .pack-foot{padding:12px 16px 14px}
   #page-sail .sail-act{margin-top:0;gap:14px}
 }
 

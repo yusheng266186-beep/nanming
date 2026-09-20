@@ -110,7 +110,10 @@ describe("起航页：先定下三件事（行装清单）", () => {
     expect(css).not.toContain(".field.sail-score");
     // 面板自己不再吃内边距（内边距归状态带 / 清单 / 按钮区三段），窄屏也不能把它加回来。
     expect(css).toMatch(/\.panel\.sail-panel\{[^}]*padding:0/);
-    expect(css).toMatch(/#page-sail \.sail-panel\{margin-top:14px;padding:0/);
+    // 窄屏的收紧值（2026-09-20 第二轮：上一轮只收外边距、空白仍明显，这轮连行距与状态带一起收）。
+    expect(css).toMatch(/#page-sail \.sail-panel\{margin-top:10px;padding:0/);
+    expect(css).toMatch(/#page-sail \.pack-row\{[^}]*padding:10px 0\}/);
+    expect(css).toMatch(/#page-sail \.pack-head\{padding:14px 16px 12px\}/);
   });
 
   it("摘要说清了「还没选科」的后果，不是只报状态", () => {

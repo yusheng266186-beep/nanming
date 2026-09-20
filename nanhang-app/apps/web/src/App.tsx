@@ -566,6 +566,30 @@ export default function App() {
   };
 
   /**
+   * 调试模式的状态钩子（只在 dev 构建里存在）。
+   *
+   * 用途：自动化验收脚本需要把页面摆到某个**具体状态**去复现问题（比如「五次考试都填好」、
+   * 「停在某张抽屉卡上」）。没有它，脚本只能一遍遍点完整流程，复现慢且不稳定。
+   * 生产构建里 `DEBUG_MODE` 是 false，这个 useEffect 整块会被摇掉，学生端拿不到它。
+   */
+  useEffect(() => {
+    if (!DEBUG_MODE) return;
+    (window as unknown as { __nmDebug?: unknown }).__nmDebug = {
+      setPage: (id: PageId) => setPage(id),
+      setSubjects: (primary: "PHYSICS" | "HISTORY", additional: string[]) =>
+        setState((current) => withForm(current, { primary, additional })),
+      setExams: (exams: { total: number | null; topTotal: number | null; undergraduateTotal: number | null }[]) =>
+        setState((current) => withForm(current, {
+          exams: exams.map((exam, index) => ({ label: `第 ${index + 1} 次`, rank: null, ...exam }))
+        })),
+      setEntryChosen: (value: boolean) => setEntryChosen(value),
+      setRange: (low: number, high: number) => setRange({ low, high, basis: "调试钩子写入的区间。" }),
+      state: () => ({ page, entryChosen, exams: state.form.exams.length, range: range !== null })
+    };
+    return () => { delete (window as unknown as { __nmDebug?: unknown }).__nmDebug; };
+  }, [page, entryChosen, state.form.exams.length, range]);
+
+  /**
    * 换页从顶端开始：一个章节到下一个章节，学生应该从页头往下读，而不是接着上一页的滚动位置落在大半山腰。
    * 用的是 useLayoutEffect（在浏览器绘制前滚），所以不会先闪一下新页面的中段再跳。
    * `behavior:"instant"` 是必须的——全局 `html{scroll-behavior:smooth}` 会把这次跳转变成一段动画。
