@@ -120,6 +120,16 @@ export default function App() {
   const detailRef = useRef<HTMLDialogElement | null>(null);
   const releaseAbort = useRef<AbortController | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * 实时思考的显示节点（谈心室里那个 .thinking）。
+   *
+   * 放在 App 这一层是因为「发起请求」在 App（sendAi），而节点在章节组件里：
+   * 流式增量直接写这个节点的 textContent，不经过 React state——一帧一次 setState 会把整棵
+   * 对话树重渲染几十次。谈心室在挂载时把它交上来，卸载时清空。
+   */
+  const reasoningRef = useRef<HTMLDivElement | null>(null);
+  /** 已经收到的思考全文：节点还没挂载（React 尚未重渲染）时先攒在这里，挂载后一次性回填。 */
+  const reasoningText = useRef("");
 
   // 新消息或换题后把对话滚到底部，让刚出现的提问可见。
   useEffect(() => {
@@ -413,7 +423,14 @@ export default function App() {
       { evidenceId: `ev-chat-${userTurns.length}`, quote: text, kind: "student_self_report" }
     ];
     const evidence = [...evidenceForRequest(state.registry), ...chatEvidence].slice(-12);
-    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, catalog?.directions ?? []);
+    const next = await askAi(ai, aiStamp(), aiStamp(), text, requestId, {}, history, evidence, catalog?.directions ?? [],
+      // 思考实时流：逐块写进谈心室那个 .thinking 节点（不经过 React state，见 reasoningRef 的说明）。
+      // 节点还没挂上的那几块先攒在 reasoningText 里，由谈心室在挂载时回填。
+      { onReasoning: (chunk) => {
+        reasoningText.current += chunk;
+        const node = reasoningRef.current;
+        if (node) node.textContent = reasoningText.current;
+      } });
     if (seq !== aiSeq.current) return;
     setAi((current) => {
       const merged = applyTurnResult(current, next);
@@ -596,7 +613,7 @@ export default function App() {
   const ctx = {
     // 章节里所有跳转都经过 goTo：没解锁的章节点了只会得到提示，不会跳页。
     state, setState, page, setPage: goTo, talkStep, setTalkStep, thinking, setThinking,
-    reducedMotion, chatScrollRef, notify,
+    reducedMotion, chatScrollRef, reasoningRef, reasoningText, notify,
     ai, setAi, aiSeq, aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi,
     quality, qualityCode, setQualityCode, identifySchool, schoolName, setSchoolName,
     range, setRange, pool, poolStale, poolPending, poolError, matchPool, picks, pickedGroups, togglePick, toggleGroup,

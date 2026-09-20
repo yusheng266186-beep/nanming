@@ -83,11 +83,18 @@ export function containsProbabilityClaim(text: string): boolean {
  * Text-level check applied to each streamed increment before it is emitted, so unsafe model
  * text never leaves the server even in a delta frame. Returns a detail string when the text
  * must be withheld.
+ *
+ * `includeProbabilityClaim: false` 用于**思考通道**：负责人 2026-09-20 明确要求把模型思考
+ * 实时显示给学生，并接受草稿里出现「冲一冲」这类说法（思考不是结论，正文与结构化建议
+ * 仍照旧严格校验）。所以思考只保留两条真正的技术性拦截——标记（防 XSS）与链接；
+ * 命中概率/分层词汇时由调用方改为「停止继续显示思考并说明原因」，而不是把整轮回答作废。
  */
-export function scanStreamedText(text: string): string | null {
+export function scanStreamedText(text: string, options: { includeProbabilityClaim?: boolean } = {}): string | null {
   if (HTML_PATTERN.test(text)) return "streamed text contains markup";
   if (LINK_PATTERN.test(text)) return "streamed text contains a link";
-  if (containsProbabilityClaim(text)) return "streamed text states an admission probability or tier";
+  if (options.includeProbabilityClaim !== false && containsProbabilityClaim(text)) {
+    return "streamed text states an admission probability or tier";
+  }
   return null;
 }
 

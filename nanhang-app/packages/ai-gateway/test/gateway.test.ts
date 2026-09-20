@@ -282,9 +282,14 @@ describe("额度、并发与故障降级", () => {
     const session = await h.gateway.authenticate("token-a");
     if (!session.ok) throw new Error("session expected");
     const result = await h.gateway.careerTurn(session.session, turnBody());
-    expect(result.httpStatus).toBe(503);
+    // 已发出去一块文本之后中断：真实 HTTP 头那时早就写给了浏览器，状态码只能留在 200，
+    // 失败改用 error 帧表达（下面三条断言钉住「不重试、不重复生成、有 error 帧」——
+    // 与流式之前的差别只在状态码本身，客户端读的仍是 error 帧）。
+    expect(result.httpStatus).toBe(200);
     expect(h.upstream.streamCalls).toBe(1);
-    expect(parseSseStream(result.frames.join("")).filter((event) => event.event === "delta")).toHaveLength(1);
+    const events = parseSseStream(result.frames.join(""));
+    expect(events.filter((event) => event.event === "delta")).toHaveLength(1);
+    expect(events.filter((event) => event.event === "error")).toHaveLength(1);
   });
 
   it("上游失败被记录为unknown而不是自动退款后无限重试", async () => {

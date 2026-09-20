@@ -4,7 +4,10 @@
 // 同一份凭据说明；密钥只从环境变量读取，不写进仓库、不回显、也不进入任何错误消息。
 //
 // 两条与学生有关的取舍写在这里，改代码前先读：
-//   1. 思考内容(reasoning_content)一律丢弃。它是模型的草稿，不是给学生的回答，也不该占用学生的等待时间。
+//   1. 思考内容(reasoning_content) 自 2026-09-20 起**下发给学生**。负责人明确指示：
+//      「就要让学生看到思考过程」，并接受此前担心的风险（模型可能在草稿里写「冲一冲」这类话）。
+//      实现上仍分两块流：思考走 kind:"reasoning"，正文走 kind:"text"，
+//      两者绝不混进同一条正文；网关对两块分别做安全扫描，出问题的块被替换而不是整轮丢弃。
 //   2. 正文之后的结构化段（方向建议与行动）永远不发给学生，只交给 finalize()，由网关做形状与安全校验。
 import { EXPERIENCE_CARDS, PROMPT_BOUNDARY } from "@nanhang/exploration";
 import { UpstreamFailure, type Upstream, type UpstreamChunk, type UpstreamRequest } from "./gateway.js";
@@ -236,16 +239,27 @@ export function buildQianfanSystemPrompt(request: UpstreamRequest): string {
   ].join("\n");
 }
 
-function deltaFromLine(line: string): string | null {
-  if (!line.startsWith("data:")) return null;
+/**
+ * 从一行 SSE 里取出这一块的两部分内容。
+ *
+ * 思考字段在 OpenAI 兼容端点上名字不统一：DeepSeek 系叫 `reasoning_content`，
+ * 有的端点用 `reasoning`。两个都认，取到哪个算哪个。
+ */
+function deltaFromLine(line: string): { content: string | null; reasoning: string | null } {
+  if (!line.startsWith("data:")) return { content: null, reasoning: null };
   const payload = line.slice("data:".length).trim();
-  if (!payload || payload === "[DONE]") return null;
+  if (!payload || payload === "[DONE]") return { content: null, reasoning: null };
   try {
-    const parsed = JSON.parse(payload) as { choices?: readonly { delta?: { content?: unknown } }[] };
-    const content = parsed.choices?.[0]?.delta?.content;
-    return typeof content === "string" ? content : null;
+    const parsed = JSON.parse(payload) as {
+      choices?: readonly { delta?: { content?: unknown; reasoning_content?: unknown; reasoning?: unknown } }[];
+    };
+    const delta = parsed.choices?.[0]?.delta;
+    const content = typeof delta?.content === "string" ? delta.content : null;
+    const rawReasoning = typeof delta?.reasoning_content === "string" ? delta.reasoning_content
+      : typeof delta?.reasoning === "string" ? delta.reasoning : null;
+    return { content, reasoning: rawReasoning };
   } catch {
-    return null;
+    return { content: null, reasoning: null };
   }
 }
 
@@ -457,8 +471,10 @@ export class QianfanUpstream implements Upstream {
             while (newline >= 0) {
               const piece = deltaFromLine(pending.slice(0, newline).trim());
               pending = pending.slice(newline + 1);
-              if (piece) {
-                full += piece;
+              // 思考块先发：它与正文是两条独立的流，思考不参与正文的标记/结构化段边界判定。
+              if (piece.reasoning) yield { text: piece.reasoning, kind: "reasoning" as const };
+              if (piece.content) {
+                full += piece.content;
                 if (full.length > MAX_BUFFER_CHARS) {
                   throw new UpstreamFailure("UPSTREAM_UNAVAILABLE", "千帆响应超出缓冲上限", emitted > 0);
                 }

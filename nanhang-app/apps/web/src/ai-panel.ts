@@ -4,7 +4,7 @@
 // enabled it, nothing in the no-AI flow changes. Every displayed AI string is passed through
 // `safeText`, and the run stamp is carried so a superseded response can never be applied (A47).
 import { beginTurn, runAiTurn, DEFAULT_CHAT_MODE, DEFAULT_THINKING_TIER,
-  type AiEvidence, type AiRunStamp, type AiTurnOutcome, type ChatMode, type SseLikeEvent,
+  type AiEvidence, type AiRunStamp, type AiStreamHandlers, type AiTurnOutcome, type ChatMode, type SseLikeEvent,
   type ThinkingTier } from "./ai-client.js";
 
 export const AI_NOTICE = "AI 建议只使用你已经保存的原话，且必须由你确认后才会进入画像。AI 不能修改资格、位次或数据发布状态。";
@@ -172,7 +172,12 @@ export async function askAi(
   deps: AiTurnDeps = {},
   history: readonly { readonly role: "user" | "assistant"; readonly text: string }[] = [],
   evidence: readonly AiEvidence[] = [],
-  directionCatalog: readonly { readonly id: string; readonly name: string }[] = []
+  directionCatalog: readonly { readonly id: string; readonly name: string }[] = [],
+  /**
+   * 实时流：思考与正文增量边走边交给界面（负责人 2026-09-20：让学生看到思考过程）。
+   * 只用来「显示」，不参与任何判断——这一轮的最终结果仍以 outcome 为准。
+   */
+  handlers: AiStreamHandlers = {}
 ): Promise<AiPanelState> {
   if (!state.enabled) return state;
   if (!state.token) return { ...state, status: "请先输入 6 位动态码。" };
@@ -185,7 +190,8 @@ export async function askAi(
       context: history.slice(-8).map(({ role, text }) => ({ role, text })),
       tier: state.tier, mode: state.mode,
       ...(evidence.length > 0 ? { evidence } : {}),
-      ...(directionCatalog.length > 0 ? { directionCatalog } : {}) }
+      ...(directionCatalog.length > 0 ? { directionCatalog } : {}) },
+    handlers
   );
   const next = applyOutcome(state, result.outcome, result.httpStatus, sendStamp.inputRevision);
   return { ...next, suggestions: groundedSuggestions(result.events, directionCatalog, evidence) };

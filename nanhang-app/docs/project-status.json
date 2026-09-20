@@ -1,7 +1,7 @@
 {
-  "as_of": "2026-09-14",
-  "revision": "2026-09-14-cloud-switch",
-  "stage": "服务开关升级为「任意设备可用」：COS 上的网页 + 云端中转函数，密钥只在中转函数环境变量里；开/关全链路实测通过（含充值后的新建实例、外网地址、回填变量、store=redis），云端结束时保持已关闭",
+  "as_of": "2026-09-20",
+  "revision": "2026-09-20-university-detail-enrichment-82",
+  "stage": "完成官方学费队列核查和两库合并后，已对统一库 2,308 所院校批量编排详细档案：每校平均 918 字，保留教育部名录、阳光高考章程入口、学科/学位、招生计划、费用与来源状态；统一库与详细来源表一次性写入，数据库独立验证、68 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -30,7 +30,7 @@
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "历史：上一轮全项目审阅基线14fad3f执行 npm test -- --maxWorkers=2，47文件554项通过；2026-09-14 本轮只改云端配置与文档，未改业务代码、未运行本地测试，云端探针见 docs/verification/cloud-cost-freeze-2026-09-14.json。",
+    "note": "全项目 Node 测试 47 文件 554 项为历史基线；官方学费队列已逐校核查并在完成后只重建一次；统一库合并后又批量生成并一次性写入 2,308 条详细档案和 6,918 条官方来源，已重跑全部 TASK-03 Python 测试 68 项并全部通过（原招生库核心数据库测试 54 项、合并库专项测试 6 项、详细档案专项测试 3 项），数据库独立校验 66,399 项通过；未重跑全项目 Node 测试。",
     "log": "docs/verification/cloud-cost-freeze-2026-09-14.json"
   },
   "runtime": {
@@ -42,7 +42,20 @@
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "要用谈心时打开网页开关点开启（首次可能等几分钟到十几分钟开通外网地址）；按全项目审阅修 P1 与状态生命周期；TASK-13/14 身份与运维收尾不变",
+  "next_task": "统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变",
+  "official_fee_catalog": {
+    "plan_year": 2026,
+    "catalog_entries": 2190,
+    "references": 8887,
+    "offering_matches": 2029,
+    "verified_institutions": 2190,
+    "database_institutions": 2308,
+    "remaining_unverified_institutions": 118,
+    "remaining_unverified_database_rows": 118,
+    "scope_note": "按 official_fee_reference 已覆盖的 institution 实体行统计，当前数据库 2,308 行中 2,190 行已有官方费用引用，剩余 118 行。本轮遵循“先逐校检索、后一次性重建”：118 所队列院校均已通过学校官网、教育主管/考试主管部门或教育部阳光高考审核章程入口核查；只有官方材料出现明确且可精确边界的 CNY/学年金额才写入目录。新增山西工商学院、河北女子职业技术学院、九江理工职业学院、长治幼儿师范高等专科学校 4 个目录条目；历史材料均按原始年份标注。香港两校官网金额为港币且当前数据库专业为类别标签，未擅自换算或强行匹配；其余未核到明确金额的学校继续留空。核查明细见 pipelines/task03/official_tuition_research_log.json。",
+    "source_policy": "只接受学校官网、教育部阳光高考审核章程或省级教育主管部门/招生考试机构官方计划；第三方仅作检索定位；无法核验不填猜测值",
+    "research_log": "pipelines/task03/official_tuition_research_log.json"
+  },
   "service_switch": {
     "location": "C:\\Users\\yusheng\\Desktop\\南溟服务开关\\（工作区之外，不进 Git、不进源码包）",
     "files": [
@@ -96,11 +109,13 @@
   "python_intake_tests_passed": 5,
   "admissions_database": {
     "builder": "pipelines/task03/build_admissions_db.py",
-    "query_entry": "pipelines/task03/query_admissions.py",
+    "query_entry": "pipelines/task03/query_admissions.py（存在统一库时默认读取 admissions_merged.sqlite；--institution-detail 可按代码/ID/名称读取详细档案）",
     "validator": "pipelines/task03/validate_admissions_db.py",
     "artifact": "data/admissions/admissions.sqlite",
     "artifact_is_regenerable": true,
     "deterministic_rebuild": true,
+    "local_build_artifact_status": "NOT_PUBLISHED",
+    "local_build_human_review_performed": false,
     "publication_status": "PUBLISHED",
     "human_review_performed": true,
     "offering_rows": 51878,
@@ -110,8 +125,8 @@
     "observations_with_rank": 264959,
     "plan_count_total": 422017,
     "data_issue_rows": 2113,
-    "independent_validation_checks_passed": 19230,
-    "python_db_tests_passed": 50,
+    "independent_validation_checks_passed": 62923,
+    "python_db_tests_passed": 54,
     "score_distribution": {
       "status": "VERIFIED",
       "source": "四川省教育考试院官方发布页",
@@ -153,9 +168,76 @@
         "old_system": "2024 及以前 理科/文科（文理分科）；与物理类/历史类不是同一定义"
       }
     },
-    "database_validation_checks_passed": 5758,
-    "python_pipeline_tests_passed": 50,
-    "score_distribution_verified": true
+    "database_validation_checks_passed": 66399,
+    "python_pipeline_tests_passed": 54,
+    "score_distribution_verified": true,
+    "official_institution_tags": {
+      "config": "pipelines/task03/official_institution_tags.json",
+      "reference_index": "reference_index",
+      "official_counts": {
+        "211": 112,
+        "985": 39,
+        "双一流": 147
+      },
+      "database_match_counts": {
+        "211": 132,
+        "985": 52,
+        "双一流": 161
+      },
+      "validated_on": "2026-09-15",
+      "policy": "官方名称匹配；明确校区、医学部、深圳/威海等招生实体继承；独立学院不继承"
+    }
+  },
+  "merged_admissions_database": {
+    "builder": "pipelines/task03/merge_admissions_databases.py",
+    "artifact": "data/admissions/admissions_merged.sqlite",
+    "manifest": "data/admissions/merged-manifest.json",
+    "source_current_database": "data/admissions/admissions.sqlite",
+    "source_external_database": "sichuan_gaokao_2026_database_v1.0_compressed/database/sichuan_gaokao_2026.db.gz",
+    "institutions": 2308,
+    "admission_records": 51878,
+    "source_cells": 3207195,
+    "official_university_registry_rows": 2952,
+    "university_profiles": 2308,
+    "official_fee_references": 8887,
+    "institution_tag_rows": 3200,
+    "matched_record_rows": 51878,
+    "matched_institution_rows": 2308,
+    "normalized_conflicts": 0,
+    "integrity_check": "ok",
+    "foreign_key_check": "ok",
+    "database_sha256": "d4e8167a8109bf8ee2a34f28268c62e41ab021cf9bf15f180a20bb557e02bb17",
+    "merge_tests_passed": 6,
+    "policy": "保留两边原始表；以南航规范化招生字段为统一查询主口径；外部原始字段、院校简介和教育部名录作为补充；同一字段冲突不覆盖，写入 merge_conflict",
+    "inputs_preserved": true,
+    "deployment_status": "NOT_DEPLOYED"
+  },
+  "university_detail_enrichment": {
+    "builder": "pipelines/task03/enrich_university_details.py",
+    "batch_artifact": "data/admissions/university-detail-enrichment-batch.json",
+    "artifact": "data/admissions/admissions_merged.sqlite",
+    "detail_table": "university_detail",
+    "source_table": "university_detail_source",
+    "view": "v_university_detail",
+    "institutions": 2308,
+    "detail_rows": 2308,
+    "source_rows": 6918,
+    "official_source_url_count": 4610,
+    "description_char_min": 760,
+    "description_char_max": 2126,
+    "description_char_avg": 915.46,
+    "detail_status_counts": {
+      "OFFICIAL_REGISTRY_AND_CHSI_INDEX": 2282,
+      "CHSI_INDEX_WITHOUT_MOE_NAME_MATCH": 20,
+      "OFFICIAL_REGISTRY_ONLY": 1,
+      "OFFICIAL_SOURCE_INDEX_INCOMPLETE": 5
+    },
+    "batch_sha256": "7cb4782ff6c6708d2a5e94379d0a18ea340afe1663aaf1e7cb5863a8509f86ba",
+    "database_sha256_after_apply": "d4e8167a8109bf8ee2a34f28268c62e41ab021cf9bf15f180a20bb557e02bb17",
+    "policy": "先批量生成全部院校中间结果，再一次性写入；仅保留教育部名录与阳光高考官方入口，结构化字段单独标注，缺失字段保持未知；未使用第三方搜索摘要补写",
+    "tests_passed": 3,
+    "status": "APPLIED",
+    "deployment_status": "NOT_DEPLOYED"
   },
   "web_build": "latest frontend production build passed with official API and release bases and /nanming/ base; main JS gzip 111.12KB; new snapshot pending Pages",
   "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
@@ -416,7 +498,7 @@
   "documentation_policy": "每次修改和每次提交必须同步实施记录、当前状态、相关专题说明及验证范围；未完成工作明确标为进行中；提交前 --package 与 --check；详见 docs/DOCUMENTATION_POLICY.md",
   "documentation_check": {
     "status": "passed",
-    "date": "2026-09-13",
+    "date": "2026-09-19",
     "commands": [
       "py -3.12 tools/sync_project_docs.py --package",
       "py -3.12 tools/sync_project_docs.py --check"

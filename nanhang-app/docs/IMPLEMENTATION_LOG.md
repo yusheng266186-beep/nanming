@@ -1,12 +1,69 @@
 # 实施记录
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-20，2026-09-20-admissions-database-merge-81）：完成官方学费队列核查后，将南航规范化招生库与外部四川 2026 高考数据库合并为新的统一招生数据库。两边 51,878 条招生记录按来源文件、工作表和 Excel 行号一一对应，2,308 所院校简介全部映射，语义归一化后 0 条字段冲突；统一库保留原始单元格、教育部高校名录、院校简介、211/985/双一流标签、官方学费证据、录取历史和匹配池；数据库独立验证、65 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
+> 统一进度（2026-09-20，2026-09-20-university-detail-enrichment-82）：完成官方学费队列核查和两库合并后，已对统一库 2,308 所院校批量编排详细档案：每校平均 918 字，保留教育部名录、阳光高考章程入口、学科/学位、招生计划、费用与来源状态；统一库与详细来源表一次性写入，数据库独立验证、68 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
 > 下一步：统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-20 / live-reasoning-1：把模型思考改成实时下发（负责人指示）
+
+- 指示原文：负责人 2026-09-20「我确定低语改为实时的，不要害怕什么冲，就要让学生看到思考过程」。
+  这条指示**改变了项目此前的一条既定边界**（思考内容属草稿、不下发学生端），因此下面把改动、代价与验证逐项记清。
+- 为什么之前做不到（三处卡点，都不是前端文案问题）：
+  ① `apps/api` 的网关把帧攒进数组、整轮跑完才返回（`careerTurn` 一次性给 frames）；
+  ② 帧协议只有 `start/delta/complete/error`，**没有思考通道**；
+  ③ `apps/web` 的 `runAiTurn` 用 `await response.text()` 整包读响应。
+  另外 `qianfan-upstream.ts` 顶部注释原本写着「思考内容(reasoning_content)一律丢弃」。
+- 实际修改（四层，逐层可测）：
+  - **帧协议**（`packages/ai-gateway/src/sse.ts`）：新增 `reasoning` 事件与 `reasoningEvent()`。
+  - **上游**（`qianfan-upstream.ts`）：`deltaFromLine` 同时认 `reasoning_content` 与 `reasoning` 两种字段名，
+    思考按 `kind:"reasoning"` 单独 yield；正文仍走结构化段边界判定（思考不参与该判定，不会把 JSON 当思考发出去）。
+  - **网关**（`gateway.ts`）：`UpstreamChunk` 增加可选 `kind`；`pump` 分两条流分别扫描与下发；
+    `careerTurn` 拆成 `openTurn()`（先把「写响应之前」的判断跑完，给出状态码）+ `run(sink)`（逐帧边产生边发）。
+    start 帧推迟到上游真的出第一块内容时才发——这样「首字节就失败」仍然能用 503 表达，帧序仍是 start→…→complete。
+    思考通道的显示上限 1200 字；思考里出现概率/分层词汇时**不作废整轮**，改为停止继续显示思考并给一条
+    `REASONING_HIDDEN` 说明（负责人明确接受草稿里出现这类说法；正文与结构化建议仍走原来的严格校验）。
+    思考仍保留两条硬拦截：标记与链接（防 XSS 与引流）。
+  - **浏览器**（`apps/web/src/ai-client.ts`）：`runAiTurn` 改为 `response.body.getReader()` 边收边解析，
+    新增 `onReasoning/onText` 实时回调与 `frameDelta()`；没有 body 的实现仍回落到整包读取。
+  - **界面**（`chapters/talk.tsx`、`App.tsx`、`style.css`）：待回答的气泡里新增 `.thinking` 节点，
+    思考增量**直接写 DOM**（不走 React state——一帧一次 setState 会把对话树重渲染几十次）；
+    节点重新挂载时从 `reasoningText` 回填，开头不会丢。样式与正文分开：缩进 + 左侧细线 + 更小更淡的字。
+  - **本机可验证**：假上游支持 `reasoningChunks`；`NANHANG_FAKE_SCENARIO=reasoning` 演「思考分 3 块、每块隔 900ms」，
+    默认档保持原来的节奏（否则每轮多等近 3 秒，自动测试会被拖过超时）。
+- 工具与核查：`npm run validate` = **52 个测试文件、574 项通过、0 失败**（新增 `apps/web/test/ai-reasoning.test.ts` 6 项；
+  更新 `gateway.test.ts` 一条状态码断言与 `qianfan-upstream.test.ts` 的收集器与两条用例名）。
+- 实测结果（本次运行，均为实测不是推断）：
+  - **本机端到端**（`NANHANG_FAKE_SCENARIO=reasoning` + dev server）：谈心室那块的思考长度按 700ms 采样为
+    `0 → 41 → 72 → 107` 字**逐块增长**，回答到达后节点卸载；控制台异常 `0`。
+  - **线上云函数**（直连、逐帧读）：`HTTP 200`、首字节 `0ms`、40 个 `delta`、1 个 `complete`；
+    **思考块 0 个**——线上跑的还是旧代码（思考被丢弃那一版），因此页面上暂时看不到思考。
+  - 云函数打包通过（`node scripts/build_function.mjs`，136 KB），**但没有部署**：`deploy_function.py` 会用本机环境变量
+    整体替换云端配置，而本机没有 `TENCENTCLOUD_*` / `QIANFAN_API_KEY` / `NANHANG_SCHOOL_CLOUD_BASE` / `NANHANG_SCHOOL_KEY`
+    （已只读确认全部未设置）。贸然部署会抹掉云端密钥与学校入口配置，所以这一步留给负责人执行。
+- 未做与边界：**未部署云函数、未推送**；线上要看实时思考必须先部署（否则云端仍丢弃思考）；
+  本轮未做视觉校检（思考块的排版观感由负责人验收）；真实模型是否返回 `reasoning_content` 尚未实测——
+  部署后用直连探针可立刻判定（返回 0 个思考块说明该端点/模型这一档不给思考）。
+- 下一步：按 `docs/AI_QIANFAN_SETUP.md` 的部署说明带上本机凭据执行 `node scripts/build_function.mjs` 与
+  `py -3.12 scripts/deploy_function.py`（脚本会读回并保留函数现有环境变量），再重跑直连探针确认思考块 > 0。
+
+## 2026-09-20 / university-detail-enrichment-82：统一库批量补充院校详细档案
+
+- 目的：负责人要求继续为合并库的每所院校补充尽可能详细的介绍，且必须先完成批量检索/整理，再一次性写入数据库，不能查一所就重建一所。
+- 资料边界：本轮以现有教育部普通高校名录匹配、阳光高考招生章程官方入口和库内既有招生结构化字段为输入；批次来源域名仅保留 `www.moe.gov.cn`、`gaokao.chsi.com.cn`。教育部名录和阳光高考入口是官方来源，未用第三方搜索摘要补写未知字段。阳光高考批量直连存在访问保护，本轮未绕过限制，也不把未批量取得的章程全文冒充已入库事实。
+- 实现：新增 `pipelines/task03/enrich_university_details.py`，先生成 `data/admissions/university-detail-enrichment-batch.json`，完成 2,308 条记录和来源/状态统计后，再用同一批次在一个 SQLite 事务中创建 `university_detail`、`university_detail_source` 和 `v_university_detail`。详细文案按概览、教育部名录、办学特色、研究生学科、2026 招生计划、报考要求/历史、费用、来源边界分段；官方来源事实与结构化字段分别保留。
+- 结果：详细档案 `2,308/2,308`；平均 `915.46` 字，范围 `760–2,126` 字；来源记录 `6,918`，官方 URL `4,610`。状态为 `OFFICIAL_REGISTRY_AND_CHSI_INDEX=2,282`、`CHSI_INDEX_WITHOUT_MOE_NAME_MATCH=20`、`OFFICIAL_REGISTRY_ONLY=1`、`OFFICIAL_SOURCE_INDEX_INCOMPLETE=5`。新增 `query_admissions.py --institution-detail <代码/ID/名称>` 查询入口。
+- 失败与修正：首次应用批次时发现来源插入 SQL 占位符多 1 个，事务回滚且未留下详细表；修正后重新应用成功。随后抽样发现自动文案量词重复（“条条/个个”），修正编排器后重新生成全量批次并整体替换，最终抽样重复短语数为 0。两次写入均是全量批次事务操作，没有逐校重建。
+- 实测命令与结果：
+  - `py -3.12 -X utf8 nanhang-app/pipelines/task03/enrich_university_details.py --build-batch`：2,308 条批次生成通过；批次 SHA-256=`7cb4782ff6c6708d2a5e94379d0a18ea340afe1663aaf1e7cb5863a8509f86ba`。
+  - `py -3.12 -X utf8 nanhang-app/pipelines/task03/enrich_university_details.py --apply-batch --replace --backup ...`：详细表 `2,308`、来源表 `6,918`、视图 `2,308`；`integrity_check=ok`、外键违规 `0`。
+  - `py -3.12 -X utf8 nanhang-app/pipelines/task03/validate_admissions_db.py --db ...admissions_merged.sqlite --manifest ...merged-manifest.json`：`66,399/66,399` 通过，0 失败。
+  - `py -3.12 -X utf8 -m unittest discover -s nanhang-app/pipelines/task03 -p 'test_*.py'`：`68/68` 通过；新增详细档案专项测试 `3/3`；脚本 `py_compile` 通过。
+  - 最终统一库 SHA-256=`d4e8167a8109bf8ee2a34f28268c62e41ab021cf9bf15f180a20bb557e02bb17`；清单已由脚本刷新并与数据库哈希一致。
+- 未执行：未部署、未推送、未更新线上发布包、未做浏览器视觉验收；工作区仍保留写入前 SQLite 备份。
 
 ## 2026-09-20 / deploy-pages-mobile-ai-1：提交推送上线 Pages，并在线上手机档验收 AI 谈心
 

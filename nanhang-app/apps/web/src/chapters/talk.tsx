@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted,
   type AiPanelState } from "../ai-panel.js";
@@ -57,6 +57,10 @@ export interface TalkProps {
   page: PageId;
   setPage: Dispatch<SetStateAction<PageId>>;
   chatScrollRef: MutableRefObject<HTMLDivElement | null>;
+  /** App 侧的实时思考节点：增量由 App 写入，这里只在挂载时回填已有内容。 */
+  reasoningRef: MutableRefObject<HTMLDivElement | null>;
+  /** 已经收到的思考全文（App 累积）：用于组件重新挂载时回填，避免开头丢失。 */
+  reasoningText: MutableRefObject<string>;
   notify: (message: string) => void;
   ai: AiPanelState;
   setAi: Dispatch<SetStateAction<AiPanelState>>;
@@ -73,7 +77,7 @@ export interface TalkProps {
   whisperOn: boolean;
 }
 
-export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
+export function renderTalk({ page, setPage, chatScrollRef, reasoningRef, reasoningText, notify, ai, setAi,
   aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, catalog, quoteFor,
   hasChatted, whisperOn }: TalkProps) {
   // 谈心以 AI 谈心为主路径：进入本页即启用 AI（其它页面的无 AI 可用性不变）。
@@ -98,6 +102,22 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
     return () => window.clearInterval(timer);
   }, [ai.pending, whisperOn]);
   const whisperText = whisperLine(waited, ai.tier);
+
+  /**
+   * 实时思考流（负责人 2026-09-20：「就要让学生看到思考过程」）。
+   *
+   * 增量由 App 在收到 reasoning 帧时直接写 DOM，不走 React state：思考来得很密，
+   * 一帧一次 setState 会把整棵对话树重渲染几十次。这里只负责两件事：
+   *   ① 把节点交给 App（reasoningRef）；
+   *   ② 待回答那一块重新挂载时，把已经攒下的思考回填进去（第一块往往早于 React 重渲染）。
+   */
+  const fillReasoning = () => {
+    const node = reasoningRef.current;
+    if (node) node.textContent = reasoningText.current;
+  };
+  useLayoutEffect(fillReasoning, [ai.pending]);
+  useEffect(() => () => { if (reasoningRef.current) reasoningRef.current.textContent = ""; }, []);
+
   // 「聊完之后」的方向小结卡：收口时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
   const [summaryOpen, setSummaryOpen] = useState(false);
   const summarySeen = useRef(false);
@@ -159,7 +179,9 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
             from={turn.role === "user" ? "me" : "ai"}>
             {turn.text}
           </ChatBubble>)}
-          {ai.pending ? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" />
+          {ai.pending ? <ChatBubble from="ai"><TypingDots label={whisperOn ? "溟在想 · 稍等（下面就是它的思考过程）" : "溟在想 · 稍等"} />
+            {/* 模型思考的实时流：到一块显示一块。它不是回答，样式上也与正文分开（缩进 + 细线 + 更小的字）。 */}
+            <div className="thinking" ref={reasoningRef} aria-live="polite" aria-label="溟的思考过程（实时）" />
             {whisperOn ? <span className="whisper whisper-live" key={whisperText}>{whisperText}</span> : null}
           </ChatBubble> : null}
           {/* 收口提示：说清「聊完了、还能聊、但方向不再变」，并把下一步摆出来。 */}

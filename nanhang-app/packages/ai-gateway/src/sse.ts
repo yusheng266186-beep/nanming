@@ -1,9 +1,13 @@
 // TASK-08: SSE framing (SYSTEM_AND_INTERFACE_SPEC.md section 7).
 //
-// Events are start / delta / complete / error, each carrying request_id and seq.
+// Events are start / delta / reasoning / complete / error, each carrying request_id and seq.
 // Heartbeats are SSE comments and never appear as a business delta.
+//
+// `reasoning` 是 2026-09-20 按负责人指示新增的通道：模型在出正文之前的那段思考逐块下发给学生
+// （此前一律丢弃，见 qianfan-upstream.ts 顶部注释）。它与 `delta` 分开成两种事件，
+// 是为了让「学生的回答」与「溟在想什么」在客户端可以分别累积、分别展示，绝不混进同一条正文。
 export interface SseEvent {
-  readonly event: "start" | "delta" | "complete" | "error";
+  readonly event: "start" | "delta" | "reasoning" | "complete" | "error";
   readonly request_id: string;
   readonly seq: number;
   readonly data: Record<string, unknown>;
@@ -32,6 +36,11 @@ export function startEvent(requestId: string, sequence: SseSequence, modelId: st
 
 export function deltaEvent(requestId: string, sequence: SseSequence, text: string): SseEvent {
   return { event: "delta", request_id: requestId, seq: sequence.next(), data: { text } };
+}
+
+/** 思考（草稿）的一块。客户端只把它显示在「溟在想」那一行里，不计入正文。 */
+export function reasoningEvent(requestId: string, sequence: SseSequence, text: string): SseEvent {
+  return { event: "reasoning", request_id: requestId, seq: sequence.next(), data: { text } };
 }
 
 /**

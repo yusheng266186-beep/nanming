@@ -3,7 +3,7 @@
 > [在线体验 Pages](https://yusheng266186-beep.github.io/nanming/) · [完整项目介绍与仓库导航](../README.md)
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-20，2026-09-20-admissions-database-merge-81）：完成官方学费队列核查后，将南航规范化招生库与外部四川 2026 高考数据库合并为新的统一招生数据库。两边 51,878 条招生记录按来源文件、工作表和 Excel 行号一一对应，2,308 所院校简介全部映射，语义归一化后 0 条字段冲突；统一库保留原始单元格、教育部高校名录、院校简介、211/985/双一流标签、官方学费证据、录取历史和匹配池；数据库独立验证、65 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
+> 统一进度（2026-09-20，2026-09-20-university-detail-enrichment-82）：完成官方学费队列核查和两库合并后，已对统一库 2,308 所院校批量编排详细档案：每校平均 918 字，保留教育部名录、阳光高考章程入口、学科/学位、招生计划、费用与来源状态；统一库与详细来源表一次性写入，数据库独立验证、68 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
@@ -23,6 +23,18 @@ py -3.12 pipelines/task03/merge_admissions_databases.py `
   --external-db-gz <sichuan_gaokao_2026.db.gz 的完整路径> `
   --force
 ```
+
+## 院校详细档案（2026-09-20）
+
+合并库已按“先批量整理全部院校、再一次性写入”的方式补充 `2,308` 条长简介，平均 `915.46` 字；详细来源表有 `6,918` 条记录，其中 `4,610` 条官方 URL 仅来自教育部和阳光高考。数据表为 `university_detail`、`university_detail_source`，查询视图为 `v_university_detail`，状态字段保留教育部名录匹配和阳光高考入口缺失情况，未知字段不猜测填充。
+
+批次文件 `data/admissions/university-detail-enrichment-batch.json` 先完整生成后才写入数据库；当前统一库 SHA-256 为 `d4e8167a8109bf8ee2a34f28268c62e41ab021cf9bf15f180a20bb557e02bb17`。读取单校详细信息：
+
+```powershell
+py -3.12 pipelines/task03/query_admissions.py --institution-detail 0001 --format json
+```
+
+本轮保存的是官方来源索引、教育部名录事实与既有结构化字段的详细编排；阳光高考章程页面的批量直连存在访问保护，未绕过限制，也没有把未抓到的全文内容写成事实。后续可沿 `university_detail_source` 的官方入口继续增量补充学校官网全文。
 
 ## 最近数据更新（2026-09-17）
 

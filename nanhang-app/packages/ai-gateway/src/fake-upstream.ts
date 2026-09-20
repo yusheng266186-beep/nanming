@@ -8,6 +8,11 @@ import { UpstreamFailure } from "./gateway.js";
 export interface FakeScript {
   /** Chunks streamed back, in order. Defaults to a neutral reply. */
   readonly chunks?: readonly string[];
+  /**
+   * 思考块，先于正文下发（kind:"reasoning"）。
+   * 2026-09-20 起思考会显示给学生，所以假上游也要能演这一段，本机才验证得了实时思考。
+   */
+  readonly reasoningChunks?: readonly string[];
   /** Structured object returned by finalize(); defaults to a well-formed, evidence-free reply. */
   readonly final?: unknown;
   /** Emit nothing and hang until the abort signal fires. */
@@ -39,6 +44,18 @@ export class FakeUpstream implements Upstream {
     return this.queue.shift() ?? this.defaultScript;
   }
 
+  /** 块之间的等待，可被中止信号打断；`started` 决定失败按「已出内容」还是「首字节前」归类。 */
+  private async wait(ms: number, signal: AbortSignal, started: boolean): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(resolve, ms);
+      const onAbort = () => {
+        clearTimeout(timer);
+        reject(new UpstreamFailure("UPSTREAM_TIMEOUT", "fake upstream aborted", started));
+      };
+      signal.addEventListener("abort", onAbort, { once: true });
+    });
+  }
+
   async *stream(request: UpstreamRequest, signal: AbortSignal): AsyncIterable<UpstreamChunk> {
     this.streamCalls += 1;
     this.lastRequest = request;
@@ -54,15 +71,15 @@ export class FakeUpstream implements Upstream {
     }
     const chunks = script.chunks ?? ["这是一段本地假上游回复，仅用于开发验证。"];
     const limit = script.failAfterChunks ?? chunks.length;
+    // 思考先走：与真实上游一样，thinking 阶段在正文之前。
+    for (const piece of script.reasoningChunks ?? []) {
+      if (signal.aborted) throw new UpstreamFailure("UPSTREAM_TIMEOUT", "fake upstream aborted", false);
+      if (script.chunkDelayMs) await this.wait(script.chunkDelayMs, signal, false);
+      yield { text: piece, kind: "reasoning" as const };
+    }
     for (const chunk of chunks.slice(0, limit)) {
       if (signal.aborted) throw new UpstreamFailure("UPSTREAM_TIMEOUT", "fake upstream aborted", this.streamCallsForText());
-      if (script.chunkDelayMs) {
-        await new Promise<void>((resolve, reject) => {
-          const timer = setTimeout(resolve, script.chunkDelayMs);
-          const onAbort = () => { clearTimeout(timer); reject(new UpstreamFailure("UPSTREAM_TIMEOUT", "fake upstream aborted", true)); };
-          signal.addEventListener("abort", onAbort, { once: true });
-        });
-      }
+      if (script.chunkDelayMs) await this.wait(script.chunkDelayMs, signal, true);
       yield { text: chunk };
     }
     if (script.failAfterChunks !== undefined) {

@@ -94,6 +94,34 @@ export interface SseLikeEvent {
   readonly data: Record<string, unknown>;
 }
 
+/**
+ * 实时回调：每收到一帧就叫一次（浏览器现在真的边收边解析，不再 `await response.text()`）。
+ *
+ * 负责人 2026-09-20 要求「让学生看到思考过程」，所以 `reasoning` 帧要一路传到界面：
+ * `reasoning` 是思考增量、`text` 是正文增量，两者分开累积，永不混进同一条文字。
+ */
+export interface AiStreamHandlers {
+  /** 思考增量；收到空串表示思考这一段到此为止。 */
+  readonly onReasoning?: (text: string) => void;
+  /** 正文增量。 */
+  readonly onText?: (text: string) => void;
+}
+
+/** 一帧里能取到的两种文本增量。 */
+export interface FrameDelta {
+  readonly reasoning: string | null;
+  readonly text: string | null;
+}
+
+/** 从任意一帧里取出增量：reasoning 帧给思考，delta 帧给正文；空串表示「这一段到此为止」。 */
+export function frameDelta(event: SseLikeEvent): FrameDelta {
+  const raw = (event.data as { text?: unknown } | null)?.text;
+  const text = typeof raw === "string" ? raw : null;
+  if (event.event === "reasoning") return { reasoning: text, text: null };
+  if (event.event === "delta") return { reasoning: null, text };
+  return { reasoning: null, text: null };
+}
+
 /** Rejects the payload of any event that belongs to a superseded run. */
 export function acceptEvent(pending: PendingTurn, active: AiRunStamp, event: SseLikeEvent): AiTurnOutcome | null {
   if (!responseMatchesActiveRun({ runId: pending.stamp.runId, runRevision: pending.stamp.inputRevision }, active)) {
@@ -159,34 +187,66 @@ export interface AiTurnResult {
   readonly events: readonly SseLikeEvent[];
 }
 
-/** Minimal SSE reader: enough for start/delta/complete/error, no dependency on EventSource. */
-export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active: AiRunStamp, request: AiTurnRequest): Promise<AiTurnResult> {
+/**
+ * SSE reader，**边收边解析**。
+ *
+ * 2026-09-20 起因负责人要求「让学生看到思考过程」由整包读取改为流式读取：
+ * 原来 `await response.text()` 要等整轮跑完才有内容，思考再快也只会一次性出现。
+ * 现在每收到一帧就立刻交给 `handlers`，界面因此能逐块显示思考与正文。
+ * 兜底不变：`fetch` 不带 body（老浏览器或测试桩）时回落到整包读取。
+ */
+export async function runAiTurn(deps: AiClientDeps, pending: PendingTurn, active: AiRunStamp, request: AiTurnRequest, handlers: AiStreamHandlers = {}): Promise<AiTurnResult> {
   const doFetch = deps.fetchImpl ?? fetch;
   if (!deps.token) {
     return { httpStatus: 401, events: [], outcome: { requestId: pending.requestId, status: "error", reply: null,
       reason: "NOT_AUTHENTICATED", options: [] } };
   }
-  try {
-  const response = await doFetch(`${deps.baseUrl}/v1/career/turn`, {
-    method: "POST",
-    signal: deps.signal ? AbortSignal.any([deps.signal, AbortSignal.timeout(330_000)]) : AbortSignal.timeout(330_000),
-    headers: { "content-type": "application/json", authorization: `Bearer ${deps.token}` },
-    body: JSON.stringify(toWireBody(request))
-  });
-  const text = await response.text();
-  const events = parseFrames(text);
+  const events: SseLikeEvent[] = [];
   let outcome: AiTurnOutcome = { requestId: pending.requestId, status: "error", reply: null,
-    reason: `HTTP_${response.status}`, options: [] };
-  for (const event of events) {
-    const decided = acceptEvent(pending, active, event);
-    if (decided) outcome = decided;
-  }
-  if (response.status !== 200 && outcome.status !== "rejected") {
-    outcome = { ...outcome, status: "error", reason: outcome.reason ?? `HTTP_${response.status}` };
-  }
-  return { httpStatus: response.status, outcome, events };
+    reason: "HTTP_0", options: [] };
+  const feed = (incoming: readonly SseLikeEvent[]): void => {
+    for (const event of incoming) {
+      events.push(event);
+      const delta = frameDelta(event);
+      if (delta.reasoning !== null && delta.reasoning !== "") handlers.onReasoning?.(delta.reasoning);
+      if (delta.text !== null && delta.text !== "") handlers.onText?.(delta.text);
+      const decided = acceptEvent(pending, active, event);
+      if (decided) outcome = decided;
+    }
+  };
+  try {
+    const response = await doFetch(`${deps.baseUrl}/v1/career/turn`, {
+      method: "POST",
+      signal: deps.signal ? AbortSignal.any([deps.signal, AbortSignal.timeout(330_000)]) : AbortSignal.timeout(330_000),
+      headers: { "content-type": "application/json", authorization: `Bearer ${deps.token}` },
+      body: JSON.stringify(toWireBody(request))
+    });
+    outcome = { ...outcome, reason: `HTTP_${response.status}` };
+
+    if (response.body && typeof response.body.getReader === "function") {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        // 帧以空行分隔：只把完整帧交出去，最后一段留在 buffer 里等后续字节。
+        const blocks = buffer.split("\n\n");
+        buffer = blocks.pop() ?? "";
+        if (blocks.length) feed(parseFrames(blocks.map((block) => `${block}\n\n`).join("")));
+      }
+      if (buffer.trim()) feed(parseFrames(buffer));
+    } else {
+      feed(parseFrames(await response.text()));
+    }
+
+    if (response.status !== 200 && outcome.status !== "rejected") {
+      outcome = { ...outcome, status: "error", reason: outcome.reason ?? `HTTP_${response.status}` };
+    }
+    return { httpStatus: response.status, outcome, events };
   } catch {
-    return { httpStatus: 0, events: [], outcome: { requestId: pending.requestId, status: "error", reply: null,
+    return { httpStatus: 0, events, outcome: { requestId: pending.requestId, status: "error", reply: null,
       reason: deps.signal?.aborted ? "REQUEST_CANCELLED" : "NETWORK_ERROR", options: [] } };
   }
 }

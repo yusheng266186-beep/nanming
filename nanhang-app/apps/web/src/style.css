@@ -317,6 +317,13 @@ textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;fo
 .msg.me .bub{background:var(--sea);color:#eef4f1;border-top-right-radius:4px}
 .bub .ask{display:block;margin-top:11px;padding-top:11px;border-top:1px dashed var(--line-2);font-family:var(--song);color:var(--sea);font-size:14px}
 .whisper{font:italic 400 10.5px/1.6 var(--display);color:var(--foam);margin-top:8px;letter-spacing:.04em}
+/* 实时思考（负责人 2026-09-20：让学生看到思考过程）。
+   与正文在视觉上分开：缩进 + 左侧细线 + 更小更淡的字，读起来像「纸边的铅笔草稿」，
+   不会被误当成溟的回答；等宽换行，长段思考也不会把气泡撑宽。 */
+.thinking{margin:8px 0 2px;padding:8px 0 8px 12px;border-left:2px solid var(--line-2);
+  max-height:220px;overflow-y:auto;overscroll-behavior:contain;
+  font:400 12px/1.75 var(--song);color:var(--mut);white-space:pre-wrap;word-break:break-word}
+.thinking:empty{display:none}
 .dots{display:inline-flex;gap:4px;align-items:center;padding:4px 0}
 .dots i{width:6px;height:6px;border-radius:50%;background:var(--foam);animation:bop 1.2s infinite}
 .dots i:nth-child(2){animation-delay:.16s}.dots i:nth-child(3){animation-delay:.32s}

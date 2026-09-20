@@ -259,13 +259,37 @@ export function createApiServer(deps: ServerDeps): Server {
       if (!body.ok) { sendJson(response, body.code === "PAYLOAD_TOO_LARGE" ? 413 : 400, { error: { code: body.code, message: body.detail } }); return; }
       const controller = new AbortController();
       response.on("close", () => { if (!response.writableEnded) controller.abort(); });
-      const result = await gateway.careerTurn(auth.session, body.value, controller.signal);
-      response.writeHead(result.httpStatus, {
-        "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store",
-        connection: "keep-alive", "x-accel-buffering": "no"
-      });
-      for (const frame of result.frames) response.write(frame);
-      response.end();
+
+      // 帧的实时出口（2026-09-20，负责人要求「让学生看到思考过程」）：
+      // 响应头**推迟到第一帧真正产生时**才写，因此上游首字节就失败的情况仍然能返回 503
+      // （与流式之前同一语义）；一旦开始出帧，后面的失败就以 SSE 的 error 帧表达。
+      const turn = await gateway.openTurn(auth.session, body.value, controller.signal);
+      let headWritten = false;
+      const writeHeadOnce = (status: number) => {
+        if (headWritten || response.writableEnded) return;
+        headWritten = true;
+        response.writeHead(status, {
+          "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store",
+          connection: "keep-alive", "x-accel-buffering": "no"
+        });
+      };
+      let finalStatus = turn.httpStatus;
+      try {
+        finalStatus = await turn.run((frame) => {
+          if (response.writableEnded) return;
+          // 头跟着**内容**走：start 帧会被网关扣到上游真的出内容时才发，所以第一帧到达时
+          // 状态码已经定死（200）。这样「上游首字节就失败」这种一帧都没有的情况，
+          // 仍然能用 503 表达，而不是先写 200 再说失败。
+          writeHeadOnce(turn.httpStatus);
+          response.write(frame);
+        });
+      } finally {
+        if (!response.writableEnded) {
+          // 一帧都没产生（首字节前失败）时，用最终状态码写一个空响应体；否则只补一个 end。
+          if (!headWritten) writeHeadOnce(finalStatus || turn.httpStatus);
+          response.end();
+        }
+      }
       return;
     }
 

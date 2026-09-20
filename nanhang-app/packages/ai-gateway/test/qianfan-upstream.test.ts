@@ -71,8 +71,24 @@ function build(response: Response, options: Record<string, unknown> = {}) {
 async function collect(upstream: QianfanUpstream, req: UpstreamRequest, signal?: AbortSignal): Promise<string> {
   const controller = signal ?? new AbortController().signal;
   let text = "";
-  for await (const chunk of upstream.stream(req, controller)) text += chunk.text;
+  for await (const chunk of upstream.stream(req, controller)) {
+    // 只收正文：思考自 2026-09-20 起因负责人指示改为下发（kind:"reasoning"），
+    // 它与正文必须分开累积——下面的 collectChannels 专门测这一点。
+    if (chunk.kind !== "reasoning") text += chunk.text;
+  }
   return text;
+}
+
+/** 两条流分开累积：思考（reasoning）与正文（text）各归各的。 */
+async function collectChannels(upstream: QianfanUpstream, req: UpstreamRequest, signal?: AbortSignal) {
+  const controller = signal ?? new AbortController().signal;
+  let text = "";
+  let reasoning = "";
+  for await (const chunk of upstream.stream(req, controller)) {
+    if (chunk.kind === "reasoning") reasoning += chunk.text;
+    else text += chunk.text;
+  }
+  return { text, reasoning };
 }
 
 const STRUCTURED = [
@@ -259,16 +275,20 @@ describe("千帆请求形状", () => {
 });
 
 describe("千帆流式解析", () => {
-  it("只把正文发给学生，思考内容一律丢弃", async () => {
+  it("思考与正文分成两条流下发，互不混入（负责人 2026-09-20 指示：让学生看到思考过程）", async () => {
     const { upstream } = build(sseResponse([
       thinking("先想一下这个学生说的是数据整理……"),
       delta("你提到喜欢整理数据，"),
       thinking("继续推演"),
       delta("可以先做一次小体验。")
     ]));
-    const text = await collect(upstream, request());
+    const { text, reasoning } = await collectChannels(upstream, request());
+    // 正文里绝不能混进思考
     expect(text).toBe("你提到喜欢整理数据，可以先做一次小体验。");
     expect(text).not.toContain("先想一下");
+    expect(text).not.toContain("继续推演");
+    // 思考按原样、按顺序走另一条流
+    expect(reasoning).toBe("先想一下这个学生说的是数据整理……继续推演");
   });
 
   it("结构化段不进入学生的界面，由 finalize 取出", async () => {

@@ -1,7 +1,7 @@
 # 当前验证结果
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-20，2026-09-20-admissions-database-merge-81）：完成官方学费队列核查后，将南航规范化招生库与外部四川 2026 高考数据库合并为新的统一招生数据库。两边 51,878 条招生记录按来源文件、工作表和 Excel 行号一一对应，2,308 所院校简介全部映射，语义归一化后 0 条字段冲突；统一库保留原始单元格、教育部高校名录、院校简介、211/985/双一流标签、官方学费证据、录取历史和匹配池；数据库独立验证、65 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
+> 统一进度（2026-09-20，2026-09-20-university-detail-enrichment-82）：完成官方学费队列核查和两库合并后，已对统一库 2,308 所院校批量编排详细档案：每校平均 918 字，保留教育部名录、阳光高考章程入口、学科/学位、招生计划、费用与来源状态；统一库与详细来源表一次性写入，数据库独立验证、68 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
@@ -23,6 +23,14 @@
 - 新库保留官方学费 `8,887` 条、211/985/双一流等院校标签、原始单元格 `3,207,195` 个、教育部高校名录 `2,952` 条、院校简介 `2,308` 条；合并视图 `v_merged_admission` 有 51,878 行，`v_merged_institution` 有 2,308 行。
 - 独立验证：`validate_admissions_db.py` 为 `66,399/66,399`；TASK-03 Python 测试 `65/65`；`integrity_check=ok`；外键违规 0；统一库 SHA-256：`c187c1d3881c5d055e93ad21897a679622afea6bbcd97444a6297e9e62d00d3b`。
 - 查询脚本在统一库存在时默认读取 `admissions_merged.sqlite`；本轮未部署、未推送、未做浏览器视觉验收。
+
+## 本次实测：合并库院校详细档案批量补充（2026-09-20）
+
+- 先批量生成全量中间文件，再一次性写入数据库：`university_detail=2,308`、`university_detail_source=6,918`、`v_university_detail=2,308`；平均简介 `915.46` 字，范围 `760–2,126` 字。
+- 官方来源 URL 共 `4,610` 条，域名仅为 `www.moe.gov.cn` 与 `gaokao.chsi.com.cn`；教育部名录/阳光高考入口匹配状态保留在 `detail_status`，未知字段未猜测填充。
+- `py -3.12 -X utf8 nanhang-app/pipelines/task03/enrich_university_details.py --build-batch` 生成批次；批次 SHA-256：`7cb4782ff6c6708d2a5e94379d0a18ea340afe1663aaf1e7cb5863a8509f86ba`。
+- 最终 `validate_admissions_db.py`：`66,399/66,399` 通过；TASK-03 Python 测试：`68/68` 通过；`integrity_check=ok`；外键违规 `0`；统一库 SHA-256：`d4e8167a8109bf8ee2a34f28268c62e41ab021cf9bf15f180a20bb557e02bb17`。
+- 新增查询：`py -3.12 pipelines/task03/query_admissions.py --institution-detail 0001 --format json`。未部署、未推送、未更新线上发布包、未做浏览器视觉验收。
 
 ## 本次实测：剩余官方学费队列全部核查后一次性重建（2026-09-20）
 
