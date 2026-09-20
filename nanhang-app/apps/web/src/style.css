@@ -1001,13 +1001,38 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
 /* 定位页的考试录入行：名称占整行，数字输入自动换行成两列，距线差 chips 单独一行。 */
 /* 考试行：第几次是固定文字标签（不可改、不是输入框），后面三个数字框等宽一行排开，
    删除按钮收在行尾不再单独占位；距线差 chips 整行铺在下方。 */
-.exam-row{display:grid;grid-template-columns:minmax(48px,auto) 1fr 1fr 1fr 28px;gap:6px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
-.exam-row .exam-tag{font:italic 500 11px/1.35 var(--display);letter-spacing:.04em;color:var(--brass-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 五（最多）次考试的录入行。负责人 2026-09-20：三个框仍不好看，重新设计一版：
+   · 去掉厚边框与白底，改成「纸面填空」——只留一条铜色细底线，数字本身当主角（与区间标尺同一支笔）；
+   · 单位只出现一次：表头给出「总分 / 特控线 / 本科线」，格子里不再重复写；
+   · 聚焦时底线点亮 + 一层柔光，和站点其它输入框同一套反馈。 */
+.exam-fields-head{display:grid;grid-template-columns:minmax(44px,auto) 1fr 1fr 1fr 28px;gap:6px;
+  padding:0 0 2px;font:500 10px/1 var(--song);letter-spacing:.12em;color:var(--brass);
+  text-transform:none}
+.exam-fields-head span{text-align:center}
+.exam-row{display:grid;grid-template-columns:minmax(48px,auto) 1fr 1fr 1fr 28px;gap:6px;align-items:center;
+  padding:9px 0;border-bottom:1px dashed var(--line)}
+.exam-row .exam-tag{font:italic 500 11px/1.35 var(--display);letter-spacing:.04em;color:var(--brass-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .exam-row .exam-num{min-width:0;width:100%}
-/* `.inp` 的基础高度是 50px，三格并排时每一行都偏高；这里收到 42px——仍然好点按（拇指区下限 40+），
-   五次考试能省下约 50px 的纵向空白（负责人 2026-09-20：这里空白太多、显得粗糙）。 */
-.exam-row .exam-num .inp{min-height:42px;height:42px;padding:0 10px;font-size:13.5px}
-.exam-row .rbtn{flex-shrink:0;justify-self:end;width:28px;height:28px}
+/* 填空式数字：无框、铜色底线、大一号的等宽数字。
+   必须带 `#page-locate` 作用域：下面原本就有 `#page-locate .inp:focus` 这类 ID 选择器，
+   单靠 `.exam-row .exam-num .inp` 的类选择器压不过它（2026-09-20 实测：写出了规则却没生效）。 */
+#page-locate .exam-row .exam-num .inp{min-height:40px;height:40px;padding:2px 4px 6px;border:0;
+  border-bottom:1.5px solid var(--brass-line);border-radius:0;background:transparent;text-align:center;
+  font-family:var(--display);font-size:20px;font-weight:500;color:var(--sea);font-variant-numeric:tabular-nums;
+  transition:border-color .3s,box-shadow .4s var(--ease),color .3s}
+#page-locate .exam-row .exam-num .inp:hover:not(:focus){border-bottom-color:var(--brass-2);background:transparent}
+#page-locate .exam-row .exam-num .inp:focus{border:0;border-bottom:1.5px solid var(--brass);background:transparent;
+  box-shadow:0 8px 0 -6px rgba(169,123,52,.35);outline:none}
+#page-locate .exam-row .exam-num .inp::placeholder{font-family:var(--song);font-size:11px;letter-spacing:.08em;color:var(--mut)}
+/* 已填/未填不再靠格底颜色区分（改成填空式之后没有底了）：已填的数字用深海色、未填保持淡。 */
+#page-locate .exam-row .exam-num .inp:placeholder-shown{background:transparent;color:var(--mut)}
+/* 步进箭头在「填空」上就是两只小三角，与区间标尺同一条规矩：吞掉 */
+#page-locate .exam-row .exam-num .inp{-moz-appearance:textfield;appearance:textfield}
+#page-locate .exam-row .exam-num .inp::-webkit-outer-spin-button,
+#page-locate .exam-row .exam-num .inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.exam-row .rbtn{flex-shrink:0;justify-self:end;width:28px;height:28px;border-color:transparent;color:var(--mut)}
+.exam-row .rbtn:hover{border-color:var(--line-2);color:var(--reach)}
 .exam-row .exam-diffs{grid-column:1 / -1;margin-top:-1px}
 .exam-row:last-of-type{border-bottom:0}
 .exam-row .exam-diffs{grid-column:1 / -1}
@@ -1018,8 +1043,9 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
      （`tag del` / `tag tag`），五次考试一共省掉约 180px 空白。 */
   .exam-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:6px 8px;row-gap:7px;
     grid-template-areas:"tag tag tag del" "total top under under" "diffs diffs diffs diffs"}
+  .exam-fields-head{display:none}
   .exam-row .exam-tag{grid-area:tag;white-space:normal;overflow:visible;text-overflow:clip;align-self:center}
-  .exam-row .exam-num{grid-area:auto;padding:0 10px}
+  .exam-row .exam-num{grid-area:auto;padding:0}
   .exam-row input.exam-num:nth-of-type(1){grid-area:total}
   .exam-row input.exam-num:nth-of-type(2){grid-area:top}
   .exam-row input.exam-num:nth-of-type(3){grid-area:under}
@@ -1037,6 +1063,19 @@ details.panel[open]>summary::before{transform:rotate(45deg)}
    要对齐荣县一中那条路的「看得见的分析」，但不能编造单科与年级/班级均分。
    所以这里给的是真能算出来的三样：总分轨迹、每场自己的特控线与本科线、逐次的距线读数。 */
 .exam-analysis{margin-top:16px;padding-top:16px;border-top:1px solid var(--line-2)}
+/* 航迹卡：两条路（荣县一中接入 / 手填生成）共用同一个组件，所以样式也共用一份。 */
+.trail-card{margin-top:18px;border:1px solid var(--line);border-radius:12px;background:var(--card);
+  padding:14px 15px 12px;box-shadow:var(--sh-card)}
+.trail-title{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-family:var(--song);
+  font-size:15px;font-weight:500;color:var(--ink)}
+.trail-title .icon{width:16px;height:16px;color:var(--brass)}
+.trail-card .psub{margin-bottom:10px}
+.trail-card .table-wrap{margin-top:12px}
+@media(max-width:560px){
+  /* 手机档六列勉强放得下：收内边距与字号，尽量不横向滚动（超了仍可左右拖，`.table-wrap` 本来就能滚）。 */
+  .trail-card table th,.trail-card table td{padding:6px 5px;font-size:11px;font-family:var(--song)}
+  .trail-card .table tbody tr{animation:none}
+}
 .traj{margin:0;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px 14px 11px}
 .traj-cap{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .traj-legend{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--mut);font-family:var(--song);letter-spacing:.04em}

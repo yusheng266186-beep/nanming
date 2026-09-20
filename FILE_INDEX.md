@@ -143,6 +143,7 @@
 | [nanhang-app/apps/web/src/chapters/settings.tsx](nanhang-app/apps/web/src/chapters/settings.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/shared.ts](nanhang-app/apps/web/src/chapters/shared.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/trail.tsx](nanhang-app/apps/web/src/chapters/trail.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/trajectory.tsx](nanhang-app/apps/web/src/chapters/trajectory.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/debug.ts](nanhang-app/apps/web/src/debug.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -865,6 +866,9 @@
 | [nanhang-app/docs/verification/locate-exam-2026-09-20/01-成绩分析-轨迹.png](nanhang-app/docs/verification/locate-exam-2026-09-20/01-成绩分析-轨迹.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/locate-exam-2026-09-20/03-成绩分析-视口-1x.png](nanhang-app/docs/verification/locate-exam-2026-09-20/03-成绩分析-视口-1x.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/locate-exam-2026-09-20/04-五次考试录入.png](nanhang-app/docs/verification/locate-exam-2026-09-20/04-五次考试录入.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/locate-exam-2026-09-20/05-手填生成成绩分析.png](nanhang-app/docs/verification/locate-exam-2026-09-20/05-手填生成成绩分析.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/locate-exam-2026-09-20/06-手填成绩分析-1x.png](nanhang-app/docs/verification/locate-exam-2026-09-20/06-手填成绩分析-1x.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/locate-exam-2026-09-20/07-五次考试录入-新样式.png](nanhang-app/docs/verification/locate-exam-2026-09-20/07-五次考试录入-新样式.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/nanming-totp-online-2026-09-12.json](nanhang-app/docs/verification/nanming-totp-online-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-chapter-gate.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-chapter-gate.txt) | 本次验证原始日志 |

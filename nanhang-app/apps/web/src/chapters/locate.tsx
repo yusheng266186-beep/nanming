@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { axisMarks, scorePosition, withForm, type ExamRecord, type WebState } from "../model.js";
 import { examLineDiffs, equivalentPosition, linesInverted, scoreStability, scoreTrend } from "../exam-position.js";
 import { rangeFromExams, type ScoreRange } from "../journey-model.js";
@@ -10,7 +10,9 @@ import {
 import { Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
 import { RangeFill } from "../range-fill.js";
-import { ExamReadingCards, ExamTrajectoryChart } from "./trajectory.js";
+import { ExamReadingCards } from "./trajectory.js";
+import { ExamTrailChart, ExamTrailTable } from "./trail.js";
+import { manualExamsToShardExams } from "../exam-trajectory.js";
 import { REFERENCE_YEAR, clamp, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
 
 export interface LocateProps {
@@ -57,6 +59,14 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
   // 只在「学校那条路」上成立：两条路并行、互不掺杂——手填路上不出现只读的学校行，
   // 学校路上也不出现可编辑的手填行（否则切换路线后会看到别人的规则混在自己的数据里）。
   const schoolLocked = route === "school" && quality.status === "ready" && quality.shard !== null;
+  /**
+   * 手填那条路的「生成成绩分析」：负责人 2026-09-20 要求——录满五次后给一个按钮，
+   * 点了生成**和接入荣县一中一样的那套成绩展示**（同一张航迹图 + 同一张历次表）。
+   * 所以这里把手填考试转成学校分片的数据形状（见 manualExamsToShardExams），渲染层两路共用。
+   */
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+  const manualExams = manualExamsToShardExams(exams);
+  const canGenerateAnalysis = !schoolLocked && manualExams.length >= 5;
 
   // 等位换算取最近一次「有总分且有任一切线」的考试；官方线是已登记的 2026 年四川省控线。
   const equivalentExam = [...exams].reverse()
@@ -86,9 +96,25 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     setState((current) => withForm(current, { score: value }));
     notify(`已把等位分 ${value} 设为高考等价分`);
   };
+  /**
+   * 考试行的三格：**填空式**数字。
+   *
+   * 为什么用内联样式而不是纯 CSS（2026-09-20 实测）：Vite 开发态把 `style.css` 按块注入成多条
+   * `<style>`，`.inp` 的基础规则（`min-height:50px` / `1px` 描边）在层叠里压过了我后写的
+   * `#page-locate .exam-row .exam-num .inp`（浏览器里规则确实存在、计算值却不变，改了三轮都没生效）。
+   * 这三格的视觉是「无框 + 铜色底线 + 大号等宽数字」，与区间标尺同一支笔；用内联样式固定下来，
+   * 不再受注入顺序影响。语义属性（aria-label、type、min/max）仍走属性。
+   */
+  const examFieldStyle = {
+    minHeight: "40px", height: "40px", padding: "2px 4px 6px", border: "0",
+    borderBottom: "1.5px solid var(--brass-line)", borderRadius: "0", background: "transparent",
+    textAlign: "center" as const, fontFamily: "var(--display)", fontSize: "20px", fontWeight: 500,
+    color: "var(--sea)", fontVariantNumeric: "tabular-nums"
+  };
   const numberField = (ariaLabel: string, placeholder: string, value: number | null,
                        onChange: (value: number | null) => void, disabled = false) =>
     <input className="inp exam-num" type="number" inputMode="numeric" min={0} max={750}
+      style={examFieldStyle}
       aria-label={ariaLabel} value={value ?? ""} placeholder={placeholder} disabled={disabled}
       onChange={(event) => onChange(event.target.value === "" ? null : Number(event.target.value))} />;
 
@@ -158,6 +184,14 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       {exams.length === 0 ? <p className="muted-note">{schoolLocked
         ? "学校数据里没有可用作参考的考试记录（入学入口考不计入参考）。"
         : "还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。"}</p> : null}
+      {/* 三列各是什么：宽屏给一行列头（窄屏靠 aria-label，列头会挤掉数字宽度）。 */}
+      {!schoolLocked && exams.length > 0 ? <div className="exam-fields-head" aria-hidden="true">
+        <span />
+        <span>总分</span>
+        <span>特控线</span>
+        <span>本科线</span>
+        <span />
+      </div> : null}
       {exams.map((exam, index) => {
         // 两条线高低颠倒时这场不参与等位换算，必须在这一行说出来，不能静默丢掉。
         const inverted = linesInverted(exam);
@@ -180,14 +214,26 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       {!schoolLocked && <div className="chart-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
         <button type="button" className="btn sm" disabled={exams.length >= 5} onClick={addExam}>
           {exams.length >= 5 ? "最多记录 5 次" : "添加一次考试"}</button>
-        <small className="muted-note">切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。</small>
+        {/* 录满五次才出现：点它生成与接入荣县一中同款的成绩展示（同一套航迹图与历次表）。 */}
+        {canGenerateAnalysis ? <button type="button" className={`btn sm${analysisOpen ? " ghost" : " brass"}`}
+          onClick={() => setAnalysisOpen((open) => !open)} aria-expanded={analysisOpen}>
+          {analysisOpen ? "收起成绩分析" : "生成成绩分析（与接入荣县一中同款）"}<Icon name={analysisOpen ? "close" : "arrow"} /></button> : null}
+        <small className="muted-note">{canGenerateAnalysis
+          ? "分析用你填的总分与切线，逐科分数与位次仍需要学校的成绩数据。"
+          : "切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。录满五次可以生成成绩分析。"}</small>
       </div>}
-      {/* 成绩分析：只做手填数据真的能支撑的那部分（轨迹 + 距两条线 + 逐次读数）。
-          单科分数、年级均分、班级均分只有荣县一中那条路有，这里显式说明去哪儿看，不在这里补造。 */}
-      {exams.length > 0 && <div className="exam-analysis">
-        <ExamTrajectoryChart exams={exams} />
+
+      {/* 手填那路的成绩分析：点按钮后生成，和图/表与荣县一中那条路**完全同一套组件**。
+          位次那两列手填拿不到，所以整列不出现（不是显示一排「—」）。 */}
+      {canGenerateAnalysis && analysisOpen && <div className="exam-analysis">
+        <div className="trail-card">
+          <h4 className="trail-title"><Icon name="route" />航迹：历次总分与切线</h4>
+          <p className="psub">柱子画在统一分数标尺上（左侧是分数刻度），柱顶标着当次总分，越高分越高；两条虚线按每一场考试自己的划线分段画——各场考试的划线深浅不一样，不能共用一条线。柱子到虚线的落差就是当次距线差。</p>
+          <ExamTrailChart exams={manualExams} maxWidth={560} />
+          <ExamTrailTable exams={manualExams} withRanks={false} />
+        </div>
         <ExamReadingCards exams={exams} />
-        <p className="fhint">逐科分数、年级与班级均分差需要学校的成绩数据：在「起航」选「荣县一中 · 增强模式」接入后，这里会多出一张逐科位置表。手填路线不推算这些数字。</p>
+        <p className="fhint">这份分析只用你填的总分与两条切线。逐科分数、年级与班级均分差、校内位次来自学校的成绩记录——在「起航」选「荣县一中 · 增强模式」接入后，同样的表里会多出那些列。手填路线不推算这些数字。</p>
       </div>}
     </div>}
 
@@ -385,61 +431,10 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
     {schoolLocked && quality.shard && quality.shard.exams.length > 1 && <div className="panel" style={{ marginTop: 22 }}>
       <h3><Icon name="route" />航迹：历次总分与切线</h3>
       <p className="psub">柱子画在统一分数标尺上（左侧是分数刻度），柱顶标着当次总分，越高分越高；两条虚线按每一场考试自己的划线分段画——各场考试的划线深浅不一样，不能共用一条线。柱子到虚线的落差就是当次距线差。更早的考试见下表。</p>
-      {(() => {
-        // 只画最近 6 次：更早的考试量纲可能不同（如入口考），会把标尺撑宽、压扁近期的高低差；
-        // 完整历次见下面的表格。
-        const chart = trailChart(quality.shard!.exams.slice(-6));
-        if (!chart) return <div className="empty-inline">暂无可绘制的总分记录。</div>;
-        return <svg viewBox={`0 0 ${chart.width} ${chart.height}`} width="100%" role="img"
-          aria-label="历次考试总分轨迹：柱顶是当次总分，两条虚线按各场考试自己的划线分段画"
-          style={{ display: "block", maxWidth: 560 }}>
-          {chart.grid.map((tick) => <g key={`grid-${tick.value}`}>
-            <line x1={chart.padLeft} y1={tick.y} x2={chart.width - 6} y2={tick.y} stroke="#ece5d4" strokeWidth={1} />
-            <text x={chart.padLeft - 4} y={tick.y + 3} textAnchor="end" fontSize="8" fontFamily={SONG_FAMILY} fill="#a89f88">{tick.value}</text>
-          </g>)}
-          <line x1={chart.padLeft} y1={chart.baseline} x2={chart.width - 6} y2={chart.baseline} stroke="#dcd6c6" strokeWidth={1} />
-          {chart.lines.map((line, index) => <g key={`${line.kind}-${index}`}>
-            <line x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
-              stroke={line.kind === "top" ? "#a97b34" : "#7d9a86"} strokeWidth={1.2} strokeDasharray="5 3" />
-            {line.label ? <text x={chart.width - 6} y={line.labelY} textAnchor="end" fontSize="9" fontFamily={SONG_FAMILY}
-              fill={line.kind === "top" ? "#a97b34" : "#7d9a86"}>{line.label}</text> : null}
-          </g>)}
-          {chart.bars.map((bar) => <g key={bar.key}>
-            {bar.total !== null
-              ? <>
-                <rect x={bar.x} y={bar.y} width={bar.w} height={Math.max(2, bar.h)} rx={3} fill="#12454f" opacity={0.88}>
-                  <title>{`${bar.full}：${formatScore(bar.total)} 分`}</title>
-                </rect>
-                <text x={bar.x + bar.w / 2} textAnchor="middle" fontSize="8.5" fontFamily={SONG_FAMILY} fontWeight={600}
-                  fill={bar.h >= 14 ? "#f4efe2" : "#12454f"} y={bar.h >= 14 ? bar.y + 12 : bar.y - 4}>
-                  {Math.round(bar.total)}</text>
-              </>
-              : <line className="trail-gap" x1={bar.x + bar.w / 2} y1={chart.baseline - 10} x2={bar.x + bar.w / 2} y2={chart.baseline}
-                stroke="#cbc4b0" strokeWidth={2} strokeDasharray="2 2">
-                <title>{`${bar.full}：缺考/无来源总分，留空不补零`}</title>
-              </line>}
-            <text x={bar.x + bar.w / 2} y={chart.height - 8} textAnchor="middle" fontSize="9" fontFamily={SONG_FAMILY} fill="#6d7f83">{bar.short}</text>
-          </g>)}
-        </svg>;
-      })()}
-      <div className="table-wrap">
-        <table className="table">
-          <thead><tr><th scope="col">考试</th><th scope="col">总分</th><th scope="col">一本线</th><th scope="col">距一本</th>
-            <th scope="col">本科线</th><th scope="col">距本科</th><th scope="col">校内位次</th><th scope="col">考试人数</th></tr></thead>
-          <tbody>
-            {quality.shard.exams.map((row) => <tr key={row.exam}>
-              <th scope="row">{friendlyExamLabel(row.exam)}{row.trackDiffersFromHome ? `（按${row.track}）` : ""}</th>
-              <td className="num">{formatScore(row.total)}</td>
-              <td className="num">{formatScore(row.topTotal)}</td>
-              <td className="num">{formatGap(row.topDiff)}</td>
-              <td className="num">{formatScore(row.undergraduateTotal)}</td>
-              <td className="num">{formatGap(row.undergraduateDiff)}</td>
-              <td className="num">{row.gradeRank ?? "—"}</td>
-              <td className="num">{row.gradeSize ?? "—"}</td>
-            </tr>)}
-          </tbody>
-        </table>
-      </div>
+      {/* 与手填那条路**共用同一个组件**（chapters/trail.tsx）：两条路看到的图与表一模一样，
+          差别只在数据有没有——位次与人数只有学校成绩库才有。 */}
+      <ExamTrailChart exams={quality.shard.exams} maxWidth={560} />
+      <ExamTrailTable exams={quality.shard.exams} withRanks />
       {moves.length > 0 && <p className="fhint">注意：你的班号在 {moves.map((row) => friendlyExamLabel(row.exam)).join("、")} 发生变化，页面按各次考试的原始班号统计，班级均分差也随之切换。</p>}
       <p className="fhint">考试代码说明：一册～四册＝第1～4学期期末；「XY」＝第X学期第Y次月考（如 21 为第2学期第1次月考、51 为第5学期第1次月考）；4半＝第4学期半期。</p>
     </div>}

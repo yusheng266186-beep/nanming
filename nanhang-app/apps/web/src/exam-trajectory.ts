@@ -1,4 +1,58 @@
 import type { ExamRecord } from "./model.js";
+import type { QualityStudentExam } from "./quality-types.js";
+
+/**
+ * 手填的考试 → 与荣县一中发布分片**同一个形状**的考试记录。
+ *
+ * 为什么这么转：负责人 2026-09-20 要求手填那条路「生成和接入荣县一中成绩一样的显示效果」，
+ * 所以展示层（航迹图、历次表）必须两路共用同一套渲染，而共用渲染的前提是**同一份数据形状**。
+ * 荣县一中分片里的 `QualityStudentExam` 本来就含手填也算得出的字段（总分、两条切线、距线差），
+ * 缺的只有学校那份数据才有的部分：位次、考试人数、逐科分数与知识点。
+ *
+ * 缺的**一律留空**（null / 空数组），不推算、不补 0：
+ *   · `gradeRank`/`gradeSize` 等位次字段手填拿不到（没有全校人数做分母）；
+ *   · `subjects` 空数组 → 逐科位置表自然为空行，不伪造单科分数；
+ *   · `knowledge` 空数组 → 薄弱知识点表为空。
+ * 这样同一张图上手填路线看到的是「有柱子、有两条线、位次列显示 —」，与项目既有的缺失口径一致。
+ */
+export function manualExamsToShardExams(exams: readonly ExamRecord[]): QualityStudentExam[] {
+  return exams
+    .filter((exam) => typeof exam.total === "number" && Number.isFinite(exam.total) && exam.total > 0)
+    .map((exam, index) => {
+      const topTotal = typeof exam.topTotal === "number" && Number.isFinite(exam.topTotal) ? exam.topTotal : null;
+      const undergraduateTotal = typeof exam.undergraduateTotal === "number" && Number.isFinite(exam.undergraduateTotal)
+        ? exam.undergraduateTotal : null;
+      const label = exam.label?.trim() || `第 ${index + 1} 次`;
+      return {
+        exam: label,
+        rawLabel: exam.label?.trim() || label,
+        ordinal: index + 1,
+        classNo: 0,
+        // 手填路线没有「另一场按别的科类统计」这回事：本人选科即口径。
+        track: "",
+        trackDiffersFromHome: false,
+        total: exam.total!,
+        cityRank: null,
+        schoolRank: null,
+        classRank: null,
+        classSize: null,
+        gradeRank: null,
+        gradeSize: null,
+        sourceSchoolRank: null,
+        sourceCityRank: null,
+        sourceRankNote: "",
+        topTotal,
+        undergraduateTotal,
+        // 距线差只做减法：线缺失就留空，不插值。
+        topDiff: topTotal === null ? null : round1(exam.total! - topTotal),
+        undergraduateDiff: undergraduateTotal === null ? null : round1(exam.total! - undergraduateTotal),
+        subjectPresent: 0,
+        subjectExpected: 0,
+        subjects: [],
+        knowledge: []
+      } satisfies QualityStudentExam;
+    });
+}
 
 /**
  * 成绩轨迹图的几何（纯函数，不碰 DOM）。
