@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "../motion.js";
 import { MAJOR_FACT_CARDS, explorationCards } from "@nanhang/exploration";
 import type { LoadedRelease } from "@nanhang/release-loader";
 import type { ArtName } from "../art.js";
@@ -141,22 +142,17 @@ export function useNarrow(query = "(max-width: 720px)"): boolean {
 export function useDeckStack(
   rootRef: { current: HTMLElement | null }, depsKey: string
 ): void {
+  const calm = useReducedMotion();
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     // 「线」「纸边」「行程」都从 CSS 变量读，保证 JS 的判断与 sticky 的落点是同一组数字。
-    const style = getComputedStyle(root);
-    const deckTop = Number.parseFloat(style.getPropertyValue("--deck-top")) || 72;
-    const peek = Number.parseFloat(style.getPropertyValue("--deck-peek")) || 66;
-    const travel = Number.parseFloat(style.getPropertyValue("--deck-travel")) || 240;
     const clamp01 = (value: number) => value < 0 ? 0 : value > 1 ? 1 : value;
     // 弹簧：ωn ≈ 12 rad/s，阻尼比 ≈ 0.67——欠阻尼，手指停下后自己把最后那点翘起收干净，
     // 落地时过冲约 7%（`--ap` 到 1.07，纸上抬 1px、反向 0.5°）再落平：这就是那口「阻尼」。
     // 阻尼比再往下就要抖，往上就变成硬停；这组数是按「慢速跟得准、快滑有重量」折出来的。
     const STIFFNESS = 145;
     const DAMPING = 16;
-    const calm = typeof window.matchMedia === "function"
-      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const springs = new Map<HTMLElement, { value: number; velocity: number }>();
     // 整摞的「滞重感」：滑动越快，纸堆越晚一点跟上（最多 7px），手一停就弹回去。
     // 这是让整页看起来有重量、而不是「内容像贴在手指上滑动」的那一点点差别。
@@ -184,7 +180,7 @@ export function useDeckStack(
      */
     const tick = (now: number) => {
       frame = 0;
-      const dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 1 / 60;
+      const dt = lastTime ? Math.max(0.001, Math.min(1 / 30, (now - lastTime) / 1000)) : 1 / 60;
       lastTime = now;
       const vh = window.innerHeight;
       if (!stacks.length) refresh();
@@ -192,7 +188,7 @@ export function useDeckStack(
       // 整摞的滞后量：只跟滚动速度有关，滑动停下后自己回到 0。
       const speed = (window.scrollY - lastScrollY) / dt;
       lastScrollY = window.scrollY;
-      const lagTarget = Math.max(-10, Math.min(10, speed * 0.014));
+      const lagTarget = calm ? 0 : Math.max(-5, Math.min(5, speed * 0.008));
       if (calm) { lag.value = 0; lag.velocity = 0; }
       else {
         // 整摞的滞后也用一根欠阻尼弹簧（ωn ≈ 16、ζ ≈ 0.7）：快滑时整摞往后沉一点，
@@ -209,20 +205,23 @@ export function useDeckStack(
         // 视野之外的一摞整摞跳过：不读它的布局，也就不会每帧拖一次 layout。
         // 顺手把它的弹簧清掉——回来时从目标值重新开始，不会带着一个过期的量跳一下。
         const box = stack.getBoundingClientRect();
-        if (box.bottom < -vh * 0.35 || box.top > vh * 1.35) {
+        if (box.height === 0 || stack.closest('[aria-hidden="true"]') || box.bottom < -vh * 0.35 || box.top > vh * 1.35) {
           for (const slot of slots) springs.delete(slot);
           continue;
         }
         const rects = slots.map((slot) => slot.getBoundingClientRect());
+        // 读取每张卡实际解析后的 sticky top；变量定义在 stack 上，不能从外层 root 读 calc()。
+        const lines = slots.map((slot) => Number.parseFloat(getComputedStyle(slot).top) || 0);
+        const travel = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--deck-travel")) || 240;
         let current = -1;
         rects.forEach((rect, index) => {
-          const line = deckTop + index * peek;
+          const line = lines[index]!;
           if (rect.bottom <= line) return;              // 整张已经翻到线上方，不再算在这一摞里
           if (rect.top <= line + 0.5) current = index;  // 已经钉在它自己的那条线上
         });
         rects.forEach((rect, index) => {
           const slot = slots[index]!;
-          const line = deckTop + index * peek;
+          const line = lines[index]!;
           // 还差多少才贴线：卡片在线下方时 top > line，目标 ap < 1（翘着）；贴上或越过线目标 = 1（摊平）。
           const target = clamp01(1 - (rect.top - line) / travel);
           let spring = springs.get(slot);
@@ -257,14 +256,17 @@ export function useDeckStack(
     tick(performance.now());
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
+    root.addEventListener("transitionend", schedule);
     return () => {
       observer.disconnect();
       springs.clear();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
+      root.removeEventListener("transitionend", schedule);
+      root.style.removeProperty("--pile-lag");
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [rootRef, depsKey]);
+  }, [rootRef, depsKey, calm]);
 }
 
 /** 一条线的记录按「大类（学科门类）→ 小类（专业类）」分组后的形状。 */

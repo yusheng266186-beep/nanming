@@ -86,8 +86,8 @@ describe("区间标尺：两页共用一支标尺", () => {
   });
 
   it("窄屏收一圈：数字、中间那根线与内边距同步缩，仍是一支标尺", () => {
-    // 取最后那个 ≤560px 块（标尺的窄屏规则就写在文件末尾那一个里），不依赖换行符。
-    const narrow = css.slice(css.lastIndexOf("@media(max-width:560px)"));
+    // 找包含标尺的 ≤560px 块，其他组件可以在其后增加媒体查询。
+    const narrow = css.slice(css.lastIndexOf("@media(max-width:560px)", css.indexOf(".range-fill{gap:12px")));
     expect(narrow).toContain(".range-fill{gap:12px;padding:10px 16px 12px;border-radius:12px}");
     expect(narrow).toContain(".rf-inp{font-size:25px;width:4.4ch}");
     expect(narrow).toContain(".rf-dash{width:18px;margin-bottom:19px}");

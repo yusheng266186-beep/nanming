@@ -8,7 +8,8 @@ import { initialAiPanel, applyTurnResult, askAi, disableAi, withSession, withUse
 import { FINAL_TURN_INSTRUCTION, directionTalkSettled, mergeSuggestions } from "./direction-quota.js";
 import { evidenceForRequest } from "./ai-client.js";
 import { ArtSlot, BrandMark, Icon, KunArt, Sprite } from "./art.js";
-import { AnswerStarters, ChatBubble, StreamedText, TypingDots, prefersReducedMotion } from "./chat.js";
+import { AnswerStarters, ChatBubble, StreamedText, TypingDots } from "./chat.js";
+import { useReducedMotion } from "./motion.js";
 import {
   additionalFromCombination, attemptsMessage, initialQualityAttempts, latestExam,
   normalizeCode, recentExams, registerFailure, withoutEntryExams,
@@ -86,7 +87,7 @@ export default function App() {
   const [detail, setDetail] = useState<string | null>(null);
   // 谈心页的打字指示：换题后先显示「溟在听」，再开始逐字显示问题。
   const [thinking, setThinking] = useState(false);
-  const reducedMotion = useMemo(() => prefersReducedMotion(), []);
+  const reducedMotion = useReducedMotion();
   // 设置卡片也是浮层：开着的时候一样锁住整页滚动（与登船卡片同一套做法）。
   useScrollLock(settingsOpen);
   // 「界面动效」开关：关掉时在 html 上打一个属性，样式表里与系统「减少动态效果」同一套选择器处理。

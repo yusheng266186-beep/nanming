@@ -272,7 +272,7 @@ describe("参考年最低分与整页海报", () => {
     }
     // 堆叠的行为在 shared 的钩子里：钉线 = --deck-top + i × --deck-peek，谁在线上切 is-current / is-covered
     expect(shared).toContain("export function useDeckStack");
-    expect(shared).toContain("deckTop + index * peek");
+    expect(shared).toContain("getComputedStyle(slot).top");
     expect(shared).toContain('classList.toggle("is-covered"');
     expect(shared).toContain("requestAnimationFrame");
     expect(shared).toContain("box.bottom < -vh * 0.35");   // 视野外的一摞整摞跳过，不每帧读布局
@@ -284,7 +284,7 @@ describe("参考年最低分与整页海报", () => {
     expect(shared).toContain("const STIFFNESS = 145;");
     expect(shared).toContain("const DAMPING = 16;");
     expect(shared).toContain("spring.velocity += (STIFFNESS * (target - spring.value)");
-    expect(shared).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(shared).toContain("useReducedMotion()");
     // 整摞按滑动速度滞后（重量感），停下回到 0
     expect(shared).toContain('setProperty("--pile-lag"');
     expect(css).toContain("var(--pile-lag,0px)");

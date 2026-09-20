@@ -11,10 +11,7 @@ import type { LocateRoute } from "./shared.js";
  * 结构与北辰的设置面板同类（一行一个开关或读数，来自其 index.html 的 `.stat-row` 排法）：
  * 开关管「怎么等、怎么看」，读数说明「现在是什么状态」，动数据的只有「清除本次探索」一处。
  *
- * 关于「思考低语」：北辰那一项显示的是**模型真实思考的尾部**，南溟当初刻意没有搬——
- * 思考内容属于草稿、不过安全扫描，万一模型在思考里写「可以考虑冲一冲」，那句话就到了学生眼前
- * （见 docs/AI_QIANFAN_SETUP.md「没有搬的，以及原因」）。这里的低语是南溟自己的阶段提示，
- * 只说明「溟在读你说的话」，不含任何模型思考，卡片上也如实这么写。
+ * 低语开关控制南溟自己的阶段提示；谈心页的思考过程另按安全显示规则处理。
  */
 export interface SettingsProps {
   open: boolean;
@@ -47,7 +44,7 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
   if (!open) return null;
   const tierLabel = THINKING_CHOICES.find((choice) => choice.value === ai.tier)?.label ?? ai.tier;
   const onOff = (value: boolean, set: Dispatch<SetStateAction<boolean>>, label: string) =>
-    <span className="chips">
+    <span className="chips" role="group" aria-label={label}>
       <button type="button" className={`chip${value ? " brass on" : ""}`} aria-pressed={value}
         onClick={() => set(true)}>开</button>
       <button type="button" className={`chip${value ? "" : " brass on"}`} aria-pressed={!value}
@@ -59,19 +56,16 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
   // 挂在章节里会让背板以章节为参照（手机档两边留白条、卡片被推出视口）。
   return <Overlay role="presentation" data-settings="open"
     onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <div className="board-card" role="dialog" aria-modal="true" aria-label="设置">
+    <div className="board-card settings-card" role="dialog" aria-modal="true" aria-label="设置">
       <button type="button" className="board-close" aria-label="关闭设置" autoFocus
         onClick={onClose}><Icon name="close" /></button>
       <span className="eyebrow">Settings · 设置</span>
       <h3 className="song" style={{ marginTop: 10 }}>自己的节奏，自己定</h3>
-      <p className="psub">谈心用的思考深度、等待与动效两个开关、当前状态一览，都在这一张卡片里。
-        改完直接关掉，已经聊过的内容和拿到的回复都不受影响。</p>
+      <p className="psub">调整谈心和阅读的节奏。设置即时生效，思考深度从下一句开始。</p>
 
-      <div className="panel" style={{ marginTop: 20 }}>
+      <div className="settings-section">
         <h3><Icon name="layers" />思考深度</h3>
-        <p className="psub">每一档标出一次回答的大致等待时间，按自己的节奏挑。换档从下一句开始生效，
-          不用重新开一次谈心。</p>
-        <div className="tier-pick">
+        <div className="tier-pick" role="group" aria-label="思考深度">
           {/* 每档标出一次回答的预估等待时间，学生按自己节奏选；切换下一轮生效。 */}
           {THINKING_CHOICES.map((choice) => <button key={choice.value} type="button"
             className={`tier-card${ai.tier === choice.value ? " on" : ""}`}
@@ -79,14 +73,13 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
             onClick={() => setAi(withTier(ai, choice.value))}>
             <span className="tc-name">{choice.label}</span>
             <span className="tc-eta">{choice.eta}</span>
-            <span className="tc-hint">{choice.hint}</span>
           </button>)}
         </div>
+        <p className="fhint tier-description" aria-live="polite">{THINKING_CHOICES.find((choice) => choice.value === ai.tier)?.hint} 等待时间为预估。</p>
       </div>
 
-      <div className="panel" style={{ marginTop: 18 }}>
+      <div className="settings-section">
         <h3><Icon name="spark" />等待与动效</h3>
-        <p className="psub">等回答的那几秒里显示什么、界面动不动，各有一个开关。两项都只影响这台设备上的显示。</p>
         <dl className="set-rows">
           <div className="set-row">
             <dt>思考低语</dt>
@@ -97,14 +90,12 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
             <dd>{onOff(!motionOff, (next) => setMotionOff(!next), "界面动效")}</dd>
           </div>
         </dl>
-        <p className="fhint">低语显示的是南溟自己的<b>实时进度</b>（「溟在把你的话和已有的方向对一遍（已等 12 秒）」这类，
-          秒数是真的），<b>不是模型的内部思考</b>——思考内容属于草稿、不过安全扫描，不出现在学生端。
-          动效关掉后，与系统「减少动态效果」走同一套处理：所有过渡与入场一律停用。</p>
+        <p className="fhint">低语显示的是南溟自己的实时进度。谈心页的思考过程会按安全规则显示。
+          关闭动效后，潮汐、抽屉和翻页立即静止；系统的减少动态效果设置始终优先。</p>
       </div>
 
-      <div className="panel" style={{ marginTop: 18 }}>
+      <div className="settings-section">
         <h3><Icon name="compass" />现在的样子</h3>
-        <p className="psub">只读一览：这些就是此刻生效的设置与数据，不在这张卡片里改的项，请到对应章节改。</p>
         <dl className="set-rows">
           <div className="set-row">
             <dt>定位路线</dt>
@@ -118,18 +109,13 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
             <dt>谈心</dt>
             <dd>{ai.connected ? "已连接" : "未连接"} · {tierLabel}</dd>
           </div>
-          <div className="set-row">
-            <dt>思考低语 / 界面动效</dt>
-            <dd>{whisperOn ? "开" : "关"} / {motionOff ? "关" : "开"}</dd>
-          </div>
         </dl>
       </div>
 
-      <div className="panel" style={{ marginTop: 18 }}>
+      <div className="settings-section settings-data">
         <h3><Icon name="doc" />本人数据</h3>
-        <p className="psub">探索内容默认只留在当前内存，刷新页面即清空；只有主动下载时才会写入你的设备。
-          上面那两个开关同样不写盘：刷新后回到默认（低语开、动效跟随系统）。
-          清除之后要从「起航」重新来一遍；已下载到设备上的文件不归这里管，需要你自己删除。</p>
+        <p className="psub">探索内容和本页开关只在本次会话生效，刷新后恢复默认。
+          清除后将回到「起航」，已下载的文件保留在你的设备上。</p>
         <div className="chart-actions" style={{ justifyContent: "flex-start" }}>
           <button type="button" className="btn sm ghost" onClick={() => { clear(); onClose(); }}>清除本次探索</button>
           <small className="muted-note">清除的是本次探索的选科、成绩、区间与自选方向，发布数据本身不动。</small>

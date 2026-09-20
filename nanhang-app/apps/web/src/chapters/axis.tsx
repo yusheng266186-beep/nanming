@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import { SELECTABLE_BATCHES, axisMarks, batchOfferings, type WebState } from "../model.js";
 import { Icon } from "../art.js";
+import { Disclosure } from "../disclosure.js";
 import { RangeFill } from "../range-fill.js";
 import {
   REFERENCE_YEAR, RELATION_CLASSES, clamp, formatRankInterval, groupRouteRows, label, levelLabel,
@@ -251,14 +252,14 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
               const open = openCategory === key;
               const entry = picked.find((item) => item.category.name === category.name);
               return <div className={`stop${open ? " open" : ""}`} key={key}>
-                <button type="button" className="stop-head" aria-expanded={open}
+                <button type="button" className="stop-head" aria-expanded={open} aria-controls={key}
                   onClick={() => setOpenCategory(open ? null : key)}>
                   <span className="mk">{category.classes.length} 个专业类</span>
                   <h4>{category.name}</h4>
                   <span className="sc-cat-count">{category.total} 条</span>
                   <span className="stop-cue"><Icon name="chevron" /></span>
                 </button>
-                {open ? <div className="stop-body">
+                <Disclosure id={key} open={open}>
                   {entry ? entry.classes.map((cls) => <div className="sc-class" key={cls.name}>
                     <div className="sc-class-head">
                       <span>{cls.name}</span>
@@ -273,7 +274,7 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
                       <div className="stack-tail" aria-hidden="true" />
                     </div>
                   </div>) : <p className="muted-note">这个大类没有展开的卡片。</p>}
-                </div> : null}
+                </Disclosure>
               </div>;
             })}
           </div>

@@ -9,11 +9,7 @@
 // 因此这里的按钮只是「帮你想怎么开口」的起句，不携带任何权重，也不会生成适配度。
 import { useEffect, useRef, useState } from "react";
 
-/** 用户是否要求减少动画。与项目其他位置一致的判定方式。 */
-export function prefersReducedMotion(): boolean {
-  return typeof window !== "undefined" && !!window.matchMedia
-    && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-}
+export { prefersReducedMotion } from "./motion.js";
 
 /** 三点跳动的「正在输入」指示器。 */
 export function TypingDots({ label }: { label: string }) {

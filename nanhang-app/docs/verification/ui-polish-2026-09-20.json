@@ -1,0 +1,54 @@
+{
+  "change": "unified-ui-polish-2",
+  "date": "2026-09-20",
+  "baseline": "7cd9fc65a4bb1a0105f2bba26e61e4432f7bd470",
+  "runtime": {
+    "node": "26.7.0",
+    "npm": "11.19.0"
+  },
+  "checks": [
+    {
+      "command": "npm --workspace @nanhang/web run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- --run",
+      "result": "passed",
+      "files": 54,
+      "tests": 592,
+      "failed": 0
+    },
+    {
+      "command": "npm --workspace @nanhang/web run build",
+      "result": "passed",
+      "modules": 72,
+      "css_kb": 99.92,
+      "js_kb": 348.45
+    },
+    {
+      "command": "node scripts/check-ui-polish.mjs docs/verification/ui-polish-dom-2026-09-20.json",
+      "result": "passed",
+      "assertions": 23
+    },
+    {
+      "command": "py -3.12 tools/sync_project_docs.py --package; py -3.12 tools/sync_project_docs.py --check",
+      "result": "passed",
+      "workspaces": "original and isolated review worktree",
+      "frozen_copies_equal": 11,
+      "baseline_files": 24
+    },
+    {
+      "command": "py -3.12 -X utf8 tools/check_frontend_lanes.py --lane 1",
+      "result": "completed before staging; single owner cross-lane scope manually audited",
+      "note": "UTF-8 mode required for Windows Chinese paths. No parallel agent edits; ownership registered in PARALLEL_FRONTEND.md."
+    }
+  ],
+  "scope": "Tests/build executed in original complete workspace; exact frontend files copied to isolated review branch. Synthetic DOM only, no screenshots. Existing data pipeline edits and changed screenshots not copied.",
+  "not_performed": [
+    "owner visual acceptance",
+    "physical phone verification",
+    "live AI/school flow",
+    "frontend production deployment"
+  ],
+  "history": "TASK-03 Python68 and database66399 checks are previous results, not rerun."
+}

@@ -118,7 +118,9 @@ describe("定位页：动效编排", () => {
   });
 
   it("减少动态效果时连错峰延迟一起归零", () => {
-    const reduced = css.slice(css.lastIndexOf("@media(prefers-reduced-motion:reduce)"));
+    const start = css.search(/@media\(prefers-reduced-motion:reduce\)\{\s*\*,\*::before,\*::after/);
+    expect(start).toBeGreaterThan(-1);
+    const reduced = css.slice(start);
     expect(reduced).toMatch(/animation-duration:\.001ms!important/);
     expect(reduced).toMatch(/animation-delay:0s!important/);
   });
