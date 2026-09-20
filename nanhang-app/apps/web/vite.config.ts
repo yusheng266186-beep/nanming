@@ -74,5 +74,11 @@ export default defineConfig({
     // 的边界说明）；需要姓名+验证码服务端核验的走 POST /v1/school/identify（旅程壳）。
     serveDataDirectory("quality-huixi-data", "/data/quality-huixi", "../../data/quality-huixi")
   ],
-  server: { port: 5173 }
+  server: {
+    port: 5173,
+    // 编辑器的原子写在 src/ 下留过 `.progress.ts.<随机>.tmpdir/progress.ts.tmp` 这样的临时目录，
+    // 目录被删除时 watch 会抛 EBUSY，整个 dev server 直接退出（2026-09-20 实测一次）。
+    // 这些临时文件不是源码，忽略掉；真正的源码照常热更新。
+    watch: { ignored: ["**/.*.tmpdir/**", "**/*.tmpdir/**"] }
+  }
 });

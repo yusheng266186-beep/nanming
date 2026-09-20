@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import {
   DIRECTIONS, SELECTABLE_BATCHES, comparabilityNote, initialState, isMatchFresh,
   loadPublishedRelease, registerStartTool, resetLocal, routeMap, runMatch,
@@ -25,7 +25,7 @@ import {
   type LocateRoute, type PageId, type QualityState
 } from "./chapters/shared.js";
 import {
-  canOpen, isDone, lockHint, stageDone, stageOf, unlockedStage, type ProgressInput
+  canOpen, entryChosenGate, isDone, lockHint, stageDone, stageOf, unlockedStage, type ProgressInput
 } from "./progress.js";
 import { renderSail } from "./chapters/sail.js";
 import { renderLocate } from "./chapters/locate.js";
@@ -539,11 +539,15 @@ export default function App() {
   /**
    * 唯一的页面切换入口：章节里的按钮、导航条、页头全部走这里。
    * 没解锁就只给一句指名道姓的提示（「先完成『定位』（生成探索区间）」），不跳页。
-   * 类型与 useState 的 setter 一致，章节组件那边一行都不用改。
+   * 取值方式与 useState 的 setter 一致，章节组件那边一行都不用改。
+   *
+   * `withEntryChosen` 只给「刚在登船卡片里选下入口」那一次用：那一下是先记下入口、再进定位的
+   * 同一个动作，而这份 `progress` 还是本次渲染的旧值（entryChosen 未更新），不显式放行就会出现
+   * 「刚选完入口却被提示‘先选一条登船口’」的自相矛盾（见 progress.ts 的 entryChosenGate）。
    */
-  const goTo: Dispatch<SetStateAction<PageId>> = (value) => {
+  const goTo = (value: SetStateAction<PageId>, withEntryChosen = false) => {
     const id = typeof value === "function" ? value(page) : value;
-    if (gateOpen(id)) { setPage(id); return; }
+    if (withEntryChosen ? entryChosenGate(id, progress, openStage) : gateOpen(id)) { setPage(id); return; }
     notify(lockHint(id, progress));
   };
 
@@ -551,7 +555,7 @@ export default function App() {
   const chooseRoute = (next: LocateRoute) => {
     setEntryChosen(true);
     setRoute(next);
-    goTo("locate");
+    goTo("locate", true);
   };
 
   /**

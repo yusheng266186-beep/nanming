@@ -17,6 +17,8 @@
     "validate": "npm run generate && npm run typecheck && npm test",
     "clean": "tsc -b --clean",
     "web:dev": "npm --workspace @nanhang/web run dev",
+    "web:dev:lan": "npm --workspace @nanhang/web run dev:lan",
+    "web:mobile": "npm --workspace @nanhang/web run mobile",
     "web:build": "npm --workspace @nanhang/web run build",
     "api:start": "npm --workspace @nanhang/api run start",
     "paper:dev": "npm --workspace @nanhang/web-paper run dev",

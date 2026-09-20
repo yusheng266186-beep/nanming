@@ -103,6 +103,19 @@ export function canOpen(id: PageId, input: ProgressInput, maxStage: number): boo
   return stageOf(id) <= Math.max(maxStage, unlockedStage(input));
 }
 
+/**
+ * 同一次点击里「刚选下登船口」的那一步怎么判门禁。
+ *
+ * 起因（2026-09-20 实测）：登船卡片上的「全国通用模式／荣县一中」是**先记下选过入口、再进定位**
+ * 这一个动作，但 `goTo` 里用来判门禁的 `progress` 还是这次渲染的那一份（`entryChosen` 仍是 false），
+ * 于是第一次点只弹出一句「先完成起航（选好选科，再点开始起航选一条登船口）」——入口其实已经选好了，
+ * 提示与事实相反，学生只能再点一次导航条才进得去。这里把「这一次点击已经选过入口」显式传进门禁，
+ * 选完入口当次就放行；除此之外的一切判断仍由 `canOpen` + `lockHint` 决定，调试模式也不旁路。
+ */
+export function entryChosenGate(id: PageId, input: ProgressInput, maxStage: number): boolean {
+  return canOpen(id, { ...input, entryChosen: true }, maxStage);
+}
+
 /** 这一步完成了吗（给导航条打勾用，始终按当前状态算）。 */
 export function isDone(id: PageId, input: ProgressInput): boolean {
   return chapterDone(id, input);

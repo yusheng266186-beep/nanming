@@ -94,9 +94,9 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
             <dd>{onOff(!motionOff, (next) => setMotionOff(!next), "界面动效")}</dd>
           </div>
         </dl>
-        <p className="fhint">低语显示的是南溟自己的阶段提示（「溟在读你刚写的那句」这类），
-          <b>不是模型的内部思考</b>——思考内容属于草稿，不出现在学生端。动效关掉后，与系统「减少动态效果」
-          走同一套处理：所有过渡与入场一律停用。</p>
+        <p className="fhint">低语显示的是南溟自己的<b>实时进度</b>（「溟在把你的话和已有的方向对一遍（已等 12 秒）」这类，
+          秒数是真的），<b>不是模型的内部思考</b>——思考内容属于草稿、不过安全扫描，不出现在学生端。
+          动效关掉后，与系统「减少动态效果」走同一套处理：所有过渡与入场一律停用。</p>
       </div>
 
       <div className="panel" style={{ marginTop: 18 }}>

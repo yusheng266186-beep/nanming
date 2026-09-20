@@ -1,11 +1,11 @@
 # 前端三线并行：分工、共享文件与认领规则
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-14，2026-09-14-cloud-switch）：服务开关升级为「任意设备可用」：COS 上的网页 + 云端中转函数，密钥只在中转函数环境变量里；开/关全链路实测通过（含充值后的新建实例、外网地址、回填变量、store=redis），云端结束时保持已关闭。
+> 统一进度（2026-09-20，2026-09-20-admissions-database-merge-81）：完成官方学费队列核查后，将南航规范化招生库与外部四川 2026 高考数据库合并为新的统一招生数据库。两边 51,878 条招生记录按来源文件、工作表和 Excel 行号一一对应，2,308 所院校简介全部映射，语义归一化后 0 条字段冲突；统一库保留原始单元格、教育部高校名录、院校简介、211/985/双一流标签、官方学费证据、录取历史和匹配池；数据库独立验证、65 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：要用谈心时打开网页开关点开启（首次可能等几分钟到十几分钟开通外网地址）；按全项目审阅修 P1 与状态生命周期；TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 负责人要求（2026-09-12）：多个 Agent 同时改 `apps/web`，必须**明确分工、互不覆盖**。本文件是这份分工的
@@ -109,6 +109,8 @@
 | 2026-09-13 00:13 | 线三（负责人指派） | `chapters/direction.tsx`（加三个类名）、`style.css`（方向页两级分层一段）、`test/direction-levels.test.ts`（新） | 方向页大类（海绿·略方·13px）与小类（铜·胶囊·12px）分开，小类区缩进并挂竖线，读得出从属关系 | 已交还 |
 | 2026-09-13 00:40 | 线三（负责人指派） | `chapters/sail.tsx`、`style.css`（三件事一段与窄屏对应几行）、`test/sail-pack.test.ts` | 负责人：「先定下三件事」和整站设计不匹配，要更有设计感。改成「行装清单」：卡头是深海底带（面板抬头 + 备齐进度 + 铜色细进度线 + aria-live 摘要），三件沿一条竖轨排开，轨上编号印章备好点亮成铜色并挂光环；02 的计数与状态合成一枚状态签；窄屏逐项收一圈 | 已交还 |
 | 2026-09-13 01:05 | 线三（负责人指派，跨线接管定位/分数轴） | `range-fill.tsx`（新）、`chapters/locate.tsx`（探索区间微调那块）、`chapters/axis.tsx`（区间上下限那块）、`style.css`（新增「区间标尺」一段，删掉 `.axis-hero .inp` 五条已失效规则）、`test/range-fill.test.ts`（新） | 负责人：定位的「微调下限/微调上限」与分数轴的「区间下限/区间上限」四只框不好看，要一起重新设计。改成两页共用的「区间标尺」：纸面填空式无框数字 + 铜色底线 + 中间带端头的细线（与分数轴金带同一支记号笔）+ 单位只出现一次「分」；深海底上自动换深海玻璃底。两页各自的 setRange 语义与 aria-label 一字未动 | 已交还 |
+| 2026-09-20 09:2x | 调试模式点检轮（负责人指派，单线独占） | `progress.ts`（新增纯判据 `entryChosenGate`）、`App.tsx`（`goTo` 加「同一次点击刚选下入口」参数、去掉未用的 `Dispatch` 导入）、`chapters/axis.tsx`（分数轴刻度改显式 marks）、`vite.config.ts`（watch 忽略 `*.tmpdir`）、`index.html`（内联图标）、`test/route-split.test.ts`（跟着改一条断言）、`test/entry-gate.test.ts`（新）、`docs/IMPLEMENTATION_LOG.md`、`docs/FRONTENDS.md` | 负责人要求把主前端以调试模式拉起来实时改，并确保功能都能点：登船口第一次点被自己刚做的事拦住（提示与事实相反）、区间退化成一点时分数轴刻度重复 React key，两处一并修；`style.css` 与六个章节组件（除 axis 的刻度块）本轮未动，未提交 | 已交还 |
+| 2026-09-20 10:0x | 手机端调试轮（负责人指派，单线独占） | `apps/web/scripts/open-mobile-window.mjs`（新）、`package.json`（加 `web:mobile`/`web:dev:lan`）、`apps/web/package.json`（加 `mobile`/`dev:lan`）、`style.css`（只加 ≤340px 底部导航两条）、`test/bottom-nav-narrow.test.ts`（新）、`docs/IMPLEMENTATION_LOG.md`、`docs/FRONTENDS.md` | 负责人要调手机端：给三条路子（真机尺寸窗口 / DevTools 设备模式 / 局域网真机），并修 320px 底部六站越界 22px 导致「航线图」按不到；390px 及以上样式未动 | 已交还 |
 
 线三动手前后都确认过：`App.tsx` 当时无未暂存改动（线一 19:30 的提交刚落地），`style.css` 本轮未触碰。
 

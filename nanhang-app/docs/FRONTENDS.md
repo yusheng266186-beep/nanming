@@ -1,12 +1,105 @@
 # 两套前端：目的、差异与如何切换
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-14，2026-09-14-cloud-switch）：服务开关升级为「任意设备可用」：COS 上的网页 + 云端中转函数，密钥只在中转函数环境变量里；开/关全链路实测通过（含充值后的新建实例、外网地址、回填变量、store=redis），云端结束时保持已关闭。
+> 统一进度（2026-09-20，2026-09-20-admissions-database-merge-81）：完成官方学费队列核查后，将南航规范化招生库与外部四川 2026 高考数据库合并为新的统一招生数据库。两边 51,878 条招生记录按来源文件、工作表和 Excel 行号一一对应，2,308 所院校简介全部映射，语义归一化后 0 条字段冲突；统一库保留原始单元格、教育部高校名录、院校简介、211/985/双一流标签、官方学费证据、录取历史和匹配池；数据库独立验证、65 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：要用谈心时打开网页开关点开启（首次可能等几分钟到十几分钟开通外网地址）；按全项目审阅修 P1 与状态生命周期；TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
+
+## 2026-09-20 本地调试模式跑法（本轮实测）
+
+想把主前端拉起来边改边看时，用两个进程：
+
+```powershell
+cd C:\Users\yusheng\Desktop\南航\nanhang-app
+npm run api:start                 # 本地 AI 中转 127.0.0.1:8790（日志里 upstream 应为 fake-local 或 qianfan）
+cd apps\web
+..\..\node_modules\.bin\vite --host 127.0.0.1 --port 5173   # 显式绑 IPv4：本机默认只监听 ::1，用 127.0.0.1 连不上
+```
+
+- 调试模式跟着 dev server 走（`DEBUG_MODE = import.meta.env.DEV`）：右上角角标「调试模式 · 示例数据」、谈心室预填演示访问码 `local-trial-code`、模型没给结构化建议时注入两条「（调试示例）」建议。
+- **门禁不旁路**：调试模式不会解锁任何章节，仍要从「起航」选科、选登船口一步步走（负责人 2026-09-13 的既定要求）。
+- AI 中转地址由 `apps/web/.env.local` 决定（git 忽略），**当前指向云端函数（真模型）**：
+  - 云端档：谈心室要填 TOTP 动态码，调试模式预填的 `local-trial-code` 会被拒。取当前码：
+    ```powershell
+    $env:NANHANG_TOTP_SECRET=(Get-Content C:\Users\yusheng\Desktop\南航\private\nanming-totp-secret.txt -Raw).Trim()
+    node nanhang-app\scripts\totp_code.mjs
+    ```
+    码每 30 秒一个窗口、一码一用；取码时**留 20 秒以上**，否则填完表点「连接」可能跨窗口失败（401）。
+  - 本地档（把 `.env.local` 指回 `http://127.0.0.1:8790` 并重启）：演示码直接可用、不花云端额度，但上游是假上游——**不返回 `options`，「引航」的可点答案不会出现**，也不会有 AI 建议。
+  - 换过 `.env.local` 必须重启 dev server：`VITE_*` 是构建期内联的，热更新带不动它。
+- 浏览器用 `http://localhost:5173/` 或 `http://127.0.0.1:5173/` 都可以；命令行自查请用后者。
+- 2026-09-20 的逐页点检证据与两处修复（登船口第一次点没反应、分数轴刻度重复 key）见[实施记录](IMPLEMENTATION_LOG.md) 的 `frontend-dev-debug-run-1` 条目；云端真模型的实测证据见同文件的 `cloud-ai-local-dev-1` 条目；谈心页四处 UI 修复见 `talk-ui-fixes-1` 条目。
+
+### 浮动卡片（登船 / 设置 / 方向小结）的两条硬规矩
+
+2026-09-20 修过一次「方向小结缩在底部、看不见」：根因是卡片自己挂着位移动画
+（桌面 `translateY(26px)`、≤560px `translateY(60px)`），动画期间整张卡被推到视口下方
+（390×844 实测底部溢出正好 60px）。现在的规矩是：
+
+1. **卡片只淡入，不做位移**（`@keyframes card-fade` 只有 opacity），位置交给背板：
+   桌面 flex 居中、≤560px `align-items:flex-end` 贴底。任何 `transform` 都会把偏移带回来。
+2. **滚动由卡片自己承担**（`overflow:auto` + `overscroll-behavior:contain`），背板不滚。
+   守卫测试 `apps/web/test/overlay-geometry.test.ts` 钉住这两条。
+
+### 谈心室的两处细节（同样是负责人指出的）
+
+- 输入框**不带拖拽改高的手柄**（`.dock-row textarea.inp{resize:none}`）：浏览器把 resize 手柄画在
+  右下角，看起来像两条斜杠；高度区间已由 CSS 给足（46–120px）。
+- 等待时的低语是**真实进度**：`whisperLine(seconds, tier)` 按真实秒数推进并显示「已等 N 秒」，
+  不是三句循环。**不是**模型的思考原文——思考内容属草稿、不过安全扫描，项目有既定边界
+  （见 [AI 接入](AI_QIANFAN_SETUP.md)「没有搬的，以及原因」），且前端目前整包读响应、没有逐字中间态；
+  要显示思考原文需先改边界再改流式读取。
+- 连上之后对话框里**不再挂状态行**（原来写「已获得本地试用会话。」）：连接状态由对话头部的
+  「已连接」表示，失败与过期提示仍走未连接分支的 `.fhint`。
+
+## 2026-09-20 手机端怎么在电脑上调试（本轮实测）
+
+三条路，按「要不要真机」选。前两条不改任何代码就能用。
+
+**一、电脑上开一个真机尺寸的窗口（推荐先试这个）**
+
+```powershell
+cd C:\Users\yusheng\Desktop\南航\nanhang-app
+npm run web:mobile                 # 默认 390×844 / DPR 3 / 触摸仿真
+
+# 换机型：用环境变量（`npm run` 转发 `--width=` 在部分 npm 版本上会被吞掉，实测踩过）
+$env:NANHANG_MOBILE_WIDTH="320"; $env:NANHANG_MOBILE_HEIGHT="640"; $env:NANHANG_MOBILE_DPR="2"
+npm run web:mobile
+Remove-Item Env:NANHANG_MOBILE_WIDTH, Env:NANHANG_MOBILE_HEIGHT, Env:NANHANG_MOBILE_DPR
+```
+
+它先用 `--remote-debugging-port` 起一个**独立配置目录**的 Chrome/Edge（不碰你正在用的浏览器），再用 CDP 把视口钉到设备尺寸并打开触摸仿真——页面上 `@media(pointer:coarse)` 与 `:hover` 是两条不同分支，只有真开触摸才算手机表现。窗口里按 F12 就是完整 DevTools，`Ctrl+Shift+M` 可随时换机型。关掉窗口即结束，配置目录在系统临时目录里。
+
+**二、你已经在用的浏览器里开设备模式**
+
+`F12` → `Ctrl+Shift+M`（设备工具栏）→ 选 iPhone 14 / Pixel 7 等机型。优点是不用另开窗口；缺点是触摸仿真要手动勾，且切成长屏机型时窗口高度可能不够。
+
+**三、真机（同一局域网内的手机）**
+
+Vite 本身允许局域网访问（`server.host` 未固定），但本机 API 只放行 `http://localhost:5173` 与 `http://127.0.0.1:5173` 两种来源（`apps/api/src/server.ts` 的 `LOCAL_ORIGINS`，是刻意写死的：手机上的成绩接口不该对整张局域网敞开）。所以真机分两种接法：
+
+```powershell
+# A) 只看界面、不用 AI 与学校接入
+cd nanhang-app
+npm run web:dev:lan                # 监听 0.0.0.0，手机访问 http://<电脑局域网 IP>:5173/
+# 本机测试时的 WLAN 地址是 192.168.1.4（用 ipconfig 自己确认一次）
+
+# B) 连 AI / 学校接入一起用（临时把手机来源加进白名单，用完把那个窗口关掉即可）
+$env:NANHANG_CORS_ORIGINS="http://192.168.1.4:5173"; npm run api:start
+```
+
+`NANHANG_CORS_ORIGINS` 只在这个进程里生效，不改仓库、不写进任何文件；**不要**把它写成永久配置——它等于让同网段的任何人调用本机成绩接口。
+
+**本轮实测（设备仿真，不是真机）**：390×844 与 320×640 两档各走完「起航 → 定位 → 谈心 → 方向 → 分数轴 → 航线图」，六个页面都**没有横向滚动**，底部六站都能点亮跳转，控制台 0 异常。320px 那一档顺带暴露出一个真问题（底部导航越界 22px），已修，见下面「窄屏越界」一节。
+
+**已知仍然偏小的点击目标**：起航页顶栏那枚「北辰」彩蛋按钮实测 17×17px（`<320px` 的拇指区偏小）。它属于彩蛋入口、不是主流程，本轮只记录不擅自改版式；要改的话建议单独一轮，连带把其它 `.pole-star` 之类的小图标一起过一遍。
+
+### 窄屏越界（320px）：底部六站曾经按不到
+
+`.bottom-nav button` 基准最小宽度 56px × 6 站 = 336px，加容器左右各 6px = 342px，比 320px 视口宽 22px（导航条 `scrollWidth=342 / clientWidth=320`），最后一站「航线图」落在视口外。修法只动 `@media(max-width:340px)` 一档：按钮最小宽度 48px、容器内边距 4px，六站合计 296px；390px 及以上一个像素没变。守卫测试 `apps/web/test/bottom-nav-narrow.test.ts` 把「320px 装得下」钉成算式。
 
 ## 2026-09-13 前端专项代码审阅
 

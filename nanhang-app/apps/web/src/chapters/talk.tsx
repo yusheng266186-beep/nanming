@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted,
   type AiPanelState } from "../ai-panel.js";
-import type { ChatMode } from "../ai-client.js";
+import type { ChatMode, ThinkingTier } from "../ai-client.js";
 import { Icon } from "../art.js";
 import { AnswerStarters, ChatBubble, TypingDots } from "../chat.js";
 import { useScrollLock } from "../scroll-lock.js";
@@ -34,14 +34,24 @@ const OPENING_STARTERS = [
 /**
  * 等待时的一行低语（设置里「思考低语」可关）。
  *
- * 写的是**溟在做什么**，不是模型的内部思考——思考内容属于草稿、不出现在学生端
- * （北辰那一版是把模型 reasoning 的尾部显示出来，南溟当初刻意没有搬，见 AI_QIANFAN_SETUP.md）。
+ * 负责人 2026-09-20 要求「显示实时的思考内容而不是一直重复一句话」。这里做的是**实时进度**：
+ * 按本轮的思考档位给出预期耗时，再按真实经过的秒数推进阶段，句子每秒都在变（带秒数），
+ * 不再是原来那三句 2.4 秒一轮的循环。
+ *
+ * 为什么不是模型的思考原文：本项目的既定边界是「思考内容属于草稿，绝不发给学生」，
+ * 而且它不过安全扫描——模型在思考里写一句「可以考虑冲一冲」，那句话就到了学生眼前
+ * （见 docs/AI_QIANFAN_SETUP.md「没有搬的，以及原因」）。另外前端目前整包读取响应
+ * （`ai-client.ts` 的 runAiTurn 用 await response.text()），本来也拿不到逐字的中间态。
+ * 想真正显示模型思考，要先放宽这条边界、再把响应改成流式读取，属于产品决定，不在本轮擅改。
  */
-const WHISPERS = [
-  "溟在读你刚写的那句……",
-  "它在把你的话和已有的方向对一遍……",
-  "不猜分数，只从你说过的事里找线索……"
-] as const;
+export function whisperLine(seconds: number, tier: ThinkingTier): string {
+  // 档位预期耗时取自 THINKING_CHOICES 的实测区间，用作「还要等多久」的粗刻度。
+  const expected = tier === "deep" ? 35 : tier === "standard" ? 20 : 8;
+  if (seconds < 3) return "溟在读你刚写的那句……";
+  if (seconds < expected * 0.6) return `溟在把你的话和已有的方向对一遍（已等 ${seconds} 秒）`;
+  if (seconds < expected) return `还在写这一轮回复，不猜分数，只从你说过的事里找线索（已等 ${seconds} 秒）`;
+  return `比平时慢一些，仍在等模型返回（已等 ${seconds} 秒）；慢的时候可以先别刷新页面`;
+}
 
 export interface TalkProps {
   page: PageId;
@@ -78,13 +88,16 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
   const catalogGroups = catalog?.groups ?? [];
   const studentTurns = ai.history.filter((turn) => turn.role === "user").map((turn) => turn.text);
   const settled = directionTalkSettled(studentTurns, ai.suggestions, catalogGroups);
-  // 等待时的低语：开关在设置卡里（默认开）。开着时每 2.4 秒换一句，停下时回到第一句。
-  const [whisperStep, setWhisperStep] = useState(0);
+  // 等待时的低语：开关在设置卡里（默认开）。显示的是**实时进度**——按真实经过的秒数推进，
+  // 每秒变一次；停下时归零，下一轮从第一句重新开始。
+  const [waited, setWaited] = useState(0);
   useEffect(() => {
-    if (!ai.pending || !whisperOn) { setWhisperStep(0); return; }
-    const timer = window.setInterval(() => setWhisperStep((step) => (step + 1) % WHISPERS.length), 2400);
+    if (!ai.pending || !whisperOn) { setWaited(0); return; }
+    setWaited(0);
+    const timer = window.setInterval(() => setWaited((second) => second + 1), 1000);
     return () => window.clearInterval(timer);
   }, [ai.pending, whisperOn]);
+  const whisperText = whisperLine(waited, ai.tier);
   // 「聊完之后」的方向小结卡：收口时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
   const [summaryOpen, setSummaryOpen] = useState(false);
   const summarySeen = useRef(false);
@@ -147,7 +160,7 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
             {turn.text}
           </ChatBubble>)}
           {ai.pending ? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" />
-            {whisperOn ? <span className="whisper whisper-live" key={whisperStep}>{WHISPERS[whisperStep]}</span> : null}
+            {whisperOn ? <span className="whisper whisper-live" key={whisperText}>{whisperText}</span> : null}
           </ChatBubble> : null}
           {/* 收口提示：说清「聊完了、还能聊、但方向不再变」，并把下一步摆出来。 */}
           {settled ? <ChatBubble from="ai">
@@ -195,7 +208,10 @@ export function renderTalk({ page, setPage, chatScrollRef, notify, ai, setAi,
               还没定选科：专业类清单按选科与批次生成，现在 AI 认不出专业类。先去「起航」把三件事定下来，
               再回来接着聊——已经聊过的内容不受影响。
             </p> : null}
-            {ai.status ? <p className="feedback">{ai.status}</p> : null}
+            {/* 这里原来挂一行 `ai.status`（连上后写着「已获得本地试用会话。」）。
+                负责人 2026-09-20：连上之后输入框下面一直压着一行小字，删掉。
+                连接状态由对话头部的「已连接」承担；失败与过期提示仍由未连接分支的
+                `.fhint` 显示，错误不会被静默吞掉。 */}
           </>}
         </div>
       </div>

@@ -1,11 +1,11 @@
 # 文件总索引
 
 <!-- PROJECT-STATUS:START -->
-> 统一进度（2026-09-14，2026-09-14-cloud-switch）：服务开关升级为「任意设备可用」：COS 上的网页 + 云端中转函数，密钥只在中转函数环境变量里；开/关全链路实测通过（含充值后的新建实例、外网地址、回填变量、store=redis），云端结束时保持已关闭。
+> 统一进度（2026-09-20，2026-09-20-admissions-database-merge-81）：完成官方学费队列核查后，将南航规范化招生库与外部四川 2026 高考数据库合并为新的统一招生数据库。两边 51,878 条招生记录按来源文件、工作表和 Excel 行号一一对应，2,308 所院校简介全部映射，语义归一化后 0 条字段冲突；统一库保留原始单元格、教育部高校名录、院校简介、211/985/双一流标签、官方学费证据、录取历史和匹配池；数据库独立验证、65 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭。
 > 已完成：TASK-01、TASK-02、TASK-03、TASK-04、TASK-05、TASK-06、TASK-07、TASK-08、TASK-09、TASK-10；进行中：TASK-13、TASK-14；未开始：TASK-12。
 > 已跳过：TASK-11（项目负责人（用户）决定）；相应门禁未通过，不得按已完成或待办处理。
 > 本次验证：47 个测试文件、554 项通过、0 失败；真实招生发布记录为 51878；已通过：GATE-LOCAL。
-> 下一步：要用谈心时打开网页开关点开启（首次可能等几分钟到十几分钟开通外网地址）；按全项目审阅修 P1 与状态生命周期；TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
+> 下一步：统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
 本表逐项覆盖项目受管文件；node_modules、dist、dist-scf、.zcode、coverage、*.tsbuildinfo、Python 缓存与 .venv-contracts 是可再生成的依赖/构建目录，按类别保留，不列第三方文件。历史压缩包保持原样，内部旧文档仅用于追溯。
@@ -113,6 +113,7 @@
 | [gui-test-screenshots/t44_axis_top.png](gui-test-screenshots/t44_axis_top.png) | 工程配置或总入口 |
 | [MANIFEST.sha256](MANIFEST.sha256) | 工程配置或总入口 |
 | [nanhang-app/.gitignore](nanhang-app/.gitignore) | 工程配置或总入口 |
+| [nanhang-app/.tmp_vcit_2026.html](nanhang-app/.tmp_vcit_2026.html) | 工程配置或总入口 |
 | [nanhang-app/AGENTS.md](nanhang-app/AGENTS.md) | 工程配置或总入口 |
 | [nanhang-app/apps/api/package.json](nanhang-app/apps/api/package.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/scf_bootstrap](nanhang-app/apps/api/scf_bootstrap) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
@@ -129,6 +130,7 @@
 | [nanhang-app/apps/api/tsconfig.json](nanhang-app/apps/api/tsconfig.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/web/index.html](nanhang-app/apps/web/index.html) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/package.json](nanhang-app/apps/web/package.json) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/scripts/open-mobile-window.mjs](nanhang-app/apps/web/scripts/open-mobile-window.mjs) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/ai-client.ts](nanhang-app/apps/web/src/ai-client.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/ai-panel.ts](nanhang-app/apps/web/src/ai-panel.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/App.tsx](nanhang-app/apps/web/src/App.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -163,15 +165,18 @@
 | [nanhang-app/apps/web/test/ai-client.test.ts](nanhang-app/apps/web/test/ai-client.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/ai-panel.test.ts](nanhang-app/apps/web/test/ai-panel.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/backend-alignment.test.ts](nanhang-app/apps/web/test/backend-alignment.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/bottom-nav-narrow.test.ts](nanhang-app/apps/web/test/bottom-nav-narrow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/chat.test.ts](nanhang-app/apps/web/test/chat.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/class4-codes.test.ts](nanhang-app/apps/web/test/class4-codes.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/direction-levels.test.ts](nanhang-app/apps/web/test/direction-levels.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/direction-quota.test.ts](nanhang-app/apps/web/test/direction-quota.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/entry-gate.test.ts](nanhang-app/apps/web/test/entry-gate.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/exam-position.test.ts](nanhang-app/apps/web/test/exam-position.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/flow.test.ts](nanhang-app/apps/web/test/flow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/journey-model.test.ts](nanhang-app/apps/web/test/journey-model.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/locate-motion.test.ts](nanhang-app/apps/web/test/locate-motion.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/overlay-fixed.test.ts](nanhang-app/apps/web/test/overlay-fixed.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/overlay-geometry.test.ts](nanhang-app/apps/web/test/overlay-geometry.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/page-motion.test.ts](nanhang-app/apps/web/test/page-motion.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/page-scroll-top.test.ts](nanhang-app/apps/web/test/page-scroll-top.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/presentation.test.ts](nanhang-app/apps/web/test/presentation.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -187,6 +192,7 @@
 | [nanhang-app/apps/web/test/serif-font.test.ts](nanhang-app/apps/web/test/serif-font.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/settings.test.ts](nanhang-app/apps/web/test/settings.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/talk-room.test.ts](nanhang-app/apps/web/test/talk-room.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/talk-whisper.test.ts](nanhang-app/apps/web/test/talk-whisper.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/theme-spirit.test.ts](nanhang-app/apps/web/test/theme-spirit.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/topbar-narrow.test.ts](nanhang-app/apps/web/test/topbar-narrow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/totp-access.test.ts](nanhang-app/apps/web/test/totp-access.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -203,7 +209,12 @@
 | [nanhang-app/apps/web-paper/test/paper-honesty.test.ts](nanhang-app/apps/web-paper/test/paper-honesty.test.ts) | 自动测试 |
 | [nanhang-app/apps/web-paper/tsconfig.json](nanhang-app/apps/web-paper/tsconfig.json) | 工程配置或总入口 |
 | [nanhang-app/apps/web-paper/vite.config.ts](nanhang-app/apps/web-paper/vite.config.ts) | 工程配置或总入口 |
+| [nanhang-app/data/admissions/admissions.db](nanhang-app/data/admissions/admissions.db) | 本地招生数据库构建产物（可重跑，非发布） |
 | [nanhang-app/data/admissions/build-manifest.json](nanhang-app/data/admissions/build-manifest.json) | 本地招生数据库构建产物（可重跑，非发布） |
+| [nanhang-app/data/admissions/merged-manifest.json](nanhang-app/data/admissions/merged-manifest.json) | 本地招生数据库构建产物（可重跑，非发布） |
+| [nanhang-app/data/admissions/university-detail-enrichment-batch.json](nanhang-app/data/admissions/university-detail-enrichment-batch.json) | 本地招生数据库构建产物（可重跑，非发布） |
+| [nanhang-app/data/admissions.db](nanhang-app/data/admissions.db) | 工程配置或总入口 |
+| [nanhang-app/data/task03/admissions.db](nanhang-app/data/task03/admissions.db) | 工程配置或总入口 |
 | [nanhang-app/data/task03/coverage.json](nanhang-app/data/task03/coverage.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/extraction-run.json](nanhang-app/data/task03/extraction/20260910T094233Z/extraction-run.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/SC-PLAN-H-2026-P005.ocr.json](nanhang-app/data/task03/extraction/20260910T094233Z/SC-PLAN-H-2026-P005.ocr.json) | 工程配置或总入口 |
@@ -956,16 +967,35 @@
 | [nanhang-app/pipelines/quality-huixi/verify_class4_codes.py](nanhang-app/pipelines/quality-huixi/verify_class4_codes.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/quality-huixi/verify_release.py](nanhang-app/pipelines/quality-huixi/verify_release.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/build_admissions_db.py](nanhang-app/pipelines/task03/build_admissions_db.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/crawl_official_tuition.py](nanhang-app/pipelines/task03/crawl_official_tuition.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/crosscheck_workbook_ranks.py](nanhang-app/pipelines/task03/crosscheck_workbook_ranks.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/enrich_university_details.py](nanhang-app/pipelines/task03/enrich_university_details.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/export_release.py](nanhang-app/pipelines/task03/export_release.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/extract_official_samples.py](nanhang-app/pipelines/task03/extract_official_samples.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/extract_score_distribution.py](nanhang-app/pipelines/task03/extract_score_distribution.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/extract_workbook_samples.py](nanhang-app/pipelines/task03/extract_workbook_samples.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/fetch_official_samples.py](nanhang-app/pipelines/task03/fetch_official_samples.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/fetch_score_distribution.py](nanhang-app/pipelines/task03/fetch_score_distribution.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/import_guangdong_plan_pdf.py](nanhang-app/pipelines/task03/import_guangdong_plan_pdf.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/import_henan_plan_pdfs.py](nanhang-app/pipelines/task03/import_henan_plan_pdfs.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/import_official_plan_archives.py](nanhang-app/pipelines/task03/import_official_plan_archives.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/merge_admissions_databases.py](nanhang-app/pipelines/task03/merge_admissions_databases.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/merge_official_tuition_entries.py](nanhang-app/pipelines/task03/merge_official_tuition_entries.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_guangdong_plan_import.json](nanhang-app/pipelines/task03/official_guangdong_plan_import.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_institution_tags.json](nanhang-app/pipelines/task03/official_institution_tags.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_plan_import.json](nanhang-app/pipelines/task03/official_plan_import.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_chsi_queue.json](nanhang-app/pipelines/task03/official_tuition_chsi_queue.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_chsi_recheck_queue.json](nanhang-app/pipelines/task03/official_tuition_chsi_recheck_queue.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_chsi_scan_progress.json](nanhang-app/pipelines/task03/official_tuition_chsi_scan_progress.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_crawl_cache.json](nanhang-app/pipelines/task03/official_tuition_crawl_cache.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_crawl_results.json](nanhang-app/pipelines/task03/official_tuition_crawl_results.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_research_log.json](nanhang-app/pipelines/task03/official_tuition_research_log.json) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/official_tuition_sources.json](nanhang-app/pipelines/task03/official_tuition_sources.json) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/query_admissions.py](nanhang-app/pipelines/task03/query_admissions.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/record_verification.py](nanhang-app/pipelines/task03/record_verification.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/test_admissions_db.py](nanhang-app/pipelines/task03/test_admissions_db.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/test_enrich_university_details.py](nanhang-app/pipelines/task03/test_enrich_university_details.py) | 招生数据管线与历史来源工具 |
+| [nanhang-app/pipelines/task03/test_merge_admissions_databases.py](nanhang-app/pipelines/task03/test_merge_admissions_databases.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/test_workbook_intake.py](nanhang-app/pipelines/task03/test_workbook_intake.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/validate_admissions_db.py](nanhang-app/pipelines/task03/validate_admissions_db.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/validate_score_distribution.py](nanhang-app/pipelines/task03/validate_score_distribution.py) | 招生数据管线与历史来源工具 |
@@ -984,6 +1014,94 @@
 | [nanhang-app/scripts/generate-contract-types.mjs](nanhang-app/scripts/generate-contract-types.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/redis_store_check.mjs](nanhang-app/scripts/redis_store_check.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/totp_code.mjs](nanhang-app/scripts/totp_code.mjs) | 工程配置或总入口 |
+| [nanhang-app/tmp/dali-2026-plan.png](nanhang-app/tmp/dali-2026-plan.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single-page-1.png](nanhang-app/tmp/fushun-2026-single-page-1.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single-page-2.png](nanhang-app/tmp/fushun-2026-single-page-2.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single-page-3.png](nanhang-app/tmp/fushun-2026-single-page-3.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single-page-4.png](nanhang-app/tmp/fushun-2026-single-page-4.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single-page-5.png](nanhang-app/tmp/fushun-2026-single-page-5.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single-page-6.png](nanhang-app/tmp/fushun-2026-single-page-6.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/fushun-2026-single.pdf](nanhang-app/tmp/fushun-2026-single.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/huzhou-2025-charter.pdf](nanhang-app/tmp/huzhou-2025-charter.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/2d5f9332-2038-4a0a-b91c-e1f5c3bf45a4.png](nanhang-app/tmp/jinken-2026/2d5f9332-2038-4a0a-b91c-e1f5c3bf45a4.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/5af251f9-be1b-43d3-a4cb-4937e6077d99.png](nanhang-app/tmp/jinken-2026/5af251f9-be1b-43d3-a4cb-4937e6077d99.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/6f62b7a2-abdd-42d0-bab8-14b5466e42f1.png](nanhang-app/tmp/jinken-2026/6f62b7a2-abdd-42d0-bab8-14b5466e42f1.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/84c70f55-6089-410c-a495-c680570b2dd3.png](nanhang-app/tmp/jinken-2026/84c70f55-6089-410c-a495-c680570b2dd3.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/8b29d0a2-a1fc-41fc-8e0d-fd5c9852948d.png](nanhang-app/tmp/jinken-2026/8b29d0a2-a1fc-41fc-8e0d-fd5c9852948d.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/928a0b89-17a4-4a64-a3da-dd21e1f5b71a.png](nanhang-app/tmp/jinken-2026/928a0b89-17a4-4a64-a3da-dd21e1f5b71a.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/94c5f23f-6dfc-4e09-bf11-4698fa21b12b.png](nanhang-app/tmp/jinken-2026/94c5f23f-6dfc-4e09-bf11-4698fa21b12b.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/a7516aab-6d9a-4eb3-a99f-bed129458d84.png](nanhang-app/tmp/jinken-2026/a7516aab-6d9a-4eb3-a99f-bed129458d84.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/c04a7bab-bdc2-43fe-863a-780a1a5abde8.png](nanhang-app/tmp/jinken-2026/c04a7bab-bdc2-43fe-863a-780a1a5abde8.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/jinken-2026/e79ce52d-9fcb-4e48-bd56-458234498242.png](nanhang-app/tmp/jinken-2026/e79ce52d-9fcb-4e48-bd56-458234498242.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-advertising-charter-2026.jpg](nanhang-app/tmp/liaoning-advertising-charter-2026.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-advertising-table-bottom.jpg](nanhang-app/tmp/liaoning-advertising-table-bottom.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-advertising-table-left.jpg](nanhang-app/tmp/liaoning-advertising-table-left.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-advertising-table-right.jpg](nanhang-app/tmp/liaoning-advertising-table-right.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-advertising-table.jpg](nanhang-app/tmp/liaoning-advertising-table.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-building-2026.docx](nanhang-app/tmp/liaoning-building-2026.docx) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/1.jpg](nanhang-app/tmp/liaoning-engineering-2026/1.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/2.jpg](nanhang-app/tmp/liaoning-engineering-2026/2.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/3.jpg](nanhang-app/tmp/liaoning-engineering-2026/3.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/4.jpg](nanhang-app/tmp/liaoning-engineering-2026/4.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/5.jpg](nanhang-app/tmp/liaoning-engineering-2026/5.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/6.jpg](nanhang-app/tmp/liaoning-engineering-2026/6.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/7.jpg](nanhang-app/tmp/liaoning-engineering-2026/7.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-engineering-2026/8.jpg](nanhang-app/tmp/liaoning-engineering-2026/8.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-equipment-2026.html](nanhang-app/tmp/liaoning-equipment-2026.html) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-equipment-charter.pdf](nanhang-app/tmp/liaoning-equipment-charter.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-1.jpg](nanhang-app/tmp/liaoning-ligong/page-1.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-2.jpg](nanhang-app/tmp/liaoning-ligong/page-2.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-3.bin](nanhang-app/tmp/liaoning-ligong/page-3.bin) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-4.jpg](nanhang-app/tmp/liaoning-ligong/page-4.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-5.jpg](nanhang-app/tmp/liaoning-ligong/page-5.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-6.jpg](nanhang-app/tmp/liaoning-ligong/page-6.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-ligong/page-7.jpg](nanhang-app/tmp/liaoning-ligong/page-7.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/liaoning-rail-charter.pdf](nanhang-app/tmp/liaoning-rail-charter.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-charter-fee.jpg](nanhang-app/tmp/lnxdfwxy-charter-fee.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-charter-fee2.jpg](nanhang-app/tmp/lnxdfwxy-charter-fee2.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-0.jpg](nanhang-app/tmp/lnxdfwxy-fee-0.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-1.jpg](nanhang-app/tmp/lnxdfwxy-fee-1.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-2.jpg](nanhang-app/tmp/lnxdfwxy-fee-2.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-3.jpg](nanhang-app/tmp/lnxdfwxy-fee-3.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-4.jpg](nanhang-app/tmp/lnxdfwxy-fee-4.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-5.jpg](nanhang-app/tmp/lnxdfwxy-fee-5.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-6.jpg](nanhang-app/tmp/lnxdfwxy-fee-6.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-fee-table.jpg](nanhang-app/tmp/lnxdfwxy-fee-table.jpg) | 工程配置或总入口 |
+| [nanhang-app/tmp/lnxdfwxy-plan.png](nanhang-app/tmp/lnxdfwxy-plan.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-2026-charter-2.pdf](nanhang-app/tmp/pdfs/cskj-2026-charter-2.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-2026-charter.pdf](nanhang-app/tmp/pdfs/cskj-2026-charter.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-contact.png](nanhang-app/tmp/pdfs/cskj-contact.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-01.png](nanhang-app/tmp/pdfs/cskj-page-01.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-02.png](nanhang-app/tmp/pdfs/cskj-page-02.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-03.png](nanhang-app/tmp/pdfs/cskj-page-03.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-04.png](nanhang-app/tmp/pdfs/cskj-page-04.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-05.png](nanhang-app/tmp/pdfs/cskj-page-05.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-06.png](nanhang-app/tmp/pdfs/cskj-page-06.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-07.png](nanhang-app/tmp/pdfs/cskj-page-07.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-08.png](nanhang-app/tmp/pdfs/cskj-page-08.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-09.png](nanhang-app/tmp/pdfs/cskj-page-09.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-10.png](nanhang-app/tmp/pdfs/cskj-page-10.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-11.png](nanhang-app/tmp/pdfs/cskj-page-11.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-12.png](nanhang-app/tmp/pdfs/cskj-page-12.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-13.png](nanhang-app/tmp/pdfs/cskj-page-13.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-14.png](nanhang-app/tmp/pdfs/cskj-page-14.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-15.png](nanhang-app/tmp/pdfs/cskj-page-15.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-16.png](nanhang-app/tmp/pdfs/cskj-page-16.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-17.png](nanhang-app/tmp/pdfs/cskj-page-17.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-18.png](nanhang-app/tmp/pdfs/cskj-page-18.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-19.png](nanhang-app/tmp/pdfs/cskj-page-19.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-20.png](nanhang-app/tmp/pdfs/cskj-page-20.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-21.png](nanhang-app/tmp/pdfs/cskj-page-21.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-22.png](nanhang-app/tmp/pdfs/cskj-page-22.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-23.png](nanhang-app/tmp/pdfs/cskj-page-23.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/pdfs/cskj-page-24.png](nanhang-app/tmp/pdfs/cskj-page-24.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/shenyang-vocational-2026-charter.pdf](nanhang-app/tmp/shenyang-vocational-2026-charter.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/usl-fee-research/fee.pdf](nanhang-app/tmp/usl-fee-research/fee.pdf) | 工程配置或总入口 |
+| [nanhang-app/tmp/usl-fee-research/page-1.png](nanhang-app/tmp/usl-fee-research/page-1.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/usl-fee-research/page-2.png](nanhang-app/tmp/usl-fee-research/page-2.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/zjitc-chsi.html](nanhang-app/tmp/zjitc-chsi.html) | 工程配置或总入口 |
+| [nanhang-app/tmp/zjpc-2025-charter.png](nanhang-app/tmp/zjpc-2025-charter.png) | 工程配置或总入口 |
+| [nanhang-app/tmp/zjpc-2025-fees.png](nanhang-app/tmp/zjpc-2025-fees.png) | 工程配置或总入口 |
 | [nanhang-app/tsconfig.base.json](nanhang-app/tsconfig.base.json) | 工程配置或总入口 |
 | [nanhang-app/tsconfig.json](nanhang-app/tsconfig.json) | 工程配置或总入口 |
 | [nanhang-app/VERSION.json](nanhang-app/VERSION.json) | 工程配置或总入口 |

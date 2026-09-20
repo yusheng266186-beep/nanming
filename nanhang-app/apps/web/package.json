@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:lan": "vite --host",
+    "mobile": "node scripts/open-mobile-window.mjs",
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

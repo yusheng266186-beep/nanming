@@ -142,18 +142,24 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .sec-head p{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.9;font-family:var(--song)}
 .entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 /* 登船卡片：按「开始起航」后弹出，两条入口作为通向定位/成绩的桥。
-   背板与 dialog::backdrop 同一墨色磨砂；卡片用纸面底 + 铜色描边，入场从下方轻轻浮起。 */
-.board-backdrop{position:fixed;inset:0;z-index:90;background:rgba(8,32,42,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;padding:22px}
-.board-card{position:relative;width:min(720px,100%);max-height:min(86vh,86dvh);overflow:auto;background:var(--paper);border:1px solid var(--line-2);border-radius:22px;padding:34px 34px 30px;box-shadow:0 30px 80px rgba(8,32,42,.35);animation:board-rise .5s var(--ease)}
+   背板与 dialog::backdrop 同一墨色磨砂。入场见下面两行注释：卡片本身不再做位移。 */
+.board-backdrop{position:fixed;inset:0;z-index:90;background:rgba(8,32,42,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:22px}
+/* 入场的动效只做「背板淡入 + 内容淡入」，卡片本身不带 transform：
+   原来卡片是从 translateY(26px)/(60px) 升起来的，动画期间卡片被整体推到视口下方
+   （320/390 手机档实测底部溢出正好 60px），那半秒里正文与底部按钮都在屏幕外——
+   负责人看到的就是「卡片缩在底部看不见」。高度始终不变，卡片自己 overflow:auto 滚动。 */
+.board-card{position:relative;width:min(720px,100%);max-height:min(86vh,86dvh);overflow:auto;overscroll-behavior:contain;background:var(--paper);border:1px solid var(--line-2);border-radius:22px;padding:34px 34px 30px;box-shadow:0 30px 80px rgba(8,32,42,.35);animation:card-fade .32s var(--ease)}
 .board-card .entry-grid{margin-top:22px}
 .board-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);display:grid;place-items:center;transition:background .25s,transform .25s}
 .board-close:hover{background:var(--paper-2);transform:rotate(90deg)}
-@keyframes board-rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes backdrop-in{from{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}to{opacity:1;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}}
+@keyframes card-fade{from{opacity:0}to{opacity:1}}
 @media(max-width:560px){
-  .board-backdrop{padding:0;align-items:end}
-  .board-card{border-radius:22px 22px 0 0;max-height:92dvh;padding:26px 20px calc(20px + env(safe-area-inset-bottom));animation:board-sheet .45s var(--ease)}
+  /* 手机档做成底部抽屉：从底部升起的感觉交给背板（内容先淡入再由背板的模糊收拢），
+     卡片仍然不带 transform，底边始终贴在视口底（实测 bottom 溢出 0）。 */
+  .board-backdrop{padding:0;align-items:flex-end;animation:backdrop-in .25s var(--ease)}
+  .board-card{border-radius:22px 22px 0 0;max-height:92dvh;padding:26px 20px calc(20px + env(safe-area-inset-bottom))}
 }
-@keyframes board-sheet{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
 .entry{position:relative;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:30px;overflow:hidden;display:flex;flex-direction:column;min-height:230px;transition:transform .5s var(--ease),border-color .3s,box-shadow .4s}
 .entry:hover{transform:translateY(-5px);border-color:var(--brass-line);box-shadow:var(--sh-card)}
 .entry .eidx{position:absolute;right:26px;top:22px;font:italic 500 46px/1 var(--display);color:var(--line)}
@@ -248,6 +254,10 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .inp{width:100%;min-height:50px;border:1px solid var(--line-2);border-radius:9px;background:var(--card);padding:0 16px;font-size:14px;transition:border-color .3s,background .3s}
 .inp:focus{outline:none;border-color:var(--brass);background:#fff}
 textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;font-size:15px}
+/* 谈心室那只输入框禁掉拖拽改高：`.dock-row textarea` 自己有 46–120px 的高度区间，
+   浏览器的 resize 手柄就画在右下角，看起来像两条斜杠（负责人 2026-09-20 指出）。
+   这个手柄只改高度、不改宽度，留在这里只是视觉噪音。 */
+.dock-row textarea.inp{resize:none}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:9px;overflow:hidden;background:var(--card)}
 .seg button{padding:11px 20px;font-size:12.5px;color:var(--mut);border-right:1px solid var(--line);transition:all .3s}
 .seg button:last-child{border-right:0}
@@ -1324,6 +1334,12 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
   .ctx-btn>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ctx-btn .icon{width:13px;height:13px}
   .avatar{width:34px;height:34px;font-size:14px}
+  /* 底部六站同样在 320px 顶出去：`.bottom-nav button` 的最小宽度 56px × 6 = 336px，
+     加上容器的 6px 内侧边距一共 342px，比 320px 视口宽 22px——最后一站「航线图」
+     压在视口外按不到（2026-09-20 用 320×640 设备仿真实测，导航条可滚宽度 342 / 可见 320）。
+     窄屏只此一档收紧：按钮最小宽度 48px、容器边距 4px，六站合计 296px，留出余量。 */
+  .bottom-nav{padding-left:4px;padding-right:4px}
+  .bottom-nav button{min-width:48px}
 }
 
 /* ══════════ 区间标尺：探索区间与分数轴的上下限（两页共用一支标尺）══════════

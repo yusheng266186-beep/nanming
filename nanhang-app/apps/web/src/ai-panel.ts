@@ -130,7 +130,10 @@ export function applyTurnResult(current: AiPanelState, result: AiPanelState): Ai
 }
 
 export function withSession(state: AiPanelState, token: string): AiPanelState {
-  return { ...state, connected: true, token, status: "已获得本地试用会话。" };
+  // 连上之后不再挂状态行：负责人 2026-09-20 指出，输入框下面那行「已获得本地试用会话。」
+  // 一直压在对话框里。连接状态由对话头部的「已连接」表示；这里同时清掉上一轮的失败提示，
+  // 免得重连成功后还留着「动态码无效」这种已经过期的字样。
+  return { ...state, connected: true, token, status: null };
 }
 
 /** Replaces any HTML-significant character so model text is never interpreted as markup (A46). */

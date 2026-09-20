@@ -29,8 +29,10 @@ describe("浮层贴视口", () => {
     const backdrop = /\.board-backdrop\{([^}]*)\}/.exec(css)?.[1] ?? "";
     expect(backdrop).toContain("position:fixed");
     expect(backdrop).toContain("inset:0");
-    // 移动端是一条自下而上的整屏弹层：背板不留内边距，卡片自己贴底并吃安全区
-    expect(css).toContain(".board-backdrop{padding:0;align-items:end}");
+    // 移动端是一条自下而上的整屏弹层：背板不留内边距，卡片贴底并吃安全区。
+    // （2026-09-20：容器由 grid 改成 flex——flex 才有 flex-end 这个写法，
+    //  同时卡片不再做位移动画，见 overlay-geometry.test.ts。）
+    expect(css).toContain(".board-backdrop{padding:0;align-items:flex-end");
     expect(css).toMatch(/\.board-card\{[^}]*max-height:92dvh/);
     expect(css).toMatch(/\.board-card\{[^}]*env\(safe-area-inset-bottom\)/);
   });

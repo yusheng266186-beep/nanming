@@ -126,17 +126,31 @@ export function renderAxis({ state, setState, page, setPage, notify, range, setR
       </div>
       <div className="slider-wrap">
         <div className="slider-scale">
-          {/* 刻度只标「公布范围的上下界」与「你的区间两端」，端点贴边对齐避免文字相撞。 */}
-          {([axisMin, axisMax, ...(range ? [range.low, range.high] : [])] as const).map((value, index) => {
-            const name = index === 0 ? "公布最低" : index === 1 ? "公布最高"
-              : value === range?.low ? "区间下限" : "区间上限";
-            const major = index < 2;
-            const left = pct(value);
-            const edge = left <= 1 ? " start" : left >= 99 ? " end" : "";
-            return <span className={`stick${major ? " major" : " own"}${edge}`}
-              key={`${value}-${name}`} style={{ left: `${left}%` }}>
-              {value}<b>{name}</b></span>;
-          })}
+          {/* 刻度只标「公布范围的上下界」与「你的区间两端」，端点贴边对齐避免文字相撞。
+              区间退化成一点时（几次考试换算出同一个分数）只画一枚「区间」刻度：原来那两个
+              端点会得到同一个 React key，而且同一位置叠两枚标签谁也读不清。 */}
+          {(() => {
+            const degenerate = range !== null && range.low === range.high;
+            const marks: { value: number; name: string; major: boolean }[] = [
+              { value: axisMin, name: "公布最低", major: true },
+              { value: axisMax, name: "公布最高", major: true },
+              ...(range
+                ? (degenerate
+                  ? [{ value: range.low, name: "区间", major: false }]
+                  : [
+                    { value: range.low, name: "区间下限", major: false },
+                    { value: range.high, name: "区间上限", major: false }
+                  ])
+                : [])
+            ];
+            return marks.map((mark, index) => {
+              const left = pct(mark.value);
+              const edge = left <= 1 ? " start" : left >= 99 ? " end" : "";
+              return <span className={`stick${mark.major ? " major" : " own"}${edge}`}
+                key={`${mark.value}-${mark.name}`} style={{ left: `${left}%` }}>
+                {mark.value}<b>{mark.name}</b></span>;
+            });
+          })()}
         </div>
         <div style={{ position: "relative" }}>
           <div className="axis-track" />
