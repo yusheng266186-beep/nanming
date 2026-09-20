@@ -10,6 +10,7 @@ import {
 import { Uncharted } from "../theme.js";
 import { Icon } from "../art.js";
 import { RangeFill } from "../range-fill.js";
+import { ExamReadingCards, ExamTrajectoryChart } from "./trajectory.js";
 import { REFERENCE_YEAR, clamp, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
 
 export interface LocateProps {
@@ -158,7 +159,6 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
         ? "学校数据里没有可用作参考的考试记录（入学入口考不计入参考）。"
         : "还没有考试记录。点「添加一次考试」，至少填总分；有切线的次还能参与等位换算。"}</p> : null}
       {exams.map((exam, index) => {
-        const diffs = examLineDiffs(exam);
         // 两条线高低颠倒时这场不参与等位换算，必须在这一行说出来，不能静默丢掉。
         const inverted = linesInverted(exam);
         const rowLabel = schoolLocked ? (exam.label || `第 ${index + 1} 次`) : `第 ${index + 1} 次`;
@@ -169,10 +169,11 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           {numberField(`第 ${index + 1} 次本科线`, "本科线", exam.undergraduateTotal, (value) => updateExam(index, { undergraduateTotal: value }), schoolLocked)}
           {!schoolLocked && <button type="button" className="rbtn" aria-label={`删除第 ${index + 1} 次考试`}
             onClick={() => removeExam(index)}><Icon name="close" /></button>}
-          {diffs.topDiff !== null || diffs.undergraduateDiff !== null || inverted ? <span className="exam-diffs">
-            {diffs.topDiff !== null ? <span>距特控线 {formatGap(diffs.topDiff)}</span> : null}
-            {diffs.undergraduateDiff !== null ? <span>距本科线 {formatGap(diffs.undergraduateDiff)}</span> : null}
-            {inverted ? <span className="warn">这场本科线高于特控线，未参与等位换算</span> : null}
+          {/* 行内只留「这场数据有问题」的警告。距线差不再在行里重复一遍——
+              下方成绩轨迹下方的读数卡把每次的总分、距两条线的差与较上次的变化都算清楚了，
+              行里再挂两枚胶囊只是重复占高度（负责人 2026-09-20：这里太粗糙、空白太多）。 */}
+          {inverted ? <span className="exam-diffs">
+            <span className="warn">这场本科线高于特控线，未参与等位换算</span>
           </span> : null}
         </div>;
       })}
@@ -180,6 +181,13 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
         <button type="button" className="btn sm" disabled={exams.length >= 5} onClick={addExam}>
           {exams.length >= 5 ? "最多记录 5 次" : "添加一次考试"}</button>
         <small className="muted-note">切线是你自己考试的那两条线，不是省控线；只填总分的次也参与稳定性统计。</small>
+      </div>}
+      {/* 成绩分析：只做手填数据真的能支撑的那部分（轨迹 + 距两条线 + 逐次读数）。
+          单科分数、年级均分、班级均分只有荣县一中那条路有，这里显式说明去哪儿看，不在这里补造。 */}
+      {exams.length > 0 && <div className="exam-analysis">
+        <ExamTrajectoryChart exams={exams} />
+        <ExamReadingCards exams={exams} />
+        <p className="fhint">逐科分数、年级与班级均分差需要学校的成绩数据：在「起航」选「荣县一中 · 增强模式」接入后，这里会多出一张逐科位置表。手填路线不推算这些数字。</p>
       </div>}
     </div>}
 

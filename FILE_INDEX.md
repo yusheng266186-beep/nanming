@@ -143,10 +143,12 @@
 | [nanhang-app/apps/web/src/chapters/settings.tsx](nanhang-app/apps/web/src/chapters/settings.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/shared.ts](nanhang-app/apps/web/src/chapters/shared.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/talk.tsx](nanhang-app/apps/web/src/chapters/talk.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/chapters/trajectory.tsx](nanhang-app/apps/web/src/chapters/trajectory.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chat.tsx](nanhang-app/apps/web/src/chat.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/debug.ts](nanhang-app/apps/web/src/debug.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/direction-quota.ts](nanhang-app/apps/web/src/direction-quota.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/exam-position.ts](nanhang-app/apps/web/src/exam-position.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/exam-trajectory.ts](nanhang-app/apps/web/src/exam-trajectory.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey-model.ts](nanhang-app/apps/web/src/journey-model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey-worker.ts](nanhang-app/apps/web/src/journey-worker.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey.css](nanhang-app/apps/web/src/journey.css) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -174,6 +176,7 @@
 | [nanhang-app/apps/web/test/direction-quota.test.ts](nanhang-app/apps/web/test/direction-quota.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/entry-gate.test.ts](nanhang-app/apps/web/test/entry-gate.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/exam-position.test.ts](nanhang-app/apps/web/test/exam-position.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/test/exam-trajectory.test.ts](nanhang-app/apps/web/test/exam-trajectory.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/flow.test.ts](nanhang-app/apps/web/test/flow.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/journey-model.test.ts](nanhang-app/apps/web/test/journey-model.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/test/locate-motion.test.ts](nanhang-app/apps/web/test/locate-motion.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -859,6 +862,9 @@
 | [nanhang-app/docs/verification/latest-frontend-typecheck-2026-09-12.txt](nanhang-app/docs/verification/latest-frontend-typecheck-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/latest-frontend-typecheck-2026-09-13.txt](nanhang-app/docs/verification/latest-frontend-typecheck-2026-09-13.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/latest-pages-online-2026-09-13.json](nanhang-app/docs/verification/latest-pages-online-2026-09-13.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/locate-exam-2026-09-20/01-成绩分析-轨迹.png](nanhang-app/docs/verification/locate-exam-2026-09-20/01-成绩分析-轨迹.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/locate-exam-2026-09-20/03-成绩分析-视口-1x.png](nanhang-app/docs/verification/locate-exam-2026-09-20/03-成绩分析-视口-1x.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/locate-exam-2026-09-20/04-五次考试录入.png](nanhang-app/docs/verification/locate-exam-2026-09-20/04-五次考试录入.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/nanming-totp-online-2026-09-12.json](nanhang-app/docs/verification/nanming-totp-online-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-10.txt](nanhang-app/docs/verification/npm-validate-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/npm-validate-2026-09-12-chapter-gate.txt](nanhang-app/docs/verification/npm-validate-2026-09-12-chapter-gate.txt) | 本次验证原始日志 |
