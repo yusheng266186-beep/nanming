@@ -8,6 +8,19 @@
 > 下一步：统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
+## 2026-09-20 / deploy-pages-mobile-ai-1：提交推送上线 Pages，并在线上手机档验收 AI 谈心
+
+- 目的：负责人要求把本轮改动同步到 GitHub，并确保「真实移动端 / Pages 页面」能用 AI 谈心。本轮做三件事：提交推送、触发 Pages 重建、**在线上 Pages 用手机设备仿真走一遍 AI 谈心并记录证据**。
+- 提交与上线：提交 `8245b5a`（29 个文件，含前端修复、四个新守卫测试、`web:mobile`/`web:dev:lan` 两个入口与文档同步产物），推送 `f5ee66a..8245b5a` → GitHub Actions 工作流 `Deploy 南溟学生端` 运行 `35486087777` **success**（55 秒）。产物换版：`index-CW0TagIM.js` → `index-B_BdHKrK.js`、`index-2A4i1QBL.css` → `index-DMctSkdn.css`，新 bundle 里已含本轮修复标记（`card-fade`）。
+- 线上通路核对（本次实测，非历史结论）：
+  - 仓库变量 `NANHANG_API_BASE` = 云端函数、`NANHANG_RELEASE_BASE` = COS 发布包，均只读核对为正确值；新 bundle 内联的 API 地址与 COS 地址与之一致。
+  - 云函数从 Pages 来源的预检：`OPTIONS /v1/access/exchange` 带 `Origin: https://yusheng266186-beep.github.io` → `204` + 该来源被放行；`/healthz` = `{"status":"ok","ai":true,"store":"memory"}`，`/readyz` = `upstream:"qianfan"`；COS `data/releases/current.json` → `200`。
+  - **手机档线上验收**（390×844 / DPR 3 / 触摸，真 Chrome 设备仿真跑线上 Pages）：生产构建无调试角标、谈心室**不预填**演示码（符合预期）；探索区间自动生成 `616–616`；底部导航进谈心正常；用当前 TOTP 兑换后「已连接」；**输入框下面那行小字已消失**；低语按秒变化（`溟在读你刚写的那句……` → `已等 3 秒` → `已等 4 秒` → `已等 6 秒`）；**真模型返回 77 字正文 + 4 个可点选项**；控制台与网络异常 `0`。
+  - 小结卡的几何修复在线上没被单独复验（那轮对话没聊到收口、卡片没自动弹出）；同一份代码与样式已在本机手机档实测过（底部溢出 0、卡片可滚，见 `talk-ui-fixes-1`）。
+- 会话存储的既有边界（给真机调试的提醒，不是本轮引入的问题）：云端 `store=memory`——共享 Redis 自 2026-09-14 计费冻结，函数跑单实例内存档。同一码不能重复兑换；**函数冷启动或换实例后旧会话失效，学生会被要求重新输入当前动态码**。真机试用的操作方式：`$env:NANHANG_TOTP_SECRET=(Get-Content private/nanming-totp-secret.txt -Raw).Trim(); node nanhang-app/scripts/totp_code.mjs --watch`，把当前 6 位码填进手机页面（取码时留 20 秒以上，避免跨窗口 401）。若试用中出现频繁要求重新输码，需要按负责人决定是否重新开启共享 Redis（服务开关网页，会产生按量计费）。
+- 未做与边界：本轮是**设备仿真**，不是真机实测（负责人将自行在真机上验收）；未改云函数、未改云端环境变量、未开关键资源；未做视觉校检。CI 里 `quality-huixi.test.ts` 因其依赖本机 `private/` 成绩产物而在 runner 上报 ENOENT——工作流该步骤是 `continue-on-error: true`（负责人既定要求：半成品也发布供验收），**不拦上传**，与本次改动无关。
+- 下一步：负责人在真机上打开 https://yusheng266186-beep.github.io/nanming/ 验收 AI 谈心；需要长会话稳定性时再决定是否开启共享 Redis。
+
 ## 2026-09-20 / talk-ui-fixes-1：谈心页四处 UI 问题（浮层几何、低语、会话提示行、输入框手柄）
 
 - 目的：负责人验收谈心页时提出四处问题——① 方向小结的弹出卡片缩在底部、根本看不见、也不能滑动；② 等待时的低语一直重复同一句，应该是实时的；③ 输入密钥后对话框下面出现一行小字（「已获得本地试用会话。」），要删掉；④ 对话输入框右下角有两条斜杠。
