@@ -46,8 +46,13 @@ describe("谈心：进对话后的房间", () => {
     expect(css).not.toMatch(/\.qopts\{display:flex/);
   });
 
-  it("手机上再放宽一档高度", () => {
-    expect(css).toContain("#page-talk .chat{height:clamp(360px,calc(100dvh - 200px),760px)}");
+  it("手机高度按视口算，输入栏落在固定底栏之上（不再是聊两句就下滑）", () => {
+    // 高度减去顶栏、底栏让位、输入栏与留白：这样 dock 正好贴在底栏上沿，
+    // 键盘弹起时输入框也不会被底栏盖住（2026-09-20 实测修复前被盖 143px）。
+    expect(css).toContain("#page-talk .chat{height:clamp(430px,calc(100dvh - var(--rail-h) - 178px),820px)}");
+    // 页头在手机上收薄：导语与装饰玫瑰不占聊天的高度。
+    expect(css).toContain("#page-talk .page-head .lede{display:none}");
+    expect(css).toContain("#page-talk .page-head .head-aside{display:none}");
   });
 });
 

@@ -60,14 +60,14 @@ describe("设置：入口与归属", () => {
   it("低语只在开着且真的在等回答时出现，内容是南溟自己的实时进度", () => {
     expect(app).toContain("whisperOn");
     expect(talk).toContain("if (!ai.pending || !whisperOn) { setWaited(0); return; }");
-    expect(talk).toMatch(/ai\.pending \? <ChatBubble from="ai"><TypingDots label=\{whisperOn \?/);
+    expect(talk).toMatch(/ai\.pending \? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" \/>/);
     // 负责人 2026-09-20：低语要实时变，不是三句一轮的循环——现在按真实经过的秒数推进，句子里带秒数。
     expect(talk).toContain("export function whisperLine(seconds: number, tier: ThinkingTier): string");
     expect(talk).toContain("已等 ${seconds} 秒");
     expect(talk).not.toContain("setInterval(() => setWhisperStep");
-    // 同一轮里还有「实时思考」那一块：模型思考逐块显示（负责人 2026-09-20 明确要求）。
-    expect(talk).toContain('className="thinking"');
-    expect(talk).toContain("reasoningRef");
+    // 同一轮里还有「实时思考」那一行尾巴：只显示思考的尾部（借鉴北辰，负责人 2026-09-20）。
+    expect(talk).toContain('className="whisper whisper-live thinking-tail swap"');
+    expect(talk).toContain("reasoningQueue");
     expect(app).toContain("onReasoning");
     // 低语是一行「溟在做什么」，不许夹带分数或录取判断。
     expect(talk).not.toMatch(/whisperLine[\s\S]{0,600}概率|whisperLine[\s\S]{0,600}冲稳保/);

@@ -73,22 +73,29 @@ describe("浏览器侧真的是流式读取", () => {
   });
 });
 
-describe("界面：思考写在独立节点里", () => {
-  it("谈心室有一个 .thinking 节点，App 收到 reasoning 就写进去", () => {
+describe("界面：思考只露尾巴一行（借鉴北辰）", () => {
+  it("谈心室挂一行尾巴节点，App 把增量推进队列而不是逐块渲染", () => {
     const talk = src("chapters/talk.tsx");
     const app = src("App.tsx");
-    expect(talk).toContain('className="thinking"');
+    expect(talk).toContain('className="whisper whisper-live thinking-tail swap"');
     expect(talk).toContain("ref={reasoningRef}");
-    expect(talk).toContain("reasoningText.current");
-    expect(app).toContain("onReasoning:");
-    expect(app).toContain("node.textContent = reasoningText.current");
-    // 思考不能混进待显示的回复文本。
-    expect(app).not.toMatch(/onReasoning[\s\S]{0,200}aiDraft/);
+    // 队列 + 600ms 排空：北辰的做法；一轮几百块增量，逐块 setState 会拖垮界面。
+    expect(app).toContain("reasoningQueue");
+    expect(app).toContain("reasoningQueue.current.push(chunk)");
+    expect(talk).toContain("reasoningQueue.current");
+    expect(talk).toContain("}, 600);");
+    // 只显示尾部：超过 40 字就加省略号取最后 40 字（北辰原样口径）。
+    expect(talk).toContain("text.slice(-40)");
+    // 不再把整段思考铺在气泡里（旧的 .thinking 大块已下线）。
+    expect(talk).not.toContain('className="thinking"');
   });
 
-  it("思考块有自己的样式，且空的时候不占位", () => {
+  it("尾巴样式：一行、超出省略号、换行淡入、空着不占位", () => {
     const css = src("style.css");
-    expect(css).toMatch(/\.thinking\{[^}]*border-left/);
-    expect(css).toMatch(/\.thinking:empty\{display:none\}/);
+    expect(css).toMatch(/\.thinking-tail\{[^}]*white-space:nowrap/);
+    expect(css).toMatch(/\.thinking-tail\{[^}]*text-overflow:ellipsis/);
+    expect(css).toMatch(/\.thinking-tail\{[^}]*min-height:1\.7em/);
+    expect(css).toContain(".thinking-tail.swap{animation:think-in .45s ease both}");
+    expect(css).toContain(".thinking-tail:empty{display:none}");
   });
 });

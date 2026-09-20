@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { MODE_CHOICES, THINKING_CHOICES, enableAi, withMode, withStarted,
   type AiPanelState } from "../ai-panel.js";
@@ -58,10 +58,8 @@ export interface TalkProps {
   page: PageId;
   setPage: Dispatch<SetStateAction<PageId>>;
   chatScrollRef: MutableRefObject<HTMLDivElement | null>;
-  /** App 侧的实时思考节点：增量由 App 写入，这里只在挂载时回填已有内容。 */
-  reasoningRef: MutableRefObject<HTMLDivElement | null>;
-  /** 已经收到的思考全文（App 累积）：用于组件重新挂载时回填，避免开头丢失。 */
-  reasoningText: MutableRefObject<string>;
+  /** App 侧把思考增量推进来的队列（ref，不触发渲染）；talk 每 600ms 排空一次、只显示尾部。 */
+  reasoningQueue: MutableRefObject<string[]>;
   notify: (message: string) => void;
   ai: AiPanelState;
   setAi: Dispatch<SetStateAction<AiPanelState>>;
@@ -78,7 +76,7 @@ export interface TalkProps {
   whisperOn: boolean;
 }
 
-export function renderTalk({ page, setPage, chatScrollRef, reasoningRef, reasoningText, notify, ai, setAi,
+export function renderTalk({ page, setPage, chatScrollRef, reasoningQueue, notify, ai, setAi,
   aiCode, setAiCode, aiDraft, setAiDraft, exchangeCode, sendAi, catalog, quoteFor,
   hasChatted, whisperOn }: TalkProps) {
   // 谈心以 AI 谈心为主路径：进入本页即启用 AI（其它页面的无 AI 可用性不变）。
@@ -105,19 +103,37 @@ export function renderTalk({ page, setPage, chatScrollRef, reasoningRef, reasoni
   const whisperText = whisperLine(waited, ai.tier);
 
   /**
-   * 实时思考流（负责人 2026-09-20：「就要让学生看到思考过程」）。
+   * 实时思考：**只显示思考的尾部**（借鉴北辰的做法）。
    *
-   * 增量由 App 在收到 reasoning 帧时直接写 DOM，不走 React state：思考来得很密，
-   * 一帧一次 setState 会把整棵对话树重渲染几十次。这里只负责两件事：
-   *   ① 把节点交给 App（reasoningRef）；
-   *   ② 待回答那一块重新挂载时，把已经攒下的思考回填进去（第一块往往早于 React 重渲染）。
+   * 北辰（`beichen` 仓库 `index.html`）的思考低语：把 reasoning 的最后一个片段
+   * （超过 40 字就 `'…' + s.slice(-40)`）放在等待行下方，**一行、不换行、超出省略号**，
+   * 并且**600ms 只换一次**，换的时候淡入。负责人 2026-09-20 要求照它做、且「不要全部显示」。
+   *
+   * 实现：App 把思考增量推进 `reasoningQueue`（ref，不改 state），这里每 600ms 排空一次队列、
+   * 取尾部写进节点。不做逐块渲染，也不进 React state——一轮实测几百块，逐块 setState 会拖垮界面。
    */
-  const fillReasoning = () => {
-    const node = reasoningRef.current;
-    if (node) node.textContent = reasoningText.current;
-  };
-  useLayoutEffect(fillReasoning, [ai.pending]);
-  useEffect(() => () => { if (reasoningRef.current) reasoningRef.current.textContent = ""; }, []);
+  const reasoningRef = useRef<HTMLSpanElement | null>(null);
+  const reasoningFull = useRef("");
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const queue = reasoningQueue.current;
+      const node = reasoningRef.current;
+      if (!node) return;
+      const tail = (text: string) => (text.length <= 40 ? text : `…${text.slice(-40)}`);
+      if (queue.length) {
+        reasoningFull.current = tail((reasoningFull.current + queue.join("")).slice(-80));
+        queue.length = 0;
+      }
+      if (!ai.pending) return;
+      const next = tail(reasoningFull.current);
+      if (node.textContent === next) return;
+      node.classList.remove("swap");
+      void node.offsetWidth;   // 强制布局，让淡入动画能重播（与北辰同一手法）
+      node.classList.add("swap");
+      node.textContent = next;
+    }, 600);
+    return () => window.clearInterval(timer);
+  }, [ai.pending, reasoningQueue]);
 
   // 「聊完之后」的方向小结卡：收口时自动弹一次（关掉后不再打扰，想再看点底部的「方向小结」）。
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -180,9 +196,10 @@ export function renderTalk({ page, setPage, chatScrollRef, reasoningRef, reasoni
             from={turn.role === "user" ? "me" : "ai"}>
             {turn.text}
           </ChatBubble>)}
-          {ai.pending ? <ChatBubble from="ai"><TypingDots label={whisperOn ? "溟在想 · 稍等（下面就是它的思考过程）" : "溟在想 · 稍等"} />
-            {/* 模型思考的实时流：到一块显示一块。它不是回答，样式上也与正文分开（缩进 + 细线 + 更小的字）。 */}
-            <div className="thinking" ref={reasoningRef} aria-live="polite" aria-label="溟的思考过程（实时）" />
+          {ai.pending ? <ChatBubble from="ai"><TypingDots label="溟在想 · 稍等" />
+            {/* 思考只露尾部一行（借鉴北辰）：不换行、超出省略号、600ms 一换淡入。 */}
+            {whisperOn ? <span className="whisper whisper-live thinking-tail swap" ref={reasoningRef}
+              aria-live="polite" aria-label="溟的思考（实时尾部）" /> : null}
             {whisperOn ? <span className="whisper whisper-live" key={whisperText}>{whisperText}</span> : null}
           </ChatBubble> : null}
           {/* 收口提示：说清「聊完了、还能聊、但方向不再变」，并把下一步摆出来。 */}

@@ -239,8 +239,18 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 #page-talk .chat-scroll{flex:1 1 auto;min-height:0;max-height:none}
 #page-talk .bub{max-width:min(82%,560px)}
 @media(max-width:640px){
-  /* 手机上顶栏更矮、页头更薄，卡片可以再多占一点。 */
-  #page-talk .chat{height:clamp(360px,calc(100dvh - 200px),760px)}
+  /* 手机上顶栏更矮、页头更薄，卡片可以再多占一点。
+     2026-09-20 负责人：聊两句就要下滑。三件事一起做：
+       ① 页头在手机档瘦身（导语不显示、标题收一档、去掉装饰玫瑰）——实测它原本占一屏的 20%；
+       ② 聊天卡片按「视口 − 顶栏 − 底栏让位 − 输入栏 − 留白」算高度，输入栏正好落在底栏上沿
+          （修复前实测被底栏盖住 143px，键盘一弹就够不着输入框）；
+       ③ 页头留在聊天之上，需要时可以滚上去看，但不再挤压聊天区。 */
+  #page-talk .page-head .lede{display:none}
+  #page-talk .page-head{align-items:flex-start}
+  #page-talk .page-head h1{font-size:26px;line-height:1.35}
+  #page-talk .page-head .head-aside{display:none}
+  #page-talk .page-head{padding-bottom:2px}
+  #page-talk .chat{height:clamp(430px,calc(100dvh - var(--rail-h) - 178px),820px)}
 }
 .quote-strip{padding:40px 0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .quote-strip p{font-family:var(--song);font-size:19px;letter-spacing:.06em;color:var(--sea)}
@@ -320,13 +330,13 @@ textarea.inp{min-height:120px;padding:15px 16px;line-height:2;resize:vertical;fo
 .msg.me .bub{background:var(--sea);color:#eef4f1;border-top-right-radius:4px}
 .bub .ask{display:block;margin-top:11px;padding-top:11px;border-top:1px dashed var(--line-2);font-family:var(--song);color:var(--sea);font-size:14px}
 .whisper{font:italic 400 10.5px/1.6 var(--display);color:var(--foam);margin-top:8px;letter-spacing:.04em}
-/* 实时思考（负责人 2026-09-20：让学生看到思考过程）。
-   与正文在视觉上分开：缩进 + 左侧细线 + 更小更淡的字，读起来像「纸边的铅笔草稿」，
-   不会被误当成溟的回答；等宽换行，长段思考也不会把气泡撑宽。 */
-.thinking{margin:8px 0 2px;padding:8px 0 8px 12px;border-left:2px solid var(--line-2);
-  max-height:220px;overflow-y:auto;overscroll-behavior:contain;
-  font:400 12px/1.75 var(--song);color:var(--mut);white-space:pre-wrap;word-break:break-word}
-.thinking:empty{display:none}
+/* 实时思考的尾巴（借鉴北辰）：一行、不换行、超出省略号，600ms 一换淡入。
+   固定行高占位，文字长短不牵动布局；空着时不占位。 */
+.thinking-tail{display:block;width:100%;min-height:1.7em;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;font-family:var(--song);font-size:11px;letter-spacing:.03em}
+.thinking-tail:empty{display:none}
+.thinking-tail.swap{animation:think-in .45s ease both}
+@keyframes think-in{from{opacity:0}to{opacity:1}}
 .dots{display:inline-flex;gap:4px;align-items:center;padding:4px 0}
 .dots i{width:6px;height:6px;border-radius:50%;background:var(--foam);animation:bop 1.2s infinite}
 .dots i:nth-child(2){animation-delay:.16s}.dots i:nth-child(3){animation-delay:.32s}
@@ -731,10 +741,13 @@ dialog.closing::backdrop{animation:fade .22s reverse both}
   .bottom-nav button[aria-current="step"]{color:var(--sea)}
 
 .bottom-nav button.locked{opacity:.4;cursor:not-allowed}
-.bottom-nav button.done::after{content:"";position:absolute;top:6px;right:14px;width:5px;height:5px;border-radius:50%;background:var(--foam)}
+/* 完成态原来在右上角点一颗 5px 的圆点（.done::after）。负责人 2026-09-20：看着廉价，去掉。
+   完成与否仍由当前页高亮（aria-current）与图标颜色表达。 */
 .bottom-nav button{position:relative}  .bottom-nav button[aria-current="step"] .icon{transform:translateY(-2px);color:var(--brass)}
   .bottom-nav button[aria-current="step"]::before{content:"";position:absolute;top:-6px;left:calc(50% - 9px);width:18px;height:2px;border-radius:2px;background:var(--brass)}
-  main{padding-bottom:20px}
+  /* 固定底栏会盖住页面最后一段内容（真机截图里章节抬头被压住）：给 main 留出底栏的高度。
+     底栏是 64px + 安全区 + 6px 内边距，这里取 84px 留一点余量。 */
+  main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
   .footer{padding-bottom:calc(80px + env(safe-area-inset-bottom));flex-direction:column;align-items:flex-start;gap:12px}
   .footer .fnote{text-align:left;max-width:100%}
   .toast{bottom:calc(78px + env(safe-area-inset-bottom))}
@@ -1298,17 +1311,22 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
 @keyframes arm{0%{transform:none}45%{transform:scale(1.035)}100%{transform:none}}
 .sail-live{animation:msgin .4s var(--ease)}
 @media(max-width:560px){
-  #page-sail .section{padding:16px 0 18px}
-  #page-sail .sec-head{margin-bottom:14px}
+  /* 负责人 2026-09-20：首页「行装清单」上下留白太多、六站抽屉展开后与下一节割裂。
+     收掉三处：小节内边距、抽屉整体外边距、展开卡与后一张之间的让位。 */
+  #page-sail .section{padding:10px 0 12px}
+  #page-sail .sec-head{margin-bottom:10px}
   #page-sail .sec-head h2{font-size:20px}
   #page-sail .sec-head p{margin-top:4px;line-height:1.7}
-  /* 六次靠岸：抽屉卡在窄屏再瘦一圈（标题仍是单行，靠省略号兜底）。 */
-  #page-sail .deck{margin:14px 0 0}
+  /* 六次靠岸：抽屉卡在窄屏再瘦一圈（标题仍是单行，靠省略号兜底）。
+     2026-09-20 负责人：留白太多、展开后与下一页割裂——收起态每张再收 4px、叠得更紧。 */
+  #page-sail .deck{margin:10px 0 0}
   #page-sail .stop{border-radius:11px}
-  #page-sail .stop+.stop{margin-top:-12px}
-  #page-sail .stop.open+.stop{margin-top:8px}
-  #page-sail .stop-head{padding:12px 13px;gap:9px}
+  #page-sail .stop+.stop{margin-top:-14px}
+  #page-sail .stop.open+.stop{margin-top:6px}
+  #page-sail .stop-head{padding:9px 13px;gap:9px}
   #page-sail .stop-head .mk{font-size:10px;gap:6px;font-family:var(--song)}
+  #page-sail .stop-head .icon{width:15px;height:15px}
+  #page-sail .stop-cue .icon{width:14px;height:14px}
   #page-sail .stop-head h4{font-size:14px}
   #page-sail .stop-body{padding:0}
   #page-sail .stop-inner p{padding:0 13px 13px;font-size:11px;line-height:1.75;font-family:var(--song)}
