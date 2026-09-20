@@ -26,9 +26,10 @@ describe("起航页六站：抽屉式堆叠", () => {
   });
 
   it("正文始终留在 DOM 里，收起只动高度与透明度", () => {
-    // 用 hidden 就放不出动画，而且读屏会在视觉收起时丢掉这段说明。
+    // 不用 display:none 截断动画；aria-hidden 让收起内容退出阅读顺序。
     expect(sail).toContain('<div className="stop-inner"><p>{intro.desc}</p></div>');
-    expect(sail).not.toContain("hidden={!open}");
+    expect(sail).not.toMatch(/\shidden=\{!open\}/);
+    expect(sail).toContain("aria-hidden={!open}");
   });
 
   it("平铺的三列网格卡片已移除", () => {

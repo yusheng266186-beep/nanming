@@ -237,9 +237,9 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
       </div>}
     </div>}
 
-    <div className="locate">
+    <div className="locate locate-layout">
       <div>
-        <div className="gauge">
+        <div className="gauge locate-gauge">
           <div className="gauge-top">
             <div><span className="eyebrow plain">{schoolLocked ? "高考等价分 · 学校数据换算" : "高考目标分 · 裸分"}</span>
               <div className="bignum num" style={{ marginTop: 12 }}>{score === null ? <span className="absent">—</span> : score}<small>分</small></div></div>
@@ -310,7 +310,7 @@ export function renderLocate({ state, setState, page, setPage, score, trackLabel
           </div> : null}
         </div>
       </div>
-      <aside>
+      <aside className="locate-side">
         <div className="sidecard">
           <span className="eyebrow plain">Stability · 近五次</span>
           <h3 className="song" style={{ marginTop: 10 }}>你的成绩曲线</h3>

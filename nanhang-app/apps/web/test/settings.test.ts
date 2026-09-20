@@ -36,8 +36,9 @@ describe("设置：入口与归属", () => {
     expect(settings).toContain("等待与动效");
     expect(settings).toContain("思考低语");
     expect(settings).toContain("界面动效");
-    // 低语不是模型思考：卡片上必须如实写明这一点。
-    expect(settings).toContain("不是模型的内部思考");
+    // 低语是南溟自己的阶段提示；谈心页的思考过程另有安全显示规则。
+    expect(settings).toContain("低语显示的是南溟自己的");
+    expect(settings).toContain("谈心页的思考过程会按安全规则显示");
     // 开关落成 aria-pressed 的「开 / 关」两枚 chip（与北辰的开/关按钮同一套做法）。
     expect(settings).toContain('aria-pressed={value}');
     expect(settings).toContain(">开</button>");

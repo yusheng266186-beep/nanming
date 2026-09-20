@@ -40,7 +40,7 @@ describe("起航页：先定下三件事（行装清单）", () => {
 
   it("进度数的是三件（含选填的 03），能不能出发仍只看 01 与 02", () => {
     expect(sail).toContain("const packed = (state.form.primary !== null ? 1 : 0) + (additionalFull ? 1 : 0) + (state.form.score !== null ? 1 : 0);");
-    expect(sail).toContain('const packWord = readyToSail ? "可以出发" : `还差 ${2 - packed} 件`;');
+    expect(sail).toContain('const packWord = readyToSail ? "可以出发" : `还差 ${requiredLeft} 件必填`;');
     expect(sail).toContain("data-packed={packed}");
     expect(sail).toContain('<b className="num">{packed}</b>');
     // 进度线走 scaleX：只动合成层，宽度不参与布局，改选科时不会把下面的三件顶动。

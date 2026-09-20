@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-20",
-  "revision": "2026-09-20-university-detail-enrichment-82",
-  "stage": "完成官方学费队列核查和两库合并后，已对统一库 2,308 所院校批量编排详细档案：每校平均 918 字，保留教育部名录、阳光高考章程入口、学科/学位、招生计划、费用与来源状态；统一库与详细来源表一次性写入，数据库独立验证、68 项 TASK-03 Python 测试通过；未执行线上部署，云端开关仍保持关闭",
+  "revision": "2026-09-20-unified-ui-polish-84",
+  "stage": "主前端六章体验统一已完成：触屏潮汐、连续抽屉、紧凑清单与定位、北辰式设置；54 文件 592 项测试与23项合成 DOM 断言通过；本轮待 PR 审阅与负责人视觉验收，未合并部署；已有数据发布与云端开关状态沿用上一轮",
   "completed": [
     "TASK-01",
     "TASK-02",
@@ -25,24 +25,24 @@
     "GATE-LOCAL"
   ],
   "tests": {
-    "files": 47,
-    "passed": 554,
+    "files": 54,
+    "passed": 592,
     "failed": 0,
     "acceptance_ids": "A01—A52",
     "pending_ids": "无",
-    "note": "全项目 Node 测试 47 文件 554 项为历史基线；官方学费队列已逐校核查并在完成后只重建一次；统一库合并后又批量生成并一次性写入 2,308 条详细档案和 6,918 条官方来源，已重跑全部 TASK-03 Python 测试 68 项并全部通过（原招生库核心数据库测试 54 项、合并库专项测试 6 项、详细档案专项测试 3 项），数据库独立校验 66,399 项通过；未重跑全项目 Node 测试。",
-    "log": "docs/verification/cloud-cost-freeze-2026-09-14.json"
+    "note": "本轮完整原工作区 Node 测试实测54文件592项；web typecheck/build与23项合成DOM检查通过。TASK-03 Python68项与数据库独立校验66399项为历史结果，本轮未重跑。",
+    "log": "docs/verification/ui-polish-2026-09-20.json"
   },
   "runtime": {
     "node": "26.7.0",
     "npm": "11.19.0",
-    "note": "版本来自此前全项目审阅的机器实测；本轮前端专项只读代码未重测。项目要求Node>=22，Pages配置Node22，SCF脚本Nodejs20.19，云端兼容性仍按独立记录判断。"
+    "note": "本轮实测 Node26.7.0 / npm11.19.0；项目要求Node>=22，Pages配置Node22，云端兼容性仍按独立记录判断。"
   },
   "published_admission_records": 51878,
   "synthetic_only": false,
   "official_sample_records": 17,
   "human_verified_sample_records": 36,
-  "next_task": "统一数据库已生成并作为本地查询入口；后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变",
+  "next_task": "审阅 codex/frontend-polish 并由负责人验收桌面/手机画框、抽屉、清单、定位和设置；当前未合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变",
   "official_fee_catalog": {
     "plan_year": 2026,
     "catalog_entries": 2190,
@@ -210,7 +210,7 @@
     "merge_tests_passed": 6,
     "policy": "保留两边原始表；以南航规范化招生字段为统一查询主口径；外部原始字段、院校简介和教育部名录作为补充；同一字段冲突不覆盖，写入 merge_conflict",
     "inputs_preserved": true,
-    "deployment_status": "NOT_DEPLOYED"
+    "deployment_status": "PUBLISHED_TO_NANMING_COS_AND_GITHUB_METADATA"
   },
   "university_detail_enrichment": {
     "builder": "pipelines/task03/enrich_university_details.py",
@@ -237,10 +237,10 @@
     "policy": "先批量生成全部院校中间结果，再一次性写入；仅保留教育部名录与阳光高考官方入口，结构化字段单独标注，缺失字段保持未知；未使用第三方搜索摘要补写",
     "tests_passed": 3,
     "status": "APPLIED",
-    "deployment_status": "NOT_DEPLOYED"
+    "deployment_status": "PUBLISHED_TO_GITHUB_DATA_AND_NANMING_COS_ADMISSIONS_RELEASE"
   },
-  "web_build": "latest frontend production build passed with official API and release bases and /nanming/ base; main JS gzip 111.12KB; new snapshot pending Pages",
-  "browser_journey": "passed_primary_five_step_desktop_1440_mobile_390_320_real_admissions_synthetic_ai_and_school_ui",
+  "web_build": "本轮本机 Vite production build passed（72 modules，JS gzip113.42KB）；分支待审阅，尚未合并/部署。历史数据发布事实见 published_release。",
+  "browser_journey": "historical_five_step_evidence_only; current_six_chapter_ui_has_23_synthetic_DOM_assertions; owner_visual_acceptance_pending",
   "webmcp_contract_tests_passed": 1,
   "ai_gateway": "implemented_qianfan_and_fake_upstreams_optional_frontend",
   "ai_gateway_store": "当前云端为单实例内存档：2026-09-14 按负责人要求销毁了按量计费 Redis，NANHANG_REDIS_* 已从函数环境移除，并设 NANHANG_AI_ALLOW_MEMORY_STORE=1（生产档缺共享存储时会拒绝整个函数启动，不只是关闭 AI）。代码仍支持 RedisStateStore（Lua 原子脚本，键前缀 nm:，带 TTL）与 MemoryStateStore；恢复共享会话需重建实例并回填三项变量、把开关改回 0。",
@@ -316,17 +316,19 @@
   },
   "published_release": {
     "builder": "pipelines/task03/export_release.py",
-    "release_id": "SC-2026-e48a598a1832",
-    "artifact": "data/releases/SC-2026-e48a598a1832/",
-    "manifest": "data/releases/SC-2026-e48a598a1832/manifest.json",
+    "release_id": "SC-2026-d4e8167a8109",
+    "artifact": "data/releases/SC-2026-d4e8167a8109/",
+    "manifest": "data/releases/SC-2026-d4e8167a8109/manifest.json",
     "pointer": "data/releases/current.json",
     "status": "PUBLISHED",
     "synthetic": false,
-    "shards": 90,
+    "shards": 74,
     "offerings": 51878,
     "coverage_entries": 74,
-    "files": 93,
-    "bytes": 62709892,
+    "files": 94,
+    "bytes": 61922514,
+    "published_at": "2026-09-20T11:36:07Z",
+    "remote_verification": "COS current.json 与清单一致；94/94 文件 SHA-256 已复核，其中 2 个首轮请求返回 404 的分片已单独补传并复核",
     "web_integration": "apps/web/src/release-loader.ts 读取发布包；vite.config.ts 在开发期只读提供 data/releases",
     "not_claimed": [
       "逐分位次是官方分段区间，不是个人精确名次",

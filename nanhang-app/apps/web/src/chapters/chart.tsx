@@ -4,6 +4,7 @@ import { makeBranches, type PoolRow, type RouteBranch, type SchoolPool } from ".
 import type { ScoreRange } from "../journey-model.js";
 import type { WebState } from "../model.js";
 import { Icon } from "../art.js";
+import { Disclosure } from "../disclosure.js";
 import {
   REFERENCE_YEAR, RELATION_CLASSES, buildRoutePoster, formatRankInterval, groupRouteRows, label,
   levelLabel, pickGroupedCards, scoreRangeForRanks, svgStringToPng, useDeckStack, useNarrow, type PageId
@@ -469,14 +470,14 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
                     const open = openCategory === key;
                     const entry = picked.find((item) => item.category.name === category.name);
                     return <div className={`stop${open ? " open" : ""}`} key={key}>
-                      <button type="button" className="stop-head" aria-expanded={open}
+                      <button type="button" className="stop-head" aria-expanded={open} aria-controls={`chart-${key}`}
                         onClick={() => setOpenCategory(open ? null : key)}>
                         <span className="mk">{category.classes.length} 个专业类</span>
                         <h4>{category.name}</h4>
                         <span className="sc-cat-count">{category.total} 条</span>
                         <span className="stop-cue"><Icon name="chevron" /></span>
                       </button>
-                      {open ? <div className="stop-body">
+                      <Disclosure id={`chart-${key}`} open={open}>
                         {entry ? entry.classes.map((cls) => <div className="sc-class" key={cls.name}>
                           <div className="sc-class-head">
                             <span>{cls.name}</span>
@@ -493,7 +494,7 @@ return <article className={`scard${relation ? ` rel-${relation.cls}` : ""}`} key
                             <div className="stack-tail" aria-hidden="true" />
                           </div>
                         </div>) : <p className="muted-note">这个大类在这次挑选里没有展开的卡片（每个专业类取前 {CARDS_PER_CLASS} 张，每条线合计上限 {CARDS_PER_ROUTE} 张）。</p>}
-                      </div> : null}
+                      </Disclosure>
                     </div>;
                   })}
                 </div>

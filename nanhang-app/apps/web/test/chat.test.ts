@@ -23,6 +23,7 @@ const app = [
   ...readdirSync(chapterDir).filter((name) => /\.tsx?$/.test(name))
     .sort().map((name) => readFileSync(resolve(chapterDir, name), "utf8"))
 ].join("\n");
+const srcMotion = readFileSync(resolve(import.meta.dirname, "../src/motion.ts"), "utf8");
 const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8");
 
 describe("两种聊法（选择作答 / 自由探索）", () => {
@@ -82,12 +83,12 @@ describe("谈心对话", () => {
 
   it("honours prefers-reduced-motion instead of animating unconditionally", () => {
     // chat.tsx must consult the media query and skip the per-character timer when it matches.
-    expect(chat).toContain("prefers-reduced-motion:reduce");
+    expect(srcMotion).toContain("prefers-reduced-motion: reduce");
     expect(chat).toContain("animate");
     // With animation off the full text is shown immediately: no interval is scheduled.
     expect(chat).toMatch(/if\s*\(!animate\)\s*\{\s*setShown\(main\.length\)/);
     // The page asks for the preference; waiting is shown with TypingDots, not a text animation.
-    expect(app).toContain("prefersReducedMotion()");
+    expect(app).toContain("useReducedMotion()");
     expect(app).toContain("<TypingDots");
   });
 

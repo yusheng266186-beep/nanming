@@ -49,6 +49,10 @@ def files(root):
     for base, dirs, names in os.walk(root):
         dirs[:] = sorted(d for d in dirs if d not in EXCLUDED)
         for name in sorted(names):
+            # A linked worktree uses a .git file rather than a directory.
+            # Repository metadata must not enter delivery indexes or hashes in either form.
+            if name in EXCLUDED:
+                continue
             path = Path(base) / name
             relative = path.relative_to(ROOT).as_posix()
             if name.endswith(GENERATED_SUFFIXES) or relative.startswith(UNMANAGED):

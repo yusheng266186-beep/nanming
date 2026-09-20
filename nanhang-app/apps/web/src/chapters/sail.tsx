@@ -1,8 +1,8 @@
-import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { ADDITIONAL_OPTIONS, RELEASE_LABELS, SYNTHETIC_NOTICE, withForm, type WebState } from "../model.js";
 import { ArtSlot, Icon } from "../art.js";
-import { prefersReducedMotion } from "../chat.js";
+import { useReducedMotion } from "../motion.js";
 import { useScrollLock } from "../scroll-lock.js";
 import { Overlay } from "../overlay.js";
 import { CHAPTERS, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
@@ -34,39 +34,41 @@ export interface SailProps {
 
 export function renderSail({ state, setState, page, setPage, quality, setShowKun, setToast, toast,
   route, chooseRoute }: SailProps) {
-  // 海景的小巧思：孤帆远影、岸边双层浪是指针无关的环境动画；指针视差只在鼠标/笔上生效
-  // （触屏拖页时跟着抖），点水涟漪给触屏一个落点反馈。prefers-reduced-motion 时全部停用。
-  const [tilt, setTilt] = useState<{ x: number; y: number } | null>(null);
-  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
-  const rippleSeq = useRef(0);
+  // 环境潮汐不依赖 hover。桌面视差只写局部 CSS 变量，不逐帧重渲染整棵应用。
+  const artRef = useRef<HTMLDivElement>(null);
+  const artFrame = useRef(0);
   // 登船方式不再平铺在页面上：按「开始起航」后以卡片弹出，作为通向定位/成绩的桥。
   const [boardOpen, setBoardOpen] = useState(false);
   // 六站航程收成一副抽屉卡：默认全部收起叠在一起，点哪一站展开哪一站（再点收起）。
   const [deckOpen, setDeckOpen] = useState<string | null>(null);
   // 登船卡片是浮层：开着的时候锁住整页滚动，手指滑不出卡片外面去。
   useScrollLock(boardOpen);
-  const reducedMotion = useMemo(() => prefersReducedMotion(), []);
+  const reducedMotion = useReducedMotion();
+  const artLeave = () => {
+    cancelAnimationFrame(artFrame.current);
+    artRef.current?.style.removeProperty("--art-x");
+    artRef.current?.style.removeProperty("--art-y");
+  };
+  useEffect(() => { artLeave(); return artLeave; }, [reducedMotion, page]);
   const artPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedMotion || event.pointerType === "touch") return;
     const rect = event.currentTarget.getBoundingClientRect();
-    setTilt({ x: ((event.clientX - rect.left) / rect.width) * 2 - 1, y: ((event.clientY - rect.top) / rect.height) * 2 - 1 });
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+    cancelAnimationFrame(artFrame.current);
+    artFrame.current = requestAnimationFrame(() => {
+      artRef.current?.style.setProperty("--art-x", `${(x * 4).toFixed(2)}px`);
+      artRef.current?.style.setProperty("--art-y", `${(y * 3).toFixed(2)}px`);
+    });
   };
-  const artLeave = () => setTilt(null);
-  const artTap = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (reducedMotion) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const id = ++rippleSeq.current;
-    setRipples((current) => [...current.slice(-4), { id, x: event.clientX - rect.left, y: event.clientY - rect.top }]);
-    window.setTimeout(() => setRipples((current) => current.filter((item) => item.id !== id)), 1300);
-  };
-  const tiltStyle = tilt ? { transform: `translate(${tilt.x * 8}px, ${tilt.y * 6}px) scale(1.06)` } : undefined;
   // 「先定下三件事」各自的备齐状态：01 首选科目与 02 再选两门是出发的前提，03 目标分是选填。
   // 状态只写在字段的印章上（铜色 = 备好），底部那句摘要同步再说一遍（aria-live），不另造第二份说明。
   const additionalFull = state.form.additional.length === 2;
   const readyToSail = state.form.primary !== null && additionalFull;
   // 「行装清单」的备齐进度：三件里备好几件（03 是选填，也算一件事，但不算出门的门槛）。
   const packed = (state.form.primary !== null ? 1 : 0) + (additionalFull ? 1 : 0) + (state.form.score !== null ? 1 : 0);
-  const packWord = readyToSail ? "可以出发" : `还差 ${2 - packed} 件`;
+  const requiredLeft = Number(state.form.primary === null) + Number(!additionalFull);
+  const packWord = readyToSail ? "可以出发" : `还差 ${requiredLeft} 件必填`;
   const sailSummary = state.form.primary
     ? `当前：${label(state.form.primary)}类 · 再选 ${state.form.additional.length ? state.form.additional.map(label).join("、") : "未选"} · 高考目标分 ${state.form.score ?? "未填"}`
     : "还没有选首选科目，位次与资格都会显示为未知。";
@@ -79,8 +81,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           <span>Every far shore begins with today&apos;s provision.</span></p>
         <div className="hero-foot">南溟用真实数据与你自己保存的原话，拼出一张能落地的航线。</div>
       </div>
-      <div className="hero-art" onPointerMove={artPointer} onPointerLeave={artLeave} onPointerDown={artTap}>
-        <div className="slot-wrap" style={tiltStyle}>
+      <div className="hero-art hero-art--framed" ref={artRef} onPointerMove={artPointer} onPointerLeave={artLeave}>
+        <div className="slot-wrap">
           <ArtSlot name="sea" />
         </div>
         <div className="art-waves" aria-hidden="true">
@@ -91,11 +93,9 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
             <path d="M0 30Q80 14 160 30T320 30T480 30T640 30T800 30T960 30T1120 30T1280 30V60H0Z" />
           </svg>
         </div>
-        {ripples.map((ripple) => <span key={ripple.id} className="art-ripple" aria-hidden="true"
-          style={{ left: ripple.x, top: ripple.y }} />)}
         <button type="button" className="pole-star" aria-label="北辰" onClick={() => setShowKun(true)}><Icon name="star" /></button>
-        <div className="art-tag" style={tilt ? { transform: `translate(${tilt.x * -6}px, ${tilt.y * -3}px)` } : undefined}>SET SAIL — 01</div>
-        <div className="art-cap" style={tilt ? { transform: `translate(${tilt.x * -5}px, ${tilt.y * -3}px)` } : undefined}>
+        <div className="art-tag">SET SAIL — 01</div>
+        <div className="art-cap">
           <p>每一个远方，<br />都从今天开始准备。</p><span className="vert">南冥者，天池也</span></div>
       </div>
     </div>
@@ -105,7 +105,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       <div className="sec-head"><div><span className="eyebrow">The Voyage · 六章航程</span><h2 style={{ marginTop: 12 }}>一条航线，六次靠岸</h2><p>起航之后的六站，每一站都算数：先圈出探索区间，再聊出方向；两条来路都保留，最后一站合成一张航线图。六站收成一叠抽屉卡，点哪一站展开哪一站。</p></div></div>
       {/* 抽屉式堆叠：收起时每站只露一行（章号 + 站名 + 这一站做什么），六张压边叠成一副，
           省下的是留白，不是内容——每站的整句说明一个字都没删，展开就能看到。 */}
-      <div className="deck">
+      <div className="deck voyage-deck">
         {CHAPTERS.map((chapter) => {
           const intro = STOP_INTRO[chapter.id]!;
           const open = deckOpen === chapter.id;
@@ -116,8 +116,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
               <h4>{intro.title}</h4>
               <span className="stop-cue" aria-hidden="true"><Icon name="chevron" /></span>
             </button>
-            {/* 正文始终在 DOM 里：展开/收起动的是高度与透明度，读屏不会因为视觉收起而丢掉这段说明。 */}
-            <div className="stop-body" id={`stop-${chapter.id}`}>
+            {/* 保留正文供高度过渡；收起后从焦点和辅助技术的阅读顺序中移除。 */}
+            <div className="stop-body" id={`stop-${chapter.id}`} aria-hidden={!open} {...(!open ? { inert: "" } : {})}>
               <div className="stop-inner"><p>{intro.desc}</p></div>
             </div>
           </div>;
@@ -129,7 +129,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
       <div className="sec-head"><div><span className="eyebrow">Chapter 01 · 起航 · 北冥有鱼</span><h2 style={{ marginTop: 12 }}>先定下三件事</h2><p>首选科目与再选科目决定「这个专业我能不能报」；高考目标分给出起点，探索区间决定先看哪些院校。</p></div></div>
       {/* 选科与情景分必须在这里能设置，否则「选择你的选科组合」只是文案：
           位次、资格与匹配都依赖首选科目，没有它整页只能显示未知。 */}
-      <div className="panel sail-panel" data-ready={readyToSail ? "true" : "false"} data-packed={packed}>
+      <div className="panel sail-panel pack-panel" data-ready={readyToSail ? "true" : "false"} data-packed={packed}>
         {/* 卡头是深海底的「备航状态带」：面板抬头 + 备齐进度 + 铜色细进度线，下面把当前选择
             用一句原话再说一遍（aria-live）。进度线把选填的 03 也算进去，「还差几件」一眼看得出；
             能不能出发仍只看 01 与 02（那句 packWord 说的就是这个）。 */}
@@ -214,8 +214,8 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
               onClick={() => {
                 if (state.form.primary === null || state.form.additional.length !== 2) {
                   setToast(state.form.primary
-                    ? "再选科目要正好 2 门——先在下面选满，再开始起航。"
-                    : "先在下面选好首选科目与两门再选科目，再开始起航。");
+                    ? "再选科目要正好 2 门——先在清单里选满，再开始起航。"
+                    : "先在清单里选好首选科目与两门再选科目，再开始起航。");
                   return;
                 }
                 setBoardOpen(true);
