@@ -4,6 +4,7 @@ import { ADDITIONAL_OPTIONS, RELEASE_LABELS, SYNTHETIC_NOTICE, withForm, type We
 import { ArtSlot, Icon } from "../art.js";
 import { prefersReducedMotion } from "../chat.js";
 import { useScrollLock } from "../scroll-lock.js";
+import { Overlay } from "../overlay.js";
 import { CHAPTERS, label, type LocateRoute, type PageId, type QualityState } from "./shared.js";
 
 /** 六次靠岸各自的一句话介绍：标题说这站做什么，描述说它在新流程里的位置。 */
@@ -243,8 +244,10 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
     </aside>}
 
     {/* 登船卡片：按「开始起航」后弹出。两条入口就是定位章的两条路——选哪条就进哪个页面，
-        Esc / 点背景关闭；开着的时候整页滚动是锁住的（见 useScrollLock）。 */}
-    {boardOpen ? <div className="board-backdrop" role="presentation"
+        Esc / 点背景关闭；开着的时候整页滚动是锁住的（见 useScrollLock）。
+        走 Overlay（portal 到 body）：章节的入场动画带 transform，挂在章节里会让背板
+        以章节为参照，手机上表现为两边留白条并把卡片推到视口外。 */}
+    {boardOpen ? <Overlay role="presentation"
       onClick={(event) => { if (event.target === event.currentTarget) setBoardOpen(false); }}
       onKeyDown={(event) => { if (event.key === "Escape") setBoardOpen(false); }}>
       <div className="board-card" role="dialog" aria-modal="true" aria-label="选择登船方式">
@@ -274,7 +277,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
           </button>
         </div>
       </div>
-    </div> : null}
+    </Overlay> : null}
 
     <div className="quote-strip"><p>鲲之大，不知其几千里也；化而为鸟，其名为鹏。</p><span>—— 《庄子 · 逍遥游》</span></div>
   </section>;

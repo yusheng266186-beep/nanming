@@ -143,12 +143,12 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 /* 登船卡片：按「开始起航」后弹出，两条入口作为通向定位/成绩的桥。
    背板与 dialog::backdrop 同一墨色磨砂。入场见下面两行注释：卡片本身不再做位移。 */
-.board-backdrop{position:fixed;inset:0;z-index:90;background:rgba(8,32,42,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:22px}
+.board-backdrop{position:fixed;inset:0;z-index:90;background:rgba(8,32,42,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden}
 /* 入场的动效只做「背板淡入 + 内容淡入」，卡片本身不带 transform：
    原来卡片是从 translateY(26px)/(60px) 升起来的，动画期间卡片被整体推到视口下方
    （320/390 手机档实测底部溢出正好 60px），那半秒里正文与底部按钮都在屏幕外——
    负责人看到的就是「卡片缩在底部看不见」。高度始终不变，卡片自己 overflow:auto 滚动。 */
-.board-card{position:relative;width:min(720px,100%);max-height:min(86vh,86dvh);overflow:auto;overscroll-behavior:contain;background:var(--paper);border:1px solid var(--line-2);border-radius:22px;padding:34px 34px 30px;box-shadow:0 30px 80px rgba(8,32,42,.35);animation:card-fade .32s var(--ease)}
+.board-card{position:relative;width:min(720px,100%);flex:0 1 auto;min-height:0;max-height:min(86vh,86dvh);overflow:auto;overscroll-behavior:contain;background:var(--paper);border:1px solid var(--line-2);border-radius:22px;padding:34px 34px 30px;box-shadow:0 30px 80px rgba(8,32,42,.35);animation:card-fade .32s var(--ease)}
 .board-card .entry-grid{margin-top:22px}
 .board-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);display:grid;place-items:center;transition:background .25s,transform .25s}
 .board-close:hover{background:var(--paper-2);transform:rotate(90deg)}
@@ -156,9 +156,12 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 @keyframes card-fade{from{opacity:0}to{opacity:1}}
 @media(max-width:560px){
   /* 手机档做成底部抽屉：从底部升起的感觉交给背板（内容先淡入再由背板的模糊收拢），
-     卡片仍然不带 transform，底边始终贴在视口底（实测 bottom 溢出 0）。 */
+     卡片仍然不带 transform。高度用 `max-height:100%`（相对背板，背板固定铺满视口）
+     而不是 `92dvh`——dvh 在部分浏览器/内嵌 WebView 上算得比可视高度大，
+     卡片底边会落到视口外（2026-09-20 真机截图里「只能看到一条边、滑不动」就是这么来的）。
+     flex 子项默认 min-height:auto，会把卡片撑到内容高度，所以要显式 min-height:0。 */
   .board-backdrop{padding:0;align-items:flex-end;animation:backdrop-in .25s var(--ease)}
-  .board-card{border-radius:22px 22px 0 0;max-height:92dvh;padding:26px 20px calc(20px + env(safe-area-inset-bottom))}
+  .board-card{border-radius:22px 22px 0 0;max-height:100%;min-height:0;flex:0 1 auto;padding:26px 20px calc(20px + env(safe-area-inset-bottom))}
 }
 .entry{position:relative;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:30px;overflow:hidden;display:flex;flex-direction:column;min-height:230px;transition:transform .5s var(--ease),border-color .3s,box-shadow .4s}
 .entry:hover{transform:translateY(-5px);border-color:var(--brass-line);box-shadow:var(--sh-card)}

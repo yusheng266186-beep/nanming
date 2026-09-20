@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { THINKING_CHOICES, withTier, type AiPanelState } from "../ai-panel.js";
 import { Icon } from "../art.js";
+import { Overlay } from "../overlay.js";
 import type { LocateRoute } from "./shared.js";
 
 /**
@@ -54,7 +55,9 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
       <span className="vh">{label}当前{value ? "开" : "关"}</span>
     </span>;
 
-  return <div className="board-backdrop" role="presentation" data-settings="open"
+  // 走 Overlay（portal 到 body）：设置卡从任何页面都能打开，而章节的入场动画带 transform，
+  // 挂在章节里会让背板以章节为参照（手机档两边留白条、卡片被推出视口）。
+  return <Overlay role="presentation" data-settings="open"
     onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <div className="board-card" role="dialog" aria-modal="true" aria-label="设置">
       <button type="button" className="board-close" aria-label="关闭设置" autoFocus
@@ -133,5 +136,5 @@ export function renderSettings({ open, onClose, ai, setAi, clear, route, release
         </div>
       </div>
     </div>
-  </div>;
+  </Overlay>;
 }

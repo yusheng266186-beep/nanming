@@ -29,17 +29,21 @@ describe("浮层贴视口", () => {
     const backdrop = /\.board-backdrop\{([^}]*)\}/.exec(css)?.[1] ?? "";
     expect(backdrop).toContain("position:fixed");
     expect(backdrop).toContain("inset:0");
+    expect(backdrop).toContain("overflow:hidden");
     // 移动端是一条自下而上的整屏弹层：背板不留内边距，卡片贴底并吃安全区。
-    // （2026-09-20：容器由 grid 改成 flex——flex 才有 flex-end 这个写法，
-    //  同时卡片不再做位移动画，见 overlay-geometry.test.ts。）
+    // （2026-09-20：容器由 grid 改成 flex；卡片高度改由背板约束，见 overlay-geometry.test.ts。）
     expect(css).toContain(".board-backdrop{padding:0;align-items:flex-end");
-    expect(css).toMatch(/\.board-card\{[^}]*max-height:92dvh/);
+    expect(css).toMatch(/\.board-card\{[^}]*max-height:100%/);
     expect(css).toMatch(/\.board-card\{[^}]*env\(safe-area-inset-bottom\)/);
   });
 
-  it("登船卡片挂在章节里（所以上面那条 fill 规则才是关键）", () => {
-    expect(sail).toContain('className="board-backdrop"');
-    expect(sail).toContain('role="dialog"');
-    expect(sail).toContain('aria-modal="true"');
+  it("登船卡片走 Overlay（portal 到 body），所以章节动画的 transform 关不住它", () => {
+    // 章节动画本身不带 fill 仍然要保留（它管的是动画结束后的那一档）。
+    expect(css).toContain("不能带 fill");
+    // 但真正让浮层贴住视口的是挂载点：三处浮层都用 Overlay。
+    expect(sail).toContain("import { Overlay }");
+    expect(sail).toContain('<Overlay role="presentation"');
+    expect(sail).not.toContain('className="board-backdrop"');
+    expect(sail).not.toContain(">board-card<");
   });
 });

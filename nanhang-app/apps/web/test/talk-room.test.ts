@@ -92,7 +92,10 @@ describe("谈心：聊完之后才给的东西", () => {
     // 素材判据吃的是学生原话与目录，不再只看轮数：
     expect(talk).toContain("directionTalkSettled(studentTurns, ai.suggestions, catalogGroups)");
     expect(talk).toContain('aria-label="溟听出来的方向"');
-    expect(talk).toContain('className="board-backdrop"');
+    // 2026-09-20：小结卡改走 Overlay（portal 到 body），不再直接写 .board-backdrop——
+    // 章节的入场动画带 transform，挂在章节里会让背板以章节为参照（真机表现为两边白条 + 卡片被推出视口）。
+    expect(talk).toContain("<Overlay role=\"presentation\"");
+    expect(talk).not.toContain('className="board-backdrop"');
     expect(talk).toContain(">方向小结<");
   });
 

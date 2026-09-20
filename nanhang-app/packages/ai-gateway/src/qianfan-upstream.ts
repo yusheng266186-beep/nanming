@@ -215,6 +215,11 @@ export function buildQianfanSystemPrompt(request: UpstreamRequest): string {
     "",
     "【输出格式】",
     "1. 先用中文口语化地回应，最多 600 字，纯文本：不要使用 Markdown 记号，不要出现任何网址或链接，不要写 HTML 标签。",
+    // 思考过程会实时显示给学生（见文件顶部第 1 条），所以必须也用中文——
+    // 2026-09-20 线上实测：不加这条时模型用英文推理（The student has said: ...），
+    // 高三学生读英文思考没有意义。这条要求只约束语言，不放宽任何内容边界。
+    "1.1 如果你在回答前先思考：思考过程也必须用中文（学生能直接看懂的口语），不要用英文推理；"
+      + "思考里同样不要出现网址、链接或 HTML 标记。",
     `2. 正文结束后另起一行，只输出这一行标记：${STRUCT_MARKER}`,
     "3. 紧接着输出一个 JSON 对象（不要代码围栏、不要多余解释），字段只能有这些：",
     '   {"suggestions":[{"directionId":"...","evidenceIds":["..."],"rationale":"...","openQuestions":["..."]}],"actions":["..."],"options":["..."]}',

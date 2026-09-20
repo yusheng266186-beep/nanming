@@ -1,32 +1,56 @@
-// 浮层卡片的几何不变量：卡片不许被入场动效推出视口（负责人 2026-09-20 实测到的「缩在底部看不见」）。
+// 浮层必须 portal 到 body：章节动画的 transform 会把 fixed 后代关进局部包含块。
 //
-// 背景：`.board-card` 原来挂着两段位移动画（桌面 translateY(26px)、≤560px translateY(60px)），
-// 手机档实测动画期间卡片底边比视口底多出正好 60px——那半秒里正文和底部按钮都在屏幕外，
-// 看起来就像卡片缩在底部、还滑不动。修法是入场只做淡入，位移交给背板，卡片位置从第一帧就定住。
-// 这里把机制钉住：卡片本身不带 transform 动画、容器能居中/贴底、卡片自己可滚。
+// 负责人 2026-09-20 报的问题（真机截图 + 本机实测双重确认）：
+//   · 方向小结卡只在屏幕最底下露出一条边，手机端上下滑不动；
+//   · 左右两边各有一条白条。
+// 根因：`.view` 挂着入场动画 `animation:arrive`，而 `@keyframes arrive` 里有 `transform`。
+// 只要 transform 不是 none（动画运行期间就算），该元素就成为 `position:fixed` 后代的包含块。
+// 挂在章节里的背板于是按章节盒子定位。实测（390×844，transform=matrix(1,0,0,1,0,18)）：
+//   背板 rect = 18,2162 → 372,2991（354×829）——左边留 18px（.wrap 的内边距）＝白条，
+//   高度从章节顶部起算＝卡片底边落到视口下方。
+// 2026-09-13 去掉 animation-fill-mode 只解决了「动画结束仍带 fill」这一种情形，
+// 动画运行期间照样创建包含块，所以那次没根治。
+//
+// 现在的机制（由本文件钉住）：
+//   1. 三处浮层统一走 `Overlay`，它用 createPortal 挂到 document.body——包含块永远是视口；
+//   2. 背板是块级容器，卡片高度相对背板限制（max-height:100% + min-height:0），
+//      不用 dvh 这种在部分 WebView 上会算大的单位，卡片底边不可能落到视口外；
+//   3. 卡片自己滚（overflow:auto + overscroll-behavior:contain），背板不滚。
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(resolve(import.meta.dirname, "../src/style.css"), "utf8");
+const src = (relative: string) => readFileSync(resolve(import.meta.dirname, "../src", relative), "utf8");
+const css = src("style.css");
+const overlay = src("overlay.tsx");
+const sail = src("chapters/sail.tsx");
+const talk = src("chapters/talk.tsx");
+const settings = src("chapters/settings.tsx");
 
-describe("浮层卡片几何不变量", () => {
-  it("卡片不做位移入场，只有淡入", () => {
-    expect(css).toMatch(/\.board-card\{[^}]*animation:card-fade/);
-    expect(css).not.toMatch(/@keyframes board-rise/);
-    expect(css).not.toMatch(/@keyframes board-sheet/);
-    // 关键帧本身也不许出现 translate：只要卡片带 transform，位置就会在动画期间偏移。
-    const fade = css.match(/@keyframes card-fade\{[^}]*\}/)?.[0] ?? "";
-    expect(fade).not.toContain("translate");
-    expect(fade).not.toContain("transform");
+describe("浮层挂载点：portal 到 body", () => {
+  it("Overlay 用 createPortal 挂到 document.body，并保留背板类名", () => {
+    expect(overlay).toContain('import { createPortal } from "react-dom"');
+    expect(overlay).toContain("createPortal(backdrop, document.body)");
+    expect(overlay).toContain('const { className = "board-backdrop", ...rest2 } = rest');
+    // 没有 document 时退回内联，保证测试/SSR 不炸。
+    expect(overlay).toContain('if (typeof document === "undefined") return backdrop');
   });
 
-  it("容器负责定位：桌面居中、手机贴底，且卡片自己能滚", () => {
-    expect(css).toMatch(/\.board-backdrop\{[^}]*display:flex/);
-    expect(css).toMatch(/\.board-backdrop\{[^}]*align-items:center/);
-    expect(css).toMatch(/\.board-backdrop\{[^}]*justify-content:center/);
-    // ≤560px 才贴底，且此时卡片不再改 animation（改回位移动画就会重现那个 60px 偏移）。
-    // 用花括号配对取出整个媒体块：块里有注释，不能靠"第一个 }"截断。
+  it("三处浮层（登船卡 / 设置卡 / 方向小结）都走 Overlay，没人再往章节里塞 fixed 背板", () => {
+    expect(sail).toContain("import { Overlay }");
+    expect(settings).toContain("import { Overlay }");
+    expect(talk).toContain("import { Overlay }");
+    for (const [name, source] of [["sail", sail], ["settings", settings], ["talk", talk]] as const) {
+      expect(source, `${name} 不应再直接写 .board-backdrop 容器`).not.toContain('className="board-backdrop"');
+    }
+    expect(sail).toContain('<Overlay role="presentation"');
+    expect(settings).toContain('<Overlay role="presentation" data-settings="open"');
+    expect(talk).toContain('<Overlay role="presentation"');
+  });
+});
+
+describe("浮层几何：高度跟着视口，卡片自己滚", () => {
+  it("手机档用 max-height:100% + min-height:0，不依赖 dvh", () => {
     const start = css.indexOf("@media(max-width:560px){", css.indexOf(".board-backdrop"));
     expect(start, "≤560px 的浮层媒体块应存在").toBeGreaterThanOrEqual(0);
     let depth = 0;
@@ -35,14 +59,27 @@ describe("浮层卡片几何不变量", () => {
       if (css[i] === "{") depth++;
       if (css[i] === "}") { depth--; if (depth === 0) { block = css.slice(start, i + 1); break; } }
     }
+    expect(block).toMatch(/\.board-card\{[^}]*max-height:100%/);
+    expect(block).toMatch(/\.board-card\{[^}]*min-height:0/);
+    expect(block).not.toMatch(/\.board-card\{[^}]*92dvh/);
     expect(block).toContain("align-items:flex-end");
-    expect(block).toMatch(/\.board-card\{[^}]*max-height:92dvh/);
     expect(block).not.toMatch(/\.board-card\{[^}]*transform/);
-    expect(block).not.toMatch(/\.board-card\{[^}]*animation:(board-rise|board-sheet)/);
-    expect(css).toMatch(/\.board-card\{[^}]*overflow:auto/);
   });
 
-  it("谈心室输入框没有拖拽改高的手柄（右下角那两条斜杠）", () => {
-    expect(css).toMatch(/\.dock-row textarea\.inp\{resize:none\}/);
+  it("背板铺满视口、内容不溢出；桌面仍居中", () => {
+    expect(css).toMatch(/\.board-backdrop\{[^}]*position:fixed/);
+    expect(css).toMatch(/\.board-backdrop\{[^}]*inset:0/);
+    expect(css).toMatch(/\.board-backdrop\{[^}]*display:flex/);
+    expect(css).toMatch(/\.board-backdrop\{[^}]*align-items:center/);
+    expect(css).toMatch(/\.board-backdrop\{[^}]*overflow:hidden/);
+    expect(css).toMatch(/\.board-card\{[^}]*overflow:auto/);
+    expect(css).toMatch(/\.board-card\{[^}]*overscroll-behavior:contain/);
+  });
+
+  it("卡片不做位移入场（只有淡入），避免动画期间位置偏移", () => {
+    expect(css).toMatch(/\.board-card\{[^}]*animation:card-fade/);
+    const fade = css.match(/@keyframes card-fade\{[^}]*\}/)?.[0] ?? "";
+    expect(fade).not.toContain("translate");
+    expect(fade).not.toContain("transform");
   });
 });

@@ -6,6 +6,7 @@ import type { ChatMode, ThinkingTier } from "../ai-client.js";
 import { Icon } from "../art.js";
 import { AnswerStarters, ChatBubble, TypingDots } from "../chat.js";
 import { useScrollLock } from "../scroll-lock.js";
+import { Overlay } from "../overlay.js";
 import { coveredGroups, directionTalkSettled } from "../direction-quota.js";
 import { QUESTIONS } from "@nanhang/exploration";
 import type { CatalogDirection, CatalogGroup, Major } from "../journey-model.js";
@@ -247,8 +248,10 @@ export function renderTalk({ page, setPage, chatScrollRef, reasoningRef, reasoni
 
       {/* 聊完之后自动弹出的方向小结（与登船卡片同一套浮层）：把 AI 从学生原话里读出来的
           大类 / 小类摆清楚，引用的原话与理由照原样带上。就业方向不在这里编——那要 AI 现场答，
-          所以这里只给一个「让溟讲讲」的入口，答案落在对话里。 */}
-      {summaryOpen ? <div className="board-backdrop" role="presentation"
+          所以这里只给一个「让溟讲讲」的入口，答案落在对话里。
+          走 Overlay（portal 到 body）：章节的入场动画带 transform，挂在章节里会让背板以章节
+          为参照，手机档实测表现为两边白条 + 卡片被推到视口外（负责人 2026-09-20 报的问题）。 */}
+      {summaryOpen ? <Overlay role="presentation"
         onClick={(event) => { if (event.target === event.currentTarget) setSummaryOpen(false); }}
         onKeyDown={(event) => { if (event.key === "Escape") setSummaryOpen(false); }}>
         <div className="board-card" role="dialog" aria-modal="true" aria-label="溟听出来的方向">
@@ -291,7 +294,7 @@ export function renderTalk({ page, setPage, chatScrollRef, reasoningRef, reasoni
               }}>让溟讲讲就业方向</button>
           </div>
         </div>
-      </div> : null}
+      </Overlay> : null}
       {/* AI 的结构化建议：只能来自真实专业目录（与发布库一致），按大类分组展示，每条都引用学生自己的话。
           它是「AI 推荐线」的来源，与学生的自选在「方向」页同等位置。 */}
       {ai.suggestions.length ? <div className="panel" style={{ marginTop: 18 }}>
