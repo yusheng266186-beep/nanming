@@ -160,7 +160,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
                   {label(item)}类
                 </button>)}
               </div>
-              <p className="fhint">2025 年起四川采用 3+1+2，物理类与历史类是两套独立的计划与位次。</p>
+              <p className="fhint">物理类与历史类是两套独立的计划与位次。</p>
             </div>
           </div>
           {/* 02 的状态签把「选了几门」与「够不够」合成一处：1/2 门是进行中，已满 2 门才算备好。 */}
@@ -184,7 +184,7 @@ export function renderSail({ state, setState, page, setPage, quality, setShowKun
                     }}>{label(item)}</button>;
                 })}
               </div>
-              <p className="fhint">选满 2 门才能判断资格。不确定的要求会显示「待核对」，不会被当成满足。</p>
+              <p className="fhint">选满 2 门才能判断资格；不确定的要求显示「待核对」，不算满足。</p>
             </div>
           </div>
           {/* 03 是选填：备好不加门禁，只是让起点更准（区间会用它收敛）。 */}

@@ -10,6 +10,8 @@ import { describe, expect, it } from "vitest";
 const src = (relative: string) => readFileSync(resolve(import.meta.dirname, "../src", relative), "utf8");
 const sail = src("chapters/sail.tsx");
 const css = src("style.css");
+/** 注释里会解释「以前怎么写」，正则断言必须只看真规则，否则会被注释误伤。 */
+const rules = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 describe("起航页六站：抽屉式堆叠", () => {
   it("六站的整句说明一条没删，仍是六张卡", () => {
@@ -48,21 +50,36 @@ describe("起航页六站：抽屉式堆叠", () => {
     expect(css).toMatch(/\.stop\.open\{[^}]*z-index:2/);
   });
 
-  it("动效：高度逐帧插值、正文跟进、箭头回弹、整摞错峰入场", () => {
+  it("动效：高度逐帧插值、正文同步跟进、箭头回弹、整摞统一入场", () => {
     // 抽屉高度用 0fr→1fr：不写死像素，内容多长都能跟着走（认不出的浏览器退化为瞬时展开）。
     expect(css).toMatch(/\.stop-body\{[^}]*grid-template-rows:0fr/);
     expect(css).toMatch(/\.stop-body\{[^}]*transition:grid-template-rows/);
     expect(css).toMatch(/\.stop\.open \.stop-body\{grid-template-rows:1fr\}/);
-    // 正文单独一层透明度 + 位移，比只动高度更有层次。
+    // 正文一层透明度 + 位移，但**必须与高度同步**：曾经 opacity 带 .1s 延迟、transform 带 .06s 延迟，
+    // 容器先长高、正文后出现，中间空出的卡片底色就是负责人三次报的「卡片上端一条白」。
     expect(css).toMatch(/\.stop-inner p\{[^}]*opacity:0/);
-    expect(css).toMatch(/\.stop-inner p\{[^}]*transform:translateY\(-6px\)/);
+    expect(css).toMatch(/\.stop-inner p\{[^}]*transform:translateY\(-4px\)/);
     expect(css).toMatch(/\.stop\.open \.stop-inner p\{opacity:1;transform:none\}/);
+    const pRule = css.match(/\.stop-inner p\{[^}]*\}/)?.[0] ?? "";
+    expect(pRule).toContain("transition:opacity .34s var(--ease),transform .34s var(--ease)");
+    expect(pRule).not.toMatch(/transition:opacity[^;]*\d+\.\d+s/);
     // 箭头翻转带回弹，压边让位走过渡。
     expect(css).toMatch(/\.stop-cue\{[^}]*var\(--ease-spring\)/);
     expect(css).toMatch(/\.stop\+\.stop\{[^}]*transition:margin-top/);
-    // 六张错峰入场：用既有的 arrive 关键帧，逐张加延迟。
-    expect(css).toMatch(/\.stop\{[^}]*animation:arrive/);
-    expect(css).toMatch(/\.stop:nth-child\(6\)\{animation-delay:/);
+    // 入场改为整摞统一（见下方 case）：单张卡片不再挂未播完的入场动画。
+    expect(css).toMatch(/\.deck\{[^}]*animation:deck-in/);
+    expect(css).toMatch(/\.stop\{[^}]*animation:none/);
+  });
+
+  it("单张卡片不带未播完的入场动画（负责人三次报的「卡片上端一条白」的根因）", () => {
+    // 曾经：.stop{animation:arrive .55s var(--ease) both} + 逐张 animation-delay 错峰。
+    // `both` 让卡片在动画开始前停在 from（opacity:0），延迟最长 .25s——刚进页面时几张卡「隐形但占位」，
+    // 点下去只看到卡片底色。抽屉是可交互控件，入场交给整叠容器一次性完成。
+    expect(rules).not.toMatch(/\.stop\{[^}]*animation:arrive/);
+    expect(rules).not.toMatch(/\.stop:nth-child\(\d\)\{animation-delay/);
+    expect(rules).toMatch(/\.stop\{[^}]*animation:none/);
+    expect(rules).toMatch(/@keyframes deck-in\{/);
+    expect(rules).toMatch(/@media\(prefers-reduced-motion:reduce\)\{\.deck\{animation:none\}\}/);
   });
 
   it("减少动态效果时全部动效被压成瞬时", () => {

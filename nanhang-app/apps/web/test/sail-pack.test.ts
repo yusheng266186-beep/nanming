@@ -110,10 +110,18 @@ describe("起航页：先定下三件事（行装清单）", () => {
     expect(css).not.toContain(".field.sail-score");
     // 面板自己不再吃内边距（内边距归状态带 / 清单 / 按钮区三段），窄屏也不能把它加回来。
     expect(css).toMatch(/\.panel\.sail-panel\{[^}]*padding:0/);
-    // 窄屏的收紧值（2026-09-20 第二轮：上一轮只收外边距、空白仍明显，这轮连行距与状态带一起收）。
+    // 窄屏的收紧值（2026-09-20 第三轮：上一轮仍被指出空白大，这轮连行距、选择块与提示一起收）。
     expect(css).toMatch(/#page-sail \.sail-panel\{margin-top:10px;padding:0/);
-    expect(css).toMatch(/#page-sail \.pack-row\{[^}]*padding:10px 0\}/);
+    expect(css).toMatch(/#page-sail \.pack-row\{[^}]*padding:7px 0\}/);
     expect(css).toMatch(/#page-sail \.pack-head\{padding:14px 16px 12px\}/);
+    expect(css).toMatch(/#page-sail \.pack-field \.chip\{[^}]*min-height:38px/);
+    expect(css).toMatch(/#page-sail \.pack-field \.chips\{[^}]*gap:7px/);
+  });
+
+  it("清单里的说明不再重复页面开头已写过的话（窄屏省行）", () => {
+    // 「2025 年起四川采用 3+1+2」在页面导语里已经说过，清单里再写一遍只是占三行。
+    expect(sail).not.toContain("2025 年起四川采用 3+1+2");
+    expect(sail).toContain("物理类与历史类是两套独立的计划与位次。");
   });
 
   it("摘要说清了「还没选科」的后果，不是只报状态", () => {

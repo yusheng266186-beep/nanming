@@ -28,6 +28,41 @@
 - 文档同步：两个完整工作区 `--package` / `--check` 已通过（11 份冻结副本一致、24 份参考文件）。单 Agent 认领跨线范围已人工核对，`py -3.12 -X utf8 tools/check_frontend_lanes.py --lane 1` 暂存前分类完成（Windows 需 UTF-8 模式）。提交前在两个完整工作区各执行 `py -3.12 tools/sync_project_docs.py --package` 与 `--check`；分支推送后以 PR 提供审阅，未合并主分支、未部署本轮前端。负责人仍需验收桌面/手机画框、抽屉节奏、清单密度与设置手感。
 
 
+## 2026-09-20 / drawer-anim-rootcause-1：抽屉「点开后卡片上端一条白」的根因；行装清单再压
+
+- 负责人 2026-09-20 第四轮：「首页抽屉卡片在手机端点击之后**还是有动画残留**导致卡片上端变白」「行装清单再紧凑一点」。
+- **根因（逐帧录屏 + 逐帧几何量出来的，不是推断）**：
+  1. `.stop{animation:arrive .55s var(--ease) both}` + `.stop:nth-child(2..6){animation-delay:.05s~.25s}`。
+     `fill-mode:both` 让卡片在动画**开始前**就停在 from（`opacity:0` + 位移），错峰延迟最长 .25s——
+     刚进页面那几百毫秒里有几张卡「隐形但仍占位」，点下去只看到卡片底色，就是那条白。
+     **抽屉是可交互控件，不该带着未播完的入场动画出场** → 单张卡 `animation:none`，入场改由整叠容器
+     `.deck{animation:deck-in .5s}` 一次性完成（一次动画、零错峰，不存在"还没显形"的窗口）。
+  2. `.stop-inner p{opacity:0;transition:opacity .28s var(--ease) .1s,transform .45s var(--ease) .06s}`
+     而容器高度是 `.45s`：**容器先长高、正文延后 .1s 才淡入**，中间空出的那段卡片底色就是白带。
+     实测旧版动画前 90ms `body=0 / inner=0` 完全没动静，90ms 后才开始长 → 改成与高度同步、零延迟、
+     统一 `.34s`（展开总时长 585ms → 405ms，更快且没有空窗）。
+  3. `.card-disclosure .disclosure-clip{visibility:hidden;transition:visibility 0s var(--motion-drawer)}`
+     —— `visibility` 是**离散属性**，`.48s` 的时长意味着要到动画**结束**才翻转，与高度动画赛跑。
+     改成 `overflow:hidden` + `opacity` 与高度同步，`visibility` 用 `0s linear .34s` 只在位移之后切换；
+     展开时 `.stop.open .disclosure-clip` 延迟归零，点开瞬间即可交互。
+- 行装清单继续压缩：行内边距 `10 → 7px`、轨道列 `24 → 22px`、选择块 `40 → 38px`（字号 12.5）、
+  选择块间距 `9 → 7px`、标签下间距 `7 → 5px`、提示 `margin 6→5px / line-height 1.55→1.5`、
+  页尾 `12/14 → 10/12px`、清单左右内边距 `16 → 15px`；并把两句过长说明缩短
+  （「2025 年起四川采用 3+1+2，…」→「物理类与历史类是两套独立的计划与位次。」，前半句页面导语已写过；
+  「不确定的要求会显示…不会被当成满足」→「不确定的要求显示「待核对」，不算满足」）。
+  实测：面板 **510 → 484px**、每行 **126/126/98 → 106/122/96px**、首页总高 **2313 → 2225px**；
+  压缩后整块清单（标题 → 三件 → 开始起航按钮）在 390×844 一屏内完整可见。
+- 工具与核查：`npm run validate` = **54 个测试文件、594 项通过、0 失败**。新增 1 个用例钉住根因
+  （禁止 `.stop` 再挂 `arrive` 与逐张 `animation-delay`，要求 `.deck{animation:deck-in}` 与 reduced-motion 兜底）；
+  `sail-pack` / `sail-deck` 同步新数值与同步过渡；测试里新增 `rules`（先剥注释再断言）——
+  注释里解释旧写法会被正则误伤，这是本次踩到的坑。
+- 证据：逐帧录屏与几何时间线在 `docs/verification/drawer-anim-2026-09-20/`（修复前 anim-03 可见白带、
+  anim-09 正常；修复后 170ms 帧已无白带），压缩后对照图 `docs/verification/sail-layout-2026-09-20/21-清单压缩后.png`。
+- 与前端统一工作的关系：这两处修复落在 `style.css` / `sail.tsx`，而「前端体验统一」（连续抽屉
+  `disclosure.tsx` / `motion.ts`、触屏反馈、紧凑设置与定位）由另一会话完成并已合并上线（`unified-ui-polish-deploy-1`）。
+  本提交只带**我自己这两处修复**与前两次的定位页工作，不重复带入对方的产物；生成类文件
+  （`AGENTS.md` / `README.md` / `FILE_INDEX.md` / `MANIFEST.sha256` 的状态摘要）留给文档同步脚本统一刷新。
+
 ## 2026-09-20 / drawer-anchor-and-pack-compress-1：抽屉「点击后上方变白」按根因修；行装清单真正压缩
 
 - 负责人 2026-09-20 第三轮（明确不满）：「六次靠岸在手机上只要点击某个航线，卡片上方就会出现白色，这应该是个 bug」「行装清单让你压缩，还是有这么大的空白」「这些问题我不是已经说过了吗，到底改了没有」。

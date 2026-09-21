@@ -204,13 +204,17 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .stop{
   position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;
   transition:border-color .3s,box-shadow .5s var(--ease);
-  animation:arrive .55s var(--ease) both;
+  /* 曾经这里是 `animation:arrive .55s var(--ease) both` + 逐张 animation-delay 错峰。
+     问题（负责人 2026-09-20 第三次报「点开航线后卡片上端变白」）：`both` 让卡片在动画**开始前**
+     就停在 from 状态（opacity:0 + 位移），而错峰延迟最长 .25s——刚进页面的那段时间里有几张卡片
+     「隐形但占位」，点下去看到的只有卡片底色，就是那条白带。抽屉是可交互控件，不该带着未播完的
+     入场动画出场；整叠的入场改由容器统一负责（见 .deck 的入场），单张卡片保持始终可见。 */
+  animation:none;
 }
-.stop:nth-child(2){animation-delay:.05s}
-.stop:nth-child(3){animation-delay:.1s}
-.stop:nth-child(4){animation-delay:.15s}
-.stop:nth-child(5){animation-delay:.2s}
-.stop:nth-child(6){animation-delay:.25s}
+/* 整叠一起淡入：只有一次动画、没有错峰延迟，也就不存在「某几张还没显形」的窗口。 */
+.deck{animation:deck-in .5s var(--ease) both}
+@keyframes deck-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.deck{animation:none}}
 .stop+.stop{margin-top:-14px;box-shadow:0 -8px 18px rgba(8,32,42,.05);transition:margin-top .45s var(--ease)}
 .stop.open+.stop{margin-top:10px}
 .stop.open{z-index:2;border-color:var(--brass-line);box-shadow:0 -16px 34px rgba(8,32,42,.11)}
@@ -222,13 +226,16 @@ main{min-height:calc(100vh - var(--rail-h) - 90px)}
 .stop-head:hover h4{color:var(--brass-3)}
 .stop-cue{flex:0 0 auto;color:var(--mut);transition:transform .5s var(--ease-spring),color .3s}
 .stop.open .stop-cue{transform:rotate(180deg);color:var(--brass)}
-/* 抽屉本体：0fr→1fr 才能让高度跟着内容走，又不写死任何像素高度。 */
-.stop-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
+/* 抽屉本体：0fr→1fr 才能让高度跟着内容走，又不写死任何像素高度。
+   配合要求：正文与高度**同时**开始、同时结束（曾经 opacity 带 .1s 延迟、transform 带 .06s 延迟，
+   容器先长高、正文后出现，中间那截空出的卡片底色在手机上就是一条白带——
+   负责人 2026-09-20 第三次报的「点开航线后卡片上端变白」）。 */
+.stop-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s var(--ease)}
 .stop.open .stop-body{grid-template-rows:1fr}
 .stop-inner{overflow:hidden;min-height:0}
 .stop-inner p{padding:0 16px 15px;font-size:11.5px;color:var(--mut);line-height:1.9;
-  opacity:0;transform:translateY(-6px);
-  transition:opacity .28s var(--ease) .1s,transform .45s var(--ease) .06s;font-family:var(--song)}
+  opacity:0;transform:translateY(-4px);
+  transition:opacity .34s var(--ease),transform .34s var(--ease);font-family:var(--song)}
 .stop.open .stop-inner p{opacity:1;transform:none}
 /* ══════════ 谈心：进对话之后把聊天区放大到接近整屏 ══════════
    原来消息区最高只有 48vh/440px——视口一矮就只容得下一两句话，看着拥挤。
@@ -1439,14 +1446,15 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
   #page-sail .pack-meter b{font-size:20px}
   #page-sail .pack-track{margin:11px 0 8px}
   #page-sail .pack-head .sail-live{font-size:10.5px;line-height:1.4;font-family:var(--song)}
-  #page-sail .pack-list{padding:2px 16px 0}
-  #page-sail .pack-row{grid-template-columns:24px minmax(0,1fr);column-gap:10px;padding:10px 0}
-  #page-sail .pack-node::after{top:29px;bottom:-20px}
-  #page-sail .seal{width:26px;height:26px;font-size:10px;font-family:var(--song)}
-  #page-sail .pack-field .flab{gap:8px;margin-bottom:7px}
-  #page-sail .pack-field .chip{min-height:40px;padding:0 16px}
-  #page-sail .fhint{margin-top:6px;line-height:1.55;font-size:10.5px;font-family:var(--song)}
-  #page-sail .pack-foot{padding:12px 16px 14px}
+  #page-sail .pack-list{padding:0 15px 0}
+  #page-sail .pack-row{grid-template-columns:22px minmax(0,1fr);column-gap:9px;padding:7px 0}
+  #page-sail .pack-node::after{top:26px;bottom:-16px}
+  #page-sail .seal{width:24px;height:24px;font-size:10px;font-family:var(--song)}
+  #page-sail .pack-field .flab{gap:7px;margin-bottom:5px}
+  #page-sail .pack-field .chip{min-height:38px;padding:0 14px;font-size:12.5px}
+  #page-sail .pack-field .chips{gap:7px;row-gap:7px}
+  #page-sail .fhint{margin-top:5px;line-height:1.5;font-size:10.5px;font-family:var(--song)}
+  #page-sail .pack-foot{padding:10px 15px 12px}
   #page-sail .sail-act{margin-top:0;gap:14px}
 }
 
@@ -1546,8 +1554,13 @@ td .uncharted,.rv .uncharted,.sv .uncharted{font-size:11px;font-family:var(--son
 .voyage-deck .stop-inner p{border-top:1px solid transparent;transition:opacity .25s var(--ease),transform var(--motion-drawer) var(--motion-settle),border-color .3s}
 .voyage-deck .stop.open .stop-inner p{border-top-color:var(--line)}
 #page-chart .deck .card-disclosure,#page-axis .deck .card-disclosure{padding:0}
-.card-disclosure .disclosure-clip{min-height:0;overflow:clip;visibility:hidden;transition:visibility 0s var(--motion-drawer)}
-.stop.open .disclosure-clip{visibility:visible;transition-delay:0s}
+/* 连续抽屉的正文容器（院校卡 / 分数轴 / 航线图用）：收起时裁掉并隐藏。
+   不用 `visibility` 做时长过渡——它是离散属性，`.48s` 的时长意味着要到动画**结束**才翻转，
+   和高度动画赛跑时就会出现「容器已经长出来、内容还没显形」的一条白（同一个根因）。
+   这里改成 opacity 与高度同步，visibility 只在位移之后切换（0s 步进），并且展开时立即可交互。 */
+.card-disclosure .disclosure-clip{min-height:0;overflow:hidden;visibility:hidden;opacity:0;
+  transition:opacity .34s var(--ease),visibility 0s linear .34s}
+.stop.open .disclosure-clip{visibility:visible;opacity:1;transition-delay:0s,0s}
 .disclosure-content{padding:2px 14px 16px}
 /* 静止偏好也覆盖 JS 写入的翻页姿态，避免关掉动画后卡片停在半倾斜位置。 */
 html[data-motion="off"] .card-stack .scard,html[data-motion="off"] .hero-art--framed .slot-wrap{transform:none}
