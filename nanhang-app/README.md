@@ -10,6 +10,17 @@
 > 下一步：负责人直接在线验收桌面/手机画框、抽屉、清单、定位和设置，不满意处继续迭代；前端已合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
+<!-- project-navigation:start -->
+## 使用与开发入口
+
+- 使用南溟：[打开在线页面](https://yusheng266186-beep.github.io/nanming/)。
+- 理解产品用途、相关项目与仓库结构：[根 README](../README.md)。
+- 查看真实任务进度与验证边界：[项目进度](docs/PROJECT_STATUS.md)。
+- 开始维护前：[文档同步规范](docs/DOCUMENTATION_POLICY.md) 与 [实施记录](docs/IMPLEMENTATION_LOG.md)。
+
+本目录是南溟的工程主体；2026-10-07 的导航整理只调整文档入口，业务任务、源码与已有部署记录保留。
+<!-- project-navigation:end -->
+
 ## 前端体验更新（2026-09-20）
 
 首页潮汐、抽屉连续开合、行装清单、定位和窄设置面板已统一；54 文件 592 项测试及23项合成 DOM 检查通过。PR #1 已合并，Pages 工作流 35513184905 部署成功，线上文件与发布产物一致；视觉验收由负责人完成。实现和复验方式见 [体验统一说明](docs/UI_POLISH_2026-09-20.md)。

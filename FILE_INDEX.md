@@ -15,6 +15,9 @@
 | [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) | 工程配置或总入口 |
 | [.gitignore](.gitignore) | 工程配置或总入口 |
 | [AGENTS.md](AGENTS.md) | 工程配置或总入口 |
+| [FILE_INDEX.md](FILE_INDEX.md) | 工程配置或总入口 |
+| [MANIFEST.sha256](MANIFEST.sha256) | 工程配置或总入口 |
+| [README.md](README.md) | 工程配置或总入口 |
 | [archives/README.md](archives/README.md) | 历史归档（不作为当前进度） |
 | [archives/session-transcripts-2026-09-10/part-01.md](archives/session-transcripts-2026-09-10/part-01.md) | 历史归档（不作为当前进度） |
 | [archives/session-transcripts-2026-09-10/part-02.md](archives/session-transcripts-2026-09-10/part-02.md) | 历史归档（不作为当前进度） |
@@ -24,10 +27,10 @@
 | [archives/session-transcripts-2026-09-10/part-06.md](archives/session-transcripts-2026-09-10/part-06.md) | 历史归档（不作为当前进度） |
 | [archives/session-transcripts-2026-09-10/part-07.md](archives/session-transcripts-2026-09-10/part-07.md) | 历史归档（不作为当前进度） |
 | [archives/session-transcripts-2026-09-10/probe-artifact.txt](archives/session-transcripts-2026-09-10/probe-artifact.txt) | 历史归档（不作为当前进度） |
-| [FILE_INDEX.md](FILE_INDEX.md) | 工程配置或总入口 |
-| [MANIFEST.sha256](MANIFEST.sha256) | 工程配置或总入口 |
 | [nanhang-app/.gitignore](nanhang-app/.gitignore) | 工程配置或总入口 |
 | [nanhang-app/AGENTS.md](nanhang-app/AGENTS.md) | 工程配置或总入口 |
+| [nanhang-app/README.md](nanhang-app/README.md) | 工程配置或总入口 |
+| [nanhang-app/VERSION.json](nanhang-app/VERSION.json) | 工程配置或总入口 |
 | [nanhang-app/apps/api/package.json](nanhang-app/apps/api/package.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/scf_bootstrap](nanhang-app/apps/api/scf_bootstrap) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/src/config.ts](nanhang-app/apps/api/src/config.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
@@ -41,12 +44,14 @@
 | [nanhang-app/apps/api/test/school-cloud.test.ts](nanhang-app/apps/api/test/school-cloud.test.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/test/totp-code.test.ts](nanhang-app/apps/api/test/totp-code.test.ts) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
 | [nanhang-app/apps/api/tsconfig.json](nanhang-app/apps/api/tsconfig.json) | TASK-08 AI HTTP 适配与 SCF 入口（线上验收另记） |
+| [nanhang-app/apps/web/VISUAL_PROGRESS.md](nanhang-app/apps/web/VISUAL_PROGRESS.md) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/index.html](nanhang-app/apps/web/index.html) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/package.json](nanhang-app/apps/web/package.json) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/scripts/open-mobile-window.mjs](nanhang-app/apps/web/scripts/open-mobile-window.mjs) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/App.tsx](nanhang-app/apps/web/src/App.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
+| [nanhang-app/apps/web/src/JourneyApp.tsx](nanhang-app/apps/web/src/JourneyApp.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/ai-client.ts](nanhang-app/apps/web/src/ai-client.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/ai-panel.ts](nanhang-app/apps/web/src/ai-panel.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
-| [nanhang-app/apps/web/src/App.tsx](nanhang-app/apps/web/src/App.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/art.tsx](nanhang-app/apps/web/src/art.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/axis.tsx](nanhang-app/apps/web/src/chapters/axis.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/chapters/chart.tsx](nanhang-app/apps/web/src/chapters/chart.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -67,7 +72,6 @@
 | [nanhang-app/apps/web/src/journey-model.ts](nanhang-app/apps/web/src/journey-model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey-worker.ts](nanhang-app/apps/web/src/journey-worker.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/journey.css](nanhang-app/apps/web/src/journey.css) | TASK-07无AI学生页面与TASK-08 AI面板 |
-| [nanhang-app/apps/web/src/JourneyApp.tsx](nanhang-app/apps/web/src/JourneyApp.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/main.tsx](nanhang-app/apps/web/src/main.tsx) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/model.ts](nanhang-app/apps/web/src/model.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/src/motion.ts](nanhang-app/apps/web/src/motion.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
@@ -120,7 +124,6 @@
 | [nanhang-app/apps/web/test/ui-polish.test.ts](nanhang-app/apps/web/test/ui-polish.test.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/tsconfig.json](nanhang-app/apps/web/tsconfig.json) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/visual-evidence/demo-sail-1440x1000.png](nanhang-app/apps/web/visual-evidence/demo-sail-1440x1000.png) | TASK-07无AI学生页面与TASK-08 AI面板 |
-| [nanhang-app/apps/web/VISUAL_PROGRESS.md](nanhang-app/apps/web/VISUAL_PROGRESS.md) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web/vite.config.ts](nanhang-app/apps/web/vite.config.ts) | TASK-07无AI学生页面与TASK-08 AI面板 |
 | [nanhang-app/apps/web-paper/index.html](nanhang-app/apps/web-paper/index.html) | 工程配置或总入口 |
 | [nanhang-app/apps/web-paper/package.json](nanhang-app/apps/web-paper/package.json) | 工程配置或总入口 |
@@ -135,12 +138,12 @@
 | [nanhang-app/data/admissions/merged-manifest.json](nanhang-app/data/admissions/merged-manifest.json) | 本地招生数据库构建产物（可重跑，非发布） |
 | [nanhang-app/data/admissions/university-detail-enrichment-batch.json](nanhang-app/data/admissions/university-detail-enrichment-batch.json) | 本地招生数据库构建产物（可重跑，非发布） |
 | [nanhang-app/data/task03/coverage.json](nanhang-app/data/task03/coverage.json) | 工程配置或总入口 |
-| [nanhang-app/data/task03/extraction/20260910T094233Z/extraction-run.json](nanhang-app/data/task03/extraction/20260910T094233Z/extraction-run.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/SC-PLAN-H-2026-P005.ocr.json](nanhang-app/data/task03/extraction/20260910T094233Z/SC-PLAN-H-2026-P005.ocr.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/SC-PLAN-P-2026-P005.ocr.json](nanhang-app/data/task03/extraction/20260910T094233Z/SC-PLAN-P-2026-P005.ocr.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/SC-RANK-H-2026-I001.ocr.json](nanhang-app/data/task03/extraction/20260910T094233Z/SC-RANK-H-2026-I001.ocr.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/SC-RANK-P-2026-I001.ocr.json](nanhang-app/data/task03/extraction/20260910T094233Z/SC-RANK-P-2026-I001.ocr.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/extraction/20260910T094233Z/SICAU-REFERENCE-2026-I001.ocr.json](nanhang-app/data/task03/extraction/20260910T094233Z/SICAU-REFERENCE-2026-I001.ocr.json) | 工程配置或总入口 |
+| [nanhang-app/data/task03/extraction/20260910T094233Z/extraction-run.json](nanhang-app/data/task03/extraction/20260910T094233Z/extraction-run.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/human-verification.json](nanhang-app/data/task03/human-verification.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/issues.json](nanhang-app/data/task03/issues.json) | 工程配置或总入口 |
 | [nanhang-app/data/task03/score-distribution/ocr/sc-rank-arts-2024-p001.ocr.json](nanhang-app/data/task03/score-distribution/ocr/sc-rank-arts-2024-p001.ocr.json) | 一分一段表OCR原始输出（可重算） |
@@ -682,37 +685,12 @@
 | [nanhang-app/docs/ADR_003_STUDENT_JOURNEY.md](nanhang-app/docs/ADR_003_STUDENT_JOURNEY.md) | 实施进度与记录 |
 | [nanhang-app/docs/AI_QIANFAN_SETUP.md](nanhang-app/docs/AI_QIANFAN_SETUP.md) | 实施进度与记录 |
 | [nanhang-app/docs/BACKEND_FRONTEND_ALIGNMENT.md](nanhang-app/docs/BACKEND_FRONTEND_ALIGNMENT.md) | 实施进度与记录 |
-| [nanhang-app/docs/baseline/contracts/data-release.schema.json](nanhang-app/docs/baseline/contracts/data-release.schema.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/contracts/match-result.schema.json](nanhang-app/docs/baseline/contracts/match-result.schema.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/contracts/student-profile.schema.json](nanhang-app/docs/baseline/contracts/student-profile.schema.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/contracts/target-scenario.schema.json](nanhang-app/docs/baseline/contracts/target-scenario.schema.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/DATA_AND_MATCHING_SPEC.md](nanhang-app/docs/baseline/DATA_AND_MATCHING_SPEC.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/DELIVERY_AND_ACCEPTANCE.md](nanhang-app/docs/baseline/DELIVERY_AND_ACCEPTANCE.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/evidence/repository-files.json](nanhang-app/docs/baseline/evidence/repository-files.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/evidence/source-register.json](nanhang-app/docs/baseline/evidence/source-register.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/EVIDENCE_AND_REUSE.md](nanhang-app/docs/baseline/EVIDENCE_AND_REUSE.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/acceptance-cases.json](nanhang-app/docs/baseline/fixtures/acceptance-cases.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/match-result.invalid.json](nanhang-app/docs/baseline/fixtures/match-result.invalid.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/match-result.valid.json](nanhang-app/docs/baseline/fixtures/match-result.valid.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/student-profile.invalid.json](nanhang-app/docs/baseline/fixtures/student-profile.invalid.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/student-profile.valid.json](nanhang-app/docs/baseline/fixtures/student-profile.valid.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/target-scenario.invalid.json](nanhang-app/docs/baseline/fixtures/target-scenario.invalid.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/fixtures/target-scenario.valid.json](nanhang-app/docs/baseline/fixtures/target-scenario.valid.json) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/IMPLEMENTATION_STATUS_2026-09-10.md](nanhang-app/docs/baseline/IMPLEMENTATION_STATUS_2026-09-10.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/MANIFEST.sha256](nanhang-app/docs/baseline/MANIFEST.sha256) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/PRODUCT_SPEC.md](nanhang-app/docs/baseline/PRODUCT_SPEC.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/README.md](nanhang-app/docs/baseline/README.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/requirements-contracts.txt](nanhang-app/docs/baseline/requirements-contracts.txt) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md](nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/tools/validate_contracts.py](nanhang-app/docs/baseline/tools/validate_contracts.py) | 交接包同步参考副本 |
-| [nanhang-app/docs/baseline/VALIDATION.md](nanhang-app/docs/baseline/VALIDATION.md) | 交接包同步参考副本 |
 | [nanhang-app/docs/CLASS4_QUERY_CODES.md](nanhang-app/docs/CLASS4_QUERY_CODES.md) | 实施进度与记录 |
 | [nanhang-app/docs/DOCUMENTATION_POLICY.md](nanhang-app/docs/DOCUMENTATION_POLICY.md) | 实施进度与记录 |
-| [nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md](nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md) | 实施进度与记录 |
 | [nanhang-app/docs/FRONTENDS.md](nanhang-app/docs/FRONTENDS.md) | 实施进度与记录 |
+| [nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md](nanhang-app/docs/FRONTEND_CODE_REVIEW_2026-09-13.md) | 实施进度与记录 |
 | [nanhang-app/docs/IMPLEMENTATION_LOG.md](nanhang-app/docs/IMPLEMENTATION_LOG.md) | 实施进度与记录 |
 | [nanhang-app/docs/PARALLEL_FRONTEND.md](nanhang-app/docs/PARALLEL_FRONTEND.md) | 实施进度与记录 |
-| [nanhang-app/docs/project-status.json](nanhang-app/docs/project-status.json) | 实施进度与记录 |
 | [nanhang-app/docs/PROJECT_REVIEW_2026-09-13.md](nanhang-app/docs/PROJECT_REVIEW_2026-09-13.md) | 实施进度与记录 |
 | [nanhang-app/docs/PROJECT_STATUS.md](nanhang-app/docs/PROJECT_STATUS.md) | 实施进度与记录 |
 | [nanhang-app/docs/QUALITY_HUIXI_PIPELINE.md](nanhang-app/docs/QUALITY_HUIXI_PIPELINE.md) | 实施进度与记录 |
@@ -728,6 +706,31 @@
 | [nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md](nanhang-app/docs/TASK10_STAGE_ACCEPTANCE.md) | 实施进度与记录 |
 | [nanhang-app/docs/UI_POLISH_2026-09-20.md](nanhang-app/docs/UI_POLISH_2026-09-20.md) | 实施进度与记录 |
 | [nanhang-app/docs/VALIDATION_RESULT.md](nanhang-app/docs/VALIDATION_RESULT.md) | 实施进度与记录 |
+| [nanhang-app/docs/baseline/DATA_AND_MATCHING_SPEC.md](nanhang-app/docs/baseline/DATA_AND_MATCHING_SPEC.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/DELIVERY_AND_ACCEPTANCE.md](nanhang-app/docs/baseline/DELIVERY_AND_ACCEPTANCE.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/EVIDENCE_AND_REUSE.md](nanhang-app/docs/baseline/EVIDENCE_AND_REUSE.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/IMPLEMENTATION_STATUS_2026-09-10.md](nanhang-app/docs/baseline/IMPLEMENTATION_STATUS_2026-09-10.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/MANIFEST.sha256](nanhang-app/docs/baseline/MANIFEST.sha256) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/PRODUCT_SPEC.md](nanhang-app/docs/baseline/PRODUCT_SPEC.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/README.md](nanhang-app/docs/baseline/README.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md](nanhang-app/docs/baseline/SYSTEM_AND_INTERFACE_SPEC.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/VALIDATION.md](nanhang-app/docs/baseline/VALIDATION.md) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/contracts/data-release.schema.json](nanhang-app/docs/baseline/contracts/data-release.schema.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/contracts/match-result.schema.json](nanhang-app/docs/baseline/contracts/match-result.schema.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/contracts/student-profile.schema.json](nanhang-app/docs/baseline/contracts/student-profile.schema.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/contracts/target-scenario.schema.json](nanhang-app/docs/baseline/contracts/target-scenario.schema.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/evidence/repository-files.json](nanhang-app/docs/baseline/evidence/repository-files.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/evidence/source-register.json](nanhang-app/docs/baseline/evidence/source-register.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/acceptance-cases.json](nanhang-app/docs/baseline/fixtures/acceptance-cases.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/match-result.invalid.json](nanhang-app/docs/baseline/fixtures/match-result.invalid.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/match-result.valid.json](nanhang-app/docs/baseline/fixtures/match-result.valid.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/student-profile.invalid.json](nanhang-app/docs/baseline/fixtures/student-profile.invalid.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/student-profile.valid.json](nanhang-app/docs/baseline/fixtures/student-profile.valid.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/target-scenario.invalid.json](nanhang-app/docs/baseline/fixtures/target-scenario.invalid.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/fixtures/target-scenario.valid.json](nanhang-app/docs/baseline/fixtures/target-scenario.valid.json) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/requirements-contracts.txt](nanhang-app/docs/baseline/requirements-contracts.txt) | 交接包同步参考副本 |
+| [nanhang-app/docs/baseline/tools/validate_contracts.py](nanhang-app/docs/baseline/tools/validate_contracts.py) | 交接包同步参考副本 |
+| [nanhang-app/docs/project-status.json](nanhang-app/docs/project-status.json) | 实施进度与记录 |
 | [nanhang-app/docs/verification/acceptance-cloud-api-2026-09-12.json](nanhang-app/docs/verification/acceptance-cloud-api-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/acceptance-online-2026-09-12.json](nanhang-app/docs/verification/acceptance-online-2026-09-12.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt](nanhang-app/docs/verification/accuracy-v1.2-source-evidence-2026-09-10.txt) | 本次验证原始日志 |
@@ -753,6 +756,10 @@
 | [nanhang-app/docs/verification/class4-codes-x0-tests-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-tests-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/class4-codes-x0-typecheck-2026-09-12.txt](nanhang-app/docs/verification/class4-codes-x0-typecheck-2026-09-12.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/cloud-cost-freeze-2026-09-14.json](nanhang-app/docs/verification/cloud-cost-freeze-2026-09-14.json) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/drawer-anim-2026-09-20/01-展开动画中段-无白带.png](nanhang-app/docs/verification/drawer-anim-2026-09-20/01-展开动画中段-无白带.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/drawer-anim-2026-09-20/02-展开完成.png](nanhang-app/docs/verification/drawer-anim-2026-09-20/02-展开完成.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/drawer-anim-2026-09-20/03-线上-展开中段无白带.png](nanhang-app/docs/verification/drawer-anim-2026-09-20/03-线上-展开中段无白带.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/drawer-anim-2026-09-20/04-线上-展开完成.png](nanhang-app/docs/verification/drawer-anim-2026-09-20/04-线上-展开完成.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt](nanhang-app/docs/verification/excel-intake-validation-2026-09-10.txt) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/final-turn-cloud-api-2026-09-13.json](nanhang-app/docs/verification/final-turn-cloud-api-2026-09-13.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/final-turn-online-2026-09-13.json](nanhang-app/docs/verification/final-turn-online-2026-09-13.json) | 本次验证原始日志 |
@@ -806,6 +813,7 @@
 | [nanhang-app/docs/verification/pages-mobile-2026-09-20/08-设置卡.png](nanhang-app/docs/verification/pages-mobile-2026-09-20/08-设置卡.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/project-review-2026-09-13.json](nanhang-app/docs/verification/project-review-2026-09-13.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs](nanhang-app/docs/verification/project-review-repro-2026-09-13.mjs) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/repository-navigation-2026-10-07.json](nanhang-app/docs/verification/repository-navigation-2026-10-07.json) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/01-六站-收起.png](nanhang-app/docs/verification/sail-layout-2026-09-20/01-六站-收起.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/02-六站-展开谈心.png](nanhang-app/docs/verification/sail-layout-2026-09-20/02-六站-展开谈心.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/03-行装清单.png](nanhang-app/docs/verification/sail-layout-2026-09-20/03-行装清单.png) | 本次验证原始日志 |
@@ -814,6 +822,7 @@
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/12-行装清单-压缩后-下半.png](nanhang-app/docs/verification/sail-layout-2026-09-20/12-行装清单-压缩后-下半.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/13-六站-展开后.png](nanhang-app/docs/verification/sail-layout-2026-09-20/13-六站-展开后.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/14-线上-压缩后行装清单与六站.png](nanhang-app/docs/verification/sail-layout-2026-09-20/14-线上-压缩后行装清单与六站.png) | 本次验证原始日志 |
+| [nanhang-app/docs/verification/sail-layout-2026-09-20/21-清单压缩后.png](nanhang-app/docs/verification/sail-layout-2026-09-20/21-清单压缩后.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/frame-02-+82ms.png](nanhang-app/docs/verification/sail-layout-2026-09-20/frame-02-+82ms.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/sail-layout-2026-09-20/live-frame-02-+165ms.png](nanhang-app/docs/verification/sail-layout-2026-09-20/live-frame-02-+165ms.png) | 本次验证原始日志 |
 | [nanhang-app/docs/verification/school-local-check.mjs](nanhang-app/docs/verification/school-local-check.mjs) | 本次验证原始日志 |
@@ -932,7 +941,6 @@
 | [nanhang-app/pipelines/task03/validate_workbook_samples.py](nanhang-app/pipelines/task03/validate_workbook_samples.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/verified_score_rows.py](nanhang-app/pipelines/task03/verified_score_rows.py) | 招生数据管线与历史来源工具 |
 | [nanhang-app/pipelines/task03/windows_ocr.ps1](nanhang-app/pipelines/task03/windows_ocr.ps1) | 招生数据管线与历史来源工具 |
-| [nanhang-app/README.md](nanhang-app/README.md) | 工程配置或总入口 |
 | [nanhang-app/scripts/build_function.mjs](nanhang-app/scripts/build_function.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/check-ui-polish.mjs](nanhang-app/scripts/check-ui-polish.mjs) | 工程配置或总入口 |
 | [nanhang-app/scripts/check_pages_config.mjs](nanhang-app/scripts/check_pages_config.mjs) | 工程配置或总入口 |
@@ -946,17 +954,22 @@
 | [nanhang-app/scripts/totp_code.mjs](nanhang-app/scripts/totp_code.mjs) | 工程配置或总入口 |
 | [nanhang-app/tsconfig.base.json](nanhang-app/tsconfig.base.json) | 工程配置或总入口 |
 | [nanhang-app/tsconfig.json](nanhang-app/tsconfig.json) | 工程配置或总入口 |
-| [nanhang-app/VERSION.json](nanhang-app/VERSION.json) | 工程配置或总入口 |
 | [nanhang-app/vitest.config.ts](nanhang-app/vitest.config.ts) | 工程配置或总入口 |
+| [nanhang-handoff/DATA_AND_MATCHING_SPEC.md](nanhang-handoff/DATA_AND_MATCHING_SPEC.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/DELIVERY_AND_ACCEPTANCE.md](nanhang-handoff/DELIVERY_AND_ACCEPTANCE.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/EVIDENCE_AND_REUSE.md](nanhang-handoff/EVIDENCE_AND_REUSE.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/IMPLEMENTATION_STATUS_2026-09-10.md](nanhang-handoff/IMPLEMENTATION_STATUS_2026-09-10.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/MANIFEST.sha256](nanhang-handoff/MANIFEST.sha256) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/PRODUCT_SPEC.md](nanhang-handoff/PRODUCT_SPEC.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/README.md](nanhang-handoff/README.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/SYSTEM_AND_INTERFACE_SPEC.md](nanhang-handoff/SYSTEM_AND_INTERFACE_SPEC.md) | 交接规范、结构合同、案例与来源登记 |
+| [nanhang-handoff/VALIDATION.md](nanhang-handoff/VALIDATION.md) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/contracts/data-release.schema.json](nanhang-handoff/contracts/data-release.schema.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/contracts/match-result.schema.json](nanhang-handoff/contracts/match-result.schema.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/contracts/student-profile.schema.json](nanhang-handoff/contracts/student-profile.schema.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/contracts/target-scenario.schema.json](nanhang-handoff/contracts/target-scenario.schema.json) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/DATA_AND_MATCHING_SPEC.md](nanhang-handoff/DATA_AND_MATCHING_SPEC.md) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/DELIVERY_AND_ACCEPTANCE.md](nanhang-handoff/DELIVERY_AND_ACCEPTANCE.md) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/evidence/repository-files.json](nanhang-handoff/evidence/repository-files.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/evidence/source-register.json](nanhang-handoff/evidence/source-register.json) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/EVIDENCE_AND_REUSE.md](nanhang-handoff/EVIDENCE_AND_REUSE.md) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/fixtures/acceptance-cases.json](nanhang-handoff/fixtures/acceptance-cases.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/fixtures/match-result.invalid.json](nanhang-handoff/fixtures/match-result.invalid.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/fixtures/match-result.valid.json](nanhang-handoff/fixtures/match-result.valid.json) | 交接规范、结构合同、案例与来源登记 |
@@ -964,17 +977,10 @@
 | [nanhang-handoff/fixtures/student-profile.valid.json](nanhang-handoff/fixtures/student-profile.valid.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/fixtures/target-scenario.invalid.json](nanhang-handoff/fixtures/target-scenario.invalid.json) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/fixtures/target-scenario.valid.json](nanhang-handoff/fixtures/target-scenario.valid.json) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/IMPLEMENTATION_STATUS_2026-09-10.md](nanhang-handoff/IMPLEMENTATION_STATUS_2026-09-10.md) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/MANIFEST.sha256](nanhang-handoff/MANIFEST.sha256) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/PRODUCT_SPEC.md](nanhang-handoff/PRODUCT_SPEC.md) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/README.md](nanhang-handoff/README.md) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/requirements-contracts.txt](nanhang-handoff/requirements-contracts.txt) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/SYSTEM_AND_INTERFACE_SPEC.md](nanhang-handoff/SYSTEM_AND_INTERFACE_SPEC.md) | 交接规范、结构合同、案例与来源登记 |
 | [nanhang-handoff/tools/validate_contracts.py](nanhang-handoff/tools/validate_contracts.py) | 交接规范、结构合同、案例与来源登记 |
-| [nanhang-handoff/VALIDATION.md](nanhang-handoff/VALIDATION.md) | 交接规范、结构合同、案例与来源登记 |
-| [README.md](README.md) | 工程配置或总入口 |
+| [releases/README.md](releases/README.md) | 当前源码分发与哈希 |
 | [releases/nanhang-app-source-2026-09-10.zip](releases/nanhang-app-source-2026-09-10.zip) | 当前源码分发与哈希 |
 | [releases/nanhang-app-source-2026-09-10.zip.sha256](releases/nanhang-app-source-2026-09-10.zip.sha256) | 当前源码分发与哈希 |
-| [releases/README.md](releases/README.md) | 当前源码分发与哈希 |
 | [tools/check_frontend_lanes.py](tools/check_frontend_lanes.py) | 目录与文档维护工具 |
 | [tools/sync_project_docs.py](tools/sync_project_docs.py) | 目录与文档维护工具 |

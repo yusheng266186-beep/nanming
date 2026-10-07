@@ -16,6 +16,25 @@
 > 下一步：负责人直接在线验收桌面/手机画框、抽屉、清单、定位和设置，不满意处继续迭代；前端已合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](nanhang-app/docs/PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
+<!-- project-navigation:start -->
+## 项目概览
+
+| 项目 | 说明 |
+| --- | --- |
+| 分类 | 选科与升学探索 |
+| 平台 | 浏览器 / 招生数据 / AI 中转 |
+| 当前定位 | 已部署 · 验证范围见项目进度 |
+
+结合真实历年招生数据与谈心线索，帮助高中生探索院校、专业和高考目标。
+
+[在线体验](https://yusheng266186-beep.github.io/nanming/) · [使用与开发](#数据ai-与隐私边界) · [项目总导航](https://github.com/yusheng266186-beep/yusheng266186-beep)
+
+本项目面向目标与院校专业探索；[北辰](https://github.com/yusheng266186-beep/beichen) 侧重选科谈心，[落点](https://github.com/yusheng266186-beep/sichuan-gaokao-2026) 侧重四川院校专业组查询。当前任务与验证边界以 [项目进度](nanhang-app/docs/PROJECT_STATUS.md) 为准。
+
+**阅读导航：** [数据、AI 与隐私边界](#数据ai-与隐私边界) · [仓库目录](#仓库目录)
+
+<!-- project-navigation:end -->
+
 ## 前端体验更新（2026-09-20）
 
 首页潮汐、抽屉连续开合、行装清单、定位和窄设置面板已统一；54 文件 592 项测试及23项合成 DOM 检查通过。PR #1 已合并，Pages 工作流 35513184905 部署成功，线上文件与发布产物一致；视觉验收由负责人完成。实现和复验方式见 [体验统一说明](nanhang-app/docs/UI_POLISH_2026-09-20.md)。

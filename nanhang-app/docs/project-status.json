@@ -468,9 +468,9 @@
     "legacy_note": "core_devices 与 fixes 保留此前七章版本的设计/修复记录；当前主入口以 ADR-003 和 apps/web/VISUAL_PROGRESS.md 最新段落为准"
   },
   "code_baseline": {
-    "commit": "c0b2664",
-    "checked_at": "2026-09-13",
-    "note": "本轮不编辑apps/web；已发布纸堆弹簧、起航行装清单、小字衬线、设置、谈心收尾及方向分层增量。"
+    "commit": "ef66797a139d8ca958f9ccf624af55885a7b4817",
+    "checked_at": "2026-10-07",
+    "note": "通过 GitHub CLI 核对默认分支最新提交；本轮整理 README、导航与文档记录，没有修改业务源码、招生数据、配置或部署工作流。业务任务与既有验证结论未变。"
   },
   "deployment": {
     "status": "API_V10_DEPLOYED_REDIS_FROZEN",
@@ -500,11 +500,12 @@
   "documentation_policy": "每次修改和每次提交必须同步实施记录、当前状态、相关专题说明及验证范围；未完成工作明确标为进行中；提交前 --package 与 --check；详见 docs/DOCUMENTATION_POLICY.md",
   "documentation_check": {
     "status": "passed",
-    "date": "2026-09-19",
+    "date": "2026-10-07",
     "commands": [
-      "py -3.12 tools/sync_project_docs.py --package",
-      "py -3.12 tools/sync_project_docs.py --check"
+      "python3.12 tools/sync_project_docs.py --package",
+      "python3.12 tools/sync_project_docs.py --check"
     ],
+    "scope": "文档一致性与本地源码包；历史业务测试和部署事实保留原日期",
     "frozen_copies_equal": 11,
     "baseline_files": 24,
     "errors": []
@@ -593,7 +594,16 @@
     "github_about": "description and homepage read-back verified; public README current",
     "pages_url": "https://yusheng266186-beep.github.io/nanming/",
     "source_files_moved": false,
-    "pages_online_report": "docs/verification/latest-pages-online-2026-09-13.json"
+    "pages_online_report": "docs/verification/latest-pages-online-2026-09-13.json",
+    "documentation_review": {
+      "date": "2026-10-07",
+      "change_id": "2026-10-07-repository-navigation",
+      "base_commit": "ef66797a139d8ca958f9ccf624af55885a7b4817",
+      "scope": "分类、项目关系、使用入口与阅读导航；同步文档记录及生成索引、哈希和本地源码包",
+      "business_task_status": "unchanged",
+      "business_tests_rerun": false,
+      "visual_acceptance_performed": false
+    }
   },
   "review": {
     "baseline": "14fad3f",

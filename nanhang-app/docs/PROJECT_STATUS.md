@@ -8,6 +8,13 @@
 > 下一步：负责人直接在线验收桌面/手机画框、抽屉、清单、定位和设置，不满意处继续迭代；前端已合并部署。后续若招生库或官方学费目录继续更新，应先重建/验证南航规范化招生库，再运行 pipelines/task03/merge_admissions_databases.py 重新生成统一库，不能只替换其中一侧。118 个 institution 实体行仍没有可直接入库的官方明确 CNY/学年金额，继续保持未知；同时按全项目审阅修 P1 与状态生命周期，TASK-13/14 身份与运维收尾不变。完整进度及操作见[项目进度](PROJECT_STATUS.md)。历史验证记录不代表当前状态。
 <!-- PROJECT-STATUS:END -->
 
+## 文档整理：分类与项目入口（2026-10-07）
+
+本轮核对 GitHub 默认分支并整理根 README 与工程 README 的使用入口、用途分类和相关项目关系。业务任务状态、招生数据、既有部署和验收范围均未变；此前 592 项测试等数字属于原日期的历史验证，本轮没有重跑业务测试或进行视觉验收。
+
+本次文档检查和生成包结果见 [当前验证结果](VALIDATION_RESULT.md)；完整改动记录见 [实施记录](IMPLEMENTATION_LOG.md)。后续仍按原任务清单继续业务工作。
+
+
 ## 当前进展：前端体验统一已上线（2026-09-20）
 
 PR [#1](https://github.com/yusheng266186-beep/nanming/pull/1) 已合并为 `b625dc2`，Pages 工作流 [35513184905](https://github.com/yusheng266186-beep/nanming/actions/runs/35513184905) 构建与部署成功。线上 `index.html`、JS、CSS 与工作流产物逐字节一致，地址为 <https://yusheng266186-beep.github.io/nanming/>。

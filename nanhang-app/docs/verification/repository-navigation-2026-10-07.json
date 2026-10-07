@@ -1,0 +1,19 @@
+{
+  "change_id": "2026-10-07-repository-navigation",
+  "base_commit": "ef66797a139d8ca958f9ccf624af55885a7b4817",
+  "date": "2026-10-07",
+  "scope": "documentation only",
+  "commands": [
+    "python3.12 tools/sync_project_docs.py --package",
+    "python3.12 tools/sync_project_docs.py --check"
+  ],
+  "status": "passed",
+  "business_task_status": "unchanged",
+  "business_tests_rerun": false,
+  "visual_acceptance_performed": false,
+  "cloud_actions_performed": false,
+  "public_release_manifest_read_only": true,
+  "frozen_copies_equal": 11,
+  "baseline_files": 24,
+  "errors": []
+}
